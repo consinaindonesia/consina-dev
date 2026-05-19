@@ -221,9 +221,11 @@ function Categories() {
 }
 
 function CategoryCard({ cat, className = "" }: { cat: typeof categories[number]; className?: string }) {
+  const stats = catStats(cat.name);
   return (
     <Link
-      to="/"
+      to="/catalog"
+      hash={catSlug(cat.name)}
       className={`group relative block h-72 overflow-hidden rounded-sm bg-secondary ${className}`}
     >
       <img
@@ -233,12 +235,19 @@ function CategoryCard({ cat, className = "" }: { cat: typeof categories[number];
         className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-primary/85 via-primary/20 to-transparent" />
+      {stats.max > 0 && (
+        <span className="absolute left-4 top-4 rounded-full bg-accent px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-accent-foreground">
+          Up to {stats.max}% off
+        </span>
+      )}
       <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-5 md:p-7">
         <div>
           <h3 className="font-[Archivo] text-2xl font-black tracking-tight text-primary-foreground md:text-3xl">
             {cat.name}
           </h3>
-          <p className="mt-1 text-xs uppercase tracking-widest text-accent">{cat.desc}</p>
+          <p className="mt-1 text-xs uppercase tracking-widest text-accent">
+            {cat.desc}{stats.count ? ` · ${stats.count} items` : ""}
+          </p>
         </div>
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground transition group-hover:rotate-45">
           <ArrowUpRight className="h-4 w-4" />

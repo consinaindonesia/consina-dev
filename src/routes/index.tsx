@@ -33,12 +33,19 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
+function catStats(cat: string) {
+  const items = products.filter((p) => p.category === cat);
+  const max = items.length ? Math.max(...items.map((i) => i.discount)) : 0;
+  return { count: items.length, max };
+}
+const catSlug = (s: string) =>
+  s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 const categories = [
-  { name: "Carriers", desc: "40L – 100L expedition packs", img: catCarriers, size: "tall" },
-  { name: "Tents", desc: "Shelter for every altitude", img: catTents, size: "tall" },
-  { name: "Apparel", desc: "Layers built for the trail", img: catApparel, size: "wide" },
-  { name: "Footwear", desc: "Trekking & approach", img: catFootwear, size: "wide" },
-  { name: "Accessories", desc: "The essentials, refined", img: catAccessories, size: "wide" },
+  { name: "Bags & Carriers", desc: "Daypack to 70L expedition", img: catCarriers },
+  { name: "Tents & Shelter", desc: "Shelter for every altitude", img: catTents },
+  { name: "Apparel", desc: "Layers built for the trail", img: catApparel },
+  { name: "Footwear", desc: "Trekking, trail & sandals", img: catFootwear },
+  { name: "Camping & Cookware", desc: "BBQ, coffee, chairs & tables", img: catAccessories },
 ] as const;
 
 const featured = [...products]

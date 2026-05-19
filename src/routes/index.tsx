@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ArrowRight, ArrowUpRight, MapPin, Mountain, Leaf, Users, Mail, Phone } from "lucide-react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
+import { products, categoryOrder } from "@/data/products";
 import hero from "@/assets/hero-mountain.jpg";
 import catCarriers from "@/assets/cat-carriers.jpg";
 import catTents from "@/assets/cat-tents.jpg";
@@ -40,12 +41,9 @@ const categories = [
   { name: "Accessories", desc: "The essentials, refined", img: catAccessories, size: "wide" },
 ] as const;
 
-const products = [
-  { name: "Tarebbi 65L Carrier", price: "Rp 1.450.000", tag: "New", img: prod1 },
-  { name: "Magnum Dome Tent 3P", price: "Rp 2.890.000", tag: "Bestseller", img: prod2 },
-  { name: "Ridgewalker GTX Boot", price: "Rp 1.795.000", tag: "Trail Tested", img: prod3 },
-  { name: "Cascade Softshell Jacket", price: "Rp 990.000", tag: "New", img: prod4 },
-];
+const featured = [...products]
+  .sort((a, b) => b.discount - a.discount)
+  .slice(0, 8);
 
 const stores = [
   { city: "Jakarta", addr: "Pasar Baru Flagship", phone: "+62 21 345 6789" },
@@ -252,36 +250,56 @@ function FeaturedProducts() {
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">Featured</p>
           <h2 className="mt-3 max-w-2xl font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl">
             Trail-tested. Crew-approved.
+            <span className="ml-3 inline-flex items-center rounded-full bg-accent px-3 py-1 align-middle text-xs font-bold uppercase tracking-wider text-accent-foreground md:text-sm">
+              Promo up to 20% off
+            </span>
           </h2>
         </div>
         <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
-          A short list from this season's drop. Each piece is field-tested by
-          our crew across Indonesia before it earns the Consina label.
+          A live pick from the {products.length}-piece catalog, field-tested by
+          our crew across Indonesia. Promo prices in rupiah.
         </p>
       </div>
       <div className="mt-14 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
-        {products.map((p) => (
-          <Link to="/" key={p.name} className="group block">
+        {featured.map((p) => (
+          <a
+            key={p.url}
+            href={p.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group block"
+          >
             <div className="relative aspect-square overflow-hidden rounded-sm bg-muted">
               <img
-                src={p.img}
+                src={p.image}
                 alt={p.name}
                 loading="lazy"
                 className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
-              <span className="absolute left-3 top-3 rounded-full bg-background/95 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary">
-                {p.tag}
+              <span className="absolute left-3 top-3 rounded-full bg-primary px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-primary-foreground">
+                -{p.discount}%
               </span>
             </div>
             <div className="mt-4 flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-[Archivo] text-base font-bold text-primary">{p.name}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">{p.price}</p>
+                <h3 className="line-clamp-2 font-[Archivo] text-sm font-bold leading-snug text-primary">{p.name}</h3>
+                <div className="mt-1 flex items-baseline gap-2">
+                  <span className="text-sm font-semibold text-secondary">{p.price}</span>
+                  {p.oldPrice && <span className="text-xs text-muted-foreground line-through">{p.oldPrice}</span>}
+                </div>
               </div>
               <ArrowUpRight className="h-4 w-4 shrink-0 text-secondary opacity-0 transition group-hover:opacity-100" />
             </div>
-          </Link>
+          </a>
         ))}
+      </div>
+      <div className="mt-14 flex justify-center">
+        <Link
+          to="/catalog"
+          className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-secondary"
+        >
+          Browse all {products.length} products <ArrowRight className="h-4 w-4" />
+        </Link>
       </div>
     </section>
   );

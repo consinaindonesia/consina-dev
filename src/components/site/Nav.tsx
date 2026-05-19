@@ -4,11 +4,11 @@ import { Menu, X, Search, MapPin } from "lucide-react";
 
 const links = [
   { to: "/", label: "Home" },
-  { to: "/", label: "Carriers" },
-  { to: "/", label: "Tents" },
-  { to: "/", label: "Apparel" },
-  { to: "/", label: "Footwear" },
-  { to: "/", label: "Accessories" },
+  { to: "/catalog", label: "Catalog" },
+  { to: "/catalog", label: "Carriers" },
+  { to: "/catalog", label: "Tents" },
+  { to: "/catalog", label: "Apparel" },
+  { to: "/catalog", label: "Footwear" },
   { to: "/", label: "Stores" },
   { to: "/", label: "Story" },
 ];

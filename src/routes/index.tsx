@@ -94,7 +94,7 @@ function Hero() {
           The Outdoor Lifestyle — Est. 1999
         </p>
         <h1 className="mt-5 max-w-4xl font-[Archivo] text-5xl font-black leading-[0.95] tracking-tight text-primary-foreground md:text-7xl lg:text-[88px]">
-          Inspired by <em className="not-italic text-accent">experience.</em>
+          Inspired By <em className="not-italic text-accent">Experience</em>
           <br />
           Built for the archipelago.
         </h1>
@@ -117,15 +117,15 @@ function Hero() {
             Our story
           </Link>
         </div>
-        <div className="mt-16 grid max-w-2xl grid-cols-3 gap-6 border-t border-primary-foreground/20 pt-6 text-primary-foreground/90">
+        <div className="mt-16 grid max-w-2xl grid-cols-3 gap-6 border-t border-primary-foreground/20 pt-6 text-[#1a3a2e]">
           {[
             ["25+", "Years on the trail"],
             ["150+", "Stores across Indonesia"],
             ["100%", "Locally crafted"],
           ].map(([n, l]) => (
             <div key={l}>
-              <div className="font-[Archivo] text-2xl font-bold text-accent md:text-3xl">{n}</div>
-              <div className="mt-1 text-[11px] uppercase tracking-widest text-primary-foreground/70">{l}</div>
+              <div className="font-[Archivo] text-2xl font-bold text-[#1a3a2e] md:text-3xl">{n}</div>
+              <div className="mt-1 text-[11px] uppercase tracking-widest text-[#1a3a2e]">{l}</div>
             </div>
           ))}
         </div>

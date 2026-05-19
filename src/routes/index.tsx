@@ -104,7 +104,7 @@ function Hero() {
         </p>
         <div className="mt-10 flex flex-wrap items-center gap-4">
           <Link
-            to="/"
+            to="/catalog"
             className="group inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold uppercase tracking-wider text-accent-foreground transition hover:bg-accent/90"
           >
             Explore the collection
@@ -199,7 +199,7 @@ function Categories() {
             </h2>
           </div>
           <Link
-            to="/"
+            to="/catalog"
             className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-accent hover:text-accent/80"
           >
             Shop all <ArrowUpRight className="h-4 w-4" />

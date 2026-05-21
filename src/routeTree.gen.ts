@@ -9,8 +9,12 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TentsRouteImport } from './routes/tents'
+import { Route as FootwearRouteImport } from './routes/footwear'
 import { Route as CatalogRouteImport } from './routes/catalog'
 import { Route as CarriersRouteImport } from './routes/carriers'
+import { Route as ApparelRouteImport } from './routes/apparel'
+import { Route as AccessoriesRouteImport } from './routes/accessories'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
@@ -24,6 +28,16 @@ import { Route as AdminAttributesRouteImport } from './routes/admin/attributes'
 import { Route as AdminProductsNewRouteImport } from './routes/admin/products.new'
 import { Route as AdminProductsIdEditRouteImport } from './routes/admin/products.$id.edit'
 
+const TentsRoute = TentsRouteImport.update({
+  id: '/tents',
+  path: '/tents',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FootwearRoute = FootwearRouteImport.update({
+  id: '/footwear',
+  path: '/footwear',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CatalogRoute = CatalogRouteImport.update({
   id: '/catalog',
   path: '/catalog',
@@ -32,6 +46,16 @@ const CatalogRoute = CatalogRouteImport.update({
 const CarriersRoute = CarriersRouteImport.update({
   id: '/carriers',
   path: '/carriers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApparelRoute = ApparelRouteImport.update({
+  id: '/apparel',
+  path: '/apparel',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccessoriesRoute = AccessoriesRouteImport.update({
+  id: '/accessories',
+  path: '/accessories',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -97,8 +121,12 @@ const AdminProductsIdEditRoute = AdminProductsIdEditRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/accessories': typeof AccessoriesRoute
+  '/apparel': typeof ApparelRoute
   '/carriers': typeof CarriersRoute
   '/catalog': typeof CatalogRoute
+  '/footwear': typeof FootwearRoute
+  '/tents': typeof TentsRoute
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
@@ -113,8 +141,12 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/accessories': typeof AccessoriesRoute
+  '/apparel': typeof ApparelRoute
   '/carriers': typeof CarriersRoute
   '/catalog': typeof CatalogRoute
+  '/footwear': typeof FootwearRoute
+  '/tents': typeof TentsRoute
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
@@ -130,8 +162,12 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/accessories': typeof AccessoriesRoute
+  '/apparel': typeof ApparelRoute
   '/carriers': typeof CarriersRoute
   '/catalog': typeof CatalogRoute
+  '/footwear': typeof FootwearRoute
+  '/tents': typeof TentsRoute
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
@@ -148,8 +184,12 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/accessories'
+    | '/apparel'
     | '/carriers'
     | '/catalog'
+    | '/footwear'
+    | '/tents'
     | '/admin/attributes'
     | '/admin/categories'
     | '/admin/forgot-password'
@@ -164,8 +204,12 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/accessories'
+    | '/apparel'
     | '/carriers'
     | '/catalog'
+    | '/footwear'
+    | '/tents'
     | '/admin/attributes'
     | '/admin/categories'
     | '/admin/forgot-password'
@@ -180,8 +224,12 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/accessories'
+    | '/apparel'
     | '/carriers'
     | '/catalog'
+    | '/footwear'
+    | '/tents'
     | '/admin/attributes'
     | '/admin/categories'
     | '/admin/forgot-password'
@@ -197,8 +245,12 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccessoriesRoute: typeof AccessoriesRoute
+  ApparelRoute: typeof ApparelRoute
   CarriersRoute: typeof CarriersRoute
   CatalogRoute: typeof CatalogRoute
+  FootwearRoute: typeof FootwearRoute
+  TentsRoute: typeof TentsRoute
   AdminAttributesRoute: typeof AdminAttributesRoute
   AdminCategoriesRoute: typeof AdminCategoriesRoute
   AdminForgotPasswordRoute: typeof AdminForgotPasswordRoute
@@ -212,6 +264,20 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tents': {
+      id: '/tents'
+      path: '/tents'
+      fullPath: '/tents'
+      preLoaderRoute: typeof TentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/footwear': {
+      id: '/footwear'
+      path: '/footwear'
+      fullPath: '/footwear'
+      preLoaderRoute: typeof FootwearRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/catalog': {
       id: '/catalog'
       path: '/catalog'
@@ -224,6 +290,20 @@ declare module '@tanstack/react-router' {
       path: '/carriers'
       fullPath: '/carriers'
       preLoaderRoute: typeof CarriersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/apparel': {
+      id: '/apparel'
+      path: '/apparel'
+      fullPath: '/apparel'
+      preLoaderRoute: typeof ApparelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/accessories': {
+      id: '/accessories'
+      path: '/accessories'
+      fullPath: '/accessories'
+      preLoaderRoute: typeof AccessoriesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -329,8 +409,12 @@ const AdminProductsRouteWithChildren = AdminProductsRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccessoriesRoute: AccessoriesRoute,
+  ApparelRoute: ApparelRoute,
   CarriersRoute: CarriersRoute,
   CatalogRoute: CatalogRoute,
+  FootwearRoute: FootwearRoute,
+  TentsRoute: TentsRoute,
   AdminAttributesRoute: AdminAttributesRoute,
   AdminCategoriesRoute: AdminCategoriesRoute,
   AdminForgotPasswordRoute: AdminForgotPasswordRoute,
@@ -344,3 +428,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

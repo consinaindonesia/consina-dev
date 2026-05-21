@@ -3,9 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   Package,
-  MessageSquare,
   Store,
-  Languages,
   FolderPlus,
   PackagePlus,
   ExternalLink,

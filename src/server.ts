@@ -1,8 +1,14 @@
-// Worker entry placeholder. The TanStack Start Vite plugin generates the
-// real SSR handler at build time; this file exists only because
-// wrangler.jsonc still references it as `main`.
+import {
+  createStartHandler,
+  defaultStreamHandler,
+} from "@tanstack/react-start/server";
+
+// createStartHandler returns a callable handler. Wrap it as `{ fetch }`
+// so platforms like Vercel that expect a Web-style `fetch` export pick it up.
+const handler = createStartHandler({
+  handler: defaultStreamHandler,
+});
+
 export default {
-  async fetch(): Promise<Response> {
-    return new Response("Not Found", { status: 404 });
-  },
+  fetch: (request: Request) => handler(request),
 };

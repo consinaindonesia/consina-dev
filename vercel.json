@@ -3,9 +3,9 @@
   "framework": null,
   "buildCommand": "npm run build",
   "installCommand": "npm install",
-  "outputDirectory": ".output/public",
-  "cleanUrls": true,
+  "outputDirectory": "dist/client",
   "rewrites": [
-    { "source": "/((?!api/|_build/|assets/|.*\\.).*)", "destination": "/index.html" }
+    { "source": "/assets/(.*)", "destination": "/assets/$1" },
+    { "source": "/(.*)", "destination": "/api/server" }
   ]
 }

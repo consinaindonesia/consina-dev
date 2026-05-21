@@ -360,6 +360,7 @@ export function ProductForm(props: ProductFormProps) {
       void logActivity(profile?.id ?? null, "created", data.id);
       toast.success("Product created");
       setInitialSnapshot(JSON.stringify(values));
+      try { localStorage.removeItem(draftKey); } catch { /* ignore */ }
       if (opts.andNew) {
         setValues(EMPTY);
         setInitialSnapshot(JSON.stringify(EMPTY));
@@ -381,6 +382,7 @@ export function ProductForm(props: ProductFormProps) {
       void logActivity(profile?.id ?? null, "updated", productId);
       toast.success("Product saved");
       setInitialSnapshot(JSON.stringify(values));
+      try { localStorage.removeItem(draftKey); } catch { /* ignore */ }
       if (opts.andNew) {
         navigate({ to: "/admin/products/new" });
       }

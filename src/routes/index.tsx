@@ -47,9 +47,12 @@ const categories = [
   { name: "Accessories", slug: "accessories", filter: "Camping & Cookware", desc: "Bottles, headlamps, compasses, and more", img: catAccessories },
 ] as const;
 
-const featured = [...products]
-  .sort((a, b) => b.discount - a.discount)
-  .slice(0, 8);
+const bestsellers = [
+  { name: "Centurion 60L Carrier", desc: "Less-contact back system for long expeditions", price: "IDR 1,850,000", img: prodCenturion },
+  { name: "Raptor 45L Carrier", desc: "Day-to-weekend hiking companion", price: "IDR 1,250,000", img: prodRaptor },
+  { name: "Stratus 2P Tent", desc: "Lightweight 2-person shelter, 4-season rated", price: "IDR 2,100,000", img: prodStratus },
+  { name: "Trailwind Jacket", desc: "Wind-resistant, water-repellent shell", price: "IDR 850,000", img: prodTrailwind },
+] as const;
 
 const stores = [
   { city: "Jakarta", addr: "Pasar Baru Flagship", phone: "+62 21 345 6789" },

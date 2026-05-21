@@ -178,6 +178,8 @@ export function ProductForm(props: ProductFormProps) {
           name_id: data.name_id ?? "",
           description_en: data.description_en ?? "",
           description_id: data.description_id ?? "",
+          short_description_en: (data as { short_description_en?: string | null }).short_description_en ?? "",
+          short_description_id: (data as { short_description_id?: string | null }).short_description_id ?? "",
           price_idr: data.price_idr ?? 0,
           capacity: data.capacity ?? "",
           weight_grams: data.weight_grams,

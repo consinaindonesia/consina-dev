@@ -63,6 +63,24 @@ function greeting(d: Date) {
   return "Good evening";
 }
 
+const ID_DAYS = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+const ID_MONTHS = [
+  "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+  "Juli", "Agustus", "September", "Oktober", "November", "Desember",
+];
+
+function formatDate(d: Date, lang: "en" | "id") {
+  if (lang === "id") {
+    return `${ID_DAYS[d.getDay()]}, ${d.getDate()} ${ID_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  }
+  return d.toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
 function timeAgo(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
   const m = Math.floor(diff / 60000);
@@ -80,12 +98,7 @@ function AdminHome() {
   const { profile } = useAdminAuth();
   const firstName = profile?.full_name?.split(" ")[0] ?? "Admin";
   const now = useMemo(() => new Date(), []);
-  const dateLabel = now.toLocaleDateString(undefined, {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  const dateLabel = formatDate(now, profile?.preferred_language ?? "en");
 
   const [stats, setStats] = useState<StatState>({
     totalProducts: 0,

@@ -1,0 +1,23 @@
+# Consina
+
+> Consina is an Indonesian outdoor lifestyle brand, founded in Jakarta in 1999, designing and selling gear for hikers, campers, climbers, and trail runners across the archipelago.
+
+Consina designs and sells outdoor equipment built and tested for Indonesia's tropical, volcanic, and high-altitude terrain. Products include backpack carriers (35L–100L), tents and shelters (1P–6P+), technical apparel, hiking footwear, and outdoor accessories. The brand operates more than 80 retail stores across Indonesia and runs a "Responsible Trekker" community focused on leaving trails better than they were found.
+
+## Pages
+
+- [Homepage](https://consina-website.lovable.app/): Brand overview, featured products, community, and store locator
+- [Carriers](https://consina-website.lovable.app/carriers): Hiking backpacks and carriers from 35L to 100L
+- [Tents & Shelter](https://consina-website.lovable.app/tents): Tents from solo bivvies to 6+ person expedition shelters
+- [Apparel](https://consina-website.lovable.app/apparel): Jackets, pants, shirts, and base layers for the trail
+- [Footwear](https://consina-website.lovable.app/footwear): Hiking boots, trail runners, and trekking sandals
+- [Accessories](https://consina-website.lovable.app/accessories): Bottles, headlamps, navigation, cooking, and safety gear
+- [Store Locator](https://consina-website.lovable.app/stores): 80+ Consina retail locations across Indonesia
+
+## Key facts
+
+- Founded: 1999 in Jakarta, Indonesia
+- Categories: Carriers, Tents & Shelter, Apparel, Footwear, Accessories
+- Retail footprint: 80+ stores across Indonesia (Jakarta, West/Central/East Java, Bali, Sumatra, Kalimantan, Sulawesi, Eastern Indonesia)
+- Community: "Responsible Trekker" — environmental stewardship for outdoor adventurers
+- Contact: hello@consina.com

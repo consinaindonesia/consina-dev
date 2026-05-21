@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TentsRouteImport } from './routes/tents'
 import { Route as StoresRouteImport } from './routes/stores'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as FootwearRouteImport } from './routes/footwear'
 import { Route as CatalogRouteImport } from './routes/catalog'
 import { Route as CarriersRouteImport } from './routes/carriers'
@@ -37,6 +38,11 @@ const TentsRoute = TentsRouteImport.update({
 const StoresRoute = StoresRouteImport.update({
   id: '/stores',
   path: '/stores',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FootwearRoute = FootwearRouteImport.update({
@@ -132,6 +138,7 @@ export interface FileRoutesByFullPath {
   '/carriers': typeof CarriersRoute
   '/catalog': typeof CatalogRoute
   '/footwear': typeof FootwearRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
   '/admin/attributes': typeof AdminAttributesRoute
@@ -153,6 +160,7 @@ export interface FileRoutesByTo {
   '/carriers': typeof CarriersRoute
   '/catalog': typeof CatalogRoute
   '/footwear': typeof FootwearRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
   '/admin/attributes': typeof AdminAttributesRoute
@@ -175,6 +183,7 @@ export interface FileRoutesById {
   '/carriers': typeof CarriersRoute
   '/catalog': typeof CatalogRoute
   '/footwear': typeof FootwearRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
   '/admin/attributes': typeof AdminAttributesRoute
@@ -198,6 +207,7 @@ export interface FileRouteTypes {
     | '/carriers'
     | '/catalog'
     | '/footwear'
+    | '/sitemap.xml'
     | '/stores'
     | '/tents'
     | '/admin/attributes'
@@ -219,6 +229,7 @@ export interface FileRouteTypes {
     | '/carriers'
     | '/catalog'
     | '/footwear'
+    | '/sitemap.xml'
     | '/stores'
     | '/tents'
     | '/admin/attributes'
@@ -240,6 +251,7 @@ export interface FileRouteTypes {
     | '/carriers'
     | '/catalog'
     | '/footwear'
+    | '/sitemap.xml'
     | '/stores'
     | '/tents'
     | '/admin/attributes'
@@ -262,6 +274,7 @@ export interface RootRouteChildren {
   CarriersRoute: typeof CarriersRoute
   CatalogRoute: typeof CatalogRoute
   FootwearRoute: typeof FootwearRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StoresRoute: typeof StoresRoute
   TentsRoute: typeof TentsRoute
   AdminAttributesRoute: typeof AdminAttributesRoute
@@ -289,6 +302,13 @@ declare module '@tanstack/react-router' {
       path: '/stores'
       fullPath: '/stores'
       preLoaderRoute: typeof StoresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/footwear': {
@@ -434,6 +454,7 @@ const rootRouteChildren: RootRouteChildren = {
   CarriersRoute: CarriersRoute,
   CatalogRoute: CatalogRoute,
   FootwearRoute: FootwearRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   StoresRoute: StoresRoute,
   TentsRoute: TentsRoute,
   AdminAttributesRoute: AdminAttributesRoute,
@@ -449,13 +470,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

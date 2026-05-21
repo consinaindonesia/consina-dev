@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowRight, ArrowUpRight, MapPin, Mountain, Leaf, Users, Mail, Phone } from "lucide-react";
+import { ArrowRight, ArrowUpRight, MapPin, Mountain, Leaf, Users, Mail, Phone, ChevronDown } from "lucide-react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,17 +19,88 @@ import prodRaptor from "@/assets/prod-raptor.jpg";
 import prodStratus from "@/assets/prod-stratus.jpg";
 import prodTrailwind from "@/assets/prod-trailwind.jpg";
 
+const SITE_URL = "https://consina-website.lovable.app";
+
+const faqs = [
+  {
+    q: "What does Consina sell?",
+    a: "Consina sells outdoor gear designed for Indonesian adventurers: backpack carriers (35L–100L), tents and shelters, technical apparel like jackets and pants, hiking footwear, and outdoor accessories such as bottles, headlamps, and trekking poles.",
+  },
+  {
+    q: "Where is Consina based?",
+    a: "Consina is headquartered in Jakarta, Indonesia, and has been designing outdoor gear in the country since 1999.",
+  },
+  {
+    q: "Are Consina products made in Indonesia?",
+    a: "Yes. Consina products are designed in Jakarta and locally crafted in Indonesia, then tested on trails across the archipelago.",
+  },
+  {
+    q: "How can I find a Consina store near me?",
+    a: "Consina operates more than 80 retail stores across Indonesia. You can use the Store Locator at /stores to search by city, province, or region — from Jakarta to Bali, Sumatra to Sulawesi.",
+  },
+  {
+    q: "Does Consina have a community program?",
+    a: "Yes. The 'Responsible Trekker' community brings together hikers, climbers, and campers across Indonesia who share one promise: leave the trail better than you found it.",
+  },
+];
+
+const organizationLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Consina",
+  url: SITE_URL,
+  logo: `${SITE_URL}/favicon.ico`,
+  foundingDate: "1999",
+  description:
+    "Indonesian outdoor lifestyle brand designing carriers, tents, apparel, footwear and accessories since 1999.",
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Jakarta",
+    addressCountry: "ID",
+  },
+  contactPoint: [
+    {
+      "@type": "ContactPoint",
+      contactType: "customer support",
+      email: "hello@consina.com",
+      telephone: "+62-21-345-6789",
+      areaServed: "ID",
+    },
+  ],
+  sameAs: [
+    "https://www.instagram.com/consinaindonesia",
+    "https://www.facebook.com/consinaindonesia",
+  ],
+};
+
+const faqLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
+  })),
+};
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Consina — The Outdoor Lifestyle | Inspired by Experience" },
+      { title: "Consina — The Outdoor Lifestyle | Indonesian Outdoor Gear Since 1999" },
       {
         name: "description",
-        content: "Indonesian outdoor gear since 1999 — backpack carriers, tents, apparel, footwear and accessories built for the archipelago's adventurers.",
+        content: "Indonesian outdoor gear since 1999 — carriers, tents, apparel, footwear and accessories built for the archipelago's adventurers.",
       },
       { property: "og:title", content: "Consina — The Outdoor Lifestyle" },
       { property: "og:description", content: "Indonesian outdoor gear since 1999. Inspired by experience." },
-      { property: "og:image", content: hero },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: `${SITE_URL}/` },
+      { property: "og:image", content: `${SITE_URL}${hero}` },
+    ],
+    links: [{ rel: "canonical", href: `${SITE_URL}/` }],
+    scripts: [
+      { type: "application/ld+json", children: JSON.stringify(organizationLd) },
+      { type: "application/ld+json", children: JSON.stringify(faqLd) },
     ],
   }),
   component: HomePage,
@@ -66,13 +137,16 @@ function HomePage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Nav />
-      <Hero />
-      <BrandStory />
-      <Categories />
-      <FeaturedProducts />
-      <Community />
-      <StoreLocator />
-      <ContactSection />
+      <main>
+        <Hero />
+        <BrandStory />
+        <Categories />
+        <FeaturedProducts />
+        <Community />
+        <StoreLocator />
+        <FAQSection />
+        <ContactSection />
+      </main>
       <Footer />
     </div>
   );
@@ -401,6 +475,63 @@ function StoreLocator() {
 
 /* ---------- Contact ---------- */
 function ContactSection() {
+  return <ContactSectionInner />;
+}
+
+/* ---------- FAQ ---------- */
+function FAQSection() {
+  const [open, setOpen] = useState<number | null>(0);
+  return (
+    <section className="bg-background py-24 md:py-32" aria-labelledby="faq-heading">
+      <div className="mx-auto max-w-3xl px-4 md:px-8">
+        <div className="text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">FAQ</p>
+          <h2
+            id="faq-heading"
+            className="mt-3 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl"
+          >
+            Frequently Asked Questions
+          </h2>
+          <p className="mt-3 text-base text-muted-foreground">
+            Quick answers about Consina, our products, and our community.
+          </p>
+        </div>
+
+        <ul className="mt-12 divide-y divide-border border-y border-border">
+          {faqs.map((f, i) => {
+            const isOpen = open === i;
+            return (
+              <li key={f.q}>
+                <button
+                  type="button"
+                  aria-expanded={isOpen}
+                  onClick={() => setOpen(isOpen ? null : i)}
+                  className="flex w-full items-center justify-between gap-4 py-5 text-left"
+                >
+                  <h3 className="font-[Archivo] text-base font-bold text-primary md:text-lg">
+                    {f.q}
+                  </h3>
+                  <ChevronDown
+                    className={`h-5 w-5 shrink-0 text-primary transition-transform ${
+                      isOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+                {isOpen && (
+                  <p className="pb-5 pr-10 text-sm leading-relaxed text-muted-foreground md:text-base">
+                    {f.a}
+                  </p>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+function ContactSectionInner() {
   const subjects = ["Product Question", "Wholesale Inquiry", "Press & Media", "Career", "Other"] as const;
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");

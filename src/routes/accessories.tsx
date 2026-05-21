@@ -11,13 +11,47 @@ import catFootwear from "@/assets/cat-footwear.jpg";
 import prodCenturion from "@/assets/prod-centurion.jpg";
 import prodRaptor from "@/assets/prod-raptor.jpg";
 
+const SITE_URL = "https://consina-website.lovable.app";
+const PAGE_URL = `${SITE_URL}/accessories`;
+
 export const Route = createFileRoute("/accessories")({
   head: () => ({
     meta: [
-      { title: "Accessories — Consina | Outdoor Gear & Essentials" },
-      { name: "description", content: "Shop Consina accessories — water bottles, headlamps, compasses, and more for your next adventure." },
-      { property: "og:title", content: "Accessories — Consina" },
-      { property: "og:description", content: "Water bottles, headlamps, compasses, and more." },
+      { title: "Outdoor Accessories — Bottles, Headlamps, Tools | Consina" },
+      { name: "description", content: "Shop Consina outdoor accessories — water bottles, headlamps, compasses, trekking poles, cooking gear, and more." },
+      { property: "og:title", content: "Outdoor Accessories | Consina" },
+      { property: "og:description", content: "Bottles, headlamps, compasses, trekking poles, and more." },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: PAGE_URL },
+      { property: "og:image", content: `${SITE_URL}${hero}` },
+    ],
+    links: [{ rel: "canonical", href: PAGE_URL }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          name: "Consina Accessories",
+          itemListElement: products.map((p, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            item: {
+              "@type": "Product",
+              name: p.name,
+              description: p.desc,
+              brand: { "@type": "Brand", name: "Consina" },
+              category: "Outdoor Accessories",
+              offers: {
+                "@type": "Offer",
+                price: p.price.replace(/[^0-9]/g, ""),
+                priceCurrency: "IDR",
+                availability: "https://schema.org/InStock",
+              },
+            },
+          })),
+        }),
+      },
     ],
   }),
   component: AccessoriesPage,
@@ -47,10 +81,12 @@ function AccessoriesPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Nav />
-      <PageHeader />
-      <FilterBar />
-      <ProductGrid />
-      <RelatedCategories />
+      <main>
+        <PageHeader />
+        <FilterBar />
+        <ProductGrid />
+        <RelatedCategories />
+      </main>
       <Footer />
     </div>
   );

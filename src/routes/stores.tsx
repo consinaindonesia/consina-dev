@@ -4,13 +4,43 @@ import { Search, MapPin, Phone, Clock, Navigation } from "lucide-react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 
+const SITE_URL = "https://consina-website.lovable.app";
+const PAGE_URL = `${SITE_URL}/stores`;
+
 export const Route = createFileRoute("/stores")({
   head: () => ({
     meta: [
-      { title: "Find a Store — Consina | Store Locator" },
+      { title: "Find a Consina Store — 80+ Locations Across Indonesia" },
       { name: "description", content: "Find a Consina store near you. More than 80 stores across Indonesia — from Jakarta to Bali, Sumatra to Sulawesi." },
-      { property: "og:title", content: "Find a Store — Consina" },
+      { property: "og:title", content: "Find a Consina Store" },
       { property: "og:description", content: "More than 80 Consina stores across Indonesia." },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: PAGE_URL },
+    ],
+    links: [{ rel: "canonical", href: PAGE_URL }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": stores.map((s) => ({
+            "@type": "LocalBusiness",
+            name: s.name,
+            telephone: s.phone,
+            openingHours: s.hours,
+            address: {
+              "@type": "PostalAddress",
+              streetAddress: s.street,
+              addressLocality: s.city,
+              addressRegion: s.province,
+              postalCode: s.postal,
+              addressCountry: "ID",
+            },
+            areaServed: s.region,
+            parentOrganization: { "@type": "Organization", name: "Consina" },
+          })),
+        }),
+      },
     ],
   }),
   component: StoresPage,
@@ -161,9 +191,11 @@ function StoresPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Nav />
-      <PageHeader search={search} onSearch={setSearch} />
-      <RegionTabs active={activeRegion} onChange={setActiveRegion} counts={regionCounts} />
-      <StoreList stores={filtered} />
+      <main>
+        <PageHeader search={search} onSearch={setSearch} />
+        <RegionTabs active={activeRegion} onChange={setActiveRegion} counts={regionCounts} />
+        <StoreList stores={filtered} />
+      </main>
       <Footer />
     </div>
   );

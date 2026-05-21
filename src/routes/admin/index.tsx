@@ -25,6 +25,7 @@ export const Route = createFileRoute("/admin/")({
 type StatState = {
   totalProducts: number;
   productsAddedInRange: number;
+  productsMissingTranslations: number;
   newInquiries: number;
   inquiriesInRange: number;
   lastInquiryAt: string | null;
@@ -141,6 +142,7 @@ function AdminHome() {
   const [stats, setStats] = useState<StatState>({
     totalProducts: 0,
     productsAddedInRange: 0,
+    productsMissingTranslations: 0,
     newInquiries: 0,
     inquiriesInRange: 0,
     lastInquiryAt: null,
@@ -168,6 +170,7 @@ function AdminHome() {
     const [
       productsCount,
       productsAddedInRange,
+      productsMissing,
       newInq,
       inquiriesInRange,
       lastInq,
@@ -178,6 +181,10 @@ function AdminHome() {
     ] = await Promise.all([
       supabase.from("products").select("id", { count: "exact", head: true }).eq("is_active", true),
       productsAddedQuery,
+      supabase
+        .from("products")
+        .select("id", { count: "exact", head: true })
+        .or("name_id.eq.,name_en.eq."),
       supabase.from("inquiries").select("id", { count: "exact", head: true }).eq("status", "new"),
       inquiriesInRangeQuery,
       supabase.from("inquiries").select("created_at").order("created_at", { ascending: false }).limit(1).maybeSingle(),
@@ -203,6 +210,7 @@ function AdminHome() {
     setStats({
       totalProducts: productsCount.count ?? 0,
       productsAddedInRange: productsAddedInRange.count ?? 0,
+      productsMissingTranslations: productsMissing.count ?? 0,
       newInquiries: newInq.count ?? 0,
       inquiriesInRange: inquiriesInRange.count ?? 0,
       lastInquiryAt: (lastInq.data as { created_at: string } | null)?.created_at ?? null,

@@ -12,6 +12,7 @@ import catFootwear from "@/assets/cat-footwear.jpg";
 import catAccessories from "@/assets/cat-accessories.jpg";
 import community from "@/assets/community.jpg";
 import story from "@/assets/story.jpg";
+import storyHiker from "@/assets/story-hiker.jpg";
 import prod1 from "@/assets/prod-1.jpg";
 import prod2 from "@/assets/prod-2.jpg";
 import prod3 from "@/assets/prod-3.jpg";

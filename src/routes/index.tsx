@@ -113,10 +113,10 @@ function Hero() {
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
           <Link
-            to="/"
+            to="/stores"
             className="inline-flex items-center gap-2 rounded-full border border-primary-foreground/30 px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-primary-foreground/10"
           >
-            Our story
+            Find a Store
           </Link>
         </div>
         <div className="mt-16 grid max-w-2xl grid-cols-3 gap-6 border-t border-primary-foreground/20 pt-6 text-[#1a3a2e]">
@@ -219,8 +219,7 @@ function CategoryCard({ cat }: { cat: typeof categories[number] }) {
   const stats = catStats(cat.filter);
   return (
     <Link
-      to="/c/$slug"
-      params={{ slug: cat.slug }}
+      to={`/${cat.slug}`}
       className="group flex aspect-square flex-col overflow-hidden rounded-xl border border-[#d4b896] bg-background transition duration-300 hover:-translate-y-1 hover:shadow-lg"
     >
       {/* Image area — top 60% */}
@@ -372,7 +371,7 @@ function StoreLocator() {
             counter near every trailhead. Swing by — our staff are hikers too.
           </p>
           <Link
-            to="/"
+            to="/stores"
             className="mt-8 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-secondary"
           >
             <MapPin className="h-4 w-4" /> All stores

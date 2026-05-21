@@ -1,6 +1,5 @@
-import {
-  createStartHandler,
-  defaultStreamHandler,
-} from "@tanstack/react-start/server";
+import { createServer } from "@tanstack/react-start/server";
+import start from "./start";
 
-export default createStartHandler(defaultStreamHandler);
+const server = createServer(start);
+server.listen(3005);

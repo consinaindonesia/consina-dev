@@ -293,6 +293,8 @@ export function ProductForm(props: ProductFormProps) {
       name_id: values.name_id.trim() || values.name_en.trim(),
       description_en: values.description_en || null,
       description_id: values.description_id || null,
+      short_description_en: values.short_description_en || null,
+      short_description_id: values.short_description_id || null,
       price_idr: values.price_idr,
       capacity: values.capacity || null,
       weight_grams: values.weight_grams,

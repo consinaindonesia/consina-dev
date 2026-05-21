@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { supabase } from "@/integrations/supabase/client";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
-import { translateProductFields } from "@/lib/translate.functions";
+import { translateText } from "@/lib/translate.functions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -145,7 +145,8 @@ export function ProductForm(props: ProductFormProps) {
   // Translations tab UI state
   const [translationView, setTranslationView] = useState<"both" | "id" | "en">("both");
   const [translating, setTranslating] = useState<"to_en" | "to_id" | null>(null);
-  const callTranslate = useServerFn(translateProductFields);
+  const [aiFlags, setAiFlags] = useState<Record<string, boolean>>({});
+  const callTranslate = useServerFn(translateText);
 
   // Draft restore banner
   const draftKey = `product-draft:${mode === "edit" ? productId : "new"}`;
@@ -290,6 +291,20 @@ export function ProductForm(props: ProductFormProps) {
 
   function setField<K extends keyof ProductFormValues>(k: K, v: ProductFormValues[K]) {
     setValues((p) => ({ ...p, [k]: v }));
+  }
+
+  // Wrapped setter for human edits — clears the AI-translated badge for that field.
+  function setFieldByUser<K extends keyof ProductFormValues>(
+    k: K,
+    v: ProductFormValues[K],
+  ) {
+    setField(k, v);
+    setAiFlags((p) => {
+      if (!p[k as string]) return p;
+      const next = { ...p };
+      delete next[k as string];
+      return next;
+    });
   }
 
   function validate(): boolean {
@@ -664,7 +679,8 @@ export function ProductForm(props: ProductFormProps) {
         <TabsContent value="translations" className="pb-32">
           <TranslationsTab
             values={values}
-            setField={setField}
+            setField={setFieldByUser}
+            aiFlags={aiFlags}
             error={errors.name}
             view={translationView}
             setView={setTranslationView}
@@ -672,38 +688,59 @@ export function ProductForm(props: ProductFormProps) {
             onTranslate={async (direction) => {
               setTranslating(direction);
               try {
-                const from = direction === "to_en" ? "id" : "en";
-                const to = direction === "to_en" ? "en" : "id";
-                const out = await callTranslate({
-                  data: {
-                    from,
-                    to,
-                    name: direction === "to_en" ? values.name_id : values.name_en,
-                    short:
+                const sourceLang = direction === "to_en" ? "id" : "en";
+                const targetLang = direction === "to_en" ? "en" : "id";
+                const fields = [
+                  {
+                    contentType: "name" as const,
+                    source: direction === "to_en" ? values.name_id : values.name_en,
+                    targetKey: (direction === "to_en" ? "name_en" : "name_id") as keyof ProductFormValues,
+                  },
+                  {
+                    contentType: "short_description" as const,
+                    source:
                       direction === "to_en"
                         ? values.short_description_id
                         : values.short_description_en,
-                    full:
+                    targetKey: (direction === "to_en"
+                      ? "short_description_en"
+                      : "short_description_id") as keyof ProductFormValues,
+                  },
+                  {
+                    contentType: "description" as const,
+                    source:
                       direction === "to_en"
                         ? values.description_id
                         : values.description_en,
+                    targetKey: (direction === "to_en"
+                      ? "description_en"
+                      : "description_id") as keyof ProductFormValues,
                   },
-                });
-                setValues((p) => ({
-                  ...p,
-                  ...(direction === "to_en"
-                    ? {
-                        name_en: out.name,
-                        short_description_en: out.short,
-                        description_en: out.full,
-                      }
-                    : {
-                        name_id: out.name,
-                        short_description_id: out.short,
-                        description_id: out.full,
-                      }),
-                }));
-                toast.success("Translation ready — please review");
+                ];
+                let translated = 0;
+                const newFlags: Record<string, boolean> = {};
+                for (const f of fields) {
+                  const text = (f.source ?? "").trim();
+                  if (!text) continue;
+                  const out = await callTranslate({
+                    data: {
+                      sourceText: f.source,
+                      sourceLang,
+                      targetLang,
+                      contentType: f.contentType,
+                      productId: mode === "edit" ? productId : null,
+                    },
+                  });
+                  setField(f.targetKey, out.translation as ProductFormValues[typeof f.targetKey]);
+                  newFlags[f.targetKey as string] = true;
+                  translated++;
+                }
+                if (translated === 0) {
+                  toast.error("Nothing to translate — fill in the source language first.");
+                } else {
+                  setAiFlags((p) => ({ ...p, ...newFlags }));
+                  toast.success(`Translated ${translated} field${translated === 1 ? "" : "s"} — please review`);
+                }
               } catch (e) {
                 toast.error(e instanceof Error ? e.message : "Translation failed");
               } finally {
@@ -849,11 +886,13 @@ function LangColumn({
   values,
   setField,
   tint,
+  aiFlags,
 }: {
   lang: "id" | "en";
   values: ProductFormValues;
   setField: <K extends keyof ProductFormValues>(k: K, v: ProductFormValues[K]) => void;
   tint: string;
+  aiFlags: Record<string, boolean>;
 }) {
   const isID = lang === "id";
   const nameKey = isID ? "name_id" : "name_en";
@@ -873,7 +912,10 @@ function LangColumn({
 
       <div className="space-y-4">
         <div className="space-y-1.5">
-          <Label>Product Name</Label>
+          <div className="flex items-center gap-2">
+            <Label>Product Name</Label>
+            {aiFlags[nameKey] && <AiBadge />}
+          </div>
           <Input
             value={values[nameKey]}
             onChange={(e) => setField(nameKey, e.target.value)}
@@ -883,7 +925,10 @@ function LangColumn({
 
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <Label>Short Description</Label>
+            <div className="flex items-center gap-2">
+              <Label>Short Description</Label>
+              {aiFlags[shortKey] && <AiBadge />}
+            </div>
             <span
               className={
                 shortVal.length > SHORT_MAX
@@ -908,7 +953,10 @@ function LangColumn({
         </div>
 
         <div className="space-y-1.5">
-          <Label>Full Description</Label>
+          <div className="flex items-center gap-2">
+            <Label>Full Description</Label>
+            {aiFlags[descKey] && <AiBadge />}
+          </div>
           <RichTextEditor
             value={values[descKey]}
             onChange={(html) => setField(descKey, html)}
@@ -922,9 +970,19 @@ function LangColumn({
   );
 }
 
+function AiBadge() {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-violet-700">
+      <Sparkles className="h-2.5 w-2.5" />
+      AI-translated
+    </span>
+  );
+}
+
 function TranslationsTab({
   values,
   setField,
+  aiFlags,
   error,
   view,
   setView,
@@ -933,6 +991,7 @@ function TranslationsTab({
 }: {
   values: ProductFormValues;
   setField: <K extends keyof ProductFormValues>(k: K, v: ProductFormValues[K]) => void;
+  aiFlags: Record<string, boolean>;
   error?: string;
   view: "both" | "id" | "en";
   setView: (v: "both" | "id" | "en") => void;
@@ -1008,6 +1067,7 @@ function TranslationsTab({
             values={values}
             setField={setField}
             tint="rgba(239, 246, 244, 0.6)"
+            aiFlags={aiFlags}
           />
         )}
         {view === "both" && (
@@ -1019,6 +1079,7 @@ function TranslationsTab({
             values={values}
             setField={setField}
             tint="rgba(243, 244, 246, 0.6)"
+            aiFlags={aiFlags}
           />
         )}
       </div>

@@ -5,7 +5,9 @@
   "installCommand": "npm install",
   "outputDirectory": "dist/client",
   "rewrites": [
-    { "source": "/assets/(.*)", "destination": "/assets/$1" },
-    { "source": "/(.*)", "destination": "/api/server" }
+    {
+      "source": "/((?!assets/|api/|.*\\.(?:css|js|mjs|map|ico|png|jpg|jpeg|gif|svg|webp|avif|woff|woff2|ttf|eot|txt|xml|json|webmanifest)).*)",
+      "destination": "/api/server"
+    }
   ]
 }

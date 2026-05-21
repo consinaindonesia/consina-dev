@@ -186,14 +186,31 @@ export function ProductForm(props: ProductFormProps) {
       .then(({ data, error }) => {
         if (cancelled) return;
         if (error) return;
-        const defs: AttributeDef[] = (data ?? [])
+        type Row = {
+          is_required: boolean;
+          attribute: {
+            id: string;
+            slug: string;
+            name_id: string;
+            name_en: string;
+            type: string;
+            unit: string | null;
+            options: unknown;
+          } | null;
+        };
+        const defs: AttributeDef[] = (data as unknown as Row[] | null ?? [])
           .map((row) => {
-            const a = (row as { attribute: AttributeDef | null }).attribute;
+            const a = row.attribute;
             if (!a) return null;
             return {
-              ...a,
+              id: a.id,
+              slug: a.slug,
+              name_id: a.name_id,
+              name_en: a.name_en,
+              type: (a.type as AttributeDef["type"]),
+              unit: a.unit,
               options: Array.isArray(a.options) ? (a.options as string[]) : [],
-              is_required: (row as { is_required: boolean }).is_required,
+              is_required: row.is_required,
             };
           })
           .filter((x): x is AttributeDef => x !== null);

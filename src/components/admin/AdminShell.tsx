@@ -166,7 +166,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       </div>
 
       <nav className="flex-1 overflow-y-auto px-3 py-2">
-        <ul className="space-y-1">
+        <ul className="space-y-2">
           {visibleItems.map((item) => {
             const active =
               item.to === "/admin" ? pathname === "/admin" : pathname.startsWith(item.to);

@@ -314,45 +314,43 @@ function FeaturedProducts() {
 /* ---------- Community ---------- */
 function Community() {
   return (
-    <section className="relative overflow-hidden">
-      <img
-        src={community}
-        alt="Misty Indonesian rainforest trail"
-        width={1600}
-        height={1000}
-        loading="lazy"
-        className="absolute inset-0 h-full w-full object-cover"
-      />
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/80 to-primary/40" />
-      <div className="relative mx-auto grid max-w-[1280px] gap-10 px-4 py-24 text-primary-foreground md:grid-cols-2 md:px-8 md:py-32">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">
-            #ResponsibleTrekker
+    <section className="bg-[#1a3a2e]">
+      <div className="mx-auto grid max-w-[1280px] items-center gap-10 px-4 py-24 md:grid-cols-2 md:px-8 md:py-32">
+        {/* LEFT COLUMN — Text */}
+        <div className="order-2 md:order-1">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#d4b896]">
+            Our Community
           </p>
-          <h2 className="mt-4 font-[Archivo] text-4xl font-black leading-tight tracking-tight md:text-5xl">
-            A community that leaves the trail better than they found it.
+          <h2 className="mt-4 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-white md:text-5xl">
+            The Responsible Trekker
           </h2>
+          <div className="mt-8 space-y-5 text-base leading-relaxed text-white/85 md:text-lg">
+            <p>
+              We believe outdoor adventure and environmental care are inseparable. That's why our community of hikers, climbers, and campers carry one promise: leave the trail better than you found it.
+            </p>
+            <p>
+              Join thousands of Indonesian adventurers who choose gear that respects the mountains they love.
+            </p>
+          </div>
+          <Link
+            to="/"
+            className="mt-10 inline-flex items-center gap-2 rounded-full bg-[#d4b896] px-6 py-3 text-sm font-semibold uppercase tracking-wider text-[#1a3a2e] transition hover:bg-[#c9a84c]"
+          >
+            Join the Community <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
-        <div className="flex flex-col justify-end gap-6">
-          <p className="text-base leading-relaxed text-primary-foreground/85 md:text-lg">
-            Consina exists because of the people who carry it. We host clean-up
-            climbs, sponsor local guides, and back conservation projects from
-            Sumatra to Papua. Join the movement — share your route, your
-            lessons, your impact.
-          </p>
-          <div className="flex flex-wrap gap-4">
-            <Link
-              to="/"
-              className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold uppercase tracking-wider text-accent-foreground transition hover:bg-accent/90"
-            >
-              Join the community <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              to="/"
-              className="inline-flex items-center gap-2 rounded-full border border-primary-foreground/30 px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-primary-foreground/10"
-            >
-              Read the trekker code
-            </Link>
+
+        {/* RIGHT COLUMN — Image (desktop only) */}
+        <div className="order-1 md:order-2">
+          <div className="overflow-hidden rounded-2xl">
+            <img
+              src={communityCleanup}
+              alt="Group of hikers cleaning up a trail"
+              width={1024}
+              height={1280}
+              loading="lazy"
+              className="h-full w-full object-cover"
+            />
           </div>
         </div>
       </div>

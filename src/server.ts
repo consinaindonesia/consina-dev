@@ -1,5 +1,8 @@
-import { createServer } from "@tanstack/react-start/server";
-import start from "./start";
-
-const server = createServer(start);
-server.listen(3005);
+// Worker entry placeholder. The TanStack Start Vite plugin generates the
+// real SSR handler at build time; this file exists only because
+// wrangler.jsonc still references it as `main`.
+export default {
+  async fetch(): Promise<Response> {
+    return new Response("Not Found", { status: 404 });
+  },
+};

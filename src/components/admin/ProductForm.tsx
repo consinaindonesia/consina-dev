@@ -142,6 +142,16 @@ export function ProductForm(props: ProductFormProps) {
   const [skuCheck, setSkuCheck] = useState<"idle" | "checking" | "ok" | "taken">("idle");
   const [images, setImages] = useState<ProductImage[]>([]);
 
+  // Translations tab UI state
+  const [translationView, setTranslationView] = useState<"both" | "id" | "en">("both");
+  const [translating, setTranslating] = useState<"to_en" | "to_id" | null>(null);
+  const callTranslate = useServerFn(translateProductFields);
+
+  // Draft restore banner
+  const draftKey = `product-draft:${mode === "edit" ? productId : "new"}`;
+  const [draftAvailable, setDraftAvailable] = useState<ProductFormValues | null>(null);
+  const [draftDismissed, setDraftDismissed] = useState(false);
+
   const dirty = JSON.stringify(values) !== initialSnapshot;
 
   // Load categories

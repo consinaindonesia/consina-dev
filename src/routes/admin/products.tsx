@@ -116,7 +116,7 @@ function useDebounced<T>(value: T, ms: number) {
 
 function ProductsPage() {
   const navigate = useNavigate();
-  const { lang: initialLang } = Route.useSearch();
+  const { lang: initialLang = "all" as LangFilter } = Route.useSearch();
 
   // Filters
   const [searchInput, setSearchInput] = useState("");

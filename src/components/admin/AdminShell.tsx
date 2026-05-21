@@ -177,13 +177,13 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 {active && (
                   <span
                     aria-hidden
-                    className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r"
+                    className="absolute left-0 top-2.5 bottom-2.5 w-[3px] rounded-r"
                     style={{ backgroundColor: ACCENT }}
                   />
                 )}
                 <Link
                   to={item.to}
-                  className="flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors duration-200"
+                  className="flex items-center gap-3 rounded-md px-3 py-3 text-sm transition-colors duration-200"
                   style={{
                     backgroundColor: active ? SIDEBAR_ACTIVE : "transparent",
                     fontWeight: active ? 700 : 500,

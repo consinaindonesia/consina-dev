@@ -3,5 +3,13 @@
   "framework": null,
   "buildCommand": "bun run build",
   "installCommand": "bun install",
-  "outputDirectory": ".vercel/output"
+  "outputDirectory": ".output/public",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/api/server" }
+  ],
+  "functions": {
+    "api/server.js": {
+      "runtime": "nodejs20.x"
+    }
+  }
 }

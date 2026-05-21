@@ -9,7 +9,11 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
     if (error != null && typeof error === "object" && "statusCode" in error) {
       throw error;
     }
-    console.error(error);
+    process.stderr.write(
+      "[SSR ERROR] " +
+        (error instanceof Error ? (error.stack ?? error.message) : String(error)) +
+        "\n",
+    );
     return new Response(renderErrorPage(), {
       status: 500,
       headers: { "content-type": "text/html; charset=utf-8" },
@@ -18,5 +22,5 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
 });
 
 export const startInstance = createStart(() => ({
-  requestMiddleware: process.env.PRERENDER_DEBUG ? [] : [errorMiddleware],
+  requestMiddleware: [errorMiddleware],
 }));

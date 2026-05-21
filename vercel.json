@@ -3,9 +3,14 @@
   "framework": null,
   "buildCommand": "npm run build",
   "installCommand": "npm install",
-  "outputDirectory": ".output/public",
-  "cleanUrls": true,
+  "outputDirectory": "dist/client",
+  "functions": {
+    "api/server.mjs": {
+      "runtime": "@vercel/[email protected]"
+    }
+  },
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/assets/(.*)", "destination": "/assets/$1" },
+    { "source": "/(.*)", "destination": "/api/server" }
   ]
 }

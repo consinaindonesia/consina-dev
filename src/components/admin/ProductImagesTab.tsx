@@ -55,6 +55,7 @@ const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp"]);
 export type ProductImage = {
   id: string;
   image_url: string;
+  large_url: string | null;
   thumbnail_url: string | null;
   alt_text_en: string | null;
   alt_text_id: string | null;
@@ -71,47 +72,53 @@ type UploadProgress = {
 
 // --- Image processing -------------------------------------------------------
 
+/**
+ * Generates three variants of an uploaded image:
+ *  - original: resized to max 2000px (preserves source format/quality)
+ *  - large:    resized to max 1200px, quality 0.80
+ *  - thumb:    cover-cropped to 400x400, quality 0.75
+ *
+ * Processing happens in the browser via OffscreenCanvas. The Cloudflare
+ * Worker runtime cannot run sharp (native bindings), so handling it
+ * client-side avoids an extra round-trip and keeps uploads fast.
+ */
 async function processImage(file: File) {
   const bitmap = await createImageBitmap(file);
   const { width, height } = bitmap;
 
-  const maxDim = 2000;
-  const scale = Math.min(1, maxDim / Math.max(width, height));
-  const fw = Math.max(1, Math.round(width * scale));
-  const fh = Math.max(1, Math.round(height * scale));
+  const isPng = file.type === "image/png";
+  const isWebp = file.type === "image/webp";
+  const contentType = isPng ? "image/png" : isWebp ? "image/webp" : "image/jpeg";
+  const ext = isPng ? "png" : isWebp ? "webp" : "jpg";
 
-  const fullCanvas = new OffscreenCanvas(fw, fh);
-  const fctx = fullCanvas.getContext("2d")!;
-  fctx.drawImage(bitmap, 0, 0, fw, fh);
-
-  const TS = 400;
-  const thumbCanvas = new OffscreenCanvas(TS, TS);
-  const tctx = thumbCanvas.getContext("2d")!;
-  const srcSize = Math.min(width, height);
-  const sx = (width - srcSize) / 2;
-  const sy = (height - srcSize) / 2;
-  tctx.drawImage(bitmap, sx, sy, srcSize, srcSize, 0, 0, TS, TS);
-
-  let contentType: string;
-  let ext: string;
-  let quality: number | undefined;
-  if (file.type === "image/png") {
-    contentType = "image/png";
-    ext = "png";
-  } else if (file.type === "image/webp") {
-    contentType = "image/webp";
-    ext = "webp";
-    quality = 0.85;
-  } else {
-    contentType = "image/jpeg";
-    ext = "jpg";
-    quality = 0.85;
+  async function resized(maxDim: number, quality: number) {
+    const scale = Math.min(1, maxDim / Math.max(width, height));
+    const w = Math.max(1, Math.round(width * scale));
+    const h = Math.max(1, Math.round(height * scale));
+    const canvas = new OffscreenCanvas(w, h);
+    canvas.getContext("2d")!.drawImage(bitmap, 0, 0, w, h);
+    // PNG ignores `quality`; pass it harmlessly for JPEG/WebP.
+    return canvas.convertToBlob({ type: contentType, quality: isPng ? undefined : quality });
   }
 
-  const full = await fullCanvas.convertToBlob({ type: contentType, quality });
-  const thumb = await thumbCanvas.convertToBlob({ type: contentType, quality });
+  async function thumbnail(size: number, quality: number) {
+    const canvas = new OffscreenCanvas(size, size);
+    const srcSize = Math.min(width, height);
+    const sx = (width - srcSize) / 2;
+    const sy = (height - srcSize) / 2;
+    canvas
+      .getContext("2d")!
+      .drawImage(bitmap, sx, sy, srcSize, srcSize, 0, 0, size, size);
+    return canvas.convertToBlob({ type: contentType, quality: isPng ? undefined : quality });
+  }
+
+  const [original, large, thumb] = await Promise.all([
+    resized(2000, 0.9),
+    resized(1200, 0.8),
+    thumbnail(400, 0.75),
+  ]);
   bitmap.close();
-  return { full, thumb, ext, contentType };
+  return { original, large, thumb, ext, contentType };
 }
 
 function storagePathFromPublicUrl(url: string): string | null {
@@ -199,32 +206,38 @@ export function ProductImagesTab({
 
     try {
       setProgress(15);
-      const { full, thumb, ext, contentType } = await processImage(file);
-      setProgress(35);
+      const { original, large, thumb, ext, contentType } = await processImage(file);
+      setProgress(30);
 
       const fileId = uuid();
       const safeSku = sku.replace(/[^A-Za-z0-9_-]/g, "_") || productId;
-      const fullPath = `${safeSku}/${fileId}.${ext}`;
-      const thumbPath = `${safeSku}/thumb-${fileId}.${ext}`;
+      const filename = `${fileId}.${ext}`;
+      const originalPath = `${safeSku}/original/${filename}`;
+      const largePath = `${safeSku}/large/${filename}`;
+      const thumbPath = `${safeSku}/thumb/${filename}`;
 
-      const up1 = await supabase.storage
-        .from(BUCKET)
-        .upload(fullPath, full, { contentType, upsert: false });
-      if (up1.error) throw new Error(up1.error.message);
-      setProgress(65);
-
-      const up2 = await supabase.storage
-        .from(BUCKET)
-        .upload(thumbPath, thumb, { contentType, upsert: false });
-      if (up2.error) {
-        // try to clean up the full image
-        await supabase.storage.from(BUCKET).remove([fullPath]);
-        throw new Error(up2.error.message);
+      const uploaded: string[] = [];
+      async function put(path: string, body: Blob) {
+        const { error } = await supabase.storage
+          .from(BUCKET)
+          .upload(path, body, { contentType, upsert: false });
+        if (error) {
+          if (uploaded.length) await supabase.storage.from(BUCKET).remove(uploaded);
+          throw new Error(error.message);
+        }
+        uploaded.push(path);
       }
+
+      await put(originalPath, original);
+      setProgress(55);
+      await put(largePath, large);
+      setProgress(75);
+      await put(thumbPath, thumb);
       setProgress(85);
 
-      const { data: pub1 } = supabase.storage.from(BUCKET).getPublicUrl(fullPath);
-      const { data: pub2 } = supabase.storage.from(BUCKET).getPublicUrl(thumbPath);
+      const { data: pubOriginal } = supabase.storage.from(BUCKET).getPublicUrl(originalPath);
+      const { data: pubLarge } = supabase.storage.from(BUCKET).getPublicUrl(largePath);
+      const { data: pubThumb } = supabase.storage.from(BUCKET).getPublicUrl(thumbPath);
 
       // Next sort_order
       const nextOrder = images.length + uploads.filter((u) => !u.error && u.percent === 100).length;
@@ -234,13 +247,14 @@ export function ProductImagesTab({
 
       const { error: insertErr } = await supabase.from("product_images").insert({
         product_id: productId,
-        image_url: pub1.publicUrl,
-        thumbnail_url: pub2.publicUrl,
+        image_url: pubOriginal.publicUrl,
+        large_url: pubLarge.publicUrl,
+        thumbnail_url: pubThumb.publicUrl,
         sort_order: nextOrder,
         is_primary: isFirst,
       });
       if (insertErr) {
-        await supabase.storage.from(BUCKET).remove([fullPath, thumbPath]);
+        await supabase.storage.from(BUCKET).remove(uploaded);
         throw new Error(insertErr.message);
       }
 
@@ -322,9 +336,9 @@ export function ProductImagesTab({
     const img = deleteTarget;
     setDeleteTarget(null);
 
-    const fullPath = storagePathFromPublicUrl(img.image_url);
-    const thumbPath = img.thumbnail_url ? storagePathFromPublicUrl(img.thumbnail_url) : null;
-    const paths = [fullPath, thumbPath].filter((p): p is string => !!p);
+    const paths = [img.image_url, img.large_url, img.thumbnail_url]
+      .map((u) => (u ? storagePathFromPublicUrl(u) : null))
+      .filter((p): p is string => !!p);
     if (paths.length) {
       await supabase.storage.from(BUCKET).remove(paths);
     }

@@ -218,6 +218,7 @@ export type Database = {
           id: string
           image_url: string
           is_primary: boolean
+          large_url: string | null
           product_id: string
           sort_order: number
           thumbnail_url: string | null
@@ -228,6 +229,7 @@ export type Database = {
           id?: string
           image_url: string
           is_primary?: boolean
+          large_url?: string | null
           product_id: string
           sort_order?: number
           thumbnail_url?: string | null
@@ -238,6 +240,7 @@ export type Database = {
           id?: string
           image_url?: string
           is_primary?: boolean
+          large_url?: string | null
           product_id?: string
           sort_order?: number
           thumbnail_url?: string | null

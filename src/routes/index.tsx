@@ -218,7 +218,7 @@ function CategoryCard({ cat }: { cat: typeof categories[number] }) {
     <Link
       to="/c/$slug"
       params={{ slug: cat.slug }}
-      className="group flex flex-col overflow-hidden rounded-xl border border-[#d4b896] bg-background transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+      className="group flex aspect-square flex-col overflow-hidden rounded-xl border border-[#d4b896] bg-background transition duration-300 hover:-translate-y-1 hover:shadow-lg"
     >
       {/* Image area — top 60% */}
       <div className="relative h-[60%] overflow-hidden">

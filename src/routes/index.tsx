@@ -34,8 +34,8 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-function catStats(cat: string) {
-  const items = products.filter((p) => p.category === cat);
+function catStats(filter: string) {
+  const items = products.filter((p) => p.category === filter);
   const max = items.length ? Math.max(...items.map((i) => i.discount)) : 0;
   return { count: items.length, max };
 }

@@ -18,5 +18,5 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
 });
 
 export const startInstance = createStart(() => ({
-  requestMiddleware: [errorMiddleware],
+  requestMiddleware: process.env.PRERENDER_DEBUG ? [] : [errorMiddleware],
 }));

@@ -263,6 +263,8 @@ export type Database = {
           name_en: string
           name_id: string
           price_idr: number
+          short_description_en: string | null
+          short_description_id: string | null
           sku: string
           stock_status: string
           updated_at: string
@@ -281,6 +283,8 @@ export type Database = {
           name_en: string
           name_id: string
           price_idr?: number
+          short_description_en?: string | null
+          short_description_id?: string | null
           sku: string
           stock_status?: string
           updated_at?: string
@@ -299,6 +303,8 @@ export type Database = {
           name_en?: string
           name_id?: string
           price_idr?: number
+          short_description_en?: string | null
+          short_description_id?: string | null
           sku?: string
           stock_status?: string
           updated_at?: string

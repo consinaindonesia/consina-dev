@@ -256,6 +256,38 @@ export function ProductForm(props: ProductFormProps) {
     return () => window.removeEventListener("beforeunload", handler);
   }, [dirty]);
 
+  // Check for an autosaved draft on mount / when loading finishes
+  useEffect(() => {
+    if (loading) return;
+    try {
+      const raw = localStorage.getItem(draftKey);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as { savedAt: number; values: ProductFormValues };
+      // Ignore drafts that match the just-loaded state
+      if (JSON.stringify(parsed.values) === JSON.stringify(values)) return;
+      setDraftAvailable(parsed.values);
+    } catch {
+      /* ignore */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
+
+  // Autosave to localStorage every 30s when dirty
+  useEffect(() => {
+    if (!dirty) return;
+    const t = setInterval(() => {
+      try {
+        localStorage.setItem(
+          draftKey,
+          JSON.stringify({ savedAt: Date.now(), values }),
+        );
+      } catch {
+        /* ignore quota */
+      }
+    }, 30000);
+    return () => clearInterval(t);
+  }, [dirty, values, draftKey]);
+
   function setField<K extends keyof ProductFormValues>(k: K, v: ProductFormValues[K]) {
     setValues((p) => ({ ...p, [k]: v }));
   }

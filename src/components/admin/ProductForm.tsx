@@ -886,11 +886,13 @@ function LangColumn({
   values,
   setField,
   tint,
+  aiFlags,
 }: {
   lang: "id" | "en";
   values: ProductFormValues;
   setField: <K extends keyof ProductFormValues>(k: K, v: ProductFormValues[K]) => void;
   tint: string;
+  aiFlags: Record<string, boolean>;
 }) {
   const isID = lang === "id";
   const nameKey = isID ? "name_id" : "name_en";
@@ -910,7 +912,10 @@ function LangColumn({
 
       <div className="space-y-4">
         <div className="space-y-1.5">
-          <Label>Product Name</Label>
+          <div className="flex items-center gap-2">
+            <Label>Product Name</Label>
+            {aiFlags[nameKey] && <AiBadge />}
+          </div>
           <Input
             value={values[nameKey]}
             onChange={(e) => setField(nameKey, e.target.value)}
@@ -920,7 +925,10 @@ function LangColumn({
 
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <Label>Short Description</Label>
+            <div className="flex items-center gap-2">
+              <Label>Short Description</Label>
+              {aiFlags[shortKey] && <AiBadge />}
+            </div>
             <span
               className={
                 shortVal.length > SHORT_MAX
@@ -945,7 +953,10 @@ function LangColumn({
         </div>
 
         <div className="space-y-1.5">
-          <Label>Full Description</Label>
+          <div className="flex items-center gap-2">
+            <Label>Full Description</Label>
+            {aiFlags[descKey] && <AiBadge />}
+          </div>
           <RichTextEditor
             value={values[descKey]}
             onChange={(html) => setField(descKey, html)}
@@ -959,9 +970,19 @@ function LangColumn({
   );
 }
 
+function AiBadge() {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-violet-700">
+      <Sparkles className="h-2.5 w-2.5" />
+      AI-translated
+    </span>
+  );
+}
+
 function TranslationsTab({
   values,
   setField,
+  aiFlags,
   error,
   view,
   setView,
@@ -970,6 +991,7 @@ function TranslationsTab({
 }: {
   values: ProductFormValues;
   setField: <K extends keyof ProductFormValues>(k: K, v: ProductFormValues[K]) => void;
+  aiFlags: Record<string, boolean>;
   error?: string;
   view: "both" | "id" | "en";
   setView: (v: "both" | "id" | "en") => void;
@@ -1045,6 +1067,7 @@ function TranslationsTab({
             values={values}
             setField={setField}
             tint="rgba(239, 246, 244, 0.6)"
+            aiFlags={aiFlags}
           />
         )}
         {view === "both" && (
@@ -1056,6 +1079,7 @@ function TranslationsTab({
             values={values}
             setField={setField}
             tint="rgba(243, 244, 246, 0.6)"
+            aiFlags={aiFlags}
           />
         )}
       </div>

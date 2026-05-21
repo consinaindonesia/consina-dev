@@ -561,3 +561,30 @@ function StockBadge({ status }: { status: string }) {
   if (status === "out_of_stock") return <Badge className="bg-red-100 text-red-700 hover:bg-red-100">Out</Badge>;
   return <Badge variant="secondary">{status}</Badge>;
 }
+
+function NameCell({ row }: { row: ProductRow }) {
+  const hasId = !!row.name_id?.trim();
+  const hasEn = !!row.name_en?.trim();
+
+  if (!hasId && !hasEn) {
+    return <p className="font-semibold text-red-600">(Unnamed product)</p>;
+  }
+
+  if (hasId && hasEn) {
+    return (
+      <>
+        <p className="truncate font-semibold text-foreground">{row.name_en}</p>
+        <p className="truncate text-xs text-muted-foreground">{row.name_id}</p>
+      </>
+    );
+  }
+
+  const primary = hasEn ? row.name_en : row.name_id;
+  const missingLabel = hasEn ? "Missing ID" : "Missing EN";
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <p className="truncate font-semibold text-foreground">{primary}</p>
+      <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100">{missingLabel}</Badge>
+    </div>
+  );
+}

@@ -6,11 +6,15 @@ import { logLoginAttempt } from "@/hooks/use-admin-auth";
 
 export const Route = createFileRoute("/admin/login")({
   head: () => ({ meta: [{ title: "Admin Sign In — Consina" }, { name: "robots", content: "noindex" }] }),
+  validateSearch: (search: Record<string, unknown>) => ({
+    reset: search.reset === "1" || search.reset === 1 ? "1" : undefined,
+  }),
   component: LoginPage,
 });
 
 function LoginPage() {
   const navigate = useNavigate();
+  const { reset } = Route.useSearch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -87,6 +91,16 @@ function LoginPage() {
         <p className="mt-1 text-center text-sm text-muted-foreground">
           Internal use only. Authorized staff only.
         </p>
+
+        {reset === "1" && !error && (
+          <div
+            role="status"
+            className="mt-5 rounded-md px-3 py-2 text-sm"
+            style={{ backgroundColor: "#eef6ef", color: "#1a3a2e", border: "1px solid #c7e0ca" }}
+          >
+            Password updated. Please sign in with your new password.
+          </div>
+        )}
 
         {error && (
           <div

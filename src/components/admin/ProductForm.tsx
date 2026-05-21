@@ -619,45 +619,55 @@ export function ProductForm(props: ProductFormProps) {
 
         {/* TRANSLATIONS */}
         <TabsContent value="translations" className="pb-32">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <Card title="English">
-              <Field label="Name (EN)">
-                <Input
-                  value={values.name_en}
-                  onChange={(e) => setField("name_en", e.target.value)}
-                  placeholder="Centaurus 60L Carrier"
-                />
-              </Field>
-              <Field label="Description (EN)">
-                <Textarea
-                  rows={8}
-                  value={values.description_en}
-                  onChange={(e) => setField("description_en", e.target.value)}
-                  placeholder="Built for multi-day expeditions…"
-                />
-              </Field>
-            </Card>
-            <Card title="Bahasa Indonesia">
-              <Field label="Nama (ID)">
-                <Input
-                  value={values.name_id}
-                  onChange={(e) => setField("name_id", e.target.value)}
-                  placeholder="Tas Carrier Centaurus 60L"
-                />
-              </Field>
-              <Field label="Deskripsi (ID)">
-                <Textarea
-                  rows={8}
-                  value={values.description_id}
-                  onChange={(e) => setField("description_id", e.target.value)}
-                  placeholder="Dirancang untuk ekspedisi…"
-                />
-              </Field>
-            </Card>
-          </div>
-          {errors.name && (
-            <p className="mt-3 text-sm text-destructive">{errors.name}</p>
-          )}
+          <TranslationsTab
+            values={values}
+            setField={setField}
+            error={errors.name}
+            view={translationView}
+            setView={setTranslationView}
+            translating={translating}
+            onTranslate={async (direction) => {
+              setTranslating(direction);
+              try {
+                const from = direction === "to_en" ? "id" : "en";
+                const to = direction === "to_en" ? "en" : "id";
+                const out = await callTranslate({
+                  data: {
+                    from,
+                    to,
+                    name: direction === "to_en" ? values.name_id : values.name_en,
+                    short:
+                      direction === "to_en"
+                        ? values.short_description_id
+                        : values.short_description_en,
+                    full:
+                      direction === "to_en"
+                        ? values.description_id
+                        : values.description_en,
+                  },
+                });
+                setValues((p) => ({
+                  ...p,
+                  ...(direction === "to_en"
+                    ? {
+                        name_en: out.name,
+                        short_description_en: out.short,
+                        description_en: out.full,
+                      }
+                    : {
+                        name_id: out.name,
+                        short_description_id: out.short,
+                        description_id: out.full,
+                      }),
+                }));
+                toast.success("Translation ready — please review");
+              } catch (e) {
+                toast.error(e instanceof Error ? e.message : "Translation failed");
+              } finally {
+                setTranslating(null);
+              }
+            }}
+          />
         </TabsContent>
 
         {/* IMAGES */}

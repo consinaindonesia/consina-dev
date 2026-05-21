@@ -150,7 +150,7 @@ function buildTree(cats: Category[]) {
 }
 
 function CategoriesPage() {
-  const { user } = useAdminAuth();
+  const { profile } = useAdminAuth();
   const [categories, setCategories] = useState<Category[]>([]);
   const [counts, setCounts] = useState<Counts>({});
   const [loading, setLoading] = useState(true);
@@ -305,7 +305,7 @@ function CategoriesPage() {
       if (i >= 0) insertIdx = i;
     }
     siblings.splice(insertIdx, 0, { ...cat, parent_category_id: newParent });
-    const updates: Array<Promise<unknown>> = [];
+    const updates: Array<PromiseLike<unknown>> = [];
     siblings.forEach((s, i) => {
       if (s.id === cat.id) {
         updates.push(
@@ -445,9 +445,9 @@ function CategoriesPage() {
         savedId = data.id;
       }
       // Activity log
-      if (user?.adminId) {
+      if (profile?.id) {
         await supabase.from("activity_log").insert({
-          admin_user_id: user.adminId,
+          admin_user_id: profile.id,
           action: form.id ? "updated" : "created",
           entity_type: "category",
           entity_id: savedId,
@@ -484,9 +484,9 @@ function CategoriesPage() {
       toast.error(error.message);
       return;
     }
-    if (user?.adminId) {
+    if (profile?.id) {
       await supabase.from("activity_log").insert({
-        admin_user_id: user.adminId,
+        admin_user_id: profile.id,
         action: "deleted",
         entity_type: "category",
         entity_id: form.id,

@@ -36,6 +36,12 @@ import {
 
 export const Route = createFileRoute("/admin/products")({
   head: () => ({ meta: [{ title: "Products — Admin" }, { name: "robots", content: "noindex" }] }),
+  validateSearch: (s: Record<string, unknown>) => {
+    const v = s.lang;
+    const lang: LangFilter =
+      v === "id_only" || v === "en_only" || v === "both" || v === "missing" ? v : "all";
+    return { lang };
+  },
   component: ProductsPage,
 });
 
@@ -89,6 +95,7 @@ function useDebounced<T>(value: T, ms: number) {
 
 function ProductsPage() {
   const navigate = useNavigate();
+  const { lang: initialLang } = Route.useSearch();
 
   // Filters
   const [searchInput, setSearchInput] = useState("");
@@ -96,7 +103,12 @@ function ProductsPage() {
   const [category, setCategory] = useState<string>("all");
   const [status, setStatus] = useState<StatusFilter>("all");
   const [stock, setStock] = useState<StockFilter>("all");
-  const [lang, setLang] = useState<LangFilter>("all");
+  const [lang, setLang] = useState<LangFilter>(initialLang);
+
+  // Keep state in sync if URL changes (e.g. dashboard link with ?lang=missing)
+  useEffect(() => {
+    setLang(initialLang);
+  }, [initialLang]);
 
   // Pagination
   const [page, setPage] = useState(1);
@@ -458,16 +470,8 @@ function ProductsPage() {
                       <td className="px-3 py-3">
                         <div className="flex items-center gap-2">
                           <div className="min-w-0">
-                            <p className="truncate font-semibold text-foreground">
-                              {r.name_en || r.name_id || "Untitled"}
-                            </p>
-                            {r.name_id && r.name_en && (
-                              <p className="truncate text-xs text-muted-foreground">{r.name_id}</p>
-                            )}
+                            <NameCell row={r} />
                           </div>
-                          {missingLang && (
-                            <AlertTriangle className="h-4 w-4 flex-shrink-0 text-orange-500" aria-label="Missing translation" />
-                          )}
                         </div>
                       </td>
                       <td className="px-3 py-3 font-mono text-xs text-muted-foreground">{r.sku}</td>

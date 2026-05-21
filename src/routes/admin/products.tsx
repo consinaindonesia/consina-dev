@@ -1,9 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   Package,
-  AlertTriangle,
   MoreHorizontal,
   ChevronRight,
   ChevronLeft,
@@ -36,6 +35,12 @@ import {
 
 export const Route = createFileRoute("/admin/products")({
   head: () => ({ meta: [{ title: "Products — Admin" }, { name: "robots", content: "noindex" }] }),
+  validateSearch: (s: Record<string, unknown>) => {
+    const v = s.lang;
+    const lang: LangFilter =
+      v === "id_only" || v === "en_only" || v === "both" || v === "missing" ? v : "all";
+    return { lang };
+  },
   component: ProductsPage,
 });
 
@@ -89,6 +94,7 @@ function useDebounced<T>(value: T, ms: number) {
 
 function ProductsPage() {
   const navigate = useNavigate();
+  const { lang: initialLang } = Route.useSearch();
 
   // Filters
   const [searchInput, setSearchInput] = useState("");
@@ -96,7 +102,12 @@ function ProductsPage() {
   const [category, setCategory] = useState<string>("all");
   const [status, setStatus] = useState<StatusFilter>("all");
   const [stock, setStock] = useState<StockFilter>("all");
-  const [lang, setLang] = useState<LangFilter>("all");
+  const [lang, setLang] = useState<LangFilter>(initialLang);
+
+  // Keep state in sync if URL changes (e.g. dashboard link with ?lang=missing)
+  useEffect(() => {
+    setLang(initialLang);
+  }, [initialLang]);
 
   // Pagination
   const [page, setPage] = useState(1);
@@ -430,7 +441,6 @@ function ProductsPage() {
               </thead>
               <tbody>
                 {rows.map((r) => {
-                  const missingLang = !r.name_id?.trim() || !r.name_en?.trim();
                   return (
                     <tr
                       key={r.id}
@@ -458,16 +468,8 @@ function ProductsPage() {
                       <td className="px-3 py-3">
                         <div className="flex items-center gap-2">
                           <div className="min-w-0">
-                            <p className="truncate font-semibold text-foreground">
-                              {r.name_en || r.name_id || "Untitled"}
-                            </p>
-                            {r.name_id && r.name_en && (
-                              <p className="truncate text-xs text-muted-foreground">{r.name_id}</p>
-                            )}
+                            <NameCell row={r} />
                           </div>
-                          {missingLang && (
-                            <AlertTriangle className="h-4 w-4 flex-shrink-0 text-orange-500" aria-label="Missing translation" />
-                          )}
                         </div>
                       </td>
                       <td className="px-3 py-3 font-mono text-xs text-muted-foreground">{r.sku}</td>
@@ -556,4 +558,31 @@ function StockBadge({ status }: { status: string }) {
   if (status === "low_stock") return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Low</Badge>;
   if (status === "out_of_stock") return <Badge className="bg-red-100 text-red-700 hover:bg-red-100">Out</Badge>;
   return <Badge variant="secondary">{status}</Badge>;
+}
+
+function NameCell({ row }: { row: ProductRow }) {
+  const hasId = !!row.name_id?.trim();
+  const hasEn = !!row.name_en?.trim();
+
+  if (!hasId && !hasEn) {
+    return <p className="font-semibold text-red-600">(Unnamed product)</p>;
+  }
+
+  if (hasId && hasEn) {
+    return (
+      <>
+        <p className="truncate font-semibold text-foreground">{row.name_en}</p>
+        <p className="truncate text-xs text-muted-foreground">{row.name_id}</p>
+      </>
+    );
+  }
+
+  const primary = hasEn ? row.name_en : row.name_id;
+  const missingLabel = hasEn ? "Missing ID" : "Missing EN";
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <p className="truncate font-semibold text-foreground">{primary}</p>
+      <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100">{missingLabel}</Badge>
+    </div>
+  );
 }

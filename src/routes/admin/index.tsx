@@ -24,8 +24,9 @@ export const Route = createFileRoute("/admin/")({
 
 type StatState = {
   totalProducts: number;
-  addedThisMonth: number;
+  productsAddedInRange: number;
   newInquiries: number;
+  inquiriesInRange: number;
   lastInquiryAt: string | null;
   activeStores: number;
   regionCount: number;
@@ -94,16 +95,54 @@ function timeAgo(iso: string) {
   return new Date(iso).toLocaleDateString();
 }
 
+type RangeKey = "today" | "week" | "month" | "all";
+
+const RANGE_OPTIONS: { key: RangeKey; label: string }[] = [
+  { key: "today", label: "Today" },
+  { key: "week", label: "This Week" },
+  { key: "month", label: "This Month" },
+  { key: "all", label: "All Time" },
+];
+
+function rangeStart(key: RangeKey, now: Date): Date | null {
+  if (key === "all") return null;
+  const d = new Date(now);
+  if (key === "today") {
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+  if (key === "week") {
+    const day = d.getDay(); // 0=Sun
+    const diff = (day + 6) % 7; // Monday-based week
+    d.setDate(d.getDate() - diff);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+  // month
+  return new Date(now.getFullYear(), now.getMonth(), 1);
+}
+
+function rangeWord(key: RangeKey) {
+  switch (key) {
+    case "today": return "today";
+    case "week": return "this week";
+    case "month": return "this month";
+    case "all": return "all time";
+  }
+}
+
 function AdminHome() {
   const { profile } = useAdminAuth();
   const firstName = profile?.full_name?.split(" ")[0] ?? "Admin";
   const now = useMemo(() => new Date(), []);
   const dateLabel = formatDate(now, profile?.preferred_language ?? "en");
+  const [range, setRange] = useState<RangeKey>("month");
 
   const [stats, setStats] = useState<StatState>({
     totalProducts: 0,
-    addedThisMonth: 0,
+    productsAddedInRange: 0,
     newInquiries: 0,
+    inquiriesInRange: 0,
     lastInquiryAt: null,
     activeStores: 0,
     regionCount: 0,
@@ -113,12 +152,24 @@ function AdminHome() {
   const [activity, setActivity] = useState<ActivityRow[]>([]);
 
   async function loadAll() {
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const start = rangeStart(range, now);
+    const startIso = start ? start.toISOString() : null;
+
+    const productsAddedQuery = supabase
+      .from("products")
+      .select("id", { count: "exact", head: true });
+    if (startIso) productsAddedQuery.gte("created_at", startIso);
+
+    const inquiriesInRangeQuery = supabase
+      .from("inquiries")
+      .select("id", { count: "exact", head: true });
+    if (startIso) inquiriesInRangeQuery.gte("created_at", startIso);
 
     const [
       productsCount,
-      addedThisMonth,
+      productsAddedInRange,
       newInq,
+      inquiriesInRange,
       lastInq,
       storesActive,
       storesRegions,
@@ -126,8 +177,9 @@ function AdminHome() {
       recentProducts,
     ] = await Promise.all([
       supabase.from("products").select("id", { count: "exact", head: true }).eq("is_active", true),
-      supabase.from("products").select("id", { count: "exact", head: true }).gte("created_at", monthStart),
+      productsAddedQuery,
       supabase.from("inquiries").select("id", { count: "exact", head: true }).eq("status", "new"),
+      inquiriesInRangeQuery,
       supabase.from("inquiries").select("created_at").order("created_at", { ascending: false }).limit(1).maybeSingle(),
       supabase.from("stores").select("id", { count: "exact", head: true }).eq("is_active", true),
       supabase.from("stores").select("region").eq("is_active", true),
@@ -150,8 +202,9 @@ function AdminHome() {
 
     setStats({
       totalProducts: productsCount.count ?? 0,
-      addedThisMonth: addedThisMonth.count ?? 0,
+      productsAddedInRange: productsAddedInRange.count ?? 0,
       newInquiries: newInq.count ?? 0,
+      inquiriesInRange: inquiriesInRange.count ?? 0,
       lastInquiryAt: (lastInq.data as { created_at: string } | null)?.created_at ?? null,
       activeStores: storesActive.count ?? 0,
       regionCount: regions.size,
@@ -241,7 +294,7 @@ function AdminHome() {
       void supabase.removeChannel(ch);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile?.role]);
+  }, [profile?.role, range]);
 
   return (
     <AdminShell>
@@ -254,16 +307,37 @@ function AdminHome() {
       </header>
 
       {/* Quick stats */}
-      <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-8 flex items-end justify-between gap-4">
+        <h2 className="font-[Archivo] text-lg font-bold text-primary">Overview</h2>
+        <label className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="uppercase tracking-wider">Range</span>
+          <select
+            value={range}
+            onChange={(e) => setRange(e.target.value as RangeKey)}
+            className="rounded-md border border-border bg-card px-2 py-1.5 text-xs font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-secondary"
+          >
+            {RANGE_OPTIONS.map((o) => (
+              <option key={o.key} value={o.key}>{o.label}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <section className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Total Products"
           value={stats.totalProducts}
-          sub={`${stats.addedThisMonth} added this month`}
+          sub={`${stats.productsAddedInRange} added ${rangeWord(range)}`}
         />
         <StatCard
           label="New Inquiries"
           value={stats.newInquiries}
-          sub={stats.lastInquiryAt ? `Last inquiry: ${timeAgo(stats.lastInquiryAt)}` : "No inquiries yet"}
+          sub={
+            range === "all"
+              ? stats.lastInquiryAt
+                ? `Last inquiry: ${timeAgo(stats.lastInquiryAt)}`
+                : "No inquiries yet"
+              : `${stats.inquiriesInRange} received ${rangeWord(range)}`
+          }
           dot={stats.newInquiries > 0}
         />
         <StatCard

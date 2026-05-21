@@ -221,7 +221,7 @@ function CategoryCard({ cat }: { cat: typeof categories[number] }) {
       className="group flex flex-col overflow-hidden rounded-xl border border-[#d4b896] bg-background transition duration-300 hover:-translate-y-1 hover:shadow-lg"
     >
       {/* Image area — top 60% */}
-      <div className="relative aspect-[4/3] overflow-hidden">
+      <div className="relative h-[60%] overflow-hidden">
         <img
           src={cat.img}
           alt={cat.name}
@@ -236,7 +236,7 @@ function CategoryCard({ cat }: { cat: typeof categories[number] }) {
       </div>
 
       {/* Text area — bottom 40% */}
-      <div className="flex flex-1 flex-col justify-between p-4">
+      <div className="flex h-[40%] flex-col justify-between p-4">
         <div>
           <h3 className="font-[Archivo] text-lg font-bold tracking-tight text-primary">
             {cat.name}

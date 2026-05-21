@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { supabase } from "@/integrations/supabase/client";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
-import { translateProductFields } from "@/lib/translate.functions";
+import { translateText } from "@/lib/translate.functions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -145,7 +145,8 @@ export function ProductForm(props: ProductFormProps) {
   // Translations tab UI state
   const [translationView, setTranslationView] = useState<"both" | "id" | "en">("both");
   const [translating, setTranslating] = useState<"to_en" | "to_id" | null>(null);
-  const callTranslate = useServerFn(translateProductFields);
+  const [aiFlags, setAiFlags] = useState<Record<string, boolean>>({});
+  const callTranslate = useServerFn(translateText);
 
   // Draft restore banner
   const draftKey = `product-draft:${mode === "edit" ? productId : "new"}`;
@@ -290,6 +291,20 @@ export function ProductForm(props: ProductFormProps) {
 
   function setField<K extends keyof ProductFormValues>(k: K, v: ProductFormValues[K]) {
     setValues((p) => ({ ...p, [k]: v }));
+  }
+
+  // Wrapped setter for human edits — clears the AI-translated badge for that field.
+  function setFieldByUser<K extends keyof ProductFormValues>(
+    k: K,
+    v: ProductFormValues[K],
+  ) {
+    setField(k, v);
+    setAiFlags((p) => {
+      if (!p[k as string]) return p;
+      const next = { ...p };
+      delete next[k as string];
+      return next;
+    });
   }
 
   function validate(): boolean {

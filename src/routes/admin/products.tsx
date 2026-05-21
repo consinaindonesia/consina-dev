@@ -721,13 +721,60 @@ function ProductsPage() {
           <div className="h-4 w-px bg-primary-foreground/30" />
           <button onClick={() => bulkSetActive(true)} className="text-xs font-semibold hover:underline">Activate</button>
           <button onClick={() => bulkSetActive(false)} className="text-xs font-semibold hover:underline">Deactivate</button>
-          <button onClick={() => toast.info("Change category coming soon")} className="text-xs font-semibold hover:underline">Change category...</button>
-          <button onClick={() => toast.info("Export coming soon")} className="text-xs font-semibold hover:underline">Export selected</button>
-          <button onClick={bulkDelete} className="text-xs font-semibold text-red-300 hover:underline">Delete selected</button>
+          <button onClick={() => { setNewCategoryId(""); setChangeCategoryOpen(true); }} className="text-xs font-semibold hover:underline">Change category...</button>
+          <button onClick={bulkExport} className="text-xs font-semibold hover:underline">Export selected</button>
+          <button onClick={() => setDeleteDialogOpen(true)} className="text-xs font-semibold text-red-300 hover:underline">Delete selected</button>
           <div className="h-4 w-px bg-primary-foreground/30" />
           <button onClick={() => setSelected(new Set())} className="text-xs opacity-75 hover:opacity-100">Cancel</button>
         </div>
       )}
+
+      {/* Delete confirmation */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Permanently delete {selected.size} product{selected.size === 1 ? "" : "s"}?
+            </AlertDialogTitle>
+            <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={bulkDeleteConfirmed}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Change category dialog */}
+      <Dialog open={changeCategoryOpen} onOpenChange={setChangeCategoryOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change category</DialogTitle>
+            <DialogDescription>
+              Move {selected.size} selected product{selected.size === 1 ? "" : "s"} to a new category.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-2">
+            <Select value={newCategoryId} onValueChange={setNewCategoryId}>
+              <SelectTrigger><SelectValue placeholder="Choose a category..." /></SelectTrigger>
+              <SelectContent>
+                {categories.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>{c.name_en}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setChangeCategoryOpen(false)}>Cancel</Button>
+            <Button onClick={applyChangeCategory} disabled={!newCategoryId}>Apply</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminShell>
   );
 }

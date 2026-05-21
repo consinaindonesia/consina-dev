@@ -4,11 +4,6 @@
   "buildCommand": "npm run build",
   "installCommand": "npm install",
   "outputDirectory": "dist/client",
-  "functions": {
-    "api/server.mjs": {
-      "runtime": "@vercel/[email protected]"
-    }
-  },
   "rewrites": [
     { "source": "/assets/(.*)", "destination": "/assets/$1" },
     { "source": "/(.*)", "destination": "/api/server" }

@@ -186,70 +186,67 @@ function BrandStory() {
 /* ---------- Categories ---------- */
 function Categories() {
   return (
-    <section className="bg-primary py-24 text-primary-foreground md:py-32">
+    <section className="bg-background py-24 md:py-32">
       <div className="mx-auto max-w-[1280px] px-4 md:px-8">
-        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">
-              Collections
-            </p>
-            <h2 className="mt-3 max-w-2xl font-[Archivo] text-4xl font-black leading-tight tracking-tight md:text-5xl">
-              Five categories.<br />One promise: gear you can trust.
-            </h2>
-          </div>
-          <Link
-            to="/catalog"
-            className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-accent hover:text-accent/80"
-          >
-            Shop all <ArrowUpRight className="h-4 w-4" />
-          </Link>
+        {/* Section heading */}
+        <div className="text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">
+            Explore
+          </p>
+          <h2 className="mt-3 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl">
+            Shop by Category
+          </h2>
+          <p className="mt-3 text-base text-muted-foreground">
+            Built for every adventure, made in Indonesia
+          </p>
         </div>
-        <div className="mt-14 grid gap-4 md:grid-cols-6 md:grid-rows-2">
-          {/* Tall: Carriers */}
-          <CategoryCard className="md:col-span-2 md:row-span-2 md:h-[640px]" cat={categories[0]} />
-          {/* Tall: Tents */}
-          <CategoryCard className="md:col-span-2 md:row-span-2 md:h-[640px]" cat={categories[1]} />
-          {/* Wide row */}
-          <CategoryCard className="md:col-span-2 md:h-[312px]" cat={categories[2]} />
-          <CategoryCard className="md:col-span-1 md:h-[312px]" cat={categories[3]} />
-          <CategoryCard className="md:col-span-1 md:h-[312px]" cat={categories[4]} />
+
+        {/* Cards grid */}
+        <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+          {categories.map((cat) => (
+            <CategoryCard key={cat.slug} cat={cat} />
+          ))}
         </div>
       </div>
     </section>
   );
 }
 
-function CategoryCard({ cat, className = "" }: { cat: typeof categories[number]; className?: string }) {
-  const stats = catStats(cat.name);
+function CategoryCard({ cat }: { cat: typeof categories[number] }) {
+  const stats = catStats(cat.filter);
   return (
     <Link
-      to="/catalog"
-      hash={catSlug(cat.name)}
-      className={`group relative block h-72 overflow-hidden rounded-sm bg-secondary ${className}`}
+      to="/c/$slug"
+      params={{ slug: cat.slug }}
+      className="group flex flex-col overflow-hidden rounded-xl border border-[#d4b896] bg-background transition duration-300 hover:-translate-y-1 hover:shadow-lg"
     >
-      <img
-        src={cat.img}
-        alt={cat.name}
-        loading="lazy"
-        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-primary/85 via-primary/20 to-transparent" />
-      {stats.max > 0 && (
-        <span className="absolute left-4 top-4 rounded-full bg-accent px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-accent-foreground">
-          Up to {stats.max}% off
-        </span>
-      )}
-      <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-5 md:p-7">
+      {/* Image area — top 60% */}
+      <div className="relative aspect-[4/3] overflow-hidden">
+        <img
+          src={cat.img}
+          alt={cat.name}
+          loading="lazy"
+          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+        />
+        {stats.max > 0 && (
+          <span className="absolute left-3 top-3 rounded-full bg-[#1a3a2e] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+            Up to {stats.max}% off
+          </span>
+        )}
+      </div>
+
+      {/* Text area — bottom 40% */}
+      <div className="flex flex-1 flex-col justify-between p-4">
         <div>
-          <h3 className="font-[Archivo] text-2xl font-black tracking-tight text-primary-foreground md:text-3xl">
+          <h3 className="font-[Archivo] text-lg font-bold tracking-tight text-primary">
             {cat.name}
           </h3>
-          <p className="mt-1 text-xs uppercase tracking-widest text-accent">
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
             {cat.desc}{stats.count ? ` · ${stats.count} items` : ""}
           </p>
         </div>
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground transition group-hover:rotate-45">
-          <ArrowUpRight className="h-4 w-4" />
+        <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-[#1a3a2e] transition group-hover:gap-2">
+          Explore <ArrowRight className="h-3.5 w-3.5" />
         </span>
       </div>
     </Link>

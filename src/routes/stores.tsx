@@ -284,7 +284,7 @@ function StoreCard({ store }: { store: Store }) {
         <h3 className="font-[Archivo] text-base font-bold leading-snug text-primary">
           {store.name}
         </h3>
-        <span className="shrink-1 rounded-full bg-accent/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#8b7355]">
+        <span className="shrink-0 rounded-full bg-accent/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#8b7355]">
           {store.region}
         </span>
       </div>

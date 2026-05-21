@@ -39,14 +39,12 @@ function catStats(cat: string) {
   const max = items.length ? Math.max(...items.map((i) => i.discount)) : 0;
   return { count: items.length, max };
 }
-const catSlug = (s: string) =>
-  s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 const categories = [
-  { name: "Bags & Carriers", desc: "Daypack to 70L expedition", img: catCarriers },
-  { name: "Tents & Shelter", desc: "Shelter for every altitude", img: catTents },
-  { name: "Apparel", desc: "Layers built for the trail", img: catApparel },
-  { name: "Footwear", desc: "Trekking, trail & sandals", img: catFootwear },
-  { name: "Camping & Cookware", desc: "BBQ, coffee, chairs & tables", img: catAccessories },
+  { name: "Carriers", slug: "carriers", filter: "Bags & Carriers", desc: "Backpacks 40–100L for every adventure", img: catCarriers },
+  { name: "Tents & Shelter", slug: "tents", filter: "Tents & Shelter", desc: "From solo overnighters to group expeditions", img: catTents },
+  { name: "Apparel", slug: "apparel", filter: "Apparel", desc: "Jackets, pants, and shirts for the trail", img: catApparel },
+  { name: "Footwear", slug: "footwear", filter: "Footwear", desc: "Trekking shoes built for Indonesian terrain", img: catFootwear },
+  { name: "Accessories", slug: "accessories", filter: "Camping & Cookware", desc: "Bottles, headlamps, compasses, and more", img: catAccessories },
 ] as const;
 
 const featured = [...products]

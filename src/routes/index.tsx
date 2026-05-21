@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ArrowRight, ArrowUpRight, MapPin, Mountain, Leaf, Users, Mail, Phone } from "lucide-react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
+import { supabase } from "@/integrations/supabase/client";
 import { products, categoryOrder } from "@/data/products";
 import hero from "@/assets/hero-mountain.jpg";
 import catCarriers from "@/assets/cat-carriers.jpg";
@@ -400,7 +401,58 @@ function StoreLocator() {
 
 /* ---------- Contact ---------- */
 function ContactSection() {
-  const [sent, setSent] = useState(false);
+  const subjects = ["Product Question", "Wholesale Inquiry", "Press & Media", "Career", "Other"] as const;
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [subject, setSubject] = useState<string>(subjects[0]);
+  const [message, setMessage] = useState("");
+  const [website, setWebsite] = useState(""); // honeypot
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  const resetForm = () => {
+    setFullName(""); setEmail(""); setSubject(subjects[0]); setMessage("");
+  };
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg(null);
+
+    if (website.trim() !== "") {
+      resetForm();
+      setStatus("success");
+      return;
+    }
+
+    const name = fullName.trim();
+    const mail = email.trim();
+    const msg = message.trim();
+    if (!name || !mail || !msg || !subject) {
+      setStatus("error");
+      setErrorMsg("Please fill in all fields.");
+      return;
+    }
+    if (!emailRegex.test(mail)) {
+      setStatus("error");
+      setErrorMsg("Please enter a valid email address.");
+      return;
+    }
+
+    setStatus("submitting");
+    const { error } = await supabase.from("contact_inquiries").insert({
+      full_name: name, email: mail, subject, message: msg,
+    });
+    if (error) {
+      setStatus("error");
+      setErrorMsg("Something went wrong. Please try again or email us at info@consina.com");
+      return;
+    }
+    resetForm();
+    setStatus("success");
+  };
+
   return (
     <section className="bg-muted/60 py-24 md:py-32">
       <div className="mx-auto grid max-w-[1280px] gap-14 px-4 md:grid-cols-2 md:px-8">
@@ -426,18 +478,40 @@ function ContactSection() {
           </div>
         </div>
         <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            setSent(true);
-          }}
+          onSubmit={onSubmit}
           className="rounded-sm border border-border bg-background p-6 md:p-8"
         >
+          {/* Honeypot — hidden from real users */}
+          <div aria-hidden="true" className="absolute left-[-9999px] h-0 w-0 overflow-hidden">
+            <label htmlFor="website">Website</label>
+            <input
+              id="website"
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+            />
+          </div>
           <div className="grid gap-4 md:grid-cols-2">
-            <Field label="Name" id="name" />
-            <Field label="Email" id="email" type="email" />
+            <Field label="Name" id="name" value={fullName} onChange={setFullName} />
+            <Field label="Email" id="email" type="email" value={email} onChange={setEmail} />
           </div>
           <div className="mt-4">
-            <Field label="Subject" id="subject" />
+            <label htmlFor="subject" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Subject
+            </label>
+            <select
+              id="subject"
+              required
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              className="mt-2 w-full border-b border-border bg-transparent py-2 text-sm text-foreground outline-none focus:border-primary"
+            >
+              {subjects.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
           </div>
           <div className="mt-4">
             <label htmlFor="msg" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -447,14 +521,27 @@ function ContactSection() {
               id="msg"
               rows={5}
               required
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
               className="mt-2 w-full resize-none border-b border-border bg-transparent py-2 text-sm text-foreground outline-none focus:border-primary"
             />
           </div>
+          {status === "success" && (
+            <p className="mt-6 rounded-sm border border-green-600/30 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
+              Thanks! We'll reply within 2 business days.
+            </p>
+          )}
+          {status === "error" && errorMsg && (
+            <p className="mt-6 rounded-sm border border-red-600/30 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">
+              {errorMsg}
+            </p>
+          )}
           <button
             type="submit"
-            className="mt-8 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-secondary"
+            disabled={status === "submitting"}
+            className="mt-8 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-secondary disabled:opacity-60"
           >
-            {sent ? "Thanks — we'll be in touch" : "Send message"} <ArrowRight className="h-4 w-4" />
+            {status === "submitting" ? "Sending…" : "Send message"} <ArrowRight className="h-4 w-4" />
           </button>
         </form>
       </div>
@@ -462,7 +549,12 @@ function ContactSection() {
   );
 }
 
-function Field({ label, id, type = "text" }: { label: string; id: string; type?: string }) {
+function Field({
+  label, id, type = "text", value, onChange,
+}: {
+  label: string; id: string; type?: string;
+  value?: string; onChange?: (v: string) => void;
+}) {
   return (
     <div>
       <label htmlFor={id} className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -472,6 +564,8 @@ function Field({ label, id, type = "text" }: { label: string; id: string; type?:
         id={id}
         type={type}
         required
+        value={value ?? ""}
+        onChange={onChange ? (e) => onChange(e.target.value) : undefined}
         className="mt-2 w-full border-b border-border bg-transparent py-2 text-sm text-foreground outline-none focus:border-primary"
       />
     </div>

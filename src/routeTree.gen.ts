@@ -19,6 +19,7 @@ import { Route as AdminInquiriesRouteImport } from './routes/admin/inquiries'
 import { Route as AdminForgotPasswordRouteImport } from './routes/admin/forgot-password'
 import { Route as AdminCategoriesRouteImport } from './routes/admin/categories'
 import { Route as AdminProductsNewRouteImport } from './routes/admin/products.new'
+import { Route as AdminProductsIdEditRouteImport } from './routes/admin/products.$id.edit'
 
 const CatalogRoute = CatalogRouteImport.update({
   id: '/catalog',
@@ -70,6 +71,11 @@ const AdminProductsNewRoute = AdminProductsNewRouteImport.update({
   path: '/new',
   getParentRoute: () => AdminProductsRoute,
 } as any)
+const AdminProductsIdEditRoute = AdminProductsIdEditRouteImport.update({
+  id: '/$id/edit',
+  path: '/$id/edit',
+  getParentRoute: () => AdminProductsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/products/new': typeof AdminProductsNewRoute
+  '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin': typeof AdminIndexRoute
   '/admin/products/new': typeof AdminProductsNewRoute
+  '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/products/new': typeof AdminProductsNewRoute
+  '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
     | '/admin/reset-password'
     | '/admin/'
     | '/admin/products/new'
+    | '/admin/products/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/admin/reset-password'
     | '/admin'
     | '/admin/products/new'
+    | '/admin/products/$id/edit'
   id:
     | '__root__'
     | '/'
@@ -145,6 +156,7 @@ export interface FileRouteTypes {
     | '/admin/reset-password'
     | '/admin/'
     | '/admin/products/new'
+    | '/admin/products/$id/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -231,15 +243,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProductsNewRouteImport
       parentRoute: typeof AdminProductsRoute
     }
+    '/admin/products/$id/edit': {
+      id: '/admin/products/$id/edit'
+      path: '/$id/edit'
+      fullPath: '/admin/products/$id/edit'
+      preLoaderRoute: typeof AdminProductsIdEditRouteImport
+      parentRoute: typeof AdminProductsRoute
+    }
   }
 }
 
 interface AdminProductsRouteChildren {
   AdminProductsNewRoute: typeof AdminProductsNewRoute
+  AdminProductsIdEditRoute: typeof AdminProductsIdEditRoute
 }
 
 const AdminProductsRouteChildren: AdminProductsRouteChildren = {
   AdminProductsNewRoute: AdminProductsNewRoute,
+  AdminProductsIdEditRoute: AdminProductsIdEditRoute,
 }
 
 const AdminProductsRouteWithChildren = AdminProductsRoute._addFileChildren(

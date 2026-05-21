@@ -1,7 +1,14 @@
-import { defineConfig }  from "vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
-import tsConfigPaths     from "vite-tsconfig-paths";
+import viteReact from "@vitejs/plugin-react";
+import { nitro } from "nitro/vite";
+import { defineConfig } from "vite";
+import tsConfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
-  plugins: [tanstackStart(), tsConfigPaths()],
+  plugins: [
+    tanstackStart(),
+    nitro({ preset: "vercel", vercel: { entryFormat: "node" } }),
+    viteReact(),
+    tsConfigPaths(),
+  ],
 });

@@ -13,6 +13,7 @@ import catAccessories from "@/assets/cat-accessories.jpg";
 import community from "@/assets/community.jpg";
 import story from "@/assets/story.jpg";
 import communityCleanup from "@/assets/community-cleanup.jpg";
+// community image removed — replaced by communityCleanup
 import storyHiker from "@/assets/story-hiker.jpg";
 import prodCenturion from "@/assets/prod-centurion.jpg";
 import prodRaptor from "@/assets/prod-raptor.jpg";

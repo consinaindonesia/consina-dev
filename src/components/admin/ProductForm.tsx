@@ -841,3 +841,223 @@ function CancelLink({ dirty }: { dirty: boolean }) {
     </>
   );
 }
+
+const SHORT_MAX = 160;
+
+function LangColumn({
+  lang,
+  values,
+  setField,
+  tint,
+}: {
+  lang: "id" | "en";
+  values: ProductFormValues;
+  setField: <K extends keyof ProductFormValues>(k: K, v: ProductFormValues[K]) => void;
+  tint: string;
+}) {
+  const isID = lang === "id";
+  const nameKey = isID ? "name_id" : "name_en";
+  const shortKey = isID ? "short_description_id" : "short_description_en";
+  const descKey = isID ? "description_id" : "description_en";
+  const shortVal = values[shortKey];
+  return (
+    <div className="rounded-xl p-5" style={{ backgroundColor: tint }}>
+      <div className="mb-4 flex items-center gap-2">
+        <span className="text-lg" aria-hidden>
+          {isID ? "🇮🇩" : "🇬🇧"}
+        </span>
+        <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">
+          {isID ? "Indonesian (ID)" : "English (EN)"}
+        </h3>
+      </div>
+
+      <div className="space-y-4">
+        <div className="space-y-1.5">
+          <Label>Product Name</Label>
+          <Input
+            value={values[nameKey]}
+            onChange={(e) => setField(nameKey, e.target.value)}
+            placeholder={isID ? "Tas Carrier Centaurus 60L" : "Centaurus 60L Carrier"}
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <Label>Short Description</Label>
+            <span
+              className={
+                shortVal.length > SHORT_MAX
+                  ? "text-xs text-destructive"
+                  : "text-xs text-muted-foreground"
+              }
+            >
+              {shortVal.length} / {SHORT_MAX}
+            </span>
+          </div>
+          <Textarea
+            rows={2}
+            maxLength={SHORT_MAX}
+            value={shortVal}
+            onChange={(e) => setField(shortKey, e.target.value)}
+            placeholder={
+              isID
+                ? "Ringkasan singkat untuk daftar produk…"
+                : "One-line summary for product list and meta description…"
+            }
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label>Full Description</Label>
+          <RichTextEditor
+            value={values[descKey]}
+            onChange={(html) => setField(descKey, html)}
+            placeholder={
+              isID ? "Dirancang untuk ekspedisi…" : "Built for multi-day expeditions…"
+            }
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TranslationsTab({
+  values,
+  setField,
+  error,
+  view,
+  setView,
+  translating,
+  onTranslate,
+}: {
+  values: ProductFormValues;
+  setField: <K extends keyof ProductFormValues>(k: K, v: ProductFormValues[K]) => void;
+  error?: string;
+  view: "both" | "id" | "en";
+  setView: (v: "both" | "id" | "en") => void;
+  translating: "to_en" | "to_id" | null;
+  onTranslate: (direction: "to_en" | "to_id") => void;
+}) {
+  const idHasContent = !!(values.name_id || values.description_id || values.short_description_id);
+  const enHasContent = !!(values.name_en || values.description_en || values.short_description_en);
+  const enMissing = idHasContent && !enHasContent;
+  const idMissing = enHasContent && !idHasContent;
+
+  const bothEmpty = !values.name_id.trim() && !values.name_en.trim();
+  const oneNameMissing =
+    !bothEmpty && (!values.name_id.trim() || !values.name_en.trim());
+
+  return (
+    <div className="space-y-4">
+      {/* Top controls */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-xs text-muted-foreground">
+          <Sparkles className="mr-1 inline h-3 w-3" />
+          AI translations are suggestions — always review before publishing.
+        </p>
+        <div className="inline-flex items-center rounded-md border border-input bg-white p-0.5 text-xs">
+          {(["both", "id", "en"] as const).map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setView(v)}
+              className={
+                "rounded px-2.5 py-1 font-medium transition-colors " +
+                (view === v
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground")
+              }
+            >
+              {v === "both" ? "Show both" : v === "id" ? "ID only" : "EN only"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Warnings */}
+      {(enMissing || idMissing) && (
+        <div className="rounded-md border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-900">
+          {enMissing
+            ? "English description is missing — this product won't appear correctly on the English site."
+            : "Indonesian description is missing — this product won't appear correctly on the Indonesian site."}
+        </div>
+      )}
+      {oneNameMissing && (
+        <div className="rounded-md border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-900">
+          One product name is missing. Save is still allowed, but both languages are recommended.
+        </div>
+      )}
+      {bothEmpty && (
+        <div className="rounded-md border border-destructive bg-destructive/10 px-4 py-2 text-sm text-destructive">
+          At least one product name is required.
+        </div>
+      )}
+      {error && <p className="text-sm text-destructive">{error}</p>}
+
+      {/* Columns */}
+      <div
+        className={
+          "grid gap-0 " +
+          (view === "both" ? "md:grid-cols-[1fr_auto_1fr]" : "grid-cols-1")
+        }
+      >
+        {view !== "en" && (
+          <LangColumn
+            lang="id"
+            values={values}
+            setField={setField}
+            tint="rgba(239, 246, 244, 0.6)"
+          />
+        )}
+        {view === "both" && (
+          <div className="mx-3 hidden w-px self-stretch bg-border md:block" />
+        )}
+        {view !== "id" && (
+          <LangColumn
+            lang="en"
+            values={values}
+            setField={setField}
+            tint="rgba(243, 244, 246, 0.6)"
+          />
+        )}
+      </div>
+
+      {/* AI assist buttons */}
+      {view === "both" && (
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={translating !== null || !idHasContent}
+            onClick={() => onTranslate("to_en")}
+          >
+            {translating === "to_en" ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Sparkles className="h-3.5 w-3.5" />
+            )}
+            Translate from Indonesian
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={translating !== null || !enHasContent}
+            onClick={() => onTranslate("to_id")}
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            {translating === "to_id" ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Sparkles className="h-3.5 w-3.5" />
+            )}
+            Translate from English
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}

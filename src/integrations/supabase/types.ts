@@ -85,6 +85,7 @@ export type Database = {
           is_active: boolean
           name_en: string
           name_id: string
+          parent_category_id: string | null
           slug: string
           sort_order: number
         }
@@ -96,6 +97,7 @@ export type Database = {
           is_active?: boolean
           name_en: string
           name_id: string
+          parent_category_id?: string | null
           slug: string
           sort_order?: number
         }
@@ -107,10 +109,48 @@ export type Database = {
           is_active?: boolean
           name_en?: string
           name_id?: string
+          parent_category_id?: string | null
           slug?: string
           sort_order?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "categories_parent_category_id_fkey"
+            columns: ["parent_category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      category_slug_redirects: {
+        Row: {
+          category_id: string | null
+          created_at: string
+          new_slug: string
+          old_slug: string
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string
+          new_slug: string
+          old_slug: string
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string
+          new_slug?: string
+          old_slug?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_slug_redirects_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       inquiries: {
         Row: {

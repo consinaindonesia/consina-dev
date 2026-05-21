@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as CatalogRouteImport } from './routes/catalog'
+import { Route as CarriersRouteImport } from './routes/carriers'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
@@ -26,6 +27,11 @@ import { Route as AdminProductsIdEditRouteImport } from './routes/admin/products
 const CatalogRoute = CatalogRouteImport.update({
   id: '/catalog',
   path: '/catalog',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CarriersRoute = CarriersRouteImport.update({
+  id: '/carriers',
+  path: '/carriers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -91,6 +97,7 @@ const AdminProductsIdEditRoute = AdminProductsIdEditRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/carriers': typeof CarriersRoute
   '/catalog': typeof CatalogRoute
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
@@ -106,6 +113,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/carriers': typeof CarriersRoute
   '/catalog': typeof CatalogRoute
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
@@ -122,6 +130,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/carriers': typeof CarriersRoute
   '/catalog': typeof CatalogRoute
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
@@ -139,6 +148,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/carriers'
     | '/catalog'
     | '/admin/attributes'
     | '/admin/categories'
@@ -154,6 +164,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/carriers'
     | '/catalog'
     | '/admin/attributes'
     | '/admin/categories'
@@ -169,6 +180,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/carriers'
     | '/catalog'
     | '/admin/attributes'
     | '/admin/categories'
@@ -185,6 +197,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CarriersRoute: typeof CarriersRoute
   CatalogRoute: typeof CatalogRoute
   AdminAttributesRoute: typeof AdminAttributesRoute
   AdminCategoriesRoute: typeof AdminCategoriesRoute
@@ -204,6 +217,13 @@ declare module '@tanstack/react-router' {
       path: '/catalog'
       fullPath: '/catalog'
       preLoaderRoute: typeof CatalogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/carriers': {
+      id: '/carriers'
+      path: '/carriers'
+      fullPath: '/carriers'
+      preLoaderRoute: typeof CarriersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -309,6 +329,7 @@ const AdminProductsRouteWithChildren = AdminProductsRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CarriersRoute: CarriersRoute,
   CatalogRoute: CatalogRoute,
   AdminAttributesRoute: AdminAttributesRoute,
   AdminCategoriesRoute: AdminCategoriesRoute,
@@ -323,13 +344,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

@@ -82,10 +82,12 @@ function TentsPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Nav />
-      <PageHeader />
-      <FilterBar />
-      <ProductGrid />
-      <RelatedCategories />
+      <main>
+        <PageHeader />
+        <FilterBar />
+        <ProductGrid />
+        <RelatedCategories />
+      </main>
       <Footer />
     </div>
   );

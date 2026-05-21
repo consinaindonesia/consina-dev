@@ -334,7 +334,23 @@ function AdminHome() {
         <StatCard
           label="Total Products"
           value={stats.totalProducts}
-          sub={`${stats.productsAddedInRange} added ${rangeWord(range)}`}
+          sub={
+            <>
+              <div>{stats.productsAddedInRange} added {rangeWord(range)}</div>
+              {stats.productsMissingTranslations > 0 && (
+                <div className="mt-0.5">
+                  <Link
+                    to="/admin/products"
+                    search={{ lang: "missing" }}
+                    className="text-orange-600 hover:underline"
+                  >
+                    {stats.productsMissingTranslations} missing translation
+                    {stats.productsMissingTranslations === 1 ? "" : "s"} →
+                  </Link>
+                </div>
+              )}
+            </>
+          }
         />
         <StatCard
           label="New Inquiries"

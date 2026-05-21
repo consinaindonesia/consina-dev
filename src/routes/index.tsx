@@ -12,6 +12,7 @@ import catFootwear from "@/assets/cat-footwear.jpg";
 import catAccessories from "@/assets/cat-accessories.jpg";
 import community from "@/assets/community.jpg";
 import story from "@/assets/story.jpg";
+import storyHiker from "@/assets/story-hiker.jpg";
 import prod1 from "@/assets/prod-1.jpg";
 import prod2 from "@/assets/prod-2.jpg";
 import prod3 from "@/assets/prod-3.jpg";
@@ -138,46 +139,46 @@ function Hero() {
 function BrandStory() {
   return (
     <section className="mx-auto max-w-[1280px] px-4 py-24 md:px-8 md:py-32">
-      <div className="grid items-center gap-12 lg:grid-cols-12">
-        <div className="lg:col-span-5">
-          <div className="overflow-hidden rounded-sm border border-border">
+      <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+        {/* LEFT COLUMN — Image */}
+        <div className="order-1">
+          <div className="overflow-hidden rounded-2xl">
             <img
-              src={story}
-              alt="Vintage map of the Indonesian archipelago"
-              width={1400}
-              height={1000}
+              src={storyHiker}
+              alt="Hiker on an Indonesian mountain trail"
+              width={1024}
+              height={1280}
               loading="lazy"
               className="h-full w-full object-cover"
             />
           </div>
         </div>
-        <div className="lg:col-span-7 lg:pl-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">
+
+        {/* RIGHT COLUMN — Text */}
+        <div className="order-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">
             Our Story
           </p>
           <h2 className="mt-4 font-[Archivo] text-4xl font-black leading-[1.05] tracking-tight text-primary md:text-5xl">
-            A quarter century of Indonesian adventure.
+            Inspired by Experience
           </h2>
-          <p className="mt-6 text-base leading-relaxed text-foreground/80 md:text-lg">
-            Founded in Jakarta in 1999, Consina has spent twenty-five years
-            outfitting Indonesia's adventurers. We design from where we live —
-            for monsoons, volcanic ascents, equatorial heat, and the long ferry
-            rides in between. Every seam, strap, and stitch carries the
-            knowledge of the people who use them.
-          </p>
-          <div className="mt-10 grid gap-6 sm:grid-cols-3">
-            {[
-              { icon: Mountain, title: "Local pride", body: "Designed and built in Indonesia." },
-              { icon: Leaf, title: "Responsible", body: "Trekker code: leave no trace." },
-              { icon: Users, title: "Community", body: "Built with — and for — adventurers." },
-            ].map(({ icon: Icon, title, body }) => (
-              <div key={title} className="border-t-2 border-accent pt-4">
-                <Icon className="h-5 w-5 text-secondary" />
-                <h3 className="mt-3 font-[Archivo] text-base font-bold text-primary">{title}</h3>
-                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{body}</p>
-              </div>
-            ))}
+          <div className="mt-8 space-y-5 text-base leading-relaxed text-foreground/80 md:text-lg">
+            <p>
+              Since 1999, Consina has been Indonesia's outdoor lifestyle brand — born in Jakarta, built for adventurers.
+            </p>
+            <p>
+              Every product we make is shaped by feedback from our community of hikers, campers, and climbers. We don't just design gear — we design from lived experience.
+            </p>
+            <p>
+              Today, our 'Responsible Trekker' community spans the entire archipelago, sharing one belief: leave the trail better than you found it.
+            </p>
           </div>
+          <Link
+            to="/"
+            className="mt-10 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-secondary"
+          >
+            Learn more about us <span className="text-base">→</span>
+          </Link>
         </div>
       </div>
     </section>

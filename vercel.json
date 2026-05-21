@@ -1,7 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": "tanstack-start",
-  "buildCommand": "bun run build",
-  "installCommand": "bun install",
-  "outputDirectory": ".vercel/output"
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "outputDirectory": ".output/public",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/api/server" }
+  ]
 }

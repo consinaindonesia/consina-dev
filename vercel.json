@@ -6,6 +6,6 @@
   "outputDirectory": ".output/public",
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/((?!api/|_build/|assets/|.*\\.).*)", "destination": "/index.html" }
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

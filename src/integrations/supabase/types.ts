@@ -76,6 +76,42 @@ export type Database = {
         }
         Relationships: []
       }
+      attributes: {
+        Row: {
+          created_at: string
+          id: string
+          name_en: string
+          name_id: string
+          options: Json
+          slug: string
+          type: string
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name_en: string
+          name_id: string
+          options?: Json
+          slug: string
+          type: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name_en?: string
+          name_id?: string
+          options?: Json
+          slug?: string
+          type?: string
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           description_en: string | null
@@ -117,6 +153,45 @@ export type Database = {
           {
             foreignKeyName: "categories_parent_category_id_fkey"
             columns: ["parent_category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      category_attributes: {
+        Row: {
+          attribute_id: string
+          category_id: string
+          id: string
+          is_required: boolean
+          sort_order: number
+        }
+        Insert: {
+          attribute_id: string
+          category_id: string
+          id?: string
+          is_required?: boolean
+          sort_order?: number
+        }
+        Update: {
+          attribute_id?: string
+          category_id?: string
+          id?: string
+          is_required?: boolean
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_attributes_attribute_id_fkey"
+            columns: ["attribute_id"]
+            isOneToOne: false
+            referencedRelation: "attributes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_attributes_category_id_fkey"
+            columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
             referencedColumns: ["id"]

@@ -13,10 +13,10 @@ import catAccessories from "@/assets/cat-accessories.jpg";
 import community from "@/assets/community.jpg";
 import story from "@/assets/story.jpg";
 import storyHiker from "@/assets/story-hiker.jpg";
-import prod1 from "@/assets/prod-1.jpg";
-import prod2 from "@/assets/prod-2.jpg";
-import prod3 from "@/assets/prod-3.jpg";
-import prod4 from "@/assets/prod-4.jpg";
+import prodCenturion from "@/assets/prod-centurion.jpg";
+import prodRaptor from "@/assets/prod-raptor.jpg";
+import prodStratus from "@/assets/prod-stratus.jpg";
+import prodTrailwind from "@/assets/prod-trailwind.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({

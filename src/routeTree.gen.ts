@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TentsRouteImport } from './routes/tents'
+import { Route as StoresRouteImport } from './routes/stores'
 import { Route as FootwearRouteImport } from './routes/footwear'
 import { Route as CatalogRouteImport } from './routes/catalog'
 import { Route as CarriersRouteImport } from './routes/carriers'
@@ -31,6 +32,11 @@ import { Route as AdminProductsIdEditRouteImport } from './routes/admin/products
 const TentsRoute = TentsRouteImport.update({
   id: '/tents',
   path: '/tents',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StoresRoute = StoresRouteImport.update({
+  id: '/stores',
+  path: '/stores',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FootwearRoute = FootwearRouteImport.update({
@@ -126,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/carriers': typeof CarriersRoute
   '/catalog': typeof CatalogRoute
   '/footwear': typeof FootwearRoute
+  '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
@@ -146,6 +153,7 @@ export interface FileRoutesByTo {
   '/carriers': typeof CarriersRoute
   '/catalog': typeof CatalogRoute
   '/footwear': typeof FootwearRoute
+  '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
@@ -167,6 +175,7 @@ export interface FileRoutesById {
   '/carriers': typeof CarriersRoute
   '/catalog': typeof CatalogRoute
   '/footwear': typeof FootwearRoute
+  '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
@@ -189,6 +198,7 @@ export interface FileRouteTypes {
     | '/carriers'
     | '/catalog'
     | '/footwear'
+    | '/stores'
     | '/tents'
     | '/admin/attributes'
     | '/admin/categories'
@@ -209,6 +219,7 @@ export interface FileRouteTypes {
     | '/carriers'
     | '/catalog'
     | '/footwear'
+    | '/stores'
     | '/tents'
     | '/admin/attributes'
     | '/admin/categories'
@@ -229,6 +240,7 @@ export interface FileRouteTypes {
     | '/carriers'
     | '/catalog'
     | '/footwear'
+    | '/stores'
     | '/tents'
     | '/admin/attributes'
     | '/admin/categories'
@@ -250,6 +262,7 @@ export interface RootRouteChildren {
   CarriersRoute: typeof CarriersRoute
   CatalogRoute: typeof CatalogRoute
   FootwearRoute: typeof FootwearRoute
+  StoresRoute: typeof StoresRoute
   TentsRoute: typeof TentsRoute
   AdminAttributesRoute: typeof AdminAttributesRoute
   AdminCategoriesRoute: typeof AdminCategoriesRoute
@@ -269,6 +282,13 @@ declare module '@tanstack/react-router' {
       path: '/tents'
       fullPath: '/tents'
       preLoaderRoute: typeof TentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/stores': {
+      id: '/stores'
+      path: '/stores'
+      fullPath: '/stores'
+      preLoaderRoute: typeof StoresRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/footwear': {
@@ -414,6 +434,7 @@ const rootRouteChildren: RootRouteChildren = {
   CarriersRoute: CarriersRoute,
   CatalogRoute: CatalogRoute,
   FootwearRoute: FootwearRoute,
+  StoresRoute: StoresRoute,
   TentsRoute: TentsRoute,
   AdminAttributesRoute: AdminAttributesRoute,
   AdminCategoriesRoute: AdminCategoriesRoute,
@@ -428,3 +449,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

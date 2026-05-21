@@ -633,7 +633,60 @@ export function ProductForm(props: ProductFormProps) {
 
               <Field label="Attributes">
                 <div className="space-y-2">
+                  {/* Category-defined attributes */}
+                  {categoryAttrs.length > 0 && (
+                    <div className="mb-3 space-y-3 rounded-lg border border-input bg-muted/30 p-3">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        {categories.find((c) => c.id === values.category_id)?.name_en} specs
+                      </p>
+                      {categoryAttrs.map((a) => {
+                        const id = `attr-${a.slug}`;
+                        const val = definedAttrValues[a.slug] ?? "";
+                        const err = errors[`attr_${a.slug}`];
+                        return (
+                          <div key={a.id} className="space-y-1">
+                            <Label htmlFor={id} className="text-sm">
+                              {a.name_en}
+                              {a.unit ? ` (${a.unit})` : ""}
+                              {a.is_required && <span className="ml-1 text-destructive">*</span>}
+                            </Label>
+                            {a.type === "select" ? (
+                              <Select
+                                value={val}
+                                onValueChange={(v) => setDefinedAttr(a.slug, v)}
+                              >
+                                <SelectTrigger id={id}>
+                                  <SelectValue placeholder="Choose…" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {a.options.map((opt) => (
+                                    <SelectItem key={opt} value={opt}>
+                                      {opt}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            ) : (
+                              <Input
+                                id={id}
+                                type={a.type === "number" ? "number" : "text"}
+                                value={val}
+                                onChange={(e) => setDefinedAttr(a.slug, e.target.value)}
+                                placeholder={a.name_id !== a.name_en ? a.name_id : ""}
+                              />
+                            )}
+                            {err && <p className="text-xs text-destructive">{err}</p>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {categoryAttrs.length > 0 && (
+                    <p className="text-xs text-muted-foreground">Custom attributes (extra key/value pairs)</p>
+                  )}
                   {values.attributes.map((attr, idx) => (
+                    // Hide rows whose key matches a category-defined attribute (rendered above)
+                    categoryAttrs.some((d) => d.slug === attr.key) ? null : (
                     <div key={idx} className="flex gap-2">
                       <Input
                         placeholder="Key (e.g. Material)"
@@ -673,6 +726,7 @@ export function ProductForm(props: ProductFormProps) {
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
+                    )
                   ))}
                   <Button
                     type="button"

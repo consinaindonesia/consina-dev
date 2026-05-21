@@ -291,7 +291,7 @@ function StoreCard({ store }: { store: Store }) {
 
       <div className="mt-4 space-y-2.5 text-sm text-muted-foreground">
         <div className="flex items-start gap-2">
-          <MapPin className="mt-0.5 h-4 w-4 shrink- 0 text-muted-foreground/70" />
+          <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/70" />
           <span className="leading-relaxed">
             {store.street}
             <br />

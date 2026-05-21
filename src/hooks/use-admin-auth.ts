@@ -7,6 +7,7 @@ export type AdminProfile = {
   email: string;
   full_name: string | null;
   role: "admin" | "editor";
+  preferred_language: "en" | "id";
 };
 
 export function useAdminAuth() {
@@ -27,7 +28,7 @@ export function useAdminAuth() {
       setTimeout(() => {
         void supabase
           .from("admin_users")
-          .select("id,email,full_name,role")
+          .select("id,email,full_name,role,preferred_language")
           .eq("email", s.user.email!)
           .maybeSingle()
           .then(({ data }) => setProfile((data as AdminProfile) ?? null));
@@ -40,7 +41,7 @@ export function useAdminAuth() {
       if (data.session?.user) {
         void supabase
           .from("admin_users")
-          .select("id,email,full_name,role")
+          .select("id,email,full_name,role,preferred_language")
           .eq("email", data.session.user.email!)
           .maybeSingle()
           .then(({ data: p }) => {

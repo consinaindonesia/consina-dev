@@ -220,6 +220,7 @@ export type Database = {
           is_primary: boolean
           product_id: string
           sort_order: number
+          thumbnail_url: string | null
         }
         Insert: {
           alt_text_en?: string | null
@@ -229,6 +230,7 @@ export type Database = {
           is_primary?: boolean
           product_id: string
           sort_order?: number
+          thumbnail_url?: string | null
         }
         Update: {
           alt_text_en?: string | null
@@ -238,6 +240,7 @@ export type Database = {
           is_primary?: boolean
           product_id?: string
           sort_order?: number
+          thumbnail_url?: string | null
         }
         Relationships: [
           {

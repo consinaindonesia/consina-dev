@@ -17,6 +17,7 @@ import { AdminShell } from "@/components/admin/AdminShell";
 import { supabase } from "@/integrations/supabase/client";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { translateText } from "@/lib/translate.functions";
+import { ProductImagesTab } from "@/components/admin/ProductImagesTab";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -65,15 +66,6 @@ export type ProductFormValues = {
   stock_status: "in_stock" | "low_stock" | "out_of_stock";
   is_featured: boolean;
   is_active: boolean;
-};
-
-type ProductImage = {
-  id: string;
-  image_url: string;
-  alt_text_en: string | null;
-  alt_text_id: string | null;
-  sort_order: number;
-  is_primary: boolean;
 };
 
 const EMPTY: ProductFormValues = {
@@ -140,7 +132,6 @@ export function ProductForm(props: ProductFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [categories, setCategories] = useState<Category[]>([]);
   const [skuCheck, setSkuCheck] = useState<"idle" | "checking" | "ok" | "taken">("idle");
-  const [images, setImages] = useState<ProductImage[]>([]);
 
   // Translations tab UI state
   const [translationView, setTranslationView] = useState<"both" | "id" | "en">("both");
@@ -206,13 +197,6 @@ export function ProductForm(props: ProductFormProps) {
         setInitialSnapshot(JSON.stringify(next));
         setLoading(false);
       });
-    // Images
-    void supabase
-      .from("product_images")
-      .select("*")
-      .eq("product_id", productId)
-      .order("sort_order")
-      .then(({ data }) => setImages((data ?? []) as ProductImage[]));
     return () => {
       cancelled = true;
     };
@@ -759,26 +743,7 @@ export function ProductForm(props: ProductFormProps) {
               </p>
             </Card>
           ) : (
-            <Card title="Images">
-              {images.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  No images yet. Image upload UI will be added in a follow-up.
-                </p>
-              ) : (
-                <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-                  {images.map((img) => (
-                    <li key={img.id} className="overflow-hidden rounded-md border border-input">
-                      <img src={img.image_url} alt={img.alt_text_en ?? ""} className="aspect-square w-full object-cover" />
-                      {img.is_primary && (
-                        <div className="bg-primary px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground">
-                          Primary
-                        </div>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </Card>
+            <ProductImagesTab productId={productId} sku={values.sku} />
           )}
         </TabsContent>
       </Tabs>

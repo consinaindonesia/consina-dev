@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { logLoginAttempt } from "@/hooks/use-admin-auth";
 
@@ -13,7 +14,10 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [errorTone, setErrorTone] = useState<"error" | "warning">("error");
   const [busy, setBusy] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const mountedAt = useRef<number>(Date.now());
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -24,11 +28,24 @@ function LoginPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    // Honeypot timing: reject submissions faster than 1s (likely bot)
+    if (Date.now() - mountedAt.current < 1000) {
+      setErrorTone("error");
+      setError("Submission rejected. Please try again.");
+      return;
+    }
     setBusy(true);
     const { error: err } = await supabase.auth.signInWithPassword({ email, password });
     if (err) {
       await logLoginAttempt(email, false);
-      setError(err.message);
+      const msg = err.message?.toLowerCase() ?? "";
+      if (err.status === 429 || msg.includes("rate") || msg.includes("too many")) {
+        setErrorTone("warning");
+        setError("Too many failed attempts. Please wait 15 minutes.");
+      } else {
+        setErrorTone("error");
+        setError("Email or password incorrect. Please try again.");
+      }
       setBusy(false);
       return;
     }
@@ -37,52 +54,130 @@ function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md rounded-lg border border-border bg-card p-8 shadow-sm">
-        <h1 className="font-[Archivo] text-2xl font-black tracking-tight text-primary">
-          Consina Admin
+    <div
+      className="flex min-h-screen items-center justify-center px-4 py-10"
+      style={{
+        backgroundColor: "#fafaf5",
+        backgroundImage:
+          "radial-gradient(circle at 1px 1px, rgba(26,58,46,0.06) 1px, transparent 0)",
+        backgroundSize: "24px 24px",
+      }}
+    >
+      <div
+        className="w-[90%] max-w-[400px] rounded-[12px] bg-white p-8 shadow-[0_10px_40px_-12px_rgba(26,58,46,0.18)]"
+      >
+        <div className="flex flex-col items-center text-center">
+          <span
+            className="font-[Archivo] text-2xl font-black tracking-tight"
+            style={{ color: "#1a3a2e" }}
+          >
+            CONSINA
+          </span>
+          <span
+            className="mt-1 text-[10px] font-semibold tracking-[0.3em]"
+            style={{ color: "#d4b896" }}
+          >
+            ADMIN
+          </span>
+        </div>
+
+        <h1 className="mt-6 text-center text-xl font-semibold" style={{ color: "#1a3a2e" }}>
+          Sign in to your account
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">Sign in to the control room.</p>
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+        <p className="mt-1 text-center text-sm text-muted-foreground">
+          Internal use only. Authorized staff only.
+        </p>
+
+        {error && (
+          <div
+            role="alert"
+            className="mt-5 rounded-md px-3 py-2 text-sm"
+            style={
+              errorTone === "warning"
+                ? { backgroundColor: "#fff4e5", color: "#a15c00", border: "1px solid #f4c989" }
+                : { backgroundColor: "#fdecec", color: "#b42318", border: "1px solid #f3b4b4" }
+            }
+          >
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="mt-5 space-y-4" aria-label="Admin sign in">
           <div>
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Email</label>
+            <label
+              htmlFor="admin-email"
+              className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+            >
+              Email
+            </label>
             <input
+              id="admin-email"
+              name="email"
               type="email"
+              inputMode="email"
               required
+              disabled={busy}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               autoComplete="email"
+              className="mt-1 h-12 w-full rounded-md border border-input bg-background px-3 text-base md:h-10 md:text-sm"
             />
           </div>
+
           <div>
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Password</label>
-            <input
-              type="password"
-              required
-              minLength={12}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              autoComplete="current-password"
-            />
+            <label
+              htmlFor="admin-password"
+              className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+            >
+              Password
+            </label>
+            <div className="relative mt-1">
+              <input
+                id="admin-password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                required
+                minLength={12}
+                disabled={busy}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                className="h-12 w-full rounded-md border border-input bg-background px-3 pr-10 text-base md:h-10 md:text-sm"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((s) => !s)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                className="absolute inset-y-0 right-2 flex items-center px-1 text-muted-foreground hover:text-foreground"
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+            <div className="mt-1 flex justify-end">
+              <Link
+                to="/admin/forgot-password"
+                className="text-xs hover:underline"
+                style={{ color: "#1a3a2e" }}
+              >
+                Forgot password?
+              </Link>
+            </div>
           </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
+
           <button
             type="submit"
             disabled={busy}
-            className="w-full rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:opacity-50"
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-md text-sm font-semibold text-white transition hover:opacity-95 disabled:opacity-60 md:h-10"
+            style={{ backgroundColor: "#1a3a2e" }}
           >
+            {busy && <Loader2 className="h-4 w-4 animate-spin" />}
             {busy ? "Signing in…" : "Sign in"}
           </button>
-          <div className="flex justify-between text-xs">
-            <Link to="/admin/forgot-password" className="text-secondary hover:underline">
-              Forgot password?
-            </Link>
-            <Link to="/" className="text-muted-foreground hover:underline">
-              ← Back to site
-            </Link>
-          </div>
+
+          <p className="text-center text-xs text-muted-foreground">
+            Need access? Contact your administrator.
+          </p>
         </form>
       </div>
     </div>

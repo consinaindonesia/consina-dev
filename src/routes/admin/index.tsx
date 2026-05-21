@@ -8,7 +8,6 @@ import {
   Languages,
   FolderPlus,
   PackagePlus,
-  StorePlus,
   ExternalLink,
   Plus,
   Pencil,
@@ -347,7 +346,7 @@ function AdminHome() {
       <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <ActionCard icon={<PackagePlus size={20} />} label="New Product" to="/admin/products" />
         <ActionCard icon={<FolderPlus size={20} />} label="New Category" to="/admin/categories" />
-        <ActionCard icon={<StorePlus size={20} />} label="New Store" to="/admin" />
+        <ActionCard icon={<Store size={20} />} label="New Store" to="/admin" />
         <ActionCard
           icon={<ExternalLink size={20} />}
           label="View Public Site"

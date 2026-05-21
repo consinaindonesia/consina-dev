@@ -219,8 +219,7 @@ function CategoryCard({ cat }: { cat: typeof categories[number] }) {
   const stats = catStats(cat.filter);
   return (
     <Link
-      to="/c/$slug"
-      params={{ slug: cat.slug }}
+      to={`/${cat.slug}`}
       className="group flex aspect-square flex-col overflow-hidden rounded-xl border border-[#d4b896] bg-background transition duration-300 hover:-translate-y-1 hover:shadow-lg"
     >
       {/* Image area — top 60% */}

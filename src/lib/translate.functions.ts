@@ -1,82 +1,112 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const InputSchema = z.object({
-  from: z.enum(["id", "en"]),
-  to: z.enum(["id", "en"]),
-  name: z.string().max(500).optional().default(""),
-  short: z.string().max(500).optional().default(""),
-  full: z.string().max(20000).optional().default(""),
+  sourceText: z.string().min(1).max(20000),
+  sourceLang: z.enum(["id", "en"]),
+  targetLang: z.enum(["id", "en"]),
+  contentType: z.enum(["name", "short_description", "description"]),
+  productId: z.string().uuid().nullable().optional(),
 });
 
-export const translateProductFields = createServerFn({ method: "POST" })
+const LANG_NAME = { id: "Indonesian", en: "English" } as const;
+const RATE_LIMIT_PER_HOUR = 50;
+
+export const translateText = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => InputSchema.parse(input))
-  .handler(async ({ data }) => {
-    const apiKey = process.env.LOVABLE_API_KEY;
-    if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured");
+  .handler(async ({ data, context }) => {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) throw new Error("ANTHROPIC_API_KEY is not configured");
 
-    const fromLang = data.from === "id" ? "Indonesian" : "English";
-    const toLang = data.to === "id" ? "Indonesian" : "English";
+    const { supabase, claims } = context;
+    const email = (claims as { email?: string }).email;
+    if (!email) throw new Error("Unauthorized: missing email claim");
 
-    const system = `You are a professional product copywriter translating outdoor gear product copy from ${fromLang} to ${toLang}. Preserve product names where appropriate, keep tone confident and concise. Preserve HTML tags in the full description exactly (only translate text inside tags). Return JSON only.`;
+    const { data: admin } = await supabase
+      .from("admin_users")
+      .select("id")
+      .eq("email", email)
+      .maybeSingle();
+    const adminId = admin?.id ?? null;
+    if (!adminId) throw new Error("Unauthorized: admin profile not found");
 
-    const user = `Translate the following product fields from ${fromLang} to ${toLang}.
+    // Rate limit: 50 translations per admin per hour
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const { count } = await supabase
+      .from("activity_log")
+      .select("id", { count: "exact", head: true })
+      .eq("admin_user_id", adminId)
+      .eq("action", "ai_translation")
+      .gte("created_at", oneHourAgo);
+    if ((count ?? 0) >= RATE_LIMIT_PER_HOUR) {
+      throw new Error(
+        `Translation limit reached (${RATE_LIMIT_PER_HOUR}/hour). Please try again later.`,
+      );
+    }
 
-NAME: ${data.name || "(empty)"}
-SHORT_DESCRIPTION: ${data.short || "(empty)"}
-FULL_DESCRIPTION (HTML): ${data.full || "(empty)"}`;
+    const system = `You are translating product content for Consina, an Indonesian outdoor lifestyle brand.
+Source language: ${LANG_NAME[data.sourceLang]}
+Target language: ${LANG_NAME[data.targetLang]}
+Content type: ${data.contentType}
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+Rules:
+- Preserve the brand tone: adventurous, grounded, community-oriented
+- Keep technical specs precise (e.g., '60L', 'water-resistant', material names)
+- Don't translate proper names (Consina, place names, mountain names)
+- For product names: keep them concise and brand-consistent
+- For descriptions: preserve any HTML formatting
+
+Provide ONLY the translation, no explanations.`;
+
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "claude-3-5-sonnet-latest",
+        max_tokens: 4096,
+        system,
         messages: [
-          { role: "system", content: system },
-          { role: "user", content: user },
+          { role: "user", content: `Source text:\n${data.sourceText}` },
         ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "return_translation",
-              description: "Return the translated fields",
-              parameters: {
-                type: "object",
-                properties: {
-                  name: { type: "string" },
-                  short: { type: "string" },
-                  full: { type: "string" },
-                },
-                required: ["name", "short", "full"],
-                additionalProperties: false,
-              },
-            },
-          },
-        ],
-        tool_choice: { type: "function", function: { name: "return_translation" } },
       }),
     });
 
-    if (res.status === 429) throw new Error("Rate limit exceeded — please try again shortly.");
-    if (res.status === 402) throw new Error("AI credits exhausted. Add credits in Settings → Workspace → Usage.");
     if (!res.ok) {
       const t = await res.text();
-      throw new Error(`Translation failed: ${res.status} ${t.slice(0, 200)}`);
+      console.error("Anthropic translate error", res.status, t.slice(0, 500));
+      if (res.status === 429) {
+        throw new Error("Claude rate limit hit — please retry shortly.");
+      }
+      if (res.status === 401) {
+        throw new Error("Anthropic API key is invalid. Check ANTHROPIC_API_KEY.");
+      }
+      throw new Error(`Translation failed (${res.status})`);
     }
 
     const json = (await res.json()) as {
-      choices?: Array<{
-        message?: {
-          tool_calls?: Array<{ function?: { arguments?: string } }>;
-        };
-      }>;
+      content?: Array<{ type: string; text?: string }>;
     };
-    const args = json.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
-    if (!args) throw new Error("No translation returned");
-    const parsed = JSON.parse(args) as { name: string; short: string; full: string };
-    return parsed;
+    const translation = (json.content ?? [])
+      .filter((c) => c.type === "text")
+      .map((c) => c.text ?? "")
+      .join("")
+      .trim();
+    if (!translation) throw new Error("No translation returned");
+
+    // Log to activity_log (best-effort but awaited so failures surface in logs)
+    const { error: logError } = await supabase.from("activity_log").insert({
+      admin_user_id: adminId,
+      action: "ai_translation",
+      entity_type: "product",
+      entity_id: data.productId ?? null,
+    });
+    if (logError) console.error("activity_log insert failed", logError);
+
+    return { translation };
   });

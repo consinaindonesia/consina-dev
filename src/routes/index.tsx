@@ -475,6 +475,63 @@ function StoreLocator() {
 
 /* ---------- Contact ---------- */
 function ContactSection() {
+  return <ContactSectionInner />;
+}
+
+/* ---------- FAQ ---------- */
+function FAQSection() {
+  const [open, setOpen] = useState<number | null>(0);
+  return (
+    <section className="bg-background py-24 md:py-32" aria-labelledby="faq-heading">
+      <div className="mx-auto max-w-3xl px-4 md:px-8">
+        <div className="text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">FAQ</p>
+          <h2
+            id="faq-heading"
+            className="mt-3 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl"
+          >
+            Frequently Asked Questions
+          </h2>
+          <p className="mt-3 text-base text-muted-foreground">
+            Quick answers about Consina, our products, and our community.
+          </p>
+        </div>
+
+        <ul className="mt-12 divide-y divide-border border-y border-border">
+          {faqs.map((f, i) => {
+            const isOpen = open === i;
+            return (
+              <li key={f.q}>
+                <button
+                  type="button"
+                  aria-expanded={isOpen}
+                  onClick={() => setOpen(isOpen ? null : i)}
+                  className="flex w-full items-center justify-between gap-4 py-5 text-left"
+                >
+                  <h3 className="font-[Archivo] text-base font-bold text-primary md:text-lg">
+                    {f.q}
+                  </h3>
+                  <ChevronDown
+                    className={`h-5 w-5 shrink-0 text-primary transition-transform ${
+                      isOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+                {isOpen && (
+                  <p className="pb-5 pr-10 text-sm leading-relaxed text-muted-foreground md:text-base">
+                    {f.a}
+                  </p>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+function ContactSectionInner() {
   const subjects = ["Product Question", "Wholesale Inquiry", "Press & Media", "Career", "Other"] as const;
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");

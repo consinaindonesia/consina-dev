@@ -18,6 +18,7 @@ import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminInquiriesRouteImport } from './routes/admin/inquiries'
 import { Route as AdminForgotPasswordRouteImport } from './routes/admin/forgot-password'
 import { Route as AdminCategoriesRouteImport } from './routes/admin/categories'
+import { Route as AdminProductsNewRouteImport } from './routes/admin/products.new'
 
 const CatalogRoute = CatalogRouteImport.update({
   id: '/catalog',
@@ -64,6 +65,11 @@ const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
   path: '/admin/categories',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminProductsNewRoute = AdminProductsNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AdminProductsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -72,9 +78,10 @@ export interface FileRoutesByFullPath {
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
   '/admin/inquiries': typeof AdminInquiriesRoute
   '/admin/login': typeof AdminLoginRoute
-  '/admin/products': typeof AdminProductsRoute
+  '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/products/new': typeof AdminProductsNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -83,9 +90,10 @@ export interface FileRoutesByTo {
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
   '/admin/inquiries': typeof AdminInquiriesRoute
   '/admin/login': typeof AdminLoginRoute
-  '/admin/products': typeof AdminProductsRoute
+  '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin': typeof AdminIndexRoute
+  '/admin/products/new': typeof AdminProductsNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -95,9 +103,10 @@ export interface FileRoutesById {
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
   '/admin/inquiries': typeof AdminInquiriesRoute
   '/admin/login': typeof AdminLoginRoute
-  '/admin/products': typeof AdminProductsRoute
+  '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/products/new': typeof AdminProductsNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -111,6 +120,7 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/reset-password'
     | '/admin/'
+    | '/admin/products/new'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -122,6 +132,7 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/reset-password'
     | '/admin'
+    | '/admin/products/new'
   id:
     | '__root__'
     | '/'
@@ -133,6 +144,7 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/reset-password'
     | '/admin/'
+    | '/admin/products/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -142,7 +154,7 @@ export interface RootRouteChildren {
   AdminForgotPasswordRoute: typeof AdminForgotPasswordRoute
   AdminInquiriesRoute: typeof AdminInquiriesRoute
   AdminLoginRoute: typeof AdminLoginRoute
-  AdminProductsRoute: typeof AdminProductsRoute
+  AdminProductsRoute: typeof AdminProductsRouteWithChildren
   AdminResetPasswordRoute: typeof AdminResetPasswordRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
@@ -212,8 +224,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCategoriesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/products/new': {
+      id: '/admin/products/new'
+      path: '/new'
+      fullPath: '/admin/products/new'
+      preLoaderRoute: typeof AdminProductsNewRouteImport
+      parentRoute: typeof AdminProductsRoute
+    }
   }
 }
+
+interface AdminProductsRouteChildren {
+  AdminProductsNewRoute: typeof AdminProductsNewRoute
+}
+
+const AdminProductsRouteChildren: AdminProductsRouteChildren = {
+  AdminProductsNewRoute: AdminProductsNewRoute,
+}
+
+const AdminProductsRouteWithChildren = AdminProductsRoute._addFileChildren(
+  AdminProductsRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -222,10 +253,20 @@ const rootRouteChildren: RootRouteChildren = {
   AdminForgotPasswordRoute: AdminForgotPasswordRoute,
   AdminInquiriesRoute: AdminInquiriesRoute,
   AdminLoginRoute: AdminLoginRoute,
-  AdminProductsRoute: AdminProductsRoute,
+  AdminProductsRoute: AdminProductsRouteWithChildren,
   AdminResetPasswordRoute: AdminResetPasswordRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

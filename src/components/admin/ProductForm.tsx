@@ -679,7 +679,8 @@ export function ProductForm(props: ProductFormProps) {
         <TabsContent value="translations" className="pb-32">
           <TranslationsTab
             values={values}
-            setField={setField}
+            setField={setFieldByUser}
+            aiFlags={aiFlags}
             error={errors.name}
             view={translationView}
             setView={setTranslationView}
@@ -687,38 +688,59 @@ export function ProductForm(props: ProductFormProps) {
             onTranslate={async (direction) => {
               setTranslating(direction);
               try {
-                const from = direction === "to_en" ? "id" : "en";
-                const to = direction === "to_en" ? "en" : "id";
-                const out = await callTranslate({
-                  data: {
-                    from,
-                    to,
-                    name: direction === "to_en" ? values.name_id : values.name_en,
-                    short:
+                const sourceLang = direction === "to_en" ? "id" : "en";
+                const targetLang = direction === "to_en" ? "en" : "id";
+                const fields = [
+                  {
+                    contentType: "name" as const,
+                    source: direction === "to_en" ? values.name_id : values.name_en,
+                    targetKey: (direction === "to_en" ? "name_en" : "name_id") as keyof ProductFormValues,
+                  },
+                  {
+                    contentType: "short_description" as const,
+                    source:
                       direction === "to_en"
                         ? values.short_description_id
                         : values.short_description_en,
-                    full:
+                    targetKey: (direction === "to_en"
+                      ? "short_description_en"
+                      : "short_description_id") as keyof ProductFormValues,
+                  },
+                  {
+                    contentType: "description" as const,
+                    source:
                       direction === "to_en"
                         ? values.description_id
                         : values.description_en,
+                    targetKey: (direction === "to_en"
+                      ? "description_en"
+                      : "description_id") as keyof ProductFormValues,
                   },
-                });
-                setValues((p) => ({
-                  ...p,
-                  ...(direction === "to_en"
-                    ? {
-                        name_en: out.name,
-                        short_description_en: out.short,
-                        description_en: out.full,
-                      }
-                    : {
-                        name_id: out.name,
-                        short_description_id: out.short,
-                        description_id: out.full,
-                      }),
-                }));
-                toast.success("Translation ready — please review");
+                ];
+                let translated = 0;
+                const newFlags: Record<string, boolean> = {};
+                for (const f of fields) {
+                  const text = (f.source ?? "").trim();
+                  if (!text) continue;
+                  const out = await callTranslate({
+                    data: {
+                      sourceText: f.source,
+                      sourceLang,
+                      targetLang,
+                      contentType: f.contentType,
+                      productId: mode === "edit" ? productId : null,
+                    },
+                  });
+                  setField(f.targetKey, out.translation as ProductFormValues[typeof f.targetKey]);
+                  newFlags[f.targetKey as string] = true;
+                  translated++;
+                }
+                if (translated === 0) {
+                  toast.error("Nothing to translate — fill in the source language first.");
+                } else {
+                  setAiFlags((p) => ({ ...p, ...newFlags }));
+                  toast.success(`Translated ${translated} field${translated === 1 ? "" : "s"} — please review`);
+                }
               } catch (e) {
                 toast.error(e instanceof Error ? e.message : "Translation failed");
               } finally {

@@ -106,7 +106,12 @@ async function logActivity(
   }
 }
 
-export function ProductForm({ mode, productId }: { mode: "new" } | { mode: "edit"; productId: string }) {
+type ProductFormProps =
+  | { mode: "new"; productId?: undefined }
+  | { mode: "edit"; productId: string };
+
+export function ProductForm(props: ProductFormProps) {
+  const { mode, productId } = props;
   const navigate = useNavigate();
   const { profile } = useAdminAuth();
 

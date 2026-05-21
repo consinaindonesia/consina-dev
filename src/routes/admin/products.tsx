@@ -32,6 +32,24 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/admin/products")({
   head: () => ({ meta: [{ title: "Products — Admin" }, { name: "robots", content: "noindex" }] }),
@@ -119,6 +137,11 @@ function ProductsPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  // Bulk action dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [changeCategoryOpen, setChangeCategoryOpen] = useState(false);
+  const [newCategoryId, setNewCategoryId] = useState<string>("");
 
   const filtersActive =
     !!search || category !== "all" || status !== "all" || stock !== "all" || lang !== "all";
@@ -272,13 +295,142 @@ function ProductsPage() {
   async function bulkSetActive(active: boolean) {
     const ids = Array.from(selected);
     if (ids.length === 0) return;
+    // Capture previous states for undo
+    const prev = new Map<string, boolean>();
+    rows.forEach((r) => {
+      if (selected.has(r.id)) prev.set(r.id, r.is_active);
+    });
+
     const { error } = await supabase.from("products").update({ is_active: active }).in("id", ids);
-    if (error) toast.error("Bulk update failed");
-    else {
-      toast.success(`${ids.length} product${ids.length === 1 ? "" : "s"} ${active ? "activated" : "deactivated"}`);
-      setRows((rs) => rs.map((r) => (ids.includes(r.id) ? { ...r, is_active: active } : r)));
-      setSelected(new Set());
+    if (error) {
+      toast.error("Bulk update failed");
+      return;
     }
+    setRows((rs) => rs.map((r) => (ids.includes(r.id) ? { ...r, is_active: active } : r)));
+    setSelected(new Set());
+
+    toast.success(
+      `${ids.length} product${ids.length === 1 ? "" : "s"} ${active ? "activated" : "deactivated"}`,
+      {
+        duration: 10000,
+        action: {
+          label: "Undo",
+          onClick: async () => {
+            // Restore per-id previous values
+            const trueIds: string[] = [];
+            const falseIds: string[] = [];
+            prev.forEach((wasActive, id) => {
+              (wasActive ? trueIds : falseIds).push(id);
+            });
+            await Promise.all([
+              trueIds.length
+                ? supabase.from("products").update({ is_active: true }).in("id", trueIds)
+                : Promise.resolve(),
+              falseIds.length
+                ? supabase.from("products").update({ is_active: false }).in("id", falseIds)
+                : Promise.resolve(),
+            ]);
+            setRows((rs) =>
+              rs.map((r) => (prev.has(r.id) ? { ...r, is_active: prev.get(r.id)! } : r)),
+            );
+            toast.success("Reverted");
+          },
+        },
+      },
+    );
+  }
+
+  async function applyChangeCategory() {
+    const ids = Array.from(selected);
+    if (ids.length === 0 || !newCategoryId) return;
+    const prev = new Map<string, string | null>();
+    rows.forEach((r) => {
+      if (selected.has(r.id)) prev.set(r.id, r.category_id);
+    });
+    const targetCat = categories.find((c) => c.id === newCategoryId);
+    const { error } = await supabase
+      .from("products")
+      .update({ category_id: newCategoryId })
+      .in("id", ids);
+    if (error) {
+      toast.error("Failed to change category");
+      return;
+    }
+    setRows((rs) =>
+      rs.map((r) =>
+        ids.includes(r.id)
+          ? { ...r, category_id: newCategoryId, category_name: targetCat?.name_en ?? r.category_name }
+          : r,
+      ),
+    );
+    setChangeCategoryOpen(false);
+    setSelected(new Set());
+    setNewCategoryId("");
+    toast.success(`Moved ${ids.length} product${ids.length === 1 ? "" : "s"} to ${targetCat?.name_en}`, {
+      duration: 10000,
+      action: {
+        label: "Undo",
+        onClick: async () => {
+          // Group by previous category id to minimize queries
+          const groups = new Map<string, string[]>();
+          prev.forEach((cat, id) => {
+            const key = cat ?? "__null__";
+            const arr = groups.get(key) ?? [];
+            arr.push(id);
+            groups.set(key, arr);
+          });
+          await Promise.all(
+            Array.from(groups.entries()).map(([key, gIds]) =>
+              supabase
+                .from("products")
+                .update({ category_id: key === "__null__" ? null : key })
+                .in("id", gIds),
+            ),
+          );
+          setRows((rs) =>
+            rs.map((r) =>
+              prev.has(r.id)
+                ? { ...r, category_id: prev.get(r.id) ?? null, category_name: null }
+                : r,
+            ),
+          );
+          toast.success("Reverted");
+        },
+      },
+    });
+  }
+
+  async function bulkExport() {
+    const ids = Array.from(selected);
+    if (ids.length === 0) return;
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .in("id", ids);
+    if (error || !data) {
+      toast.error("Export failed");
+      return;
+    }
+    const cols = Object.keys(data[0] ?? {});
+    const escape = (v: unknown) => {
+      if (v === null || v === undefined) return "";
+      const s = typeof v === "object" ? JSON.stringify(v) : String(v);
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const csv = [
+      cols.join(","),
+      ...data.map((row) => cols.map((c) => escape((row as Record<string, unknown>)[c])).join(",")),
+    ].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `products-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${data.length} product${data.length === 1 ? "" : "s"}`);
   }
 
   async function deleteProduct(id: string) {
@@ -292,18 +444,45 @@ function ProductsPage() {
     }
   }
 
-  async function bulkDelete() {
+  async function bulkDeleteConfirmed() {
     const ids = Array.from(selected);
     if (ids.length === 0) return;
-    if (!confirm(`Delete ${ids.length} product${ids.length === 1 ? "" : "s"}? This cannot be undone.`)) return;
-    const { error } = await supabase.from("products").delete().in("id", ids);
-    if (error) toast.error("Bulk delete failed");
-    else {
-      toast.success(`${ids.length} deleted`);
-      setRows((rs) => rs.filter((r) => !ids.includes(r.id)));
-      setTotal((t) => Math.max(0, t - ids.length));
-      setSelected(new Set());
+    // Fetch full rows first so we can restore on undo
+    const { data: snapshot, error: fetchErr } = await supabase
+      .from("products")
+      .select("*")
+      .in("id", ids);
+    if (fetchErr || !snapshot) {
+      toast.error("Delete failed");
+      return;
     }
+    const { error } = await supabase.from("products").delete().in("id", ids);
+    if (error) {
+      toast.error("Bulk delete failed");
+      return;
+    }
+    setRows((rs) => rs.filter((r) => !ids.includes(r.id)));
+    setTotal((t) => Math.max(0, t - ids.length));
+    setSelected(new Set());
+    setDeleteDialogOpen(false);
+
+    toast.success(`${ids.length} product${ids.length === 1 ? "" : "s"} deleted`, {
+      duration: 10000,
+      action: {
+        label: "Undo",
+        onClick: async () => {
+          const { error: insErr } = await supabase.from("products").insert(snapshot);
+          if (insErr) {
+            toast.error("Could not restore");
+            return;
+          }
+          toast.success("Restored");
+          // Trigger a reload by bumping page state (simplest reliable refresh)
+          setPage((p) => p);
+          setTotal((t) => t + ids.length);
+        },
+      },
+    });
   }
 
   const allSelected = rows.length > 0 && rows.every((r) => selected.has(r.id));
@@ -542,13 +721,60 @@ function ProductsPage() {
           <div className="h-4 w-px bg-primary-foreground/30" />
           <button onClick={() => bulkSetActive(true)} className="text-xs font-semibold hover:underline">Activate</button>
           <button onClick={() => bulkSetActive(false)} className="text-xs font-semibold hover:underline">Deactivate</button>
-          <button onClick={() => toast.info("Change category coming soon")} className="text-xs font-semibold hover:underline">Change category...</button>
-          <button onClick={() => toast.info("Export coming soon")} className="text-xs font-semibold hover:underline">Export selected</button>
-          <button onClick={bulkDelete} className="text-xs font-semibold text-red-300 hover:underline">Delete selected</button>
+          <button onClick={() => { setNewCategoryId(""); setChangeCategoryOpen(true); }} className="text-xs font-semibold hover:underline">Change category...</button>
+          <button onClick={bulkExport} className="text-xs font-semibold hover:underline">Export selected</button>
+          <button onClick={() => setDeleteDialogOpen(true)} className="text-xs font-semibold text-red-300 hover:underline">Delete selected</button>
           <div className="h-4 w-px bg-primary-foreground/30" />
           <button onClick={() => setSelected(new Set())} className="text-xs opacity-75 hover:opacity-100">Cancel</button>
         </div>
       )}
+
+      {/* Delete confirmation */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Permanently delete {selected.size} product{selected.size === 1 ? "" : "s"}?
+            </AlertDialogTitle>
+            <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={bulkDeleteConfirmed}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Change category dialog */}
+      <Dialog open={changeCategoryOpen} onOpenChange={setChangeCategoryOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change category</DialogTitle>
+            <DialogDescription>
+              Move {selected.size} selected product{selected.size === 1 ? "" : "s"} to a new category.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-2">
+            <Select value={newCategoryId} onValueChange={setNewCategoryId}>
+              <SelectTrigger><SelectValue placeholder="Choose a category..." /></SelectTrigger>
+              <SelectContent>
+                {categories.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>{c.name_en}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setChangeCategoryOpen(false)}>Cancel</Button>
+            <Button onClick={applyChangeCategory} disabled={!newCategoryId}>Apply</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminShell>
   );
 }

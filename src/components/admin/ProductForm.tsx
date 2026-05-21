@@ -1,9 +1,22 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useBlocker, useNavigate } from "@tanstack/react-router";
-import { Plus, Trash2, Loader2, Check, AlertCircle } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import {
+  Plus,
+  Trash2,
+  Loader2,
+  Check,
+  AlertCircle,
+  Sparkles,
+  ArrowLeft,
+  ArrowRight,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { supabase } from "@/integrations/supabase/client";
+import { RichTextEditor } from "@/components/admin/RichTextEditor";
+import { translateProductFields } from "@/lib/translate.functions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -43,6 +56,8 @@ export type ProductFormValues = {
   name_id: string;
   description_en: string;
   description_id: string;
+  short_description_en: string;
+  short_description_id: string;
   price_idr: number;
   capacity: string;
   weight_grams: number | null;
@@ -68,6 +83,8 @@ const EMPTY: ProductFormValues = {
   name_id: "",
   description_en: "",
   description_id: "",
+  short_description_en: "",
+  short_description_id: "",
   price_idr: 0,
   capacity: "",
   weight_grams: null,

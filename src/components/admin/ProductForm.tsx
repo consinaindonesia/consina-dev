@@ -418,6 +418,49 @@ export function ProductForm(props: ProductFormProps) {
         <h1 className="mt-2 text-2xl font-bold tracking-tight">{title}</h1>
       </div>
 
+      {draftAvailable && !draftDismissed && (
+        <div className="mb-4 flex items-center justify-between gap-3 rounded-md border border-amber-300 bg-amber-50 px-4 py-3">
+          <p className="text-sm text-amber-900">
+            We saved a draft from your last session. Restore it?
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                try { localStorage.removeItem(draftKey); } catch { /* ignore */ }
+                setDraftAvailable(null);
+                setDraftDismissed(true);
+              }}
+            >
+              Discard
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => {
+                setValues(draftAvailable);
+                setDraftAvailable(null);
+                setDraftDismissed(true);
+                toast.success("Draft restored");
+              }}
+            >
+              Restore draft
+            </Button>
+            <button
+              type="button"
+              onClick={() => {
+                setDraftAvailable(null);
+                setDraftDismissed(true);
+              }}
+              className="text-amber-900/60 hover:text-amber-900"
+              aria-label="Dismiss"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
         <TabsList>
           <TabsTrigger value="basic">Basic Info</TabsTrigger>

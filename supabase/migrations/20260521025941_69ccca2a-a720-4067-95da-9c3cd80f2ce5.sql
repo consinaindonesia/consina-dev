@@ -1,0 +1,1 @@
+ALTER TABLE public.product_images ADD COLUMN IF NOT EXISTS large_url text;

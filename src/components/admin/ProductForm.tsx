@@ -48,6 +48,17 @@ const FOREST = "#1a3a2e";
 
 type Category = { id: string; name_en: string; sort_order: number };
 
+type AttributeDef = {
+  id: string;
+  slug: string;
+  name_id: string;
+  name_en: string;
+  type: "text" | "number" | "select";
+  unit: string | null;
+  options: string[];
+  is_required: boolean;
+};
+
 type Attribute = { key: string; value: string };
 
 export type ProductFormValues = {
@@ -132,6 +143,9 @@ export function ProductForm(props: ProductFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [categories, setCategories] = useState<Category[]>([]);
   const [skuCheck, setSkuCheck] = useState<"idle" | "checking" | "ok" | "taken">("idle");
+  // Category-defined attribute schema + values keyed by attribute slug.
+  const [categoryAttrs, setCategoryAttrs] = useState<AttributeDef[]>([]);
+  const [definedAttrValues, setDefinedAttrValues] = useState<Record<string, string>>({});
 
   // Translations tab UI state
   const [translationView, setTranslationView] = useState<"both" | "id" | "en">("both");
@@ -154,6 +168,84 @@ export function ProductForm(props: ProductFormProps) {
       .order("sort_order")
       .then(({ data }) => setCategories((data ?? []) as Category[]));
   }, []);
+
+  // Load attribute schema whenever the selected category changes
+  useEffect(() => {
+    if (!values.category_id) {
+      setCategoryAttrs([]);
+      return;
+    }
+    let cancelled = false;
+    void supabase
+      .from("category_attributes")
+      .select(
+        "is_required, sort_order, attribute:attributes(id, slug, name_id, name_en, type, unit, options)",
+      )
+      .eq("category_id", values.category_id)
+      .order("sort_order")
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error) return;
+        type Row = {
+          is_required: boolean;
+          attribute: {
+            id: string;
+            slug: string;
+            name_id: string;
+            name_en: string;
+            type: string;
+            unit: string | null;
+            options: unknown;
+          } | null;
+        };
+        const defs: AttributeDef[] = (data as unknown as Row[] | null ?? [])
+          .map((row) => {
+            const a = row.attribute;
+            if (!a) return null;
+            return {
+              id: a.id,
+              slug: a.slug,
+              name_id: a.name_id,
+              name_en: a.name_en,
+              type: (a.type as AttributeDef["type"]),
+              unit: a.unit,
+              options: Array.isArray(a.options) ? (a.options as string[]) : [],
+              is_required: row.is_required,
+            };
+          })
+          .filter((x): x is AttributeDef => x !== null);
+        setCategoryAttrs(defs);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [values.category_id]);
+
+  // Sync defined-attribute values from `values.attributes` whenever the schema or
+  // values change due to product load / category change.
+  useEffect(() => {
+    const map: Record<string, string> = {};
+    const slugs = new Set(categoryAttrs.map((a) => a.slug));
+    values.attributes.forEach((a) => {
+      if (slugs.has(a.key)) map[a.key] = a.value;
+    });
+    setDefinedAttrValues(map);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categoryAttrs, initialSnapshot]);
+
+  function setDefinedAttr(slug: string, value: string) {
+    setDefinedAttrValues((p) => ({ ...p, [slug]: value }));
+    // Mirror into values.attributes so save / dirty tracking work uniformly
+    setValues((p) => {
+      const idx = p.attributes.findIndex((a) => a.key === slug);
+      if (idx >= 0) {
+        const next = [...p.attributes];
+        next[idx] = { key: slug, value };
+        return { ...p, attributes: next };
+      }
+      return { ...p, attributes: [...p.attributes, { key: slug, value }] };
+    });
+  }
 
   // Load existing product if editing
   useEffect(() => {
@@ -300,6 +392,12 @@ export function ProductForm(props: ProductFormProps) {
     if (!values.price_idr || values.price_idr <= 0) e.price_idr = "Price must be greater than 0";
     if (!values.name_en.trim() && !values.name_id.trim())
       e.name = "At least one language name is required";
+    // Required category attributes
+    categoryAttrs.forEach((a) => {
+      if (!a.is_required) return;
+      const v = (definedAttrValues[a.slug] ?? "").trim();
+      if (!v) e[`attr_${a.slug}`] = `${a.name_en} is required`;
+    });
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -535,7 +633,60 @@ export function ProductForm(props: ProductFormProps) {
 
               <Field label="Attributes">
                 <div className="space-y-2">
+                  {/* Category-defined attributes */}
+                  {categoryAttrs.length > 0 && (
+                    <div className="mb-3 space-y-3 rounded-lg border border-input bg-muted/30 p-3">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        {categories.find((c) => c.id === values.category_id)?.name_en} specs
+                      </p>
+                      {categoryAttrs.map((a) => {
+                        const id = `attr-${a.slug}`;
+                        const val = definedAttrValues[a.slug] ?? "";
+                        const err = errors[`attr_${a.slug}`];
+                        return (
+                          <div key={a.id} className="space-y-1">
+                            <Label htmlFor={id} className="text-sm">
+                              {a.name_en}
+                              {a.unit ? ` (${a.unit})` : ""}
+                              {a.is_required && <span className="ml-1 text-destructive">*</span>}
+                            </Label>
+                            {a.type === "select" ? (
+                              <Select
+                                value={val}
+                                onValueChange={(v) => setDefinedAttr(a.slug, v)}
+                              >
+                                <SelectTrigger id={id}>
+                                  <SelectValue placeholder="Choose…" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {a.options.map((opt) => (
+                                    <SelectItem key={opt} value={opt}>
+                                      {opt}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            ) : (
+                              <Input
+                                id={id}
+                                type={a.type === "number" ? "number" : "text"}
+                                value={val}
+                                onChange={(e) => setDefinedAttr(a.slug, e.target.value)}
+                                placeholder={a.name_id !== a.name_en ? a.name_id : ""}
+                              />
+                            )}
+                            {err && <p className="text-xs text-destructive">{err}</p>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {categoryAttrs.length > 0 && (
+                    <p className="text-xs text-muted-foreground">Custom attributes (extra key/value pairs)</p>
+                  )}
                   {values.attributes.map((attr, idx) => (
+                    // Hide rows whose key matches a category-defined attribute (rendered above)
+                    categoryAttrs.some((d) => d.slug === attr.key) ? null : (
                     <div key={idx} className="flex gap-2">
                       <Input
                         placeholder="Key (e.g. Material)"
@@ -575,6 +726,7 @@ export function ProductForm(props: ProductFormProps) {
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
+                    )
                   ))}
                   <Button
                     type="button"

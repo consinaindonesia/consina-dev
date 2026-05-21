@@ -6,9 +6,10 @@ import { logLoginAttempt } from "@/hooks/use-admin-auth";
 
 export const Route = createFileRoute("/admin/login")({
   head: () => ({ meta: [{ title: "Admin Sign In — Consina" }, { name: "robots", content: "noindex" }] }),
-  validateSearch: (search: Record<string, unknown>) => ({
-    reset: search.reset === "1" || search.reset === 1 ? "1" : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { reset?: "1" } => {
+    const isReset = search.reset === "1" || search.reset === 1;
+    return isReset ? { reset: "1" } : {};
+  },
   component: LoginPage,
 });
 

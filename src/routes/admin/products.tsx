@@ -53,10 +53,14 @@ import {
 
 export const Route = createFileRoute("/admin/products")({
   head: () => ({ meta: [{ title: "Products — Admin" }, { name: "robots", content: "noindex" }] }),
-  validateSearch: (s: Record<string, unknown>) => {
+  validateSearch: (s: Record<string, unknown>): { lang?: LangFilter } => {
     const v = s.lang;
-    const lang: LangFilter =
-      v === "id_only" || v === "en_only" || v === "both" || v === "missing" ? v : "all";
+    const lang: LangFilter | undefined =
+      v === "id_only" || v === "en_only" || v === "both" || v === "missing"
+        ? v
+        : v === "all"
+          ? "all"
+          : undefined;
     return { lang };
   },
   component: ProductsPage,
@@ -112,7 +116,7 @@ function useDebounced<T>(value: T, ms: number) {
 
 function ProductsPage() {
   const navigate = useNavigate();
-  const { lang: initialLang } = Route.useSearch();
+  const { lang: initialLang = "all" as LangFilter } = Route.useSearch();
 
   // Filters
   const [searchInput, setSearchInput] = useState("");

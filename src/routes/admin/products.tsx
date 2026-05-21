@@ -1,9 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   Package,
-  AlertTriangle,
   MoreHorizontal,
   ChevronRight,
   ChevronLeft,
@@ -442,7 +441,6 @@ function ProductsPage() {
               </thead>
               <tbody>
                 {rows.map((r) => {
-                  const missingLang = !r.name_id?.trim() || !r.name_en?.trim();
                   return (
                     <tr
                       key={r.id}

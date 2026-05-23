@@ -1,25 +1,28 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Menu, X, Search, MapPin, ChevronDown } from "lucide-react";
-
-const shopItems = [
-  { to: "/carriers", label: "Carriers" },
-  { to: "/tents", label: "Tents & Shelter" },
-  { to: "/apparel", label: "Apparel" },
-  { to: "/footwear", label: "Footwear" },
-  { to: "/accessories", label: "Accessories" },
-];
-
-const mainLinks = [
-  { to: "/catalog", label: "Catalog" },
-  { to: "/stores", label: "Stores" },
-  { to: "/", label: "Story" },
-];
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 export function Nav() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [shopOpen, setShopOpen] = useState(false);
   const [mobileShopOpen, setMobileShopOpen] = useState(false);
+
+  const shopItems = [
+    { to: "/carriers", label: t("categories.carriers") },
+    { to: "/tents", label: t("categories.tents") },
+    { to: "/apparel", label: t("categories.apparel") },
+    { to: "/footwear", label: t("categories.footwear") },
+    { to: "/accessories", label: t("categories.accessories") },
+  ] as const;
+
+  const mainLinks = [
+    { to: "/catalog", label: t("nav.catalog") },
+    { to: "/stores", label: t("nav.stores") },
+    { to: "/", label: t("nav.story") },
+  ] as const;
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/85 backdrop-blur">
@@ -29,7 +32,7 @@ export function Nav() {
             CONSINA
           </span>
           <span className="hidden text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground md:inline">
-            Since 1999
+            {t("nav.since")}
           </span>
         </Link>
 
@@ -46,7 +49,7 @@ export function Nav() {
               aria-expanded={shopOpen}
               aria-haspopup="true"
             >
-              Shop
+              {t("nav.shop")}
               <ChevronDown className={`h-3.5 w-3.5 transition-transform ${shopOpen ? "rotate-180" : ""}`} />
             </button>
             {shopOpen && (
@@ -76,7 +79,8 @@ export function Nav() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <button className="hidden h-9 w-9 items-center justify-center rounded-full text-foreground/70 transition hover:bg-muted hover:text-primary md:flex" aria-label="Search">
+          <LanguageSwitcher className="hidden md:inline-flex" />
+          <button className="hidden h-9 w-9 items-center justify-center rounded-full text-foreground/70 transition hover:bg-muted hover:text-primary md:flex" aria-label={t("nav.search")}>
             <Search className="h-4 w-4" />
           </button>
           <Link
@@ -84,12 +88,12 @@ export function Nav() {
             className="hidden items-center gap-1.5 rounded-full border border-primary/20 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary transition hover:bg-primary hover:text-primary-foreground md:inline-flex"
           >
             <MapPin className="h-3.5 w-3.5" />
-            Find a store
+            {t("nav.find_store")}
           </Link>
           <button
             className="flex h-9 w-9 items-center justify-center rounded-full text-foreground lg:hidden"
             onClick={() => setOpen(!open)}
-            aria-label="Menu"
+            aria-label={t("nav.menu")}
           >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -105,7 +109,7 @@ export function Nav() {
               onClick={() => setOpen(false)}
               className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-muted"
             >
-              Home
+              {t("nav.home")}
             </Link>
 
             {/* Mobile Shop accordion */}
@@ -113,7 +117,7 @@ export function Nav() {
               onClick={() => setMobileShopOpen(!mobileShopOpen)}
               className="flex items-center justify-between rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-muted"
             >
-              <span>Shop</span>
+              <span>{t("nav.shop")}</span>
               <ChevronDown className={`h-4 w-4 transition-transform ${mobileShopOpen ? "rotate-180" : ""}`} />
             </button>
             {mobileShopOpen && (
@@ -141,6 +145,9 @@ export function Nav() {
                 {l.label}
               </Link>
             ))}
+            <div className="mt-2 px-3">
+              <LanguageSwitcher />
+            </div>
           </nav>
         </div>
       )}

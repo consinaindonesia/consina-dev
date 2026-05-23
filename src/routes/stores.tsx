@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { Search, MapPin, Phone, Clock, Navigation } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 
@@ -208,17 +209,18 @@ function PageHeader({
   search: string;
   onSearch: (v: string) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <section className="border-b border-border bg-[#f5f0e8]">
       <div className="mx-auto max-w-[1280px] px-4 py-16 md:px-8 md:py-24">
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#8b7355]">
-          Store Locator
+          {t("stores_page.eyebrow")}
         </p>
         <h1 className="mt-4 font-[Archivo] text-4xl font-black leading-[0.95] tracking-tight text-primary md:text-6xl">
-          Find a Consina Store
+          {t("stores_page.title")}
         </h1>
         <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
-          More than 80 stores across Indonesia — find the one nearest you.
+          {t("stores_page.subtitle")}
         </p>
 
         <div className="mt-8 max-w-xl">
@@ -228,7 +230,7 @@ function PageHeader({
               type="text"
               value={search}
               onChange={(e) => onSearch(e.target.value)}
-              placeholder="Search by city or province..."
+              placeholder={t("stores_page.search_placeholder")}
               className="w-full rounded-lg border border-border bg-card py-3 pl-10 pr-4 text-sm text-foreground shadow-sm outline-none ring-offset-2 transition focus:ring-2 focus:ring-primary"
             />
           </div>
@@ -247,6 +249,7 @@ function RegionTabs({
   onChange: (r: string) => void;
   counts: Record<string, number>;
 }) {
+  const { t } = useTranslation();
   return (
     <section className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur">
       <div className="mx-auto max-w-[1280px] px-4 md:px-8">
@@ -264,7 +267,7 @@ function RegionTabs({
                     : "border-border bg-card text-foreground/70 hover:border-primary hover:text-primary"
                 }`}
               >
-                {r}
+                {t(`stores_page.regions.${r}`, { defaultValue: r })}
                 <span
                   className={`ml-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
                     isActive ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"
@@ -282,14 +285,15 @@ function RegionTabs({
 }
 
 function StoreList({ stores }: { stores: Store[] }) {
+  const { t } = useTranslation();
   if (stores.length === 0) {
     return (
       <section className="mx-auto max-w-[1280px] px-4 py-20 md:px-8">
         <div className="text-center">
           <MapPin className="mx-auto h-10 w-10 text-muted-foreground/50" />
-          <p className="mt-4 text-lg font-semibold text-foreground">No stores found</p>
+          <p className="mt-4 text-lg font-semibold text-foreground">{t("stores_page.no_results_title")}</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Try a different search or region filter.
+            {t("stores_page.no_results_subtitle")}
           </p>
         </div>
       </section>
@@ -308,6 +312,7 @@ function StoreList({ stores }: { stores: Store[] }) {
 }
 
 function StoreCard({ store }: { store: Store }) {
+  const { t } = useTranslation();
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(store.mapsQuery)}`;
 
   return (
@@ -317,7 +322,7 @@ function StoreCard({ store }: { store: Store }) {
           {store.name}
         </h3>
         <span className="shrink-0 rounded-full bg-accent/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#8b7355]">
-          {store.region}
+          {t(`stores_page.regions.${store.region}`, { defaultValue: store.region })}
         </span>
       </div>
 
@@ -347,7 +352,7 @@ function StoreCard({ store }: { store: Store }) {
         className="mt-5 inline-flex items-center justify-center gap-2 rounded-lg border border-primary bg-primary px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-primary/90"
       >
         <Navigation className="h-3.5 w-3.5" />
-        Get Directions
+        {t("stores_page.get_directions")}
       </a>
     </div>
   );

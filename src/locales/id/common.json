@@ -137,5 +137,96 @@
     "privacy": "Privasi",
     "terms": "Ketentuan",
     "cookies": "Cookies"
+  },
+  "catalog": {
+    "eyebrow": "Katalog",
+    "title": "Setiap Consina, satu jalur.",
+    "subtitle_prefix": "{{count}} perlengkapan tersedia di {{groups}} kategori. Harga promo dalam",
+    "subtitle_currency": "rupiah",
+    "subtitle_suffix": ", diperbarui dari consina.com.",
+    "items_count_one": "{{count}} produk",
+    "items_count_other": "{{count}} produk"
+  },
+  "stores_page": {
+    "eyebrow": "Pencari Toko",
+    "title": "Cari Toko Consina",
+    "subtitle": "Lebih dari 80 toko di seluruh Indonesia — temukan yang terdekat dengan Anda.",
+    "search_placeholder": "Cari berdasarkan kota atau provinsi...",
+    "get_directions": "Petunjuk Arah",
+    "no_results_title": "Tidak ada toko ditemukan",
+    "no_results_subtitle": "Coba pencarian atau filter wilayah yang berbeda.",
+    "regions": {
+      "All": "Semua Wilayah",
+      "Jakarta & Greater Jakarta": "Jakarta & Sekitarnya",
+      "West Java": "Jawa Barat",
+      "Central Java": "Jawa Tengah",
+      "East Java": "Jawa Timur",
+      "Bali & Nusa Tenggara": "Bali & Nusa Tenggara",
+      "Sumatra": "Sumatera",
+      "Kalimantan": "Kalimantan",
+      "Sulawesi": "Sulawesi",
+      "Eastern Indonesia": "Indonesia Timur"
+    }
+  },
+  "cat_page": {
+    "eyebrow": "Kategori",
+    "keep_browsing": "Terus Jelajahi",
+    "related_categories": "Kategori Terkait",
+    "subtitle": {
+      "carriers": "Tas carrier untuk petualangan Indonesia, dari pendakian sehari hingga ekspedisi.",
+      "tents": "Dari camping solo hingga ekspedisi rombongan, di segala cuaca.",
+      "apparel": "Jaket, celana, dan kemeja yang dirancang untuk pendakian.",
+      "footwear": "Sepatu trekking untuk medan Indonesia.",
+      "accessories": "Botol minum, headlamp, kompas, dan banyak lagi."
+    }
+  },
+  "filters": {
+    "capacity": "Kapasitas",
+    "use": "Penggunaan",
+    "type": "Tipe",
+    "gender": "Gender",
+    "season": "Musim",
+    "activity": "Aktivitas",
+    "values": {
+      "All": "Semua",
+      "Hiking": "Hiking",
+      "Trekking": "Trekking",
+      "Expedition": "Ekspedisi",
+      "Daily": "Harian",
+      "3-season": "3-musim",
+      "4-season": "4-musim",
+      "Jackets": "Jaket",
+      "Pants": "Celana",
+      "Shirts": "Kemeja",
+      "Base Layers": "Base Layer",
+      "Men": "Pria",
+      "Women": "Wanita",
+      "Unisex": "Unisex",
+      "Hiking Boots": "Sepatu Hiking",
+      "Trail Runners": "Trail Runner",
+      "Sandals": "Sandal",
+      "Trail Running": "Trail Running",
+      "Camping": "Camping",
+      "Travel": "Perjalanan",
+      "Bottles": "Botol",
+      "Lighting": "Penerangan",
+      "Navigation": "Navigasi",
+      "Gear": "Perlengkapan",
+      "Electronics": "Elektronik",
+      "Cooking": "Memasak",
+      "Safety": "Keamanan"
+    }
+  },
+  "category_detail": {
+    "eyebrow": "Kategori",
+    "filters_title": "Filter",
+    "clear": "Hapus",
+    "no_filters": "Belum ada filter tersedia.",
+    "loading": "Memuat produk…",
+    "no_products": "Belum ada produk di kategori ini.",
+    "no_matching": "Tidak ada produk yang cocok dengan filter.",
+    "clear_filters": "Hapus filter",
+    "products_count_one": "{{count}} produk",
+    "products_count_other": "{{count}} produk"
   }
 }

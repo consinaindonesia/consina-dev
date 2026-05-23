@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { products, categoryOrder, type Product } from "@/data/products";
@@ -15,6 +16,7 @@ export const Route = createFileRoute("/catalog")({
 });
 
 function CatalogPage() {
+  const { t } = useTranslation();
   const grouped = categoryOrder
     .map((cat) => ({ cat, items: products.filter((p) => p.category === cat) }))
     .filter((g) => g.items.length);
@@ -24,13 +26,14 @@ function CatalogPage() {
       <Nav />
       <header className="border-b border-border bg-muted/40">
         <div className="mx-auto max-w-[1280px] px-4 py-16 md:px-8 md:py-20">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">Catalog</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">{t("catalog.eyebrow")}</p>
           <h1 className="mt-3 font-[Archivo] text-4xl font-black tracking-tight text-primary md:text-6xl">
-            Every Consina, one trail.
+            {t("catalog.title")}
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
-            {products.length} pieces of gear live across {grouped.length} categories. Promo
-            prices in <span className="font-semibold text-primary">rupiah</span>, updated from consina.com.
+            {t("catalog.subtitle_prefix", { count: products.length, groups: grouped.length })}{" "}
+            <span className="font-semibold text-primary">{t("catalog.subtitle_currency")}</span>
+            {t("catalog.subtitle_suffix")}
           </p>
           <nav className="mt-8 flex flex-wrap gap-2">
             {grouped.map((g) => (
@@ -55,12 +58,12 @@ function CatalogPage() {
                 <div className="flex flex-col gap-3 border-b-2 border-primary pb-5 md:flex-row md:items-end md:justify-between">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">
-                      {items.length} item{items.length > 1 ? "s" : ""}
+                      {t("catalog.items_count", { count: items.length })}
                     </p>
                     <h2 className="mt-2 font-[Archivo] text-3xl font-black tracking-tight text-primary md:text-5xl">
                       {cat}
                       <span className="ml-3 inline-flex items-center rounded-full bg-accent px-3 py-1 align-middle text-xs font-bold uppercase tracking-wider text-accent-foreground md:text-sm">
-                        Up to {maxDisc}% off
+                        {t("labels.up_to_off", { percent: maxDisc })}
                       </span>
                     </h2>
                   </div>

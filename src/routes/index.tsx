@@ -442,23 +442,23 @@ function Community() {
 
 /* ---------- Store Locator ---------- */
 function StoreLocator() {
+  const { t } = useTranslation();
   return (
     <section className="mx-auto max-w-[1280px] px-4 py-24 md:px-8 md:py-32">
       <div className="grid gap-12 lg:grid-cols-12">
         <div className="lg:col-span-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">Stores</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">{t("home.store_locator.eyebrow")}</p>
           <h2 className="mt-3 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl">
-            Find us across the archipelago.
+            {t("home.store_locator.title")}
           </h2>
           <p className="mt-6 max-w-md text-base leading-relaxed text-muted-foreground">
-            With more than 150 stores from Aceh to Jayapura, there's a Consina
-            counter near every trailhead. Swing by — our staff are hikers too.
+            {t("home.store_locator.subtitle")}
           </p>
           <Link
             to="/stores"
             className="mt-8 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-secondary"
           >
-            <MapPin className="h-4 w-4" /> All stores
+            <MapPin className="h-4 w-4" /> {t("cta.all_stores")}
           </Link>
         </div>
         <div className="lg:col-span-7">

@@ -1,22 +1,42 @@
 import { Link } from "@tanstack/react-router";
 import { Instagram, Facebook, Youtube } from "lucide-react";
-
-const cols = [
-  {
-    title: "Shop",
-    items: ["Carriers", "Tents & Shelter", "Apparel", "Footwear", "Accessories"],
-  },
-  {
-    title: "Company",
-    items: ["Our Story", "Responsible Trekker", "Sustainability", "Careers", "Press"],
-  },
-  {
-    title: "Support",
-    items: ["Store Locator", "Warranty", "Care Guides", "Contact", "FAQ"],
-  },
-];
+import { useTranslation } from "react-i18next";
 
 export function Footer() {
+  const { t } = useTranslation();
+  const cols = [
+    {
+      title: t("footer.shop"),
+      items: [
+        t("footer.items.carriers"),
+        t("footer.items.tents"),
+        t("footer.items.apparel"),
+        t("footer.items.footwear"),
+        t("footer.items.accessories"),
+      ],
+    },
+    {
+      title: t("footer.company"),
+      items: [
+        t("footer.items.our_story"),
+        t("footer.items.responsible_trekker"),
+        t("footer.items.sustainability"),
+        t("footer.items.careers"),
+        t("footer.items.press"),
+      ],
+    },
+    {
+      title: t("footer.support"),
+      items: [
+        t("footer.items.store_locator"),
+        t("footer.items.warranty"),
+        t("footer.items.care_guides"),
+        t("footer.items.contact"),
+        t("footer.items.faq"),
+      ],
+    },
+  ];
+
   return (
     <footer className="mt-24 border-t border-border bg-primary text-primary-foreground">
       <div className="mx-auto max-w-[1280px] px-4 py-16 md:px-8">
@@ -24,12 +44,10 @@ export function Footer() {
           <div className="lg:col-span-2">
             <div className="font-[Archivo] text-3xl font-black tracking-tight">CONSINA</div>
             <p className="mt-1 text-xs font-medium uppercase tracking-[0.25em] text-accent">
-              Inspired by Experience
+              {t("footer.tagline")}
             </p>
             <p className="mt-6 max-w-sm text-sm leading-relaxed text-primary-foreground/70">
-              An Indonesian outdoor lifestyle brand since 1999. Built in Jakarta,
-              tested across the archipelago — from Rinjani's ridgelines to the
-              rainforests of Kalimantan.
+              {t("footer.blurb")}
             </p>
             <div className="mt-6 flex gap-3">
               {[Instagram, Facebook, Youtube].map((Icon, i) => (
@@ -62,11 +80,11 @@ export function Footer() {
           ))}
         </div>
         <div className="mt-14 flex flex-col gap-3 border-t border-primary-foreground/10 pt-6 text-xs text-primary-foreground/55 md:flex-row md:items-center md:justify-between">
-          <span>© {new Date().getFullYear()} Consina. Jakarta, Indonesia.</span>
+          <span>{t("footer.copyright", { year: new Date().getFullYear() })}</span>
           <div className="flex gap-5">
-            <Link to="/">Privacy</Link>
-            <Link to="/">Terms</Link>
-            <Link to="/">Cookies</Link>
+            <Link to="/">{t("footer.privacy")}</Link>
+            <Link to="/">{t("footer.terms")}</Link>
+            <Link to="/">{t("footer.cookies")}</Link>
           </div>
         </div>
       </div>

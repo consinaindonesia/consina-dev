@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowRight, ArrowUpRight, MapPin, Mountain, Leaf, Users, Mail, Phone, ChevronDown } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -154,6 +155,7 @@ function HomePage() {
 
 /* ---------- Hero ---------- */
 function Hero() {
+  const { t } = useTranslation();
   return (
     <section className="relative isolate overflow-hidden">
       <div className="absolute inset-0 -z-10">
@@ -168,37 +170,36 @@ function Hero() {
       </div>
       <div className="mx-auto flex min-h-[88vh] max-w-[1280px] flex-col justify-end px-4 pb-16 pt-32 md:px-8 md:pb-24">
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">
-          The Outdoor Lifestyle — Est. 1999
+          {t("home.hero.tagline")}
         </p>
         <h1 className="mt-5 max-w-4xl font-[Archivo] text-5xl font-black leading-[0.95] tracking-tight text-primary-foreground md:text-7xl lg:text-[88px]">
-          Inspired By <em className="not-italic text-accent">Experience</em>
+          {t("home.hero.title_1")} <em className="not-italic text-accent">{t("home.hero.title_em")}</em>
           <br />
-          Built for the archipelago.
+          {t("home.hero.title_2")}
         </h1>
         <p className="mt-6 max-w-xl text-base leading-relaxed text-primary-foreground/85 md:text-lg">
-          Gear for hikers, campers, climbers and runners who call Indonesia
-          their playground — designed in Jakarta, tested on every island.
+          {t("home.hero.subtitle")}
         </p>
         <div className="mt-10 flex flex-wrap items-center gap-4">
           <Link
             to="/catalog"
             className="group inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold uppercase tracking-wider text-accent-foreground transition hover:bg-accent/90"
           >
-            Explore the collection
+            {t("cta.explore_collection")}
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
           <Link
             to="/stores"
             className="inline-flex items-center gap-2 rounded-full border border-primary-foreground/30 px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-primary-foreground/10"
           >
-            Find a Store
+            {t("cta.find_store")}
           </Link>
         </div>
         <div className="mt-16 grid max-w-2xl grid-cols-3 gap-6 border-t border-primary-foreground/20 pt-6 text-[#1a3a2e]">
           {[
-            ["25+", "Years on the trail"],
-            ["150+", "Stores across Indonesia"],
-            ["100%", "Locally crafted"],
+            ["25+", t("home.hero.stat_years")],
+            ["150+", t("home.hero.stat_stores")],
+            ["100%", t("home.hero.stat_local")],
           ].map(([n, l]) => (
             <div key={l}>
               <div className="font-[Archivo] text-2xl font-bold text-[#1a3a2e] md:text-3xl">{n}</div>
@@ -213,6 +214,7 @@ function Hero() {
 
 /* ---------- Brand Story ---------- */
 function BrandStory() {
+  const { t } = useTranslation();
   return (
     <section className="mx-auto max-w-[1280px] px-4 py-24 md:px-8 md:py-32">
       <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
@@ -233,27 +235,21 @@ function BrandStory() {
         {/* RIGHT COLUMN — Text */}
         <div className="order-2">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">
-            Our Story
+            {t("home.story.eyebrow")}
           </p>
           <h2 className="mt-4 font-[Archivo] text-4xl font-black leading-[1.05] tracking-tight text-primary md:text-5xl">
-            Inspired by Experience
+            {t("home.story.title")}
           </h2>
           <div className="mt-8 space-y-5 text-base leading-relaxed text-foreground/80 md:text-lg">
-            <p>
-              Since 1999, Consina has been Indonesia's outdoor lifestyle brand — born in Jakarta, built for adventurers.
-            </p>
-            <p>
-              Every product we make is shaped by feedback from our community of hikers, campers, and climbers. We don't just design gear — we design from lived experience.
-            </p>
-            <p>
-              Today, our 'Responsible Trekker' community spans the entire archipelago, sharing one belief: leave the trail better than you found it.
-            </p>
+            <p>{t("home.story.p1")}</p>
+            <p>{t("home.story.p2")}</p>
+            <p>{t("home.story.p3")}</p>
           </div>
           <Link
             to="/"
             className="mt-10 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-secondary"
           >
-            Learn more about us <span className="text-base">→</span>
+            {t("cta.learn_more")} <span className="text-base">→</span>
           </Link>
         </div>
       </div>
@@ -263,25 +259,31 @@ function BrandStory() {
 
 /* ---------- Categories ---------- */
 function Categories() {
+  const { t } = useTranslation();
+  const localizedCategories = categories.map((c) => ({
+    ...c,
+    name: t(`categories.${c.slug}` as const),
+    desc: t(`home.categories.${c.slug}_desc` as const),
+  }));
   return (
     <section className="bg-background py-24 md:py-32">
       <div className="mx-auto max-w-[1280px] px-4 md:px-8">
         {/* Section heading */}
         <div className="text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">
-            Explore
+            {t("home.categories.eyebrow")}
           </p>
           <h2 className="mt-3 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl">
-            Shop by Category
+            {t("home.categories.title")}
           </h2>
           <p className="mt-3 text-base text-muted-foreground">
-            Built for every adventure, made in Indonesia
+            {t("home.categories.subtitle")}
           </p>
         </div>
 
         {/* Cards grid */}
         <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-          {categories.map((cat) => (
+          {localizedCategories.map((cat) => (
             <CategoryCard key={cat.slug} cat={cat} />
           ))}
         </div>
@@ -290,7 +292,16 @@ function Categories() {
   );
 }
 
-function CategoryCard({ cat }: { cat: typeof categories[number] }) {
+type CategoryItem = {
+  slug: (typeof categories)[number]["slug"];
+  filter: string;
+  img: string;
+  name: string;
+  desc: string;
+};
+
+function CategoryCard({ cat }: { cat: CategoryItem }) {
+  const { t } = useTranslation();
   const stats = catStats(cat.filter);
   return (
     <Link
@@ -307,7 +318,7 @@ function CategoryCard({ cat }: { cat: typeof categories[number] }) {
         />
         {stats.max > 0 && (
           <span className="absolute left-3 top-3 rounded-full bg-[#1a3a2e] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
-            Up to {stats.max}% off
+            {t("labels.up_to_off", { percent: stats.max })}
           </span>
         )}
       </div>
@@ -319,11 +330,11 @@ function CategoryCard({ cat }: { cat: typeof categories[number] }) {
             {cat.name}
           </h3>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-            {cat.desc}{stats.count ? ` · ${stats.count} items` : ""}
+            {cat.desc}{stats.count ? ` · ${stats.count} ${t("labels.items")}` : ""}
           </p>
         </div>
         <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-[#1a3a2e] transition group-hover:gap-2">
-          Explore <ArrowRight className="h-3.5 w-3.5" />
+          {t("cta.explore")} <ArrowRight className="h-3.5 w-3.5" />
         </span>
       </div>
     </Link>
@@ -332,15 +343,16 @@ function CategoryCard({ cat }: { cat: typeof categories[number] }) {
 
 /* ---------- Featured Products ---------- */
 function FeaturedProducts() {
+  const { t } = useTranslation();
   return (
     <section className="mx-auto max-w-[1280px] px-4 py-24 md:px-8 md:py-32">
       {/* Section heading */}
       <div className="text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">
-          Bestsellers
+          {t("home.featured.eyebrow")}
         </p>
         <h2 className="mt-3 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl">
-          Trail-Tested Favorites
+          {t("home.featured.title")}
         </h2>
       </div>
 
@@ -374,7 +386,7 @@ function FeaturedProducts() {
                 to="/catalog"
                 className="mt-3 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-[#1a3a2e] transition group-hover:gap-2"
               >
-                View Details <ArrowRight className="h-3.5 w-3.5" />
+                {t("cta.view_details")} <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
           </div>
@@ -386,30 +398,27 @@ function FeaturedProducts() {
 
 /* ---------- Community ---------- */
 function Community() {
+  const { t } = useTranslation();
   return (
     <section className="bg-[#1a3a2e]">
       <div className="mx-auto grid max-w-[1280px] items-center gap-10 px-4 py-24 md:grid-cols-2 md:px-8 md:py-32">
         {/* LEFT COLUMN — Text */}
         <div className="order-2 md:order-1">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#d4b896]">
-            Our Community
+            {t("home.community.eyebrow")}
           </p>
           <h2 className="mt-4 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-white md:text-5xl">
-            The Responsible Trekker
+            {t("home.community.title")}
           </h2>
           <div className="mt-8 space-y-5 text-base leading-relaxed text-white/85 md:text-lg">
-            <p>
-              We believe outdoor adventure and environmental care are inseparable. That's why our community of hikers, climbers, and campers carry one promise: leave the trail better than you found it.
-            </p>
-            <p>
-              Join thousands of Indonesian adventurers who choose gear that respects the mountains they love.
-            </p>
+            <p>{t("home.community.p1")}</p>
+            <p>{t("home.community.p2")}</p>
           </div>
           <Link
             to="/"
             className="mt-10 inline-flex items-center gap-2 rounded-full bg-[#d4b896] px-6 py-3 text-sm font-semibold uppercase tracking-wider text-[#1a3a2e] transition hover:bg-[#c9a84c]"
           >
-            Join the Community <ArrowRight className="h-4 w-4" />
+            {t("cta.join_community")} <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
 
@@ -433,23 +442,23 @@ function Community() {
 
 /* ---------- Store Locator ---------- */
 function StoreLocator() {
+  const { t } = useTranslation();
   return (
     <section className="mx-auto max-w-[1280px] px-4 py-24 md:px-8 md:py-32">
       <div className="grid gap-12 lg:grid-cols-12">
         <div className="lg:col-span-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">Stores</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">{t("home.store_locator.eyebrow")}</p>
           <h2 className="mt-3 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl">
-            Find us across the archipelago.
+            {t("home.store_locator.title")}
           </h2>
           <p className="mt-6 max-w-md text-base leading-relaxed text-muted-foreground">
-            With more than 150 stores from Aceh to Jayapura, there's a Consina
-            counter near every trailhead. Swing by — our staff are hikers too.
+            {t("home.store_locator.subtitle")}
           </p>
           <Link
             to="/stores"
             className="mt-8 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-secondary"
           >
-            <MapPin className="h-4 w-4" /> All stores
+            <MapPin className="h-4 w-4" /> {t("cta.all_stores")}
           </Link>
         </div>
         <div className="lg:col-span-7">
@@ -480,20 +489,21 @@ function ContactSection() {
 
 /* ---------- FAQ ---------- */
 function FAQSection() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState<number | null>(0);
   return (
     <section className="bg-background py-24 md:py-32" aria-labelledby="faq-heading">
       <div className="mx-auto max-w-3xl px-4 md:px-8">
         <div className="text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">FAQ</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">{t("home.faq.eyebrow")}</p>
           <h2
             id="faq-heading"
             className="mt-3 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl"
           >
-            Frequently Asked Questions
+            {t("home.faq.title")}
           </h2>
           <p className="mt-3 text-base text-muted-foreground">
-            Quick answers about Consina, our products, and our community.
+            {t("home.faq.subtitle")}
           </p>
         </div>
 
@@ -532,7 +542,14 @@ function FAQSection() {
 }
 
 function ContactSectionInner() {
-  const subjects = ["Product Question", "Wholesale Inquiry", "Press & Media", "Career", "Other"] as const;
+  const { t } = useTranslation();
+  const subjects = [
+    t("home.contact.subject_product"),
+    t("home.contact.subject_wholesale"),
+    t("home.contact.subject_press"),
+    t("home.contact.subject_career"),
+    t("home.contact.subject_other"),
+  ];
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState<string>(subjects[0]);
@@ -562,12 +579,12 @@ function ContactSectionInner() {
     const msg = message.trim();
     if (!name || !mail || !msg || !subject) {
       setStatus("error");
-      setErrorMsg("Please fill in all fields.");
+      setErrorMsg(t("home.contact.fill_all"));
       return;
     }
     if (!emailRegex.test(mail)) {
       setStatus("error");
-      setErrorMsg("Please enter a valid email address.");
+      setErrorMsg(t("home.contact.invalid_email"));
       return;
     }
 
@@ -577,7 +594,7 @@ function ContactSectionInner() {
     });
     if (error) {
       setStatus("error");
-      setErrorMsg("Something went wrong. Please try again or email us at info@consina.com");
+      setErrorMsg(t("home.contact.submit_error"));
       return;
     }
     resetForm();
@@ -588,13 +605,12 @@ function ContactSectionInner() {
     <section className="bg-muted/60 py-24 md:py-32">
       <div className="mx-auto grid max-w-[1280px] gap-14 px-4 md:grid-cols-2 md:px-8">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">Contact</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">{t("home.contact.eyebrow")}</p>
           <h2 className="mt-3 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl">
-            Got a question?<br />Drop us a line.
+            {t("home.contact.title_1")}<br />{t("home.contact.title_2")}
           </h2>
           <p className="mt-6 max-w-md text-base leading-relaxed text-muted-foreground">
-            Whether it's product care, dealer enquiries, or a trail story you
-            want to share — our team in Jakarta reads every message.
+            {t("home.contact.subtitle")}
           </p>
           <div className="mt-10 space-y-4 text-sm">
             <div className="flex items-center gap-3 text-foreground">
@@ -625,12 +641,12 @@ function ContactSectionInner() {
             />
           </div>
           <div className="grid gap-4 md:grid-cols-2">
-            <Field label="Name" id="name" value={fullName} onChange={setFullName} />
-            <Field label="Email" id="email" type="email" value={email} onChange={setEmail} />
+            <Field label={t("labels.name")} id="name" value={fullName} onChange={setFullName} />
+            <Field label={t("labels.email")} id="email" type="email" value={email} onChange={setEmail} />
           </div>
           <div className="mt-4">
             <label htmlFor="subject" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Subject
+              {t("labels.subject")}
             </label>
             <select
               id="subject"
@@ -646,7 +662,7 @@ function ContactSectionInner() {
           </div>
           <div className="mt-4">
             <label htmlFor="msg" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Message
+              {t("labels.message")}
             </label>
             <textarea
               id="msg"
@@ -659,7 +675,7 @@ function ContactSectionInner() {
           </div>
           {status === "success" && (
             <p className="mt-6 rounded-sm border border-green-600/30 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
-              Thanks! We'll reply within 2 business days.
+              {t("home.contact.success")}
             </p>
           )}
           {status === "error" && errorMsg && (
@@ -672,7 +688,7 @@ function ContactSectionInner() {
             disabled={status === "submitting"}
             className="mt-8 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-secondary disabled:opacity-60"
           >
-            {status === "submitting" ? "Sending…" : "Send message"} <ArrowRight className="h-4 w-4" />
+            {status === "submitting" ? t("cta.sending") : t("cta.send_message")} <ArrowRight className="h-4 w-4" />
           </button>
         </form>
       </div>

@@ -1,0 +1,141 @@
+{
+  "nav": {
+    "home": "Home",
+    "shop": "Shop",
+    "catalog": "Catalog",
+    "stores": "Stores",
+    "about": "About",
+    "story": "Story",
+    "contact": "Contact",
+    "find_store": "Find a store",
+    "since": "Since 1999",
+    "menu": "Menu",
+    "search": "Search"
+  },
+  "categories": {
+    "carriers": "Carriers",
+    "tents": "Tents & Shelter",
+    "apparel": "Apparel",
+    "footwear": "Footwear",
+    "accessories": "Accessories"
+  },
+  "cta": {
+    "explore_gear": "Explore Gear",
+    "explore_collection": "Explore the collection",
+    "explore": "Explore",
+    "find_store": "Find a Store",
+    "all_stores": "All stores",
+    "add_to_inquiry": "Add to Inquiry",
+    "view_details": "View Details",
+    "send_inquiry": "Send Inquiry",
+    "send_message": "Send message",
+    "sending": "Sending…",
+    "learn_more": "Learn more about us",
+    "join_community": "Join the Community"
+  },
+  "labels": {
+    "price": "Price",
+    "in_stock": "In Stock",
+    "out_of_stock": "Out of Stock",
+    "low_stock": "Low Stock",
+    "search_placeholder": "Search products...",
+    "items": "items",
+    "up_to_off": "Up to {{percent}}% off",
+    "name": "Name",
+    "email": "Email",
+    "subject": "Subject",
+    "message": "Message"
+  },
+  "home": {
+    "hero": {
+      "tagline": "The Outdoor Lifestyle — Est. 1999",
+      "title_1": "Inspired By",
+      "title_em": "Experience",
+      "title_2": "Built for the archipelago.",
+      "subtitle": "Gear for hikers, campers, climbers and runners who call Indonesia their playground — designed in Jakarta, tested on every island.",
+      "stat_years": "Years on the trail",
+      "stat_stores": "Stores across Indonesia",
+      "stat_local": "Locally crafted"
+    },
+    "story": {
+      "eyebrow": "Our Story",
+      "title": "Inspired by Experience",
+      "p1": "Since 1999, Consina has been Indonesia's outdoor lifestyle brand — born in Jakarta, built for adventurers.",
+      "p2": "Every product we make is shaped by feedback from our community of hikers, campers, and climbers. We don't just design gear — we design from lived experience.",
+      "p3": "Today, our 'Responsible Trekker' community spans the entire archipelago, sharing one belief: leave the trail better than you found it."
+    },
+    "categories": {
+      "eyebrow": "Explore",
+      "title": "Shop by Category",
+      "subtitle": "Built for every adventure, made in Indonesia",
+      "carriers_desc": "Backpacks 40–100L for every adventure",
+      "tents_desc": "From solo overnighters to group expeditions",
+      "apparel_desc": "Jackets, pants, and shirts for the trail",
+      "footwear_desc": "Trekking shoes built for Indonesian terrain",
+      "accessories_desc": "Bottles, headlamps, compasses, and more"
+    },
+    "featured": {
+      "eyebrow": "Bestsellers",
+      "title": "Trail-Tested Favorites"
+    },
+    "community": {
+      "eyebrow": "Our Community",
+      "title": "The Responsible Trekker",
+      "p1": "We believe outdoor adventure and environmental care are inseparable. That's why our community of hikers, climbers, and campers carry one promise: leave the trail better than you found it.",
+      "p2": "Join thousands of Indonesian adventurers who choose gear that respects the mountains they love."
+    },
+    "store_locator": {
+      "eyebrow": "Stores",
+      "title": "Find us across the archipelago.",
+      "subtitle": "With more than 150 stores from Aceh to Jayapura, there's a Consina counter near every trailhead. Swing by — our staff are hikers too."
+    },
+    "faq": {
+      "eyebrow": "FAQ",
+      "title": "Frequently Asked Questions",
+      "subtitle": "Quick answers about Consina, our products, and our community."
+    },
+    "contact": {
+      "eyebrow": "Contact",
+      "title_1": "Got a question?",
+      "title_2": "Drop us a line.",
+      "subtitle": "Whether it's product care, dealer enquiries, or a trail story you want to share — our team in Jakarta reads every message.",
+      "subject_product": "Product Question",
+      "subject_wholesale": "Wholesale Inquiry",
+      "subject_press": "Press & Media",
+      "subject_career": "Career",
+      "subject_other": "Other",
+      "success": "Thanks! We'll reply within 2 business days.",
+      "fill_all": "Please fill in all fields.",
+      "invalid_email": "Please enter a valid email address.",
+      "submit_error": "Something went wrong. Please try again or email us at info@consina.com"
+    }
+  },
+  "footer": {
+    "tagline": "Inspired by Experience",
+    "blurb": "An Indonesian outdoor lifestyle brand since 1999. Built in Jakarta, tested across the archipelago — from Rinjani's ridgelines to the rainforests of Kalimantan.",
+    "shop": "Shop",
+    "company": "Company",
+    "support": "Support",
+    "items": {
+      "carriers": "Carriers",
+      "tents": "Tents & Shelter",
+      "apparel": "Apparel",
+      "footwear": "Footwear",
+      "accessories": "Accessories",
+      "our_story": "Our Story",
+      "responsible_trekker": "Responsible Trekker",
+      "sustainability": "Sustainability",
+      "careers": "Careers",
+      "press": "Press",
+      "store_locator": "Store Locator",
+      "warranty": "Warranty",
+      "care_guides": "Care Guides",
+      "contact": "Contact",
+      "faq": "FAQ"
+    },
+    "copyright": "© {{year}} Consina. Jakarta, Indonesia.",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "cookies": "Cookies"
+  }
+}

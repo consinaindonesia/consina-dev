@@ -1,0 +1,141 @@
+{
+  "nav": {
+    "home": "Beranda",
+    "shop": "Belanja",
+    "catalog": "Katalog",
+    "stores": "Toko",
+    "about": "Tentang",
+    "story": "Cerita",
+    "contact": "Kontak",
+    "find_store": "Cari toko",
+    "since": "Sejak 1999",
+    "menu": "Menu",
+    "search": "Cari"
+  },
+  "categories": {
+    "carriers": "Tas Carrier",
+    "tents": "Tenda & Pelindung",
+    "apparel": "Pakaian",
+    "footwear": "Sepatu",
+    "accessories": "Aksesoris"
+  },
+  "cta": {
+    "explore_gear": "Lihat Produk",
+    "explore_collection": "Lihat Koleksi",
+    "explore": "Jelajahi",
+    "find_store": "Cari Toko",
+    "all_stores": "Semua toko",
+    "add_to_inquiry": "Tambah ke Permintaan",
+    "view_details": "Lihat Detail",
+    "send_inquiry": "Kirim Permintaan",
+    "send_message": "Kirim Pesan",
+    "sending": "Mengirim…",
+    "learn_more": "Selengkapnya tentang kami",
+    "join_community": "Gabung Komunitas"
+  },
+  "labels": {
+    "price": "Harga",
+    "in_stock": "Tersedia",
+    "out_of_stock": "Habis",
+    "low_stock": "Stok Terbatas",
+    "search_placeholder": "Cari produk...",
+    "items": "produk",
+    "up_to_off": "Diskon hingga {{percent}}%",
+    "name": "Nama",
+    "email": "Email",
+    "subject": "Subjek",
+    "message": "Pesan"
+  },
+  "home": {
+    "hero": {
+      "tagline": "Gaya Hidup Outdoor — Sejak 1999",
+      "title_1": "Terinspirasi Oleh",
+      "title_em": "Pengalaman",
+      "title_2": "Dibangun untuk Nusantara.",
+      "subtitle": "Perlengkapan untuk pendaki, penjelajah, pemanjat, dan pelari yang menjadikan Indonesia sebagai medan bermain — dirancang di Jakarta, diuji di setiap pulau.",
+      "stat_years": "Tahun di jalur pendakian",
+      "stat_stores": "Toko di seluruh Indonesia",
+      "stat_local": "Buatan dalam negeri"
+    },
+    "story": {
+      "eyebrow": "Cerita Kami",
+      "title": "Terinspirasi dari Pengalaman",
+      "p1": "Sejak 1999, Consina menjadi merek gaya hidup outdoor Indonesia — lahir di Jakarta, dibangun untuk para penjelajah.",
+      "p2": "Setiap produk kami dibentuk oleh masukan komunitas pendaki, penjelajah, dan pemanjat. Kami tidak hanya merancang perlengkapan — kami merancang dari pengalaman nyata.",
+      "p3": "Hari ini, komunitas 'Responsible Trekker' kami tersebar di seluruh nusantara, dengan satu keyakinan: tinggalkan jalur lebih baik dari saat Anda menemukannya."
+    },
+    "categories": {
+      "eyebrow": "Jelajahi",
+      "title": "Belanja per Kategori",
+      "subtitle": "Dibuat untuk setiap petualangan, dibuat di Indonesia",
+      "carriers_desc": "Tas carrier 40–100L untuk setiap petualangan",
+      "tents_desc": "Dari camping solo hingga ekspedisi rombongan",
+      "apparel_desc": "Jaket, celana, dan kemeja untuk pendakian",
+      "footwear_desc": "Sepatu trekking untuk medan Indonesia",
+      "accessories_desc": "Botol, headlamp, kompas, dan banyak lagi"
+    },
+    "featured": {
+      "eyebrow": "Terlaris",
+      "title": "Favorit yang Teruji di Jalur"
+    },
+    "community": {
+      "eyebrow": "Komunitas Kami",
+      "title": "The Responsible Trekker",
+      "p1": "Kami percaya petualangan outdoor dan kepedulian lingkungan tidak dapat dipisahkan. Itulah mengapa komunitas pendaki, pemanjat, dan penjelajah kami memegang satu janji: tinggalkan jalur lebih baik dari saat Anda menemukannya.",
+      "p2": "Bergabunglah dengan ribuan penjelajah Indonesia yang memilih perlengkapan yang menghormati gunung-gunung yang mereka cintai."
+    },
+    "store_locator": {
+      "eyebrow": "Toko",
+      "title": "Temukan kami di seluruh nusantara.",
+      "subtitle": "Dengan lebih dari 150 toko dari Aceh hingga Jayapura, ada gerai Consina di dekat setiap titik awal pendakian. Mampirlah — staf kami juga pendaki."
+    },
+    "faq": {
+      "eyebrow": "FAQ",
+      "title": "Pertanyaan yang Sering Diajukan",
+      "subtitle": "Jawaban singkat tentang Consina, produk kami, dan komunitas kami."
+    },
+    "contact": {
+      "eyebrow": "Kontak",
+      "title_1": "Punya pertanyaan?",
+      "title_2": "Kirim pesan ke kami.",
+      "subtitle": "Baik tentang perawatan produk, pertanyaan dealer, atau cerita pendakian yang ingin Anda bagikan — tim kami di Jakarta membaca setiap pesan.",
+      "subject_product": "Pertanyaan Produk",
+      "subject_wholesale": "Permintaan Grosir",
+      "subject_press": "Pers & Media",
+      "subject_career": "Karier",
+      "subject_other": "Lainnya",
+      "success": "Terima kasih! Kami akan membalas dalam 2 hari kerja.",
+      "fill_all": "Mohon isi semua kolom.",
+      "invalid_email": "Mohon masukkan alamat email yang valid.",
+      "submit_error": "Terjadi kesalahan. Silakan coba lagi atau email kami di info@consina.com"
+    }
+  },
+  "footer": {
+    "tagline": "Terinspirasi dari Pengalaman",
+    "blurb": "Merek gaya hidup outdoor Indonesia sejak 1999. Dibangun di Jakarta, diuji di seluruh nusantara — dari punggungan Rinjani hingga hutan hujan Kalimantan.",
+    "shop": "Belanja",
+    "company": "Perusahaan",
+    "support": "Bantuan",
+    "items": {
+      "carriers": "Tas Carrier",
+      "tents": "Tenda & Pelindung",
+      "apparel": "Pakaian",
+      "footwear": "Sepatu",
+      "accessories": "Aksesoris",
+      "our_story": "Cerita Kami",
+      "responsible_trekker": "Responsible Trekker",
+      "sustainability": "Keberlanjutan",
+      "careers": "Karier",
+      "press": "Pers",
+      "store_locator": "Pencari Toko",
+      "warranty": "Garansi",
+      "care_guides": "Panduan Perawatan",
+      "contact": "Kontak",
+      "faq": "FAQ"
+    },
+    "copyright": "© {{year}} Consina. Jakarta, Indonesia.",
+    "privacy": "Privasi",
+    "terms": "Ketentuan",
+    "cookies": "Cookies"
+  }
+}

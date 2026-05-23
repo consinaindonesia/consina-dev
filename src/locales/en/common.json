@@ -137,5 +137,96 @@
     "privacy": "Privacy",
     "terms": "Terms",
     "cookies": "Cookies"
+  },
+  "catalog": {
+    "eyebrow": "Catalog",
+    "title": "Every Consina, one trail.",
+    "subtitle_prefix": "{{count}} pieces of gear live across {{groups}} categories. Promo prices in",
+    "subtitle_currency": "rupiah",
+    "subtitle_suffix": ", updated from consina.com.",
+    "items_count_one": "{{count}} item",
+    "items_count_other": "{{count}} items"
+  },
+  "stores_page": {
+    "eyebrow": "Store Locator",
+    "title": "Find a Consina Store",
+    "subtitle": "More than 80 stores across Indonesia — find the one nearest you.",
+    "search_placeholder": "Search by city or province...",
+    "get_directions": "Get Directions",
+    "no_results_title": "No stores found",
+    "no_results_subtitle": "Try a different search or region filter.",
+    "regions": {
+      "All": "All Regions",
+      "Jakarta & Greater Jakarta": "Jakarta & Greater Jakarta",
+      "West Java": "West Java",
+      "Central Java": "Central Java",
+      "East Java": "East Java",
+      "Bali & Nusa Tenggara": "Bali & Nusa Tenggara",
+      "Sumatra": "Sumatra",
+      "Kalimantan": "Kalimantan",
+      "Sulawesi": "Sulawesi",
+      "Eastern Indonesia": "Eastern Indonesia"
+    }
+  },
+  "cat_page": {
+    "eyebrow": "Category",
+    "keep_browsing": "Keep Browsing",
+    "related_categories": "Related Categories",
+    "subtitle": {
+      "carriers": "Backpacks built for Indonesian adventures, from day hikes to expeditions.",
+      "tents": "From solo overnighters to group expeditions, in any weather.",
+      "apparel": "Jackets, pants, and shirts engineered for the trail.",
+      "footwear": "Trekking shoes built for Indonesian terrain.",
+      "accessories": "Water bottles, headlamps, compasses, and more."
+    }
+  },
+  "filters": {
+    "capacity": "Capacity",
+    "use": "Use",
+    "type": "Type",
+    "gender": "Gender",
+    "season": "Season",
+    "activity": "Activity",
+    "values": {
+      "All": "All",
+      "Hiking": "Hiking",
+      "Trekking": "Trekking",
+      "Expedition": "Expedition",
+      "Daily": "Daily",
+      "3-season": "3-season",
+      "4-season": "4-season",
+      "Jackets": "Jackets",
+      "Pants": "Pants",
+      "Shirts": "Shirts",
+      "Base Layers": "Base Layers",
+      "Men": "Men",
+      "Women": "Women",
+      "Unisex": "Unisex",
+      "Hiking Boots": "Hiking Boots",
+      "Trail Runners": "Trail Runners",
+      "Sandals": "Sandals",
+      "Trail Running": "Trail Running",
+      "Camping": "Camping",
+      "Travel": "Travel",
+      "Bottles": "Bottles",
+      "Lighting": "Lighting",
+      "Navigation": "Navigation",
+      "Gear": "Gear",
+      "Electronics": "Electronics",
+      "Cooking": "Cooking",
+      "Safety": "Safety"
+    }
+  },
+  "category_detail": {
+    "eyebrow": "Category",
+    "filters_title": "Filters",
+    "clear": "Clear",
+    "no_filters": "No filters available yet.",
+    "loading": "Loading products…",
+    "no_products": "No products in this category yet.",
+    "no_matching": "No products match the selected filters.",
+    "clear_filters": "Clear filters",
+    "products_count_one": "{{count}} product",
+    "products_count_other": "{{count}} products"
   }
 }

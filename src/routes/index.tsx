@@ -542,7 +542,14 @@ function FAQSection() {
 }
 
 function ContactSectionInner() {
-  const subjects = ["Product Question", "Wholesale Inquiry", "Press & Media", "Career", "Other"] as const;
+  const { t } = useTranslation();
+  const subjects = [
+    t("home.contact.subject_product"),
+    t("home.contact.subject_wholesale"),
+    t("home.contact.subject_press"),
+    t("home.contact.subject_career"),
+    t("home.contact.subject_other"),
+  ];
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState<string>(subjects[0]);
@@ -572,12 +579,12 @@ function ContactSectionInner() {
     const msg = message.trim();
     if (!name || !mail || !msg || !subject) {
       setStatus("error");
-      setErrorMsg("Please fill in all fields.");
+      setErrorMsg(t("home.contact.fill_all"));
       return;
     }
     if (!emailRegex.test(mail)) {
       setStatus("error");
-      setErrorMsg("Please enter a valid email address.");
+      setErrorMsg(t("home.contact.invalid_email"));
       return;
     }
 
@@ -587,7 +594,7 @@ function ContactSectionInner() {
     });
     if (error) {
       setStatus("error");
-      setErrorMsg("Something went wrong. Please try again or email us at info@consina.com");
+      setErrorMsg(t("home.contact.submit_error"));
       return;
     }
     resetForm();
@@ -598,13 +605,12 @@ function ContactSectionInner() {
     <section className="bg-muted/60 py-24 md:py-32">
       <div className="mx-auto grid max-w-[1280px] gap-14 px-4 md:grid-cols-2 md:px-8">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">Contact</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">{t("home.contact.eyebrow")}</p>
           <h2 className="mt-3 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl">
-            Got a question?<br />Drop us a line.
+            {t("home.contact.title_1")}<br />{t("home.contact.title_2")}
           </h2>
           <p className="mt-6 max-w-md text-base leading-relaxed text-muted-foreground">
-            Whether it's product care, dealer enquiries, or a trail story you
-            want to share — our team in Jakarta reads every message.
+            {t("home.contact.subtitle")}
           </p>
           <div className="mt-10 space-y-4 text-sm">
             <div className="flex items-center gap-3 text-foreground">
@@ -635,12 +641,12 @@ function ContactSectionInner() {
             />
           </div>
           <div className="grid gap-4 md:grid-cols-2">
-            <Field label="Name" id="name" value={fullName} onChange={setFullName} />
-            <Field label="Email" id="email" type="email" value={email} onChange={setEmail} />
+            <Field label={t("labels.name")} id="name" value={fullName} onChange={setFullName} />
+            <Field label={t("labels.email")} id="email" type="email" value={email} onChange={setEmail} />
           </div>
           <div className="mt-4">
             <label htmlFor="subject" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Subject
+              {t("labels.subject")}
             </label>
             <select
               id="subject"
@@ -656,7 +662,7 @@ function ContactSectionInner() {
           </div>
           <div className="mt-4">
             <label htmlFor="msg" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Message
+              {t("labels.message")}
             </label>
             <textarea
               id="msg"
@@ -669,7 +675,7 @@ function ContactSectionInner() {
           </div>
           {status === "success" && (
             <p className="mt-6 rounded-sm border border-green-600/30 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
-              Thanks! We'll reply within 2 business days.
+              {t("home.contact.success")}
             </p>
           )}
           {status === "error" && errorMsg && (
@@ -682,7 +688,7 @@ function ContactSectionInner() {
             disabled={status === "submitting"}
             className="mt-8 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-secondary disabled:opacity-60"
           >
-            {status === "submitting" ? "Sending…" : "Send message"} <ArrowRight className="h-4 w-4" />
+            {status === "submitting" ? t("cta.sending") : t("cta.send_message")} <ArrowRight className="h-4 w-4" />
           </button>
         </form>
       </div>

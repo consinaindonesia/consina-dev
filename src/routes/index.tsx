@@ -259,25 +259,31 @@ function BrandStory() {
 
 /* ---------- Categories ---------- */
 function Categories() {
+  const { t } = useTranslation();
+  const localizedCategories = categories.map((c) => ({
+    ...c,
+    name: t(`categories.${c.slug}` as const),
+    desc: t(`home.categories.${c.slug}_desc` as const),
+  }));
   return (
     <section className="bg-background py-24 md:py-32">
       <div className="mx-auto max-w-[1280px] px-4 md:px-8">
         {/* Section heading */}
         <div className="text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">
-            Explore
+            {t("home.categories.eyebrow")}
           </p>
           <h2 className="mt-3 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl">
-            Shop by Category
+            {t("home.categories.title")}
           </h2>
           <p className="mt-3 text-base text-muted-foreground">
-            Built for every adventure, made in Indonesia
+            {t("home.categories.subtitle")}
           </p>
         </div>
 
         {/* Cards grid */}
         <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-          {categories.map((cat) => (
+          {localizedCategories.map((cat) => (
             <CategoryCard key={cat.slug} cat={cat} />
           ))}
         </div>
@@ -286,7 +292,8 @@ function Categories() {
   );
 }
 
-function CategoryCard({ cat }: { cat: typeof categories[number] }) {
+function CategoryCard({ cat }: { cat: (typeof categories)[number] & { name: string; desc: string } }) {
+  const { t } = useTranslation();
   const stats = catStats(cat.filter);
   return (
     <Link
@@ -303,7 +310,7 @@ function CategoryCard({ cat }: { cat: typeof categories[number] }) {
         />
         {stats.max > 0 && (
           <span className="absolute left-3 top-3 rounded-full bg-[#1a3a2e] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
-            Up to {stats.max}% off
+            {t("labels.up_to_off", { percent: stats.max })}
           </span>
         )}
       </div>
@@ -315,11 +322,11 @@ function CategoryCard({ cat }: { cat: typeof categories[number] }) {
             {cat.name}
           </h3>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-            {cat.desc}{stats.count ? ` · ${stats.count} items` : ""}
+            {cat.desc}{stats.count ? ` · ${stats.count} ${t("labels.items")}` : ""}
           </p>
         </div>
         <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-[#1a3a2e] transition group-hover:gap-2">
-          Explore <ArrowRight className="h-3.5 w-3.5" />
+          {t("cta.explore")} <ArrowRight className="h-3.5 w-3.5" />
         </span>
       </div>
     </Link>
@@ -328,15 +335,16 @@ function CategoryCard({ cat }: { cat: typeof categories[number] }) {
 
 /* ---------- Featured Products ---------- */
 function FeaturedProducts() {
+  const { t } = useTranslation();
   return (
     <section className="mx-auto max-w-[1280px] px-4 py-24 md:px-8 md:py-32">
       {/* Section heading */}
       <div className="text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">
-          Bestsellers
+          {t("home.featured.eyebrow")}
         </p>
         <h2 className="mt-3 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl">
-          Trail-Tested Favorites
+          {t("home.featured.title")}
         </h2>
       </div>
 
@@ -370,7 +378,7 @@ function FeaturedProducts() {
                 to="/catalog"
                 className="mt-3 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-[#1a3a2e] transition group-hover:gap-2"
               >
-                View Details <ArrowRight className="h-3.5 w-3.5" />
+                {t("cta.view_details")} <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
           </div>
@@ -382,30 +390,27 @@ function FeaturedProducts() {
 
 /* ---------- Community ---------- */
 function Community() {
+  const { t } = useTranslation();
   return (
     <section className="bg-[#1a3a2e]">
       <div className="mx-auto grid max-w-[1280px] items-center gap-10 px-4 py-24 md:grid-cols-2 md:px-8 md:py-32">
         {/* LEFT COLUMN — Text */}
         <div className="order-2 md:order-1">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#d4b896]">
-            Our Community
+            {t("home.community.eyebrow")}
           </p>
           <h2 className="mt-4 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-white md:text-5xl">
-            The Responsible Trekker
+            {t("home.community.title")}
           </h2>
           <div className="mt-8 space-y-5 text-base leading-relaxed text-white/85 md:text-lg">
-            <p>
-              We believe outdoor adventure and environmental care are inseparable. That's why our community of hikers, climbers, and campers carry one promise: leave the trail better than you found it.
-            </p>
-            <p>
-              Join thousands of Indonesian adventurers who choose gear that respects the mountains they love.
-            </p>
+            <p>{t("home.community.p1")}</p>
+            <p>{t("home.community.p2")}</p>
           </div>
           <Link
             to="/"
             className="mt-10 inline-flex items-center gap-2 rounded-full bg-[#d4b896] px-6 py-3 text-sm font-semibold uppercase tracking-wider text-[#1a3a2e] transition hover:bg-[#c9a84c]"
           >
-            Join the Community <ArrowRight className="h-4 w-4" />
+            {t("cta.join_community")} <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
 

@@ -55,4 +55,8 @@ export async function setLanguage(lang: Lang) {
   await i18n.changeLanguage(lang);
 }
 
+export function getActiveLang(language: string | undefined): Lang {
+  return language?.startsWith("en") ? "en" : "id";
+}
+
 export default i18n;

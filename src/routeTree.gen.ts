@@ -18,6 +18,7 @@ import { Route as CarriersRouteImport } from './routes/carriers'
 import { Route as ApparelRouteImport } from './routes/apparel'
 import { Route as AccessoriesRouteImport } from './routes/accessories'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as EnIndexRouteImport } from './routes/en/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as AdminResetPasswordRouteImport } from './routes/admin/reset-password'
@@ -73,6 +74,11 @@ const AccessoriesRoute = AccessoriesRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EnIndexRoute = EnIndexRouteImport.update({
+  id: '/en/',
+  path: '/en/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -150,6 +156,7 @@ export interface FileRoutesByFullPath {
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/c/$slug': typeof CSlugRoute
   '/admin/': typeof AdminIndexRoute
+  '/en/': typeof EnIndexRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
 }
@@ -172,6 +179,7 @@ export interface FileRoutesByTo {
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/c/$slug': typeof CSlugRoute
   '/admin': typeof AdminIndexRoute
+  '/en': typeof EnIndexRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
 }
@@ -195,6 +203,7 @@ export interface FileRoutesById {
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/c/$slug': typeof CSlugRoute
   '/admin/': typeof AdminIndexRoute
+  '/en/': typeof EnIndexRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
 }
@@ -219,6 +228,7 @@ export interface FileRouteTypes {
     | '/admin/reset-password'
     | '/c/$slug'
     | '/admin/'
+    | '/en/'
     | '/admin/products/new'
     | '/admin/products/$id/edit'
   fileRoutesByTo: FileRoutesByTo
@@ -241,6 +251,7 @@ export interface FileRouteTypes {
     | '/admin/reset-password'
     | '/c/$slug'
     | '/admin'
+    | '/en'
     | '/admin/products/new'
     | '/admin/products/$id/edit'
   id:
@@ -263,6 +274,7 @@ export interface FileRouteTypes {
     | '/admin/reset-password'
     | '/c/$slug'
     | '/admin/'
+    | '/en/'
     | '/admin/products/new'
     | '/admin/products/$id/edit'
   fileRoutesById: FileRoutesById
@@ -286,6 +298,7 @@ export interface RootRouteChildren {
   AdminResetPasswordRoute: typeof AdminResetPasswordRoute
   CSlugRoute: typeof CSlugRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  EnIndexRoute: typeof EnIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -351,6 +364,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/en/': {
+      id: '/en/'
+      path: '/en'
+      fullPath: '/en/'
+      preLoaderRoute: typeof EnIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -466,7 +486,18 @@ const rootRouteChildren: RootRouteChildren = {
   AdminResetPasswordRoute: AdminResetPasswordRoute,
   CSlugRoute: CSlugRoute,
   AdminIndexRoute: AdminIndexRoute,
+  EnIndexRoute: EnIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

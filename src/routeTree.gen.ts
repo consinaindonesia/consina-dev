@@ -20,6 +20,7 @@ import { Route as AccessoriesRouteImport } from './routes/accessories'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EnIndexRouteImport } from './routes/en/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as EnSplatRouteImport } from './routes/en/$'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as AdminResetPasswordRouteImport } from './routes/admin/reset-password'
 import { Route as AdminProductsRouteImport } from './routes/admin/products'
@@ -84,6 +85,11 @@ const EnIndexRoute = EnIndexRouteImport.update({
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/admin/',
   path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EnSplatRoute = EnSplatRouteImport.update({
+  id: '/en/$',
+  path: '/en/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CSlugRoute = CSlugRouteImport.update({
@@ -155,6 +161,7 @@ export interface FileRoutesByFullPath {
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/c/$slug': typeof CSlugRoute
+  '/en/$': typeof EnSplatRoute
   '/admin/': typeof AdminIndexRoute
   '/en/': typeof EnIndexRoute
   '/admin/products/new': typeof AdminProductsNewRoute
@@ -178,6 +185,7 @@ export interface FileRoutesByTo {
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/c/$slug': typeof CSlugRoute
+  '/en/$': typeof EnSplatRoute
   '/admin': typeof AdminIndexRoute
   '/en': typeof EnIndexRoute
   '/admin/products/new': typeof AdminProductsNewRoute
@@ -202,6 +210,7 @@ export interface FileRoutesById {
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/c/$slug': typeof CSlugRoute
+  '/en/$': typeof EnSplatRoute
   '/admin/': typeof AdminIndexRoute
   '/en/': typeof EnIndexRoute
   '/admin/products/new': typeof AdminProductsNewRoute
@@ -227,6 +236,7 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/reset-password'
     | '/c/$slug'
+    | '/en/$'
     | '/admin/'
     | '/en/'
     | '/admin/products/new'
@@ -250,6 +260,7 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/reset-password'
     | '/c/$slug'
+    | '/en/$'
     | '/admin'
     | '/en'
     | '/admin/products/new'
@@ -273,6 +284,7 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/reset-password'
     | '/c/$slug'
+    | '/en/$'
     | '/admin/'
     | '/en/'
     | '/admin/products/new'
@@ -297,6 +309,7 @@ export interface RootRouteChildren {
   AdminProductsRoute: typeof AdminProductsRouteWithChildren
   AdminResetPasswordRoute: typeof AdminResetPasswordRoute
   CSlugRoute: typeof CSlugRoute
+  EnSplatRoute: typeof EnSplatRoute
   AdminIndexRoute: typeof AdminIndexRoute
   EnIndexRoute: typeof EnIndexRoute
 }
@@ -378,6 +391,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/en/$': {
+      id: '/en/$'
+      path: '/en/$'
+      fullPath: '/en/$'
+      preLoaderRoute: typeof EnSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/c/$slug': {
@@ -485,6 +505,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminProductsRoute: AdminProductsRouteWithChildren,
   AdminResetPasswordRoute: AdminResetPasswordRoute,
   CSlugRoute: CSlugRoute,
+  EnSplatRoute: EnSplatRoute,
   AdminIndexRoute: AdminIndexRoute,
   EnIndexRoute: EnIndexRoute,
 }

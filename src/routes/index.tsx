@@ -292,7 +292,15 @@ function Categories() {
   );
 }
 
-function CategoryCard({ cat }: { cat: (typeof categories)[number] & { name: string; desc: string } }) {
+type CategoryItem = {
+  slug: (typeof categories)[number]["slug"];
+  filter: string;
+  img: string;
+  name: string;
+  desc: string;
+};
+
+function CategoryCard({ cat }: { cat: CategoryItem }) {
   const { t } = useTranslation();
   const stats = catStats(cat.filter);
   return (

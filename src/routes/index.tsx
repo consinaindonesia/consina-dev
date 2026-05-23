@@ -155,6 +155,7 @@ function HomePage() {
 
 /* ---------- Hero ---------- */
 function Hero() {
+  const { t } = useTranslation();
   return (
     <section className="relative isolate overflow-hidden">
       <div className="absolute inset-0 -z-10">
@@ -169,37 +170,36 @@ function Hero() {
       </div>
       <div className="mx-auto flex min-h-[88vh] max-w-[1280px] flex-col justify-end px-4 pb-16 pt-32 md:px-8 md:pb-24">
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">
-          The Outdoor Lifestyle — Est. 1999
+          {t("home.hero.tagline")}
         </p>
         <h1 className="mt-5 max-w-4xl font-[Archivo] text-5xl font-black leading-[0.95] tracking-tight text-primary-foreground md:text-7xl lg:text-[88px]">
-          Inspired By <em className="not-italic text-accent">Experience</em>
+          {t("home.hero.title_1")} <em className="not-italic text-accent">{t("home.hero.title_em")}</em>
           <br />
-          Built for the archipelago.
+          {t("home.hero.title_2")}
         </h1>
         <p className="mt-6 max-w-xl text-base leading-relaxed text-primary-foreground/85 md:text-lg">
-          Gear for hikers, campers, climbers and runners who call Indonesia
-          their playground — designed in Jakarta, tested on every island.
+          {t("home.hero.subtitle")}
         </p>
         <div className="mt-10 flex flex-wrap items-center gap-4">
           <Link
             to="/catalog"
             className="group inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold uppercase tracking-wider text-accent-foreground transition hover:bg-accent/90"
           >
-            Explore the collection
+            {t("cta.explore_collection")}
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
           <Link
             to="/stores"
             className="inline-flex items-center gap-2 rounded-full border border-primary-foreground/30 px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-primary-foreground/10"
           >
-            Find a Store
+            {t("cta.find_store")}
           </Link>
         </div>
         <div className="mt-16 grid max-w-2xl grid-cols-3 gap-6 border-t border-primary-foreground/20 pt-6 text-[#1a3a2e]">
           {[
-            ["25+", "Years on the trail"],
-            ["150+", "Stores across Indonesia"],
-            ["100%", "Locally crafted"],
+            ["25+", t("home.hero.stat_years")],
+            ["150+", t("home.hero.stat_stores")],
+            ["100%", t("home.hero.stat_local")],
           ].map(([n, l]) => (
             <div key={l}>
               <div className="font-[Archivo] text-2xl font-bold text-[#1a3a2e] md:text-3xl">{n}</div>
@@ -214,6 +214,7 @@ function Hero() {
 
 /* ---------- Brand Story ---------- */
 function BrandStory() {
+  const { t } = useTranslation();
   return (
     <section className="mx-auto max-w-[1280px] px-4 py-24 md:px-8 md:py-32">
       <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
@@ -234,27 +235,21 @@ function BrandStory() {
         {/* RIGHT COLUMN — Text */}
         <div className="order-2">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">
-            Our Story
+            {t("home.story.eyebrow")}
           </p>
           <h2 className="mt-4 font-[Archivo] text-4xl font-black leading-[1.05] tracking-tight text-primary md:text-5xl">
-            Inspired by Experience
+            {t("home.story.title")}
           </h2>
           <div className="mt-8 space-y-5 text-base leading-relaxed text-foreground/80 md:text-lg">
-            <p>
-              Since 1999, Consina has been Indonesia's outdoor lifestyle brand — born in Jakarta, built for adventurers.
-            </p>
-            <p>
-              Every product we make is shaped by feedback from our community of hikers, campers, and climbers. We don't just design gear — we design from lived experience.
-            </p>
-            <p>
-              Today, our 'Responsible Trekker' community spans the entire archipelago, sharing one belief: leave the trail better than you found it.
-            </p>
+            <p>{t("home.story.p1")}</p>
+            <p>{t("home.story.p2")}</p>
+            <p>{t("home.story.p3")}</p>
           </div>
           <Link
             to="/"
             className="mt-10 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-secondary"
           >
-            Learn more about us <span className="text-base">→</span>
+            {t("cta.learn_more")} <span className="text-base">→</span>
           </Link>
         </div>
       </div>

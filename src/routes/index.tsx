@@ -489,20 +489,21 @@ function ContactSection() {
 
 /* ---------- FAQ ---------- */
 function FAQSection() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState<number | null>(0);
   return (
     <section className="bg-background py-24 md:py-32" aria-labelledby="faq-heading">
       <div className="mx-auto max-w-3xl px-4 md:px-8">
         <div className="text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">FAQ</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">{t("home.faq.eyebrow")}</p>
           <h2
             id="faq-heading"
             className="mt-3 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl"
           >
-            Frequently Asked Questions
+            {t("home.faq.title")}
           </h2>
           <p className="mt-3 text-base text-muted-foreground">
-            Quick answers about Consina, our products, and our community.
+            {t("home.faq.subtitle")}
           </p>
         </div>
 

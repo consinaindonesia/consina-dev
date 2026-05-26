@@ -247,7 +247,14 @@
     "no_description": "Belum ada deskripsi.",
     "select_placeholder": "Pilih opsi",
     "capacity": "Kapasitas",
-    "weight": "Berat"
+    "weight": "Berat",
+    "low_stock_notice": "Stok terbatas — segera pesan",
+    "notify_title": "Stok habis — beri tahu saya jika tersedia",
+    "notify_email_ph": "kamu@contoh.com",
+    "notify_cta": "Beri tahu saya",
+    "notify_sending": "Menyimpan…",
+    "notify_saved": "Kami akan mengirim email saat produk ini tersedia kembali.",
+    "notify_invalid_email": "Masukkan alamat email yang valid."
   },
   "inquiry": {
     "open": "Buka daftar permintaan",
@@ -288,7 +295,11 @@
     "send_inquiry": "Kirim Permintaan",
     "sending": "Mengirim…",
     "submit_error": "Tidak dapat mengirim permintaan. Silakan coba lagi.",
-    "empty_submit": "Tambahkan minimal satu produk ke permintaan terlebih dahulu."
+    "empty_submit": "Tambahkan minimal satu produk ke permintaan terlebih dahulu.",
+    "stock_warning_title": "Beberapa produk tidak lagi tersedia",
+    "stock_warning_body": "Satu atau lebih produk dalam permintaan Anda telah habis. Silakan hapus untuk melanjutkan.",
+    "has_out_of_stock": "Hapus produk yang habis stok sebelum mengirim.",
+    "now_out_of_stock": "Sekarang habis stok"
   },
   "inquiry_sent": {
     "title": "Terima kasih! Permintaan Anda telah dikirim.",

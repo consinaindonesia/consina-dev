@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Instagram, Facebook, Youtube } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 export function Footer() {
   const { t } = useTranslation();
@@ -81,10 +82,11 @@ export function Footer() {
         </div>
         <div className="mt-14 flex flex-col gap-3 border-t border-primary-foreground/10 pt-6 text-xs text-primary-foreground/55 md:flex-row md:items-center md:justify-between">
           <span>{t("footer.copyright", { year: new Date().getFullYear() })}</span>
-          <div className="flex gap-5">
+          <div className="flex flex-wrap items-center gap-5">
             <Link to="/">{t("footer.privacy")}</Link>
             <Link to="/">{t("footer.terms")}</Link>
             <Link to="/">{t("footer.cookies")}</Link>
+            <LanguageSwitcher className="ml-auto" />
           </div>
         </div>
       </div>

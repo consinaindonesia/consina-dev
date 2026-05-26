@@ -14,7 +14,8 @@ export type PageKey =
   | "apparel"
   | "footwear"
   | "accessories"
-  | "category"; // dynamic: /<prefix>/<slug>
+  | "category" // dynamic: /<prefix>/<slug>
+  | "product"; // dynamic: /<prefix>/<slug>
 
 type Entry = {
   id: string;
@@ -33,6 +34,7 @@ export const PAGES: Record<PageKey, Entry> = {
   footwear: { id: "kategori/footwear", en: "categories/footwear" },
   accessories: { id: "kategori/accessories", en: "categories/accessories" },
   category: { id: "kategori", en: "categories", dynamic: true },
+  product: { id: "produk", en: "products", dynamic: true },
 };
 
 export function localizedPath(

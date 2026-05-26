@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, notFound } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Loader2, Filter, X } from "lucide-react";
 import { Nav } from "@/components/site/Nav";

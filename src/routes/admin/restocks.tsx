@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Bell, Loader2, Trash2, CheckCircle2 } from "lucide-react";
+import { Loader2, Trash2, CheckCircle2 } from "lucide-react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { EmptyState } from "@/components/admin/EmptyState";
 import { supabase } from "@/integrations/supabase/client";
@@ -104,7 +104,7 @@ function RestocksPage() {
         </div>
       ) : rows.length === 0 ? (
         <EmptyState
-          icon={Bell}
+          icon="Bell"
           title="No alerts"
           description="There are no restock notification requests matching this filter."
         />

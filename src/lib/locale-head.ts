@@ -40,6 +40,10 @@ const META: Record<PageKey, { id: { title: string; description: string }; en: { 
     id: { title: "Kategori — Consina", description: "Jelajahi produk Consina berdasarkan kategori." },
     en: { title: "Category — Consina", description: "Browse Consina products by category." },
   },
+  product: {
+    id: { title: "Produk — Consina", description: "Detail produk Consina." },
+    en: { title: "Product — Consina", description: "Consina product details." },
+  },
 };
 
 export function buildHead(key: PageKey, lang: Lang, params?: { slug?: string }) {

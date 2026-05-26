@@ -67,10 +67,10 @@ export const Route = createFileRoute('/api/public/hooks/weekly-inquiry-summary')
           created_at: string
           first_contacted_at: string | null
           inquiry_items:
-            | Array<{ product: { name_en: string | null; name_id: string | null } | null }>
+            | Array<{ product: { name_en: string | null; name_id: string | null } | { name_en: string | null; name_id: string | null }[] | null }>
             | null
         }
-        const rows = (inqs ?? []) as Inq[]
+        const rows = (inqs ?? []) as unknown as Inq[]
         const totalInquiries = rows.length
 
         // 3. Response times (minutes) for inquiries that have been contacted.
@@ -155,7 +155,8 @@ export const Route = createFileRoute('/api/public/hooks/weekly-inquiry-summary')
           const c = (r.customer_city ?? '').trim()
           if (c) cityCounts.set(c, (cityCounts.get(c) ?? 0) + 1)
           for (const it of r.inquiry_items ?? []) {
-            const name = it.product?.name_en || it.product?.name_id
+            const p = Array.isArray(it.product) ? it.product[0] : it.product
+            const name = p?.name_en || p?.name_id
             if (name) productCounts.set(name, (productCounts.get(name) ?? 0) + 1)
           }
         }

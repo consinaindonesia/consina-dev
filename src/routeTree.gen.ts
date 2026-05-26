@@ -53,6 +53,7 @@ import { Route as LangInquirySentRouteImport } from './routes/$lang.inquiry.sent
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
+import { Route as ApiPublicHooksWeeklyInquirySummaryRouteImport } from './routes/api/public/hooks/weekly-inquiry-summary'
 import { Route as AdminProductsIdEditRouteImport } from './routes/admin/products.$id.edit'
 
 const TentsRoute = TentsRouteImport.update({
@@ -279,6 +280,12 @@ const LovableEmailQueueProcessRoute =
     path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksWeeklyInquirySummaryRoute =
+  ApiPublicHooksWeeklyInquirySummaryRouteImport.update({
+    id: '/api/public/hooks/weekly-inquiry-summary',
+    path: '/api/public/hooks/weekly-inquiry-summary',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AdminProductsIdEditRoute = AdminProductsIdEditRouteImport.update({
   id: '/$id/edit',
   path: '/$id/edit',
@@ -328,6 +335,7 @@ export interface FileRoutesByFullPath {
   '/$lang/inquiry/': typeof LangInquiryIndexRoute
   '/$lang/permintaan/': typeof LangPermintaanIndexRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
+  '/api/public/hooks/weekly-inquiry-summary': typeof ApiPublicHooksWeeklyInquirySummaryRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -372,6 +380,7 @@ export interface FileRoutesByTo {
   '/$lang/inquiry': typeof LangInquiryIndexRoute
   '/$lang/permintaan': typeof LangPermintaanIndexRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
+  '/api/public/hooks/weekly-inquiry-summary': typeof ApiPublicHooksWeeklyInquirySummaryRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -420,6 +429,7 @@ export interface FileRoutesById {
   '/$lang/inquiry/': typeof LangInquiryIndexRoute
   '/$lang/permintaan/': typeof LangPermintaanIndexRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
+  '/api/public/hooks/weekly-inquiry-summary': typeof ApiPublicHooksWeeklyInquirySummaryRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -469,6 +479,7 @@ export interface FileRouteTypes {
     | '/$lang/inquiry/'
     | '/$lang/permintaan/'
     | '/admin/products/$id/edit'
+    | '/api/public/hooks/weekly-inquiry-summary'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -513,6 +524,7 @@ export interface FileRouteTypes {
     | '/$lang/inquiry'
     | '/$lang/permintaan'
     | '/admin/products/$id/edit'
+    | '/api/public/hooks/weekly-inquiry-summary'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -560,6 +572,7 @@ export interface FileRouteTypes {
     | '/$lang/inquiry/'
     | '/$lang/permintaan/'
     | '/admin/products/$id/edit'
+    | '/api/public/hooks/weekly-inquiry-summary'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -595,6 +608,7 @@ export interface RootRouteChildren {
   EnIndexRoute: typeof EnIndexRoute
   AdminSettingsNotificationsRoute: typeof AdminSettingsNotificationsRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
+  ApiPublicHooksWeeklyInquirySummaryRoute: typeof ApiPublicHooksWeeklyInquirySummaryRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
@@ -910,6 +924,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/weekly-inquiry-summary': {
+      id: '/api/public/hooks/weekly-inquiry-summary'
+      path: '/api/public/hooks/weekly-inquiry-summary'
+      fullPath: '/api/public/hooks/weekly-inquiry-summary'
+      preLoaderRoute: typeof ApiPublicHooksWeeklyInquirySummaryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/products/$id/edit': {
       id: '/admin/products/$id/edit'
       path: '/$id/edit'
@@ -1034,6 +1055,8 @@ const rootRouteChildren: RootRouteChildren = {
   EnIndexRoute: EnIndexRoute,
   AdminSettingsNotificationsRoute: AdminSettingsNotificationsRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
+  ApiPublicHooksWeeklyInquirySummaryRoute:
+    ApiPublicHooksWeeklyInquirySummaryRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
   LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,

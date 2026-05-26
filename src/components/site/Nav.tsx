@@ -4,6 +4,7 @@ import { Menu, X, Search, MapPin, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { LangSuggestionBanner } from "./LangSuggestionBanner";
+import { InquiryDrawer } from "./InquiryDrawer";
 
 export function Nav() {
   const { t } = useTranslation();
@@ -81,6 +82,7 @@ export function Nav() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <InquiryDrawer />
           <LanguageSwitcher className="hidden md:inline-flex" />
           <button className="hidden h-9 w-9 items-center justify-center rounded-full text-foreground/70 transition hover:bg-muted hover:text-primary md:flex" aria-label={t("nav.search")}>
             <Search className="h-4 w-4" />

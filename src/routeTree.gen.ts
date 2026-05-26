@@ -34,6 +34,8 @@ import { Route as AdminForgotPasswordRouteImport } from './routes/admin/forgot-p
 import { Route as AdminCategoriesRouteImport } from './routes/admin/categories'
 import { Route as AdminAttributesRouteImport } from './routes/admin/attributes'
 import { Route as AdminProductsNewRouteImport } from './routes/admin/products.new'
+import { Route as LangProdukSlugRouteImport } from './routes/$lang.produk.$slug'
+import { Route as LangProductsSlugRouteImport } from './routes/$lang.products.$slug'
 import { Route as AdminProductsIdEditRouteImport } from './routes/admin/products.$id.edit'
 
 const TentsRoute = TentsRouteImport.update({
@@ -161,6 +163,16 @@ const AdminProductsNewRoute = AdminProductsNewRouteImport.update({
   path: '/new',
   getParentRoute: () => AdminProductsRoute,
 } as any)
+const LangProdukSlugRoute = LangProdukSlugRouteImport.update({
+  id: '/produk/$slug',
+  path: '/produk/$slug',
+  getParentRoute: () => LangRoute,
+} as any)
+const LangProductsSlugRoute = LangProductsSlugRouteImport.update({
+  id: '/products/$slug',
+  path: '/products/$slug',
+  getParentRoute: () => LangRoute,
+} as any)
 const AdminProductsIdEditRoute = AdminProductsIdEditRouteImport.update({
   id: '/$id/edit',
   path: '/$id/edit',
@@ -192,6 +204,8 @@ export interface FileRoutesByFullPath {
   '/$lang/': typeof LangIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/en/': typeof EnIndexRoute
+  '/$lang/products/$slug': typeof LangProductsSlugRoute
+  '/$lang/produk/$slug': typeof LangProdukSlugRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
 }
@@ -219,6 +233,8 @@ export interface FileRoutesByTo {
   '/$lang': typeof LangIndexRoute
   '/admin': typeof AdminIndexRoute
   '/en': typeof EnIndexRoute
+  '/$lang/products/$slug': typeof LangProductsSlugRoute
+  '/$lang/produk/$slug': typeof LangProdukSlugRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
 }
@@ -248,6 +264,8 @@ export interface FileRoutesById {
   '/$lang/': typeof LangIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/en/': typeof EnIndexRoute
+  '/$lang/products/$slug': typeof LangProductsSlugRoute
+  '/$lang/produk/$slug': typeof LangProdukSlugRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
 }
@@ -278,6 +296,8 @@ export interface FileRouteTypes {
     | '/$lang/'
     | '/admin/'
     | '/en/'
+    | '/$lang/products/$slug'
+    | '/$lang/produk/$slug'
     | '/admin/products/new'
     | '/admin/products/$id/edit'
   fileRoutesByTo: FileRoutesByTo
@@ -305,6 +325,8 @@ export interface FileRouteTypes {
     | '/$lang'
     | '/admin'
     | '/en'
+    | '/$lang/products/$slug'
+    | '/$lang/produk/$slug'
     | '/admin/products/new'
     | '/admin/products/$id/edit'
   id:
@@ -333,6 +355,8 @@ export interface FileRouteTypes {
     | '/$lang/'
     | '/admin/'
     | '/en/'
+    | '/$lang/products/$slug'
+    | '/$lang/produk/$slug'
     | '/admin/products/new'
     | '/admin/products/$id/edit'
   fileRoutesById: FileRoutesById
@@ -540,6 +564,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProductsNewRouteImport
       parentRoute: typeof AdminProductsRoute
     }
+    '/$lang/produk/$slug': {
+      id: '/$lang/produk/$slug'
+      path: '/produk/$slug'
+      fullPath: '/$lang/produk/$slug'
+      preLoaderRoute: typeof LangProdukSlugRouteImport
+      parentRoute: typeof LangRoute
+    }
+    '/$lang/products/$slug': {
+      id: '/$lang/products/$slug'
+      path: '/products/$slug'
+      fullPath: '/$lang/products/$slug'
+      preLoaderRoute: typeof LangProductsSlugRouteImport
+      parentRoute: typeof LangRoute
+    }
     '/admin/products/$id/edit': {
       id: '/admin/products/$id/edit'
       path: '/$id/edit'
@@ -552,10 +590,14 @@ declare module '@tanstack/react-router' {
 
 interface LangRouteChildren {
   LangIndexRoute: typeof LangIndexRoute
+  LangProductsSlugRoute: typeof LangProductsSlugRoute
+  LangProdukSlugRoute: typeof LangProdukSlugRoute
 }
 
 const LangRouteChildren: LangRouteChildren = {
   LangIndexRoute: LangIndexRoute,
+  LangProductsSlugRoute: LangProductsSlugRoute,
+  LangProdukSlugRoute: LangProdukSlugRoute,
 }
 
 const LangRouteWithChildren = LangRoute._addFileChildren(LangRouteChildren)

@@ -232,15 +232,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
       <main className="mx-auto max-w-[1280px] px-4 py-8 md:px-8 md:py-12">
         {fallbackLang && (
           <div className="mb-4">
-            <MissingTranslationNotice
-              currentLang={lang}
-              availableLang={lang === "id" ? "en" : "id"}
-              onSwitch={() => {
-                const target = lang === "id" ? "en" : "id";
-                const prefix = target === "id" ? "produk" : "products";
-                navigate({ to: `/${target}/${prefix}/${product.sku}` as never });
-              }}
-            />
+            <MissingTranslationNotice otherLang={lang === "id" ? "en" : "id"} />
           </div>
         )}
 

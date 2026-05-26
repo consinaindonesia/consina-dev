@@ -685,41 +685,59 @@ export type Database = {
         Row: {
           address: string | null
           city: string | null
+          created_at: string
+          description_en: string | null
+          description_id: string | null
+          email: string | null
           id: string
+          image_url: string | null
           is_active: boolean
           latitude: number | null
           longitude: number | null
           name: string
-          opening_hours: string | null
+          opening_hours: Json | null
           phone: string | null
           province: string | null
           region: string | null
+          updated_at: string
         }
         Insert: {
           address?: string | null
           city?: string | null
+          created_at?: string
+          description_en?: string | null
+          description_id?: string | null
+          email?: string | null
           id?: string
+          image_url?: string | null
           is_active?: boolean
           latitude?: number | null
           longitude?: number | null
           name: string
-          opening_hours?: string | null
+          opening_hours?: Json | null
           phone?: string | null
           province?: string | null
           region?: string | null
+          updated_at?: string
         }
         Update: {
           address?: string | null
           city?: string | null
+          created_at?: string
+          description_en?: string | null
+          description_id?: string | null
+          email?: string | null
           id?: string
+          image_url?: string | null
           is_active?: boolean
           latitude?: number | null
           longitude?: number | null
           name?: string
-          opening_hours?: string | null
+          opening_hours?: Json | null
           phone?: string | null
           province?: string | null
           region?: string | null
+          updated_at?: string
         }
         Relationships: []
       }

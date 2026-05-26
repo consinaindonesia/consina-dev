@@ -23,6 +23,7 @@ import { Route as EnIndexRouteImport } from './routes/en/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as LangIndexRouteImport } from './routes/$lang.index'
 import { Route as EnSplatRouteImport } from './routes/en/$'
+import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as AdminRestocksRouteImport } from './routes/admin/restocks'
 import { Route as AdminResetPasswordRouteImport } from './routes/admin/reset-password'
@@ -40,6 +41,7 @@ import { Route as LangPermintaanRouteImport } from './routes/$lang.permintaan'
 import { Route as LangInquiryRouteImport } from './routes/$lang.inquiry'
 import { Route as LangPermintaanIndexRouteImport } from './routes/$lang.permintaan.index'
 import { Route as LangInquiryIndexRouteImport } from './routes/$lang.inquiry.index'
+import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as AdminSettingsNotificationsRouteImport } from './routes/admin/settings.notifications'
 import { Route as AdminProductsNewRouteImport } from './routes/admin/products.new'
 import { Route as AdminInquiriesIdRouteImport } from './routes/admin/inquiries.$id'
@@ -48,7 +50,10 @@ import { Route as LangProdukSlugRouteImport } from './routes/$lang.produk.$slug'
 import { Route as LangProductsSlugRouteImport } from './routes/$lang.products.$slug'
 import { Route as LangPermintaanTerkirimRouteImport } from './routes/$lang.permintaan.terkirim'
 import { Route as LangInquirySentRouteImport } from './routes/$lang.inquiry.sent'
+import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
+import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
+import { Route as ApiPublicHooksWeeklyInquirySummaryRouteImport } from './routes/api/public/hooks/weekly-inquiry-summary'
 import { Route as AdminProductsIdEditRouteImport } from './routes/admin/products.$id.edit'
 
 const TentsRoute = TentsRouteImport.update({
@@ -119,6 +124,11 @@ const LangIndexRoute = LangIndexRouteImport.update({
 const EnSplatRoute = EnSplatRouteImport.update({
   id: '/en/$',
   path: '/en/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
+  id: '/email/unsubscribe',
+  path: '/email/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CSlugRoute = CSlugRouteImport.update({
@@ -206,6 +216,11 @@ const LangInquiryIndexRoute = LangInquiryIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LangInquiryRoute,
 } as any)
+const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
+  id: '/lovable/email/suppression',
+  path: '/lovable/email/suppression',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminSettingsNotificationsRoute =
   AdminSettingsNotificationsRouteImport.update({
     id: '/admin/settings/notifications',
@@ -247,10 +262,28 @@ const LangInquirySentRoute = LangInquirySentRouteImport.update({
   path: '/sent',
   getParentRoute: () => LangInquiryRoute,
 } as any)
+const LovableEmailTransactionalSendRoute =
+  LovableEmailTransactionalSendRouteImport.update({
+    id: '/lovable/email/transactional/send',
+    path: '/lovable/email/transactional/send',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const LovableEmailTransactionalPreviewRoute =
+  LovableEmailTransactionalPreviewRouteImport.update({
+    id: '/lovable/email/transactional/preview',
+    path: '/lovable/email/transactional/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const LovableEmailQueueProcessRoute =
   LovableEmailQueueProcessRouteImport.update({
     id: '/lovable/email/queue/process',
     path: '/lovable/email/queue/process',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksWeeklyInquirySummaryRoute =
+  ApiPublicHooksWeeklyInquirySummaryRouteImport.update({
+    id: '/api/public/hooks/weekly-inquiry-summary',
+    path: '/api/public/hooks/weekly-inquiry-summary',
     getParentRoute: () => rootRouteImport,
   } as any)
 const AdminProductsIdEditRoute = AdminProductsIdEditRouteImport.update({
@@ -285,6 +318,7 @@ export interface FileRoutesByFullPath {
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/restocks': typeof AdminRestocksRoute
   '/c/$slug': typeof CSlugRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/en/$': typeof EnSplatRoute
   '/$lang/': typeof LangIndexRoute
   '/admin/': typeof AdminIndexRoute
@@ -297,10 +331,14 @@ export interface FileRoutesByFullPath {
   '/admin/inquiries/$id': typeof AdminInquiriesIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/$lang/inquiry/': typeof LangInquiryIndexRoute
   '/$lang/permintaan/': typeof LangPermintaanIndexRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
+  '/api/public/hooks/weekly-inquiry-summary': typeof ApiPublicHooksWeeklyInquirySummaryRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -325,6 +363,7 @@ export interface FileRoutesByTo {
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/restocks': typeof AdminRestocksRoute
   '/c/$slug': typeof CSlugRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/en/$': typeof EnSplatRoute
   '/$lang': typeof LangIndexRoute
   '/admin': typeof AdminIndexRoute
@@ -337,10 +376,14 @@ export interface FileRoutesByTo {
   '/admin/inquiries/$id': typeof AdminInquiriesIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/$lang/inquiry': typeof LangInquiryIndexRoute
   '/$lang/permintaan': typeof LangPermintaanIndexRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
+  '/api/public/hooks/weekly-inquiry-summary': typeof ApiPublicHooksWeeklyInquirySummaryRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -369,6 +412,7 @@ export interface FileRoutesById {
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/restocks': typeof AdminRestocksRoute
   '/c/$slug': typeof CSlugRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/en/$': typeof EnSplatRoute
   '/$lang/': typeof LangIndexRoute
   '/admin/': typeof AdminIndexRoute
@@ -381,10 +425,14 @@ export interface FileRoutesById {
   '/admin/inquiries/$id': typeof AdminInquiriesIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/$lang/inquiry/': typeof LangInquiryIndexRoute
   '/$lang/permintaan/': typeof LangPermintaanIndexRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
+  '/api/public/hooks/weekly-inquiry-summary': typeof ApiPublicHooksWeeklyInquirySummaryRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -414,6 +462,7 @@ export interface FileRouteTypes {
     | '/admin/reset-password'
     | '/admin/restocks'
     | '/c/$slug'
+    | '/email/unsubscribe'
     | '/en/$'
     | '/$lang/'
     | '/admin/'
@@ -426,10 +475,14 @@ export interface FileRouteTypes {
     | '/admin/inquiries/$id'
     | '/admin/products/new'
     | '/admin/settings/notifications'
+    | '/lovable/email/suppression'
     | '/$lang/inquiry/'
     | '/$lang/permintaan/'
     | '/admin/products/$id/edit'
+    | '/api/public/hooks/weekly-inquiry-summary'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -454,6 +507,7 @@ export interface FileRouteTypes {
     | '/admin/reset-password'
     | '/admin/restocks'
     | '/c/$slug'
+    | '/email/unsubscribe'
     | '/en/$'
     | '/$lang'
     | '/admin'
@@ -466,10 +520,14 @@ export interface FileRouteTypes {
     | '/admin/inquiries/$id'
     | '/admin/products/new'
     | '/admin/settings/notifications'
+    | '/lovable/email/suppression'
     | '/$lang/inquiry'
     | '/$lang/permintaan'
     | '/admin/products/$id/edit'
+    | '/api/public/hooks/weekly-inquiry-summary'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
   id:
     | '__root__'
     | '/'
@@ -497,6 +555,7 @@ export interface FileRouteTypes {
     | '/admin/reset-password'
     | '/admin/restocks'
     | '/c/$slug'
+    | '/email/unsubscribe'
     | '/en/$'
     | '/$lang/'
     | '/admin/'
@@ -509,10 +568,14 @@ export interface FileRouteTypes {
     | '/admin/inquiries/$id'
     | '/admin/products/new'
     | '/admin/settings/notifications'
+    | '/lovable/email/suppression'
     | '/$lang/inquiry/'
     | '/$lang/permintaan/'
     | '/admin/products/$id/edit'
+    | '/api/public/hooks/weekly-inquiry-summary'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -539,11 +602,16 @@ export interface RootRouteChildren {
   AdminResetPasswordRoute: typeof AdminResetPasswordRoute
   AdminRestocksRoute: typeof AdminRestocksRoute
   CSlugRoute: typeof CSlugRoute
+  EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   EnSplatRoute: typeof EnSplatRoute
   AdminIndexRoute: typeof AdminIndexRoute
   EnIndexRoute: typeof EnIndexRoute
   AdminSettingsNotificationsRoute: typeof AdminSettingsNotificationsRoute
+  LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
+  ApiPublicHooksWeeklyInquirySummaryRoute: typeof ApiPublicHooksWeeklyInquirySummaryRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
+  LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
+  LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -644,6 +712,13 @@ declare module '@tanstack/react-router' {
       path: '/en/$'
       fullPath: '/en/$'
       preLoaderRoute: typeof EnSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/email/unsubscribe': {
+      id: '/email/unsubscribe'
+      path: '/email/unsubscribe'
+      fullPath: '/email/unsubscribe'
+      preLoaderRoute: typeof EmailUnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/c/$slug': {
@@ -765,6 +840,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangInquiryIndexRouteImport
       parentRoute: typeof LangInquiryRoute
     }
+    '/lovable/email/suppression': {
+      id: '/lovable/email/suppression'
+      path: '/lovable/email/suppression'
+      fullPath: '/lovable/email/suppression'
+      preLoaderRoute: typeof LovableEmailSuppressionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/settings/notifications': {
       id: '/admin/settings/notifications'
       path: '/admin/settings/notifications'
@@ -821,11 +903,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangInquirySentRouteImport
       parentRoute: typeof LangInquiryRoute
     }
+    '/lovable/email/transactional/send': {
+      id: '/lovable/email/transactional/send'
+      path: '/lovable/email/transactional/send'
+      fullPath: '/lovable/email/transactional/send'
+      preLoaderRoute: typeof LovableEmailTransactionalSendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/queue/process': {
       id: '/lovable/email/queue/process'
       path: '/lovable/email/queue/process'
       fullPath: '/lovable/email/queue/process'
       preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/weekly-inquiry-summary': {
+      id: '/api/public/hooks/weekly-inquiry-summary'
+      path: '/api/public/hooks/weekly-inquiry-summary'
+      fullPath: '/api/public/hooks/weekly-inquiry-summary'
+      preLoaderRoute: typeof ApiPublicHooksWeeklyInquirySummaryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/products/$id/edit': {
@@ -946,22 +1049,18 @@ const rootRouteChildren: RootRouteChildren = {
   AdminResetPasswordRoute: AdminResetPasswordRoute,
   AdminRestocksRoute: AdminRestocksRoute,
   CSlugRoute: CSlugRoute,
+  EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   EnSplatRoute: EnSplatRoute,
   AdminIndexRoute: AdminIndexRoute,
   EnIndexRoute: EnIndexRoute,
   AdminSettingsNotificationsRoute: AdminSettingsNotificationsRoute,
+  LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
+  ApiPublicHooksWeeklyInquirySummaryRoute:
+    ApiPublicHooksWeeklyInquirySummaryRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
+  LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
+  LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

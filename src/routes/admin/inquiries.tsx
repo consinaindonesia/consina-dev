@@ -69,6 +69,7 @@ type InquiryRow = {
   assigned_to: string | null;
   preferred_store_id: string | null;
   created_at: string;
+  first_contacted_at: string | null;
   inquiry_items: ItemRow[];
   assignee?: { id: string; full_name: string | null; email: string } | null;
 };
@@ -128,6 +129,22 @@ function relTime(iso: string) {
   return new Date(iso).toLocaleDateString();
 }
 
+function slaInfo(created_at: string, status: Status, first_contacted_at?: string | null) {
+  // SLA only applies to inquiries still in "new". Once contacted, SLA is settled.
+  if (status !== "new" || first_contacted_at) return null;
+  const hours = (Date.now() - new Date(created_at).getTime()) / 3_600_000;
+  if (hours >= 24) return { level: "breach" as const, hours };
+  if (hours >= 18) return { level: "orange" as const, hours };
+  if (hours >= 12) return { level: "yellow" as const, hours };
+  return null;
+}
+
+const SLA_ROW_CLS = {
+  yellow: "bg-yellow-50/70 hover:bg-yellow-50",
+  orange: "bg-orange-50/80 hover:bg-orange-100/80",
+  breach: "bg-red-50/80 hover:bg-red-100/80",
+} as const;
+
 function primaryImage(it: ItemRow): string | null {
   const imgs = it.product?.product_images ?? [];
   if (!imgs.length) return null;
@@ -171,7 +188,7 @@ function InquiriesPage() {
       .from("inquiries")
       .select(
         `id, status, customer_name, customer_email, customer_phone, customer_city,
-         message, assigned_to, preferred_store_id, created_at,
+         message, assigned_to, preferred_store_id, created_at, first_contacted_at,
          inquiry_items(id, quantity, notes,
            product:products(id, name_en, name_id, price_idr,
              product_images(image_url, is_primary)))`
@@ -229,7 +246,7 @@ function InquiriesPage() {
               .from("inquiries")
               .select(
                 `id, status, customer_name, customer_email, customer_phone, customer_city,
-                 message, assigned_to, preferred_store_id, created_at,
+                 message, assigned_to, preferred_store_id, created_at, first_contacted_at,
                  inquiry_items(id, quantity, notes,
                    product:products(id, name_en, name_id, price_idr,
                      product_images(image_url, is_primary)))`
@@ -593,6 +610,7 @@ function InquiriesPage() {
                 const imgs = r.inquiry_items.slice(0, 3);
                 const isNew = r.status === "new";
                 const isFlashing = flash.has(r.id);
+                const sla = slaInfo(r.created_at, r.status, r.first_contacted_at);
                 return (
                   <tr
                     key={r.id}
@@ -603,6 +621,7 @@ function InquiriesPage() {
                       "cursor-pointer border-t border-border transition-colors",
                       isNew && "border-l-4 border-l-red-500",
                       isFlashing && "animate-pulse bg-amber-50",
+                      sla && SLA_ROW_CLS[sla.level],
                       "hover:bg-muted/40"
                     )}
                   >
@@ -620,6 +639,14 @@ function InquiriesPage() {
                       <Badge variant="outline" className={meta.cls}>
                         {meta.label}
                       </Badge>
+                      {sla?.level === "breach" && (
+                        <Badge
+                          variant="outline"
+                          className="ml-1.5 border-red-600/40 bg-red-600/10 px-1.5 py-0 text-[10px] font-bold uppercase tracking-wider text-red-700"
+                        >
+                          SLA breach
+                        </Badge>
+                      )}
                     </td>
                     <td className="px-2 py-2.5">
                       <div className="flex items-center gap-1.5">

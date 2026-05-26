@@ -154,6 +154,15 @@ function InquiryDetailPage() {
   const [activity, setActivity] = useState<ActivityRow[]>([]);
   const [newNote, setNewNote] = useState("");
   const [previousCount, setPreviousCount] = useState(0);
+  const [previousInquiries, setPreviousInquiries] = useState<
+    {
+      id: string;
+      status: Status;
+      created_at: string;
+      itemCount: number;
+      total: number;
+    }[]
+  >([]);
   const [savingItemId, setSavingItemId] = useState<string | null>(null);
   const [itemNoteDraft, setItemNoteDraft] = useState<Record<string, string>>({});
 
@@ -188,14 +197,38 @@ function InquiryDetailPage() {
     });
     setItemNoteDraft(draft);
 
-    // Previous inquiries from same email
-    const { count } = await supabase
+    // Previous inquiries from same email (summary cards)
+    const { data: prev } = await supabase
       .from("inquiries")
-      .select("id", { count: "exact", head: true })
+      .select(
+        `id, status, created_at,
+         inquiry_items(quantity, product:products(price_idr))`
+      )
       .eq("customer_email", row.customer_email)
       .neq("id", id)
-      .is("deleted_at", null);
-    setPreviousCount(count ?? 0);
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false })
+      .limit(20);
+    const list = (prev ?? []).map((p) => {
+      const items = (p.inquiry_items ?? []) as {
+        quantity: number;
+        product: { price_idr: number } | null;
+      }[];
+      const total = items.reduce(
+        (s, it) => s + (it.product?.price_idr ?? 0) * it.quantity,
+        0
+      );
+      const itemCount = items.reduce((s, it) => s + it.quantity, 0);
+      return {
+        id: p.id as string,
+        status: p.status as Status,
+        created_at: p.created_at as string,
+        itemCount,
+        total,
+      };
+    });
+    setPreviousInquiries(list);
+    setPreviousCount(list.length);
   }
 
   async function loadNotes() {

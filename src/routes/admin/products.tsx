@@ -50,6 +50,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { CsvImportWizard } from "@/components/admin/CsvImportWizard";
 
 export const Route = createFileRoute("/admin/products")({
   head: () => ({ meta: [{ title: "Products — Admin" }, { name: "robots", content: "noindex" }] }),

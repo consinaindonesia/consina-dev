@@ -164,6 +164,15 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  useNewInquiryToasts(profile?.id ?? null, navigate);
+
+  // Global tab title badge ("Consina Admin (3 new)")
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const base = document.title.replace(/\s*\(\d+\s+new\)\s*$/, "");
+    document.title = newInquiries > 0 ? `${base} (${newInquiries} new)` : base;
+  }, [newInquiries]);
+
   useEffect(() => {
     if (!loading && !session) navigate({ to: "/admin/login" });
   }, [loading, session, navigate]);

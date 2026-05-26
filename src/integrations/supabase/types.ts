@@ -399,6 +399,7 @@ export type Database = {
           customer_name: string
           customer_phone: string | null
           deleted_at: string | null
+          first_contacted_at: string | null
           id: string
           lost_reason: string | null
           message: string | null
@@ -416,6 +417,7 @@ export type Database = {
           customer_name: string
           customer_phone?: string | null
           deleted_at?: string | null
+          first_contacted_at?: string | null
           id?: string
           lost_reason?: string | null
           message?: string | null
@@ -433,6 +435,7 @@ export type Database = {
           customer_name?: string
           customer_phone?: string | null
           deleted_at?: string | null
+          first_contacted_at?: string | null
           id?: string
           lost_reason?: string | null
           message?: string | null

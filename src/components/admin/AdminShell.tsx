@@ -78,6 +78,70 @@ function useNewInquiryCount() {
   return count;
 }
 
+type Prefs = {
+  notification_email_scope: "all" | "assigned" | "none";
+  browser_notifications_enabled: boolean;
+  quiet_hours_start: number | null;
+  quiet_hours_end: number | null;
+};
+
+function isInQuietHours(p: Prefs, now = new Date()) {
+  const s = p.quiet_hours_start;
+  const e = p.quiet_hours_end;
+  if (s == null || e == null || s === e) return false;
+  const h = now.getHours();
+  if (s < e) return h >= s && h < e;
+  // crosses midnight (e.g. 22 → 7)
+  return h >= s || h < e;
+}
+
+function useNewInquiryToasts(adminId: string | null, navigate: ReturnType<typeof useNavigate>) {
+  const [prefs, setPrefs] = useState<Prefs | null>(null);
+
+  useEffect(() => {
+    if (!adminId) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("admin_users")
+        .select(
+          "notification_email_scope, browser_notifications_enabled, quiet_hours_start, quiet_hours_end"
+        )
+        .eq("id", adminId)
+        .maybeSingle();
+      if (!cancelled && data) setPrefs(data as Prefs);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [adminId]);
+
+  useEffect(() => {
+    if (!prefs || !prefs.browser_notifications_enabled) return;
+    const channel = supabase
+      .channel("admin-inquiries-toast")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "inquiries" },
+        (payload) => {
+          if (isInQuietHours(prefs)) return;
+          const row = payload.new as { id: string; customer_name: string };
+          toast(`New inquiry from ${row.customer_name}`, {
+            action: {
+              label: "View",
+              onClick: () =>
+                navigate({ to: "/admin/inquiries/$id", params: { id: row.id } }),
+            },
+          });
+        }
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [prefs, navigate]);
+}
+
 function buildCrumbs(pathname: string): { label: string; to?: string }[] {
   const parts = pathname.split("/").filter(Boolean); // ["admin", "products", ...]
   if (parts[0] !== "admin") return [];

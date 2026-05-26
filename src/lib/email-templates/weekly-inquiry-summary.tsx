@@ -58,10 +58,7 @@ const WeeklyInquirySummary = ({
 }: WeeklyInquirySummaryProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>
-      {SITE_NAME} weekly inquiries — {totalInquiries} total, {slaBreachCount} SLA breach
-      {slaBreachCount === 1 ? '' : 'es'}
-    </Preview>
+    <Preview>{`${SITE_NAME} weekly inquiries — ${totalInquiries} total, ${slaBreachCount} SLA breach${slaBreachCount === 1 ? '' : 'es'}`}</Preview>
     <Body style={main}>
       <Container style={container}>
         <Heading style={h1}>Weekly Inquiry Summary</Heading>

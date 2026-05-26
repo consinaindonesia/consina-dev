@@ -574,7 +574,9 @@ function InquiriesPage() {
                 return (
                   <tr
                     key={r.id}
-                    onClick={() => setDetail(r)}
+                    onClick={() =>
+                      navigate({ to: "/admin/inquiries/$id", params: { id: r.id } })
+                    }
                     className={cn(
                       "cursor-pointer border-t border-border transition-colors",
                       isNew && "border-l-4 border-l-red-500",
@@ -680,7 +682,11 @@ function InquiriesPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => setDetail(r)}>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              navigate({ to: "/admin/inquiries/$id", params: { id: r.id } })
+                            }
+                          >
                             <Eye className="mr-2 h-3.5 w-3.5" /> View
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />

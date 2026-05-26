@@ -445,6 +445,14 @@ function InquiryDetailPage() {
             <span className={cn("mr-1.5 h-1.5 w-1.5 rounded-full", meta.dot)} />
             {meta.label}
           </Badge>
+          {previousCount > 0 && (
+            <Badge
+              variant="outline"
+              className="ml-2 border-violet-500/30 bg-violet-500/10 text-violet-700"
+            >
+              Returning customer
+            </Badge>
+          )}
           <h1 className="mt-2 font-[Archivo] text-2xl font-black tracking-tight text-primary">
             {inquiry.customer_name}
           </h1>

@@ -782,6 +782,18 @@ function ProductsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <CsvImportWizard
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        onComplete={() => {
+          // Reset filters so freshly imported rows appear at the top (sorted by updated_at desc)
+          clearFilters();
+          setPage(1);
+          setReloadTick((t) => t + 1);
+          toast.success("Showing newly imported products");
+        }}
+      />
     </AdminShell>
   );
 }

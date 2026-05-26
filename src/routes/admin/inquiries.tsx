@@ -128,6 +128,22 @@ function relTime(iso: string) {
   return new Date(iso).toLocaleDateString();
 }
 
+function slaInfo(created_at: string, status: Status, first_contacted_at?: string | null) {
+  // SLA only applies to inquiries still in "new". Once contacted, SLA is settled.
+  if (status !== "new" || first_contacted_at) return null;
+  const hours = (Date.now() - new Date(created_at).getTime()) / 3_600_000;
+  if (hours >= 24) return { level: "breach" as const, hours };
+  if (hours >= 18) return { level: "orange" as const, hours };
+  if (hours >= 12) return { level: "yellow" as const, hours };
+  return null;
+}
+
+const SLA_ROW_CLS = {
+  yellow: "bg-yellow-50/70 hover:bg-yellow-50",
+  orange: "bg-orange-50/80 hover:bg-orange-100/80",
+  breach: "bg-red-50/80 hover:bg-red-100/80",
+} as const;
+
 function primaryImage(it: ItemRow): string | null {
   const imgs = it.product?.product_images ?? [];
   if (!imgs.length) return null;

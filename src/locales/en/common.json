@@ -247,7 +247,14 @@
     "no_description": "No description yet.",
     "select_placeholder": "Select an option",
     "capacity": "Capacity",
-    "weight": "Weight"
+    "weight": "Weight",
+    "low_stock_notice": "Limited stock — order soon",
+    "notify_title": "Currently out of stock — notify me when available",
+    "notify_email_ph": "you@example.com",
+    "notify_cta": "Notify me",
+    "notify_sending": "Saving…",
+    "notify_saved": "We'll email you when this product is back in stock.",
+    "notify_invalid_email": "Please enter a valid email address."
   },
   "inquiry": {
     "open": "Open inquiry list",
@@ -288,7 +295,11 @@
     "send_inquiry": "Send Inquiry",
     "sending": "Sending…",
     "submit_error": "Could not send your inquiry. Please try again.",
-    "empty_submit": "Add at least one product to your inquiry first."
+    "empty_submit": "Add at least one product to your inquiry first.",
+    "stock_warning_title": "Some items are no longer available",
+    "stock_warning_body": "One or more products in your inquiry have gone out of stock. Please remove them to continue.",
+    "has_out_of_stock": "Please remove out-of-stock items before submitting.",
+    "now_out_of_stock": "Now out of stock"
   },
   "inquiry_sent": {
     "title": "Thanks! Your inquiry was sent.",

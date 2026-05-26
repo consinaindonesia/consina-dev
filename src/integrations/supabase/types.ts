@@ -383,6 +383,30 @@ export type Database = {
           },
         ]
       }
+      notify_when_in_stock: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          notified_at: string | null
+          product_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          notified_at?: string | null
+          product_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          notified_at?: string | null
+          product_id?: string
+        }
+        Relationships: []
+      }
       product_images: {
         Row: {
           alt_text_en: string | null

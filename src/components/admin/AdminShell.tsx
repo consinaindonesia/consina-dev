@@ -18,6 +18,7 @@ import {
   User as UserIcon,
   Users,
   X,
+  BellRing,
 } from "lucide-react";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,6 +37,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Categories", to: "/admin/categories", icon: Folder },
   { label: "Attributes", to: "/admin/attributes", icon: Tag },
   { label: "Inquiries", to: "/admin/inquiries", icon: MessageSquare, badge: "inquiries" },
+  { label: "Restock alerts", to: "/admin/restocks", icon: BellRing },
   { label: "Stores", to: "/admin/stores", icon: MapPin },
   { label: "Languages", to: "/admin/languages", icon: Globe },
   { label: "Glossary", to: "/admin/glossary", icon: BookOpen },

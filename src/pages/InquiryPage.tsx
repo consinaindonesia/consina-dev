@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Trash2, X, Minus, Plus } from "lucide-react";
+import { Trash2, X, Minus, Plus, AlertTriangle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
@@ -88,6 +88,31 @@ export function InquiryPage() {
     [items],
   );
 
+  const productIds = useMemo(
+    () => Array.from(new Set(items.map((i) => i.productId))).filter(Boolean),
+    [items],
+  );
+
+  const { data: stockMap = {} } = useQuery({
+    queryKey: ["inquiry-stock", productIds],
+    enabled: productIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("id, stock_status")
+        .in("id", productIds);
+      if (error) throw error;
+      const map: Record<string, string> = {};
+      for (const r of data ?? []) map[r.id] = r.stock_status;
+      return map;
+    },
+  });
+
+  const hasOutOfStock = useMemo(
+    () => items.some((i) => stockMap[i.productId] === "out_of_stock"),
+    [items, stockMap],
+  );
+
   const { data: stores = [] } = useQuery({
     queryKey: ["active-stores"],
     queryFn: async () => {
@@ -122,6 +147,10 @@ export function InquiryPage() {
     e.preventDefault();
     if (items.length === 0) {
       toast.error(t("inquiry_page.empty_submit"));
+      return;
+    }
+    if (hasOutOfStock) {
+      toast.error(t("inquiry_page.has_out_of_stock"));
       return;
     }
     const parsed = formSchema.safeParse(form);
@@ -205,6 +234,18 @@ export function InquiryPage() {
         {t("inquiry.items_count", { count })}
       </p>
 
+      {hasOutOfStock && (
+        <div className="mt-6 flex items-start gap-3 rounded-lg border border-destructive/40 bg-destructive/5 p-4">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
+          <div className="text-sm text-destructive">
+            <p className="font-semibold">{t("inquiry_page.stock_warning_title")}</p>
+            <p className="mt-0.5 text-destructive/80">
+              {t("inquiry_page.stock_warning_body")}
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="mt-8 grid gap-10 lg:grid-cols-[3fr_2fr]">
         {/* LEFT — items */}
         <section>
@@ -233,6 +274,7 @@ export function InquiryPage() {
                       ? `/id/produk/${item.slug}`
                       : `/en/products/${item.slug}`;
                   const attrs = Object.entries(item.attributes);
+                  const isOut = stockMap[item.productId] === "out_of_stock";
                   return (
                     <li key={item.key} className="flex gap-4 p-4">
                       <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-md bg-muted">
@@ -246,12 +288,19 @@ export function InquiryPage() {
                       </div>
                       <div className="flex min-w-0 flex-1 flex-col">
                         <div className="flex items-start justify-between gap-3">
-                          <Link
-                            to={productPath as never}
-                            className="font-medium text-foreground hover:text-primary"
-                          >
-                            {name}
-                          </Link>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Link
+                              to={productPath as never}
+                              className="font-medium text-foreground hover:text-primary"
+                            >
+                              {name}
+                            </Link>
+                            {isOut && (
+                              <span className="rounded-full border border-destructive/40 bg-destructive/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-destructive">
+                                {t("inquiry_page.now_out_of_stock")}
+                              </span>
+                            )}
+                          </div>
                           <button
                             type="button"
                             onClick={() => removeFromInquiry(item.key)}
@@ -525,7 +574,7 @@ export function InquiryPage() {
               <Button
                 type="submit"
                 size="lg"
-                disabled={submitting || items.length === 0}
+                disabled={submitting || items.length === 0 || hasOutOfStock}
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 {submitting

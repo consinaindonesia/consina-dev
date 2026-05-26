@@ -234,5 +234,33 @@
     "only_en": "Produk ini hanya tersedia dalam Bahasa Inggris.",
     "switch_to_id": "Lihat versi Bahasa Indonesia",
     "switch_to_en": "Lihat versi Bahasa Inggris"
+  },
+  "product": {
+    "quantity": "Jumlah",
+    "added": "Ditambahkan",
+    "find_in_store": "Cari di toko",
+    "inquiry_explainer": "Kami akan merespons dalam 24 jam untuk mengkonfirmasi ketersediaan dan mengatur pembelian. Tidak ada pembayaran untuk mengirim permintaan.",
+    "description": "Deskripsi",
+    "specs": "Spesifikasi",
+    "related": "Produk terkait",
+    "no_image": "Tanpa gambar",
+    "no_description": "Belum ada deskripsi.",
+    "select_placeholder": "Pilih opsi",
+    "capacity": "Kapasitas",
+    "weight": "Berat"
+  },
+  "inquiry": {
+    "open": "Buka daftar permintaan",
+    "title": "Daftar Permintaan",
+    "empty": "Daftar permintaan Anda kosong. Jelajahi katalog untuk menambah produk.",
+    "items_count_one": "{{count}} produk",
+    "items_count_other": "{{count}} produk",
+    "view_full": "Lihat Daftar Lengkap",
+    "view_inquiry": "Lihat permintaan",
+    "clear_all": "Hapus semua",
+    "confirm_clear": "Hapus semua produk dari daftar permintaan?",
+    "remove": "Hapus",
+    "toast_added_one": "Ditambahkan. {{count}} produk dalam daftar.",
+    "toast_added_other": "Ditambahkan. {{count}} produk dalam daftar."
   }
 }

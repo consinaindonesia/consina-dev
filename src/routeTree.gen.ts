@@ -40,6 +40,7 @@ import { Route as LangPermintaanRouteImport } from './routes/$lang.permintaan'
 import { Route as LangInquiryRouteImport } from './routes/$lang.inquiry'
 import { Route as LangPermintaanIndexRouteImport } from './routes/$lang.permintaan.index'
 import { Route as LangInquiryIndexRouteImport } from './routes/$lang.inquiry.index'
+import { Route as AdminSettingsNotificationsRouteImport } from './routes/admin/settings.notifications'
 import { Route as AdminProductsNewRouteImport } from './routes/admin/products.new'
 import { Route as AdminInquiriesIdRouteImport } from './routes/admin/inquiries.$id'
 import { Route as AdminCustomersEmailRouteImport } from './routes/admin/customers.$email'
@@ -204,6 +205,12 @@ const LangInquiryIndexRoute = LangInquiryIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LangInquiryRoute,
 } as any)
+const AdminSettingsNotificationsRoute =
+  AdminSettingsNotificationsRouteImport.update({
+    id: '/admin/settings/notifications',
+    path: '/admin/settings/notifications',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AdminProductsNewRoute = AdminProductsNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -282,6 +289,7 @@ export interface FileRoutesByFullPath {
   '/admin/customers/$email': typeof AdminCustomersEmailRoute
   '/admin/inquiries/$id': typeof AdminInquiriesIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
+  '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
   '/$lang/inquiry/': typeof LangInquiryIndexRoute
   '/$lang/permintaan/': typeof LangPermintaanIndexRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
@@ -320,6 +328,7 @@ export interface FileRoutesByTo {
   '/admin/customers/$email': typeof AdminCustomersEmailRoute
   '/admin/inquiries/$id': typeof AdminInquiriesIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
+  '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
   '/$lang/inquiry': typeof LangInquiryIndexRoute
   '/$lang/permintaan': typeof LangPermintaanIndexRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
@@ -362,6 +371,7 @@ export interface FileRoutesById {
   '/admin/customers/$email': typeof AdminCustomersEmailRoute
   '/admin/inquiries/$id': typeof AdminInquiriesIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
+  '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
   '/$lang/inquiry/': typeof LangInquiryIndexRoute
   '/$lang/permintaan/': typeof LangPermintaanIndexRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
@@ -405,6 +415,7 @@ export interface FileRouteTypes {
     | '/admin/customers/$email'
     | '/admin/inquiries/$id'
     | '/admin/products/new'
+    | '/admin/settings/notifications'
     | '/$lang/inquiry/'
     | '/$lang/permintaan/'
     | '/admin/products/$id/edit'
@@ -443,6 +454,7 @@ export interface FileRouteTypes {
     | '/admin/customers/$email'
     | '/admin/inquiries/$id'
     | '/admin/products/new'
+    | '/admin/settings/notifications'
     | '/$lang/inquiry'
     | '/$lang/permintaan'
     | '/admin/products/$id/edit'
@@ -484,6 +496,7 @@ export interface FileRouteTypes {
     | '/admin/customers/$email'
     | '/admin/inquiries/$id'
     | '/admin/products/new'
+    | '/admin/settings/notifications'
     | '/$lang/inquiry/'
     | '/$lang/permintaan/'
     | '/admin/products/$id/edit'
@@ -516,6 +529,7 @@ export interface RootRouteChildren {
   EnSplatRoute: typeof EnSplatRoute
   AdminIndexRoute: typeof AdminIndexRoute
   EnIndexRoute: typeof EnIndexRoute
+  AdminSettingsNotificationsRoute: typeof AdminSettingsNotificationsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -737,6 +751,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangInquiryIndexRouteImport
       parentRoute: typeof LangInquiryRoute
     }
+    '/admin/settings/notifications': {
+      id: '/admin/settings/notifications'
+      path: '/admin/settings/notifications'
+      fullPath: '/admin/settings/notifications'
+      preLoaderRoute: typeof AdminSettingsNotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/products/new': {
       id: '/admin/products/new'
       path: '/new'
@@ -907,6 +928,7 @@ const rootRouteChildren: RootRouteChildren = {
   EnSplatRoute: EnSplatRoute,
   AdminIndexRoute: AdminIndexRoute,
   EnIndexRoute: EnIndexRoute,
+  AdminSettingsNotificationsRoute: AdminSettingsNotificationsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

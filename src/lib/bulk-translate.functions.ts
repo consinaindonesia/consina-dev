@@ -64,6 +64,20 @@ export const bulkTranslateProducts = createServerFn({ method: "POST" })
     const target = data.targetLang;
     const source = target === "id" ? "en" : "id";
 
+    // Fetch brand glossary to guide the translator
+    const { data: glossary } = await supabase
+      .from("brand_glossary")
+      .select("term_en, term_id, never_translate, notes");
+    const glossaryBlock = buildGlossaryBlock(
+      (glossary ?? []) as Array<{
+        term_en: string;
+        term_id: string | null;
+        never_translate: boolean;
+        notes: string | null;
+      }>,
+      target,
+    );
+
     const { data: products, error } = await supabase
       .from("products")
       .select(
@@ -97,6 +111,8 @@ export const bulkTranslateProducts = createServerFn({ method: "POST" })
 Source language: ${LANG_NAME[source]}
 Target language: ${LANG_NAME[target]}
 Content type: ${field}
+
+${glossaryBlock}
 
 Rules:
 - Preserve brand tone: adventurous, grounded, community-oriented.

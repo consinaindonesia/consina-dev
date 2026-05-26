@@ -29,6 +29,7 @@ import { Route as AdminProductsRouteImport } from './routes/admin/products'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminLanguagesRouteImport } from './routes/admin/languages'
 import { Route as AdminInquiriesRouteImport } from './routes/admin/inquiries'
+import { Route as AdminGlossaryRouteImport } from './routes/admin/glossary'
 import { Route as AdminForgotPasswordRouteImport } from './routes/admin/forgot-password'
 import { Route as AdminCategoriesRouteImport } from './routes/admin/categories'
 import { Route as AdminAttributesRouteImport } from './routes/admin/attributes'
@@ -135,6 +136,11 @@ const AdminInquiriesRoute = AdminInquiriesRouteImport.update({
   path: '/admin/inquiries',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminGlossaryRoute = AdminGlossaryRouteImport.update({
+  id: '/admin/glossary',
+  path: '/admin/glossary',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminForgotPasswordRoute = AdminForgotPasswordRouteImport.update({
   id: '/admin/forgot-password',
   path: '/admin/forgot-password',
@@ -175,6 +181,7 @@ export interface FileRoutesByFullPath {
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
+  '/admin/glossary': typeof AdminGlossaryRoute
   '/admin/inquiries': typeof AdminInquiriesRoute
   '/admin/languages': typeof AdminLanguagesRoute
   '/admin/login': typeof AdminLoginRoute
@@ -201,6 +208,7 @@ export interface FileRoutesByTo {
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
+  '/admin/glossary': typeof AdminGlossaryRoute
   '/admin/inquiries': typeof AdminInquiriesRoute
   '/admin/languages': typeof AdminLanguagesRoute
   '/admin/login': typeof AdminLoginRoute
@@ -229,6 +237,7 @@ export interface FileRoutesById {
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
+  '/admin/glossary': typeof AdminGlossaryRoute
   '/admin/inquiries': typeof AdminInquiriesRoute
   '/admin/languages': typeof AdminLanguagesRoute
   '/admin/login': typeof AdminLoginRoute
@@ -258,6 +267,7 @@ export interface FileRouteTypes {
     | '/admin/attributes'
     | '/admin/categories'
     | '/admin/forgot-password'
+    | '/admin/glossary'
     | '/admin/inquiries'
     | '/admin/languages'
     | '/admin/login'
@@ -284,6 +294,7 @@ export interface FileRouteTypes {
     | '/admin/attributes'
     | '/admin/categories'
     | '/admin/forgot-password'
+    | '/admin/glossary'
     | '/admin/inquiries'
     | '/admin/languages'
     | '/admin/login'
@@ -311,6 +322,7 @@ export interface FileRouteTypes {
     | '/admin/attributes'
     | '/admin/categories'
     | '/admin/forgot-password'
+    | '/admin/glossary'
     | '/admin/inquiries'
     | '/admin/languages'
     | '/admin/login'
@@ -339,6 +351,7 @@ export interface RootRouteChildren {
   AdminAttributesRoute: typeof AdminAttributesRoute
   AdminCategoriesRoute: typeof AdminCategoriesRoute
   AdminForgotPasswordRoute: typeof AdminForgotPasswordRoute
+  AdminGlossaryRoute: typeof AdminGlossaryRoute
   AdminInquiriesRoute: typeof AdminInquiriesRoute
   AdminLanguagesRoute: typeof AdminLanguagesRoute
   AdminLoginRoute: typeof AdminLoginRoute
@@ -492,6 +505,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminInquiriesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/glossary': {
+      id: '/admin/glossary'
+      path: '/admin/glossary'
+      fullPath: '/admin/glossary'
+      preLoaderRoute: typeof AdminGlossaryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/forgot-password': {
       id: '/admin/forgot-password'
       path: '/admin/forgot-password'
@@ -568,6 +588,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminAttributesRoute: AdminAttributesRoute,
   AdminCategoriesRoute: AdminCategoriesRoute,
   AdminForgotPasswordRoute: AdminForgotPasswordRoute,
+  AdminGlossaryRoute: AdminGlossaryRoute,
   AdminInquiriesRoute: AdminInquiriesRoute,
   AdminLanguagesRoute: AdminLanguagesRoute,
   AdminLoginRoute: AdminLoginRoute,

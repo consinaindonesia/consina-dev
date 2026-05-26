@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, notFound, useNavigate } from "@tanstack/react-router";
-import { Loader2, MapPin, Check, Minus, Plus } from "lucide-react";
+import { Loader2, MapPin, Check, Minus, Plus, BellRing } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectTrigger,
@@ -34,7 +35,7 @@ type Product = {
   capacity: string | null;
   weight_grams: number | null;
   attributes: Record<string, string> | null;
-  stock_status: "in_stock" | "low" | "out";
+  stock_status: "in_stock" | "low_stock" | "out_of_stock";
 };
 
 type ProductImage = {
@@ -80,6 +81,9 @@ export function ProductDetailPage({ slug }: { slug: string }) {
   const [quantity, setQuantity] = useState(1);
   const [selectedAttrs, setSelectedAttrs] = useState<Record<string, string>>({});
   const [added, setAdded] = useState(false);
+  const [notifyEmail, setNotifyEmail] = useState("");
+  const [notifySubmitting, setNotifySubmitting] = useState(false);
+  const [notifySaved, setNotifySaved] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -220,9 +224,33 @@ export function ProductDetailPage({ slug }: { slug: string }) {
   const stockBadge =
     product.stock_status === "in_stock"
       ? { text: t("labels.in_stock"), cls: "bg-secondary/15 text-secondary border-secondary/30" }
-      : product.stock_status === "low"
+      : product.stock_status === "low_stock"
         ? { text: t("labels.low_stock"), cls: "bg-amber-500/15 text-amber-700 border-amber-500/30" }
         : { text: t("labels.out_of_stock"), cls: "bg-destructive/15 text-destructive border-destructive/30" };
+
+  const isOut = product.stock_status === "out_of_stock";
+  const isLow = product.stock_status === "low_stock";
+
+  async function submitNotify(e: React.FormEvent) {
+    e.preventDefault();
+    if (!product) return;
+    const email = notifyEmail.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error(t("product.notify_invalid_email"));
+      return;
+    }
+    setNotifySubmitting(true);
+    const { error } = await supabase
+      .from("notify_when_in_stock")
+      .insert({ product_id: product.id, email });
+    setNotifySubmitting(false);
+    if (error && !/duplicate|unique/i.test(error.message)) {
+      toast.error(error.message);
+      return;
+    }
+    setNotifySaved(true);
+    toast.success(t("product.notify_saved"));
+  }
 
   const mainImg = images[activeImage] ?? images[0];
 
@@ -315,6 +343,12 @@ export function ProductDetailPage({ slug }: { slug: string }) {
               </Badge>
             </div>
 
+            {isLow && (
+              <p className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-800">
+                {t("product.low_stock_notice")}
+              </p>
+            )}
+
             {/* Attribute selectors */}
             {attrDefs.length > 0 && (
               <div className="mt-6 space-y-4">
@@ -392,12 +426,12 @@ export function ProductDetailPage({ slug }: { slug: string }) {
 
             {/* Buttons */}
             <div className="mt-6 space-y-2">
-              <Button
+              {!isOut && (
+                <Button
                 size="lg"
                 onClick={handleAddToInquiry}
-                disabled={product.stock_status === "out"}
                 className="h-12 w-full bg-primary text-base font-semibold text-primary-foreground hover:bg-primary/90"
-              >
+                >
                 {added ? (
                   <span className="inline-flex items-center gap-2">
                     <Check className="h-4 w-4" /> {t("product.added")}
@@ -405,7 +439,40 @@ export function ProductDetailPage({ slug }: { slug: string }) {
                 ) : (
                   t("cta.add_to_inquiry")
                 )}
-              </Button>
+                </Button>
+              )}
+              {isOut && (
+                <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
+                  <p className="flex items-center gap-2 text-sm font-semibold text-destructive">
+                    <BellRing className="h-4 w-4" />
+                    {t("product.notify_title")}
+                  </p>
+                  {notifySaved ? (
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {t("product.notify_saved")}
+                    </p>
+                  ) : (
+                    <form onSubmit={submitNotify} className="mt-3 flex flex-col gap-2 sm:flex-row">
+                      <Input
+                        type="email"
+                        required
+                        placeholder={t("product.notify_email_ph")}
+                        value={notifyEmail}
+                        onChange={(e) => setNotifyEmail(e.target.value)}
+                        maxLength={255}
+                        className="flex-1"
+                      />
+                      <Button
+                        type="submit"
+                        disabled={notifySubmitting}
+                        className="bg-primary text-primary-foreground hover:bg-primary/90"
+                      >
+                        {notifySubmitting ? t("product.notify_sending") : t("product.notify_cta")}
+                      </Button>
+                    </form>
+                  )}
+                </div>
+              )}
               <Button
                 asChild
                 variant="outline"

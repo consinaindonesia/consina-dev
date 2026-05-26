@@ -35,6 +35,7 @@ import { Route as AdminCategoriesRouteImport } from './routes/admin/categories'
 import { Route as AdminAttributesRouteImport } from './routes/admin/attributes'
 import { Route as LangPermintaanRouteImport } from './routes/$lang.permintaan'
 import { Route as LangInquiryRouteImport } from './routes/$lang.inquiry'
+import { Route as LangInquiryIndexRouteImport } from './routes/$lang.inquiry.index'
 import { Route as AdminProductsNewRouteImport } from './routes/admin/products.new'
 import { Route as LangProdukSlugRouteImport } from './routes/$lang.produk.$slug'
 import { Route as LangProductsSlugRouteImport } from './routes/$lang.products.$slug'
@@ -172,6 +173,11 @@ const LangInquiryRoute = LangInquiryRouteImport.update({
   path: '/inquiry',
   getParentRoute: () => LangRoute,
 } as any)
+const LangInquiryIndexRoute = LangInquiryIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => LangInquiryRoute,
+} as any)
 const AdminProductsNewRoute = AdminProductsNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -235,6 +241,7 @@ export interface FileRoutesByFullPath {
   '/$lang/products/$slug': typeof LangProductsSlugRoute
   '/$lang/produk/$slug': typeof LangProdukSlugRoute
   '/admin/products/new': typeof AdminProductsNewRoute
+  '/$lang/inquiry/': typeof LangInquiryIndexRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
 }
 export interface FileRoutesByTo {
@@ -247,7 +254,6 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
-  '/$lang/inquiry': typeof LangInquiryRouteWithChildren
   '/$lang/permintaan': typeof LangPermintaanRouteWithChildren
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
@@ -268,6 +274,7 @@ export interface FileRoutesByTo {
   '/$lang/products/$slug': typeof LangProductsSlugRoute
   '/$lang/produk/$slug': typeof LangProdukSlugRoute
   '/admin/products/new': typeof AdminProductsNewRoute
+  '/$lang/inquiry': typeof LangInquiryIndexRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
 }
 export interface FileRoutesById {
@@ -303,6 +310,7 @@ export interface FileRoutesById {
   '/$lang/products/$slug': typeof LangProductsSlugRoute
   '/$lang/produk/$slug': typeof LangProdukSlugRoute
   '/admin/products/new': typeof AdminProductsNewRoute
+  '/$lang/inquiry/': typeof LangInquiryIndexRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
 }
 export interface FileRouteTypes {
@@ -339,6 +347,7 @@ export interface FileRouteTypes {
     | '/$lang/products/$slug'
     | '/$lang/produk/$slug'
     | '/admin/products/new'
+    | '/$lang/inquiry/'
     | '/admin/products/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -351,7 +360,6 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/stores'
     | '/tents'
-    | '/$lang/inquiry'
     | '/$lang/permintaan'
     | '/admin/attributes'
     | '/admin/categories'
@@ -372,6 +380,7 @@ export interface FileRouteTypes {
     | '/$lang/products/$slug'
     | '/$lang/produk/$slug'
     | '/admin/products/new'
+    | '/$lang/inquiry'
     | '/admin/products/$id/edit'
   id:
     | '__root__'
@@ -406,6 +415,7 @@ export interface FileRouteTypes {
     | '/$lang/products/$slug'
     | '/$lang/produk/$slug'
     | '/admin/products/new'
+    | '/$lang/inquiry/'
     | '/admin/products/$id/edit'
   fileRoutesById: FileRoutesById
 }
@@ -619,6 +629,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangInquiryRouteImport
       parentRoute: typeof LangRoute
     }
+    '/$lang/inquiry/': {
+      id: '/$lang/inquiry/'
+      path: '/'
+      fullPath: '/$lang/inquiry/'
+      preLoaderRoute: typeof LangInquiryIndexRouteImport
+      parentRoute: typeof LangInquiryRoute
+    }
     '/admin/products/new': {
       id: '/admin/products/new'
       path: '/new'
@@ -666,10 +683,12 @@ declare module '@tanstack/react-router' {
 
 interface LangInquiryRouteChildren {
   LangInquirySentRoute: typeof LangInquirySentRoute
+  LangInquiryIndexRoute: typeof LangInquiryIndexRoute
 }
 
 const LangInquiryRouteChildren: LangInquiryRouteChildren = {
   LangInquirySentRoute: LangInquirySentRoute,
+  LangInquiryIndexRoute: LangInquiryIndexRoute,
 }
 
 const LangInquiryRouteWithChildren = LangInquiryRoute._addFileChildren(
@@ -748,3 +767,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

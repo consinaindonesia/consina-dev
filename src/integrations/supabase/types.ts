@@ -112,6 +112,36 @@ export type Database = {
         }
         Relationships: []
       }
+      brand_glossary: {
+        Row: {
+          created_at: string
+          id: string
+          never_translate: boolean
+          notes: string | null
+          term_en: string
+          term_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          never_translate?: boolean
+          notes?: string | null
+          term_en: string
+          term_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          never_translate?: boolean
+          notes?: string | null
+          term_en?: string
+          term_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           description_en: string | null

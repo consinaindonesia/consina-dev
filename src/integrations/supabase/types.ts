@@ -287,12 +287,15 @@ export type Database = {
       inquiries: {
         Row: {
           assigned_to: string | null
+          closing_notes: string | null
           created_at: string
           customer_city: string | null
           customer_email: string
           customer_name: string
           customer_phone: string | null
+          deleted_at: string | null
           id: string
+          lost_reason: string | null
           message: string | null
           notes: string | null
           preferred_store_id: string | null
@@ -301,12 +304,15 @@ export type Database = {
         }
         Insert: {
           assigned_to?: string | null
+          closing_notes?: string | null
           created_at?: string
           customer_city?: string | null
           customer_email: string
           customer_name: string
           customer_phone?: string | null
+          deleted_at?: string | null
           id?: string
+          lost_reason?: string | null
           message?: string | null
           notes?: string | null
           preferred_store_id?: string | null
@@ -315,12 +321,15 @@ export type Database = {
         }
         Update: {
           assigned_to?: string | null
+          closing_notes?: string | null
           created_at?: string
           customer_city?: string | null
           customer_email?: string
           customer_name?: string
           customer_phone?: string | null
+          deleted_at?: string | null
           id?: string
+          lost_reason?: string | null
           message?: string | null
           notes?: string | null
           preferred_store_id?: string | null
@@ -379,6 +388,45 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inquiry_notes: {
+        Row: {
+          author_id: string | null
+          body: string
+          created_at: string
+          id: string
+          inquiry_id: string
+        }
+        Insert: {
+          author_id?: string | null
+          body: string
+          created_at?: string
+          id?: string
+          inquiry_id: string
+        }
+        Update: {
+          author_id?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          inquiry_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inquiry_notes_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inquiry_notes_inquiry_id_fkey"
+            columns: ["inquiry_id"]
+            isOneToOne: false
+            referencedRelation: "inquiries"
             referencedColumns: ["id"]
           },
         ]

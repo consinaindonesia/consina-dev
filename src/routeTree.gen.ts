@@ -39,6 +39,7 @@ import { Route as LangInquiryRouteImport } from './routes/$lang.inquiry'
 import { Route as LangPermintaanIndexRouteImport } from './routes/$lang.permintaan.index'
 import { Route as LangInquiryIndexRouteImport } from './routes/$lang.inquiry.index'
 import { Route as AdminProductsNewRouteImport } from './routes/admin/products.new'
+import { Route as AdminInquiriesIdRouteImport } from './routes/admin/inquiries.$id'
 import { Route as LangProdukSlugRouteImport } from './routes/$lang.produk.$slug'
 import { Route as LangProductsSlugRouteImport } from './routes/$lang.products.$slug'
 import { Route as LangPermintaanTerkirimRouteImport } from './routes/$lang.permintaan.terkirim'
@@ -195,6 +196,11 @@ const AdminProductsNewRoute = AdminProductsNewRouteImport.update({
   path: '/new',
   getParentRoute: () => AdminProductsRoute,
 } as any)
+const AdminInquiriesIdRoute = AdminInquiriesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AdminInquiriesRoute,
+} as any)
 const LangProdukSlugRoute = LangProdukSlugRouteImport.update({
   id: '/produk/$slug',
   path: '/produk/$slug',
@@ -238,7 +244,7 @@ export interface FileRoutesByFullPath {
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
   '/admin/glossary': typeof AdminGlossaryRoute
-  '/admin/inquiries': typeof AdminInquiriesRoute
+  '/admin/inquiries': typeof AdminInquiriesRouteWithChildren
   '/admin/languages': typeof AdminLanguagesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
@@ -253,6 +259,7 @@ export interface FileRoutesByFullPath {
   '/$lang/permintaan/terkirim': typeof LangPermintaanTerkirimRoute
   '/$lang/products/$slug': typeof LangProductsSlugRoute
   '/$lang/produk/$slug': typeof LangProdukSlugRoute
+  '/admin/inquiries/$id': typeof AdminInquiriesIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/$lang/inquiry/': typeof LangInquiryIndexRoute
   '/$lang/permintaan/': typeof LangPermintaanIndexRoute
@@ -272,7 +279,7 @@ export interface FileRoutesByTo {
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
   '/admin/glossary': typeof AdminGlossaryRoute
-  '/admin/inquiries': typeof AdminInquiriesRoute
+  '/admin/inquiries': typeof AdminInquiriesRouteWithChildren
   '/admin/languages': typeof AdminLanguagesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
@@ -287,6 +294,7 @@ export interface FileRoutesByTo {
   '/$lang/permintaan/terkirim': typeof LangPermintaanTerkirimRoute
   '/$lang/products/$slug': typeof LangProductsSlugRoute
   '/$lang/produk/$slug': typeof LangProdukSlugRoute
+  '/admin/inquiries/$id': typeof AdminInquiriesIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/$lang/inquiry': typeof LangInquiryIndexRoute
   '/$lang/permintaan': typeof LangPermintaanIndexRoute
@@ -310,7 +318,7 @@ export interface FileRoutesById {
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
   '/admin/glossary': typeof AdminGlossaryRoute
-  '/admin/inquiries': typeof AdminInquiriesRoute
+  '/admin/inquiries': typeof AdminInquiriesRouteWithChildren
   '/admin/languages': typeof AdminLanguagesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
@@ -325,6 +333,7 @@ export interface FileRoutesById {
   '/$lang/permintaan/terkirim': typeof LangPermintaanTerkirimRoute
   '/$lang/products/$slug': typeof LangProductsSlugRoute
   '/$lang/produk/$slug': typeof LangProdukSlugRoute
+  '/admin/inquiries/$id': typeof AdminInquiriesIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/$lang/inquiry/': typeof LangInquiryIndexRoute
   '/$lang/permintaan/': typeof LangPermintaanIndexRoute
@@ -364,6 +373,7 @@ export interface FileRouteTypes {
     | '/$lang/permintaan/terkirim'
     | '/$lang/products/$slug'
     | '/$lang/produk/$slug'
+    | '/admin/inquiries/$id'
     | '/admin/products/new'
     | '/$lang/inquiry/'
     | '/$lang/permintaan/'
@@ -398,6 +408,7 @@ export interface FileRouteTypes {
     | '/$lang/permintaan/terkirim'
     | '/$lang/products/$slug'
     | '/$lang/produk/$slug'
+    | '/admin/inquiries/$id'
     | '/admin/products/new'
     | '/$lang/inquiry'
     | '/$lang/permintaan'
@@ -435,6 +446,7 @@ export interface FileRouteTypes {
     | '/$lang/permintaan/terkirim'
     | '/$lang/products/$slug'
     | '/$lang/produk/$slug'
+    | '/admin/inquiries/$id'
     | '/admin/products/new'
     | '/$lang/inquiry/'
     | '/$lang/permintaan/'
@@ -456,7 +468,7 @@ export interface RootRouteChildren {
   AdminCategoriesRoute: typeof AdminCategoriesRoute
   AdminForgotPasswordRoute: typeof AdminForgotPasswordRoute
   AdminGlossaryRoute: typeof AdminGlossaryRoute
-  AdminInquiriesRoute: typeof AdminInquiriesRoute
+  AdminInquiriesRoute: typeof AdminInquiriesRouteWithChildren
   AdminLanguagesRoute: typeof AdminLanguagesRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminProductsRoute: typeof AdminProductsRouteWithChildren
@@ -680,6 +692,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProductsNewRouteImport
       parentRoute: typeof AdminProductsRoute
     }
+    '/admin/inquiries/$id': {
+      id: '/admin/inquiries/$id'
+      path: '/$id'
+      fullPath: '/admin/inquiries/$id'
+      preLoaderRoute: typeof AdminInquiriesIdRouteImport
+      parentRoute: typeof AdminInquiriesRoute
+    }
     '/$lang/produk/$slug': {
       id: '/$lang/produk/$slug'
       path: '/produk/$slug'
@@ -764,6 +783,18 @@ const LangRouteChildren: LangRouteChildren = {
 
 const LangRouteWithChildren = LangRoute._addFileChildren(LangRouteChildren)
 
+interface AdminInquiriesRouteChildren {
+  AdminInquiriesIdRoute: typeof AdminInquiriesIdRoute
+}
+
+const AdminInquiriesRouteChildren: AdminInquiriesRouteChildren = {
+  AdminInquiriesIdRoute: AdminInquiriesIdRoute,
+}
+
+const AdminInquiriesRouteWithChildren = AdminInquiriesRoute._addFileChildren(
+  AdminInquiriesRouteChildren,
+)
+
 interface AdminProductsRouteChildren {
   AdminProductsNewRoute: typeof AdminProductsNewRoute
   AdminProductsIdEditRoute: typeof AdminProductsIdEditRoute
@@ -793,7 +824,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminCategoriesRoute: AdminCategoriesRoute,
   AdminForgotPasswordRoute: AdminForgotPasswordRoute,
   AdminGlossaryRoute: AdminGlossaryRoute,
-  AdminInquiriesRoute: AdminInquiriesRoute,
+  AdminInquiriesRoute: AdminInquiriesRouteWithChildren,
   AdminLanguagesRoute: AdminLanguagesRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminProductsRoute: AdminProductsRouteWithChildren,

@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -156,8 +156,8 @@ function InquiriesPage() {
   const [range, setRange] = useState<DateRange>("all");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [flash, setFlash] = useState<Set<string>>(new Set());
-  const [detail, setDetail] = useState<InquiryRow | null>(null);
   const [admins, setAdmins] = useState<AdminUser[]>([]);
+  const navigate = useNavigate();
   const rowsRef = useRef<InquiryRow[]>([]);
   rowsRef.current = rows;
 
@@ -173,6 +173,7 @@ function InquiriesPage() {
              product_images(image_url, is_primary)))`
       )
       .order("created_at", { ascending: false })
+      .is("deleted_at", null)
       .limit(500);
     setLoading(false);
     if (error) {
@@ -573,7 +574,9 @@ function InquiriesPage() {
                 return (
                   <tr
                     key={r.id}
-                    onClick={() => setDetail(r)}
+                    onClick={() =>
+                      navigate({ to: "/admin/inquiries/$id", params: { id: r.id } })
+                    }
                     className={cn(
                       "cursor-pointer border-t border-border transition-colors",
                       isNew && "border-l-4 border-l-red-500",
@@ -679,7 +682,11 @@ function InquiriesPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => setDetail(r)}>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              navigate({ to: "/admin/inquiries/$id", params: { id: r.id } })
+                            }
+                          >
                             <Eye className="mr-2 h-3.5 w-3.5" /> View
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
@@ -711,96 +718,6 @@ function InquiriesPage() {
               })}
             </tbody>
           </table>
-        </div>
-      )}
-
-      {/* Detail drawer */}
-      {detail && (
-        <div
-          className="fixed inset-0 z-50 flex justify-end bg-black/40"
-          onClick={() => setDetail(null)}
-        >
-          <div
-            className="h-full w-full max-w-xl overflow-y-auto bg-background p-6 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="mb-4 flex items-center justify-between">
-              <div>
-                <Badge variant="outline" className={STATUS_META[detail.status].cls}>
-                  {STATUS_META[detail.status].label}
-                </Badge>
-                <h2 className="mt-2 text-xl font-bold">{detail.customer_name}</h2>
-                <p className="text-sm text-muted-foreground">
-                  Submitted {relTime(detail.created_at)}
-                </p>
-              </div>
-              <Button variant="ghost" size="sm" onClick={() => setDetail(null)}>
-                Close
-              </Button>
-            </div>
-
-            <div className="mb-6 space-y-1 rounded-md border border-border bg-muted/30 p-3 text-sm">
-              <div className="flex gap-2">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <a href={`mailto:${detail.customer_email}`} className="underline">
-                  {detail.customer_email}
-                </a>
-              </div>
-              {detail.customer_phone && (
-                <div className="flex gap-2">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
-                  <span>{detail.customer_phone}</span>
-                </div>
-              )}
-              {detail.customer_city && (
-                <div className="text-muted-foreground">City: {detail.customer_city}</div>
-              )}
-            </div>
-
-            {detail.message && (
-              <div className="mb-6">
-                <h3 className="mb-2 text-sm font-semibold">Message</h3>
-                <p className="rounded-md border border-border bg-white p-3 text-sm">
-                  {detail.message}
-                </p>
-              </div>
-            )}
-
-            <h3 className="mb-2 text-sm font-semibold">
-              Items ({detail.inquiry_items.length})
-            </h3>
-            <div className="space-y-2">
-              {detail.inquiry_items.map((it) => {
-                const src = primaryImage(it);
-                return (
-                  <div
-                    key={it.id}
-                    className="flex gap-3 rounded-md border border-border bg-white p-3"
-                  >
-                    <div className="h-14 w-14 shrink-0 overflow-hidden rounded bg-muted">
-                      {src && <img src={src} alt="" className="h-full w-full object-cover" />}
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-sm font-medium">
-                        {it.product?.name_en ?? it.product?.name_id ?? "(deleted)"}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        Qty {it.quantity} · {fmtIDR(it.product?.price_idr ?? 0)} ea
-                      </div>
-                      {it.notes && (
-                        <div className="mt-1 text-xs text-muted-foreground">{it.notes}</div>
-                      )}
-                    </div>
-                    <div className="text-sm font-semibold">{fmtIDR(itemTotal(it))}</div>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="mt-4 flex justify-between border-t border-border pt-4 text-sm font-semibold">
-              <span>Total estimated</span>
-              <span>{fmtIDR(inquiryTotal(detail))}</span>
-            </div>
-          </div>
         </div>
       )}
     </AdminShell>

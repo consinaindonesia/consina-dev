@@ -468,6 +468,9 @@ export function ProductForm(props: ProductFormProps) {
         navigate({ to: "/admin/products/$id/edit", params: { id: data.id } });
       }
     } else {
+      const prevStock = (() => {
+        try { return JSON.parse(initialSnapshot)?.stock_status; } catch { return null; }
+      })();
       const { error } = await supabase
         .from("products")
         .update(payload)
@@ -479,6 +482,22 @@ export function ProductForm(props: ProductFormProps) {
       }
       void logActivity(profile?.id ?? null, "updated", productId);
       toast.success("Product saved");
+      if (
+        prevStock === "out_of_stock" &&
+        values.stock_status === "in_stock"
+      ) {
+        const { data: pending, error: pendErr } = await supabase
+          .from("notify_when_in_stock")
+          .update({ notified_at: new Date().toISOString() })
+          .eq("product_id", productId)
+          .is("notified_at", null)
+          .select("id");
+        if (!pendErr && pending && pending.length > 0) {
+          toast.success(
+            `${pending.length} customer${pending.length === 1 ? "" : "s"} flagged for back-in-stock notification. Review under "Restock alerts".`,
+          );
+        }
+      }
       setInitialSnapshot(JSON.stringify(values));
       try { localStorage.removeItem(draftKey); } catch { /* ignore */ }
       if (opts.andNew) {

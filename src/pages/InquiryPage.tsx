@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Trash2, X, Minus, Plus } from "lucide-react";
+import { Trash2, X, Minus, Plus, AlertTriangle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
@@ -88,6 +88,35 @@ export function InquiryPage() {
     [items],
   );
 
+  const productIds = useMemo(
+    () => Array.from(new Set(items.map((i) => i.productId))).filter(Boolean),
+    [items],
+  );
+
+  const { data: stockMap = {} } = useQuery({
+    queryKey: ["inquiry-stock", productIds],
+    enabled: productIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("id, stock_status")
+        .in("id", productIds);
+      if (error) throw error;
+      const map: Record<string, string> = {};
+      for (const r of data ?? []) map[r.id] = r.stock_status;
+      return map;
+    },
+  });
+
+  const outItemKeys = useMemo(
+    () =>
+      items
+        .filter((i) => stockMap[i.productId] === "out_of_stock")
+        .map((i) => i.key),
+    [items, stockMap],
+  );
+  const hasOutOfStock = outItemKeys.length > 0;
+
   const { data: stores = [] } = useQuery({
     queryKey: ["active-stores"],
     queryFn: async () => {
@@ -122,6 +151,10 @@ export function InquiryPage() {
     e.preventDefault();
     if (items.length === 0) {
       toast.error(t("inquiry_page.empty_submit"));
+      return;
+    }
+    if (hasOutOfStock) {
+      toast.error(t("inquiry_page.has_out_of_stock"));
       return;
     }
     const parsed = formSchema.safeParse(form);

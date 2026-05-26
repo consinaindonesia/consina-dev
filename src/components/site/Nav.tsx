@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Menu, X, Search, MapPin, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { LangSuggestionBanner } from "./LangSuggestionBanner";
 
 export function Nav() {
   const { t } = useTranslation();
@@ -26,6 +27,7 @@ export function Nav() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/85 backdrop-blur">
+      <LangSuggestionBanner />
       <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-4 md:px-8">
         <Link to="/" className="flex items-center gap-2">
           <span className="font-[Archivo] text-2xl font-black tracking-tight text-primary">

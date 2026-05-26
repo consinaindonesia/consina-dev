@@ -181,10 +181,11 @@ export function InquiryPage() {
       }
 
       clearInquiry();
-      navigate({
-        to: sentPath as never,
-        search: { ref: inquiry.id, method: payload.contact_method },
-      });
+      const qs = new URLSearchParams({
+        ref: inquiry.id,
+        method: payload.contact_method,
+      }).toString();
+      navigate({ to: `${sentPath}?${qs}` as never });
     } catch (err) {
       console.error(err);
       toast.error(t("inquiry_page.submit_error"));

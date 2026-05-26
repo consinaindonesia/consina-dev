@@ -126,12 +126,13 @@ async function logActivity(
   }
 }
 
+type Tab = "basic" | "translations" | "images";
 type ProductFormProps =
-  | { mode: "new"; productId?: undefined }
-  | { mode: "edit"; productId: string };
+  | { mode: "new"; productId?: undefined; initialTab?: Tab }
+  | { mode: "edit"; productId: string; initialTab?: Tab };
 
 export function ProductForm(props: ProductFormProps) {
-  const { mode, productId } = props;
+  const { mode, productId, initialTab } = props;
   const navigate = useNavigate();
   const { profile } = useAdminAuth();
 
@@ -139,7 +140,7 @@ export function ProductForm(props: ProductFormProps) {
   const [initialSnapshot, setInitialSnapshot] = useState<string>(JSON.stringify(EMPTY));
   const [loading, setLoading] = useState(mode === "edit");
   const [saving, setSaving] = useState(false);
-  const [tab, setTab] = useState<"basic" | "translations" | "images">("basic");
+  const [tab, setTab] = useState<Tab>(initialTab ?? "basic");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [categories, setCategories] = useState<Category[]>([]);
   const [skuCheck, setSkuCheck] = useState<"idle" | "checking" | "ok" | "taken">("idle");

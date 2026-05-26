@@ -234,5 +234,33 @@
     "only_en": "This product is only available in English.",
     "switch_to_id": "Switch to Indonesian view",
     "switch_to_en": "Switch to English view"
+  },
+  "product": {
+    "quantity": "Quantity",
+    "added": "Added",
+    "find_in_store": "Find in store",
+    "inquiry_explainer": "We respond within 24 hours to confirm availability and arrange purchase. No payment required to submit.",
+    "description": "Description",
+    "specs": "Specifications",
+    "related": "You may also like",
+    "no_image": "No image",
+    "no_description": "No description yet.",
+    "select_placeholder": "Select an option",
+    "capacity": "Capacity",
+    "weight": "Weight"
+  },
+  "inquiry": {
+    "open": "Open inquiry list",
+    "title": "Inquiry List",
+    "empty": "Your inquiry list is empty. Browse the catalog to add items.",
+    "items_count_one": "{{count}} item",
+    "items_count_other": "{{count}} items",
+    "view_full": "View Full Inquiry",
+    "view_inquiry": "View inquiry",
+    "clear_all": "Clear all",
+    "confirm_clear": "Remove all items from your inquiry list?",
+    "remove": "Remove",
+    "toast_added_one": "Added to inquiry. {{count}} item now.",
+    "toast_added_other": "Added to inquiry. {{count}} items now."
   }
 }

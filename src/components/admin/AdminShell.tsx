@@ -37,6 +37,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Categories", to: "/admin/categories", icon: Folder },
   { label: "Attributes", to: "/admin/attributes", icon: Tag },
   { label: "Inquiries", to: "/admin/inquiries", icon: MessageSquare, badge: "inquiries" },
+  { label: "Customers", to: "/admin/customers", icon: UserIcon },
   { label: "Restock alerts", to: "/admin/restocks", icon: BellRing },
   { label: "Stores", to: "/admin/stores", icon: MapPin },
   { label: "Languages", to: "/admin/languages", icon: Globe },

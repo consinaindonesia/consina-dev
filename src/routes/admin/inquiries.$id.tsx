@@ -154,6 +154,15 @@ function InquiryDetailPage() {
   const [activity, setActivity] = useState<ActivityRow[]>([]);
   const [newNote, setNewNote] = useState("");
   const [previousCount, setPreviousCount] = useState(0);
+  const [previousInquiries, setPreviousInquiries] = useState<
+    {
+      id: string;
+      status: Status;
+      created_at: string;
+      itemCount: number;
+      total: number;
+    }[]
+  >([]);
   const [savingItemId, setSavingItemId] = useState<string | null>(null);
   const [itemNoteDraft, setItemNoteDraft] = useState<Record<string, string>>({});
 
@@ -188,14 +197,38 @@ function InquiryDetailPage() {
     });
     setItemNoteDraft(draft);
 
-    // Previous inquiries from same email
-    const { count } = await supabase
+    // Previous inquiries from same email (summary cards)
+    const { data: prev } = await supabase
       .from("inquiries")
-      .select("id", { count: "exact", head: true })
+      .select(
+        `id, status, created_at,
+         inquiry_items(quantity, product:products(price_idr))`
+      )
       .eq("customer_email", row.customer_email)
       .neq("id", id)
-      .is("deleted_at", null);
-    setPreviousCount(count ?? 0);
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false })
+      .limit(20);
+    const list = (prev ?? []).map((p) => {
+      const items = (p.inquiry_items ?? []) as {
+        quantity: number;
+        product: { price_idr: number } | null;
+      }[];
+      const total = items.reduce(
+        (s, it) => s + (it.product?.price_idr ?? 0) * it.quantity,
+        0
+      );
+      const itemCount = items.reduce((s, it) => s + it.quantity, 0);
+      return {
+        id: p.id as string,
+        status: p.status as Status,
+        created_at: p.created_at as string,
+        itemCount,
+        total,
+      };
+    });
+    setPreviousInquiries(list);
+    setPreviousCount(list.length);
   }
 
   async function loadNotes() {
@@ -412,6 +445,14 @@ function InquiryDetailPage() {
             <span className={cn("mr-1.5 h-1.5 w-1.5 rounded-full", meta.dot)} />
             {meta.label}
           </Badge>
+          {previousCount > 0 && (
+            <Badge
+              variant="outline"
+              className="ml-2 border-violet-500/30 bg-violet-500/10 text-violet-700"
+            >
+              Returning customer
+            </Badge>
+          )}
           <h1 className="mt-2 font-[Archivo] text-2xl font-black tracking-tight text-primary">
             {inquiry.customer_name}
           </h1>
@@ -497,6 +538,55 @@ function InquiryDetailPage() {
             </div>
           )}
         </section>
+
+        {/* Previous inquiries */}
+        {previousInquiries.length > 0 && (
+          <section className="rounded-lg border border-border bg-white p-5">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                Previous inquiries ({previousInquiries.length})
+              </h2>
+              <Link
+                to="/admin/customers/$email"
+                params={{ email: inquiry.customer_email }}
+                className="text-xs font-medium text-primary underline"
+              >
+                View customer profile
+              </Link>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {previousInquiries.map((p) => {
+                const m = STATUS_META[p.status] ?? STATUS_META.new;
+                return (
+                  <Link
+                    key={p.id}
+                    to="/admin/inquiries/$id"
+                    params={{ id: p.id }}
+                    className="rounded-md border border-border p-3 transition hover:bg-muted/40"
+                  >
+                    <div className="mb-2 flex items-center justify-between">
+                      <Badge variant="outline" className={m.cls}>
+                        {m.label}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        #{p.id.slice(0, 8).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {fmtTime(p.created_at)}
+                    </div>
+                    <div className="mt-2 flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        {p.itemCount} item{p.itemCount === 1 ? "" : "s"}
+                      </span>
+                      <span className="font-medium">{fmtIDR(p.total)}</span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {/* SECTION 2 — Items */}
         <section className="rounded-lg border border-border bg-white p-5">

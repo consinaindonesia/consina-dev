@@ -262,5 +262,42 @@
     "remove": "Hapus",
     "toast_added_one": "Ditambahkan. {{count}} produk dalam daftar.",
     "toast_added_other": "Ditambahkan. {{count}} produk dalam daftar."
+  },
+  "inquiry_page": {
+    "title": "Permintaan Anda",
+    "your_details": "Detail Anda",
+    "continue_shopping": "Lanjut belanja",
+    "clear_title": "Hapus permintaan?",
+    "cancel": "Batal",
+    "estimated_total": "Perkiraan total",
+    "price_disclaimer": "Harga akhir dikonfirmasi oleh tim kami. Dapat mencakup pengiriman atau pengambilan di toko.",
+    "full_name": "Nama lengkap",
+    "email": "Email",
+    "phone": "Telepon",
+    "city": "Kota",
+    "preferred_store": "Toko pilihan",
+    "preferred_store_ph": "Pilih toko (opsional)",
+    "no_preference": "Tidak ada preferensi",
+    "contact_method": "Metode kontak pilihan",
+    "method_whatsapp": "WhatsApp",
+    "method_phone": "Telepon",
+    "method_email": "Email",
+    "message": "Pesan",
+    "message_ph": "Ada yang perlu kami tahu? Pertanyaan ukuran, bungkus kado, dll.",
+    "consent": "Saya setuju untuk dihubungi oleh Consina mengenai permintaan ini.",
+    "send_inquiry": "Kirim Permintaan",
+    "sending": "Mengirim…",
+    "submit_error": "Tidak dapat mengirim permintaan. Silakan coba lagi.",
+    "empty_submit": "Tambahkan minimal satu produk ke permintaan terlebih dahulu."
+  },
+  "inquiry_sent": {
+    "title": "Terima kasih! Permintaan Anda telah dikirim.",
+    "ref": "Nomor referensi Anda",
+    "next_title": "Apa selanjutnya",
+    "next_1": "Tim kami meninjau permintaan Anda.",
+    "next_2": "Kami akan menghubungi Anda dalam 24 jam melalui {{method}}.",
+    "next_3": "Bersama kami akan mengkonfirmasi produk, total, dan pengambilan atau pengiriman.",
+    "continue": "Lanjut menjelajah",
+    "save_note": "Simpan nomor referensi Anda. Anda dapat mengirim email ke info@consina.com jika ada pertanyaan."
   }
 }

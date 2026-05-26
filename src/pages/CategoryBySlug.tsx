@@ -6,8 +6,6 @@ import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 
-({
-  component: CategoryPage });
 
 type Category = {
   id: string;

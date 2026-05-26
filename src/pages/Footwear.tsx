@@ -15,41 +15,6 @@ import prodCenturion from "@/assets/prod-centurion.jpg";
 const SITE_URL = "https://consina-website.lovable.app";
 const PAGE_URL = `${SITE_URL}/footwear`;
 
-({
-  head: () => ({
-    meta: [
-      { title: "Trekking Shoes & Hiking Footwear | Consina" },
-      { name: "description", content: "Shop Consina footwear — hiking boots, trail runners, and trekking sandals built for Indonesian terrain." },
-      { property: "og:title", content: "Trekking Shoes & Hiking Footwear | Consina" },
-      { property: "og:description", content: "Trekking shoes built for Indonesian terrain." },
-      { property: "og:type", content: "website" },
-      { property: "og:url", content: PAGE_URL },
-      { property: "og:image", content: `${SITE_URL}${hero}` },
-    ],
-    links: [{ rel: "canonical", href: PAGE_URL }],
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "ItemList",
-          name: "Consina Footwear",
-          itemListElement: products.map((p, i) => ({
-            "@type": "ListItem",
-            position: i + 1,
-            item: {
-              "@type": "Product",
-              name: p.name,
-              description: p.desc,
-              brand: { "@type": "Brand", name: "Consina" },
-              category: "Outdoor Footwear",
-              offers: {
-                "@type": "Offer",
-                price: p.price.replace(/[^0-9]/g, ""),
-                priceCurrency: "IDR",
-                availability: "https://schema.org/InStock" } } })) }) },
-    ] }),
-  component: FootwearPage });
 
 const products = [
   { name: "Trailblazer Mid GTX", badge: "Hiking Boots", desc: "Waterproof mid-cut boot for rugged trails", price: "IDR 1,450,000", img: prodRaptor },

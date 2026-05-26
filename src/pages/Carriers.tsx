@@ -15,41 +15,6 @@ import prodRaptor from "@/assets/prod-raptor.jpg";
 const SITE_URL = "https://consina-website.lovable.app";
 const PAGE_URL = `${SITE_URL}/carriers`;
 
-({
-  head: () => ({
-    meta: [
-      { title: "Hiking Carriers & Backpacks 40L–100L | Consina Indonesia" },
-      { name: "description", content: "Shop Consina carriers — hiking backpacks 35L to 100L built for day hikes, trekking, and expeditions across Indonesia." },
-      { property: "og:title", content: "Hiking Carriers & Backpacks 40L–100L | Consina" },
-      { property: "og:description", content: "Backpacks built for Indonesian adventures, from day hikes to expeditions." },
-      { property: "og:type", content: "website" },
-      { property: "og:url", content: PAGE_URL },
-      { property: "og:image", content: `${SITE_URL}${hero}` },
-    ],
-    links: [{ rel: "canonical", href: PAGE_URL }],
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "ItemList",
-          name: "Consina Carriers",
-          itemListElement: products.map((p, i) => ({
-            "@type": "ListItem",
-            position: i + 1,
-            item: {
-              "@type": "Product",
-              name: p.name,
-              description: p.desc,
-              brand: { "@type": "Brand", name: "Consina" },
-              category: "Backpack Carriers",
-              offers: {
-                "@type": "Offer",
-                price: p.price.replace(/[^0-9]/g, ""),
-                priceCurrency: "IDR",
-                availability: "https://schema.org/InStock" } } })) }) },
-    ] }),
-  component: CarriersPage });
 
 const products = [
   { name: "Centurion 60L", capacity: "60L", desc: "Less-contact back system for long expeditions", price: "IDR 1,850,000", img: prodCenturion },

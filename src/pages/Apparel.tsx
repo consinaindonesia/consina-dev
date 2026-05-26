@@ -15,41 +15,6 @@ import prodRaptor from "@/assets/prod-raptor.jpg";
 const SITE_URL = "https://consina-website.lovable.app";
 const PAGE_URL = `${SITE_URL}/apparel`;
 
-({
-  head: () => ({
-    meta: [
-      { title: "Outdoor Apparel — Jackets, Pants, Shirts | Consina" },
-      { name: "description", content: "Shop Consina outdoor apparel — jackets, pants, and shirts engineered for hiking, trekking, and camping across Indonesia." },
-      { property: "og:title", content: "Outdoor Apparel | Consina" },
-      { property: "og:description", content: "Jackets, pants, and shirts engineered for the trail." },
-      { property: "og:type", content: "website" },
-      { property: "og:url", content: PAGE_URL },
-      { property: "og:image", content: `${SITE_URL}${hero}` },
-    ],
-    links: [{ rel: "canonical", href: PAGE_URL }],
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "ItemList",
-          name: "Consina Apparel",
-          itemListElement: products.map((p, i) => ({
-            "@type": "ListItem",
-            position: i + 1,
-            item: {
-              "@type": "Product",
-              name: p.name,
-              description: p.desc,
-              brand: { "@type": "Brand", name: "Consina" },
-              category: "Outdoor Apparel",
-              offers: {
-                "@type": "Offer",
-                price: p.price.replace(/[^0-9]/g, ""),
-                priceCurrency: "IDR",
-                availability: "https://schema.org/InStock" } } })) }) },
-    ] }),
-  component: ApparelPage });
 
 const products = [
   { name: "Trailwind Jacket", badge: "Jackets", desc: "Wind-resistant, water-repellent shell", price: "IDR 850,000", img: prodTrailwind },

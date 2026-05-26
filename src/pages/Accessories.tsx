@@ -15,41 +15,6 @@ import prodRaptor from "@/assets/prod-raptor.jpg";
 const SITE_URL = "https://consina-website.lovable.app";
 const PAGE_URL = `${SITE_URL}/accessories`;
 
-({
-  head: () => ({
-    meta: [
-      { title: "Outdoor Accessories — Bottles, Headlamps, Tools | Consina" },
-      { name: "description", content: "Shop Consina outdoor accessories — water bottles, headlamps, compasses, trekking poles, cooking gear, and more." },
-      { property: "og:title", content: "Outdoor Accessories | Consina" },
-      { property: "og:description", content: "Bottles, headlamps, compasses, trekking poles, and more." },
-      { property: "og:type", content: "website" },
-      { property: "og:url", content: PAGE_URL },
-      { property: "og:image", content: `${SITE_URL}${hero}` },
-    ],
-    links: [{ rel: "canonical", href: PAGE_URL }],
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "ItemList",
-          name: "Consina Accessories",
-          itemListElement: products.map((p, i) => ({
-            "@type": "ListItem",
-            position: i + 1,
-            item: {
-              "@type": "Product",
-              name: p.name,
-              description: p.desc,
-              brand: { "@type": "Brand", name: "Consina" },
-              category: "Outdoor Accessories",
-              offers: {
-                "@type": "Offer",
-                price: p.price.replace(/[^0-9]/g, ""),
-                priceCurrency: "IDR",
-                availability: "https://schema.org/InStock" } } })) }) },
-    ] }),
-  component: AccessoriesPage });
 
 const products = [
   { name: "Hydro Flask 1L", badge: "Bottles", desc: "Insulated stainless steel bottle, 24h cold", price: "IDR 380,000", img: prodCenturion },

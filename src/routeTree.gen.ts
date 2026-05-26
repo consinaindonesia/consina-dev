@@ -25,6 +25,7 @@ import { Route as LangIndexRouteImport } from './routes/$lang.index'
 import { Route as EnSplatRouteImport } from './routes/en/$'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
+import { Route as AdminStoresRouteImport } from './routes/admin/stores'
 import { Route as AdminRestocksRouteImport } from './routes/admin/restocks'
 import { Route as AdminResetPasswordRouteImport } from './routes/admin/reset-password'
 import { Route as AdminProductsRouteImport } from './routes/admin/products'
@@ -134,6 +135,11 @@ const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
 const CSlugRoute = CSlugRouteImport.update({
   id: '/c/$slug',
   path: '/c/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminStoresRoute = AdminStoresRouteImport.update({
+  id: '/admin/stores',
+  path: '/admin/stores',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRestocksRoute = AdminRestocksRouteImport.update({
@@ -317,6 +323,7 @@ export interface FileRoutesByFullPath {
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/restocks': typeof AdminRestocksRoute
+  '/admin/stores': typeof AdminStoresRoute
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/en/$': typeof EnSplatRoute
@@ -362,6 +369,7 @@ export interface FileRoutesByTo {
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/restocks': typeof AdminRestocksRoute
+  '/admin/stores': typeof AdminStoresRoute
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/en/$': typeof EnSplatRoute
@@ -411,6 +419,7 @@ export interface FileRoutesById {
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/restocks': typeof AdminRestocksRoute
+  '/admin/stores': typeof AdminStoresRoute
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/en/$': typeof EnSplatRoute
@@ -461,6 +470,7 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/reset-password'
     | '/admin/restocks'
+    | '/admin/stores'
     | '/c/$slug'
     | '/email/unsubscribe'
     | '/en/$'
@@ -506,6 +516,7 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/reset-password'
     | '/admin/restocks'
+    | '/admin/stores'
     | '/c/$slug'
     | '/email/unsubscribe'
     | '/en/$'
@@ -554,6 +565,7 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/reset-password'
     | '/admin/restocks'
+    | '/admin/stores'
     | '/c/$slug'
     | '/email/unsubscribe'
     | '/en/$'
@@ -601,6 +613,7 @@ export interface RootRouteChildren {
   AdminProductsRoute: typeof AdminProductsRouteWithChildren
   AdminResetPasswordRoute: typeof AdminResetPasswordRoute
   AdminRestocksRoute: typeof AdminRestocksRoute
+  AdminStoresRoute: typeof AdminStoresRoute
   CSlugRoute: typeof CSlugRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   EnSplatRoute: typeof EnSplatRoute
@@ -726,6 +739,13 @@ declare module '@tanstack/react-router' {
       path: '/c/$slug'
       fullPath: '/c/$slug'
       preLoaderRoute: typeof CSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/stores': {
+      id: '/admin/stores'
+      path: '/admin/stores'
+      fullPath: '/admin/stores'
+      preLoaderRoute: typeof AdminStoresRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/restocks': {
@@ -1048,6 +1068,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminProductsRoute: AdminProductsRouteWithChildren,
   AdminResetPasswordRoute: AdminResetPasswordRoute,
   AdminRestocksRoute: AdminRestocksRoute,
+  AdminStoresRoute: AdminStoresRoute,
   CSlugRoute: CSlugRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   EnSplatRoute: EnSplatRoute,

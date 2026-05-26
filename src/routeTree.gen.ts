@@ -21,6 +21,7 @@ import { Route as LangRouteImport } from './routes/$lang'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EnIndexRouteImport } from './routes/en/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as LangIndexRouteImport } from './routes/$lang.index'
 import { Route as EnSplatRouteImport } from './routes/en/$'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as AdminResetPasswordRouteImport } from './routes/admin/reset-password'
@@ -93,6 +94,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/admin/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LangIndexRoute = LangIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => LangRoute,
+} as any)
 const EnSplatRoute = EnSplatRouteImport.update({
   id: '/en/$',
   path: '/en/$',
@@ -151,7 +157,7 @@ const AdminProductsIdEditRoute = AdminProductsIdEditRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/$lang': typeof LangRoute
+  '/$lang': typeof LangRouteWithChildren
   '/accessories': typeof AccessoriesRoute
   '/apparel': typeof ApparelRoute
   '/carriers': typeof CarriersRoute
@@ -169,6 +175,7 @@ export interface FileRoutesByFullPath {
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/c/$slug': typeof CSlugRoute
   '/en/$': typeof EnSplatRoute
+  '/$lang/': typeof LangIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/en/': typeof EnIndexRoute
   '/admin/products/new': typeof AdminProductsNewRoute
@@ -176,7 +183,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/$lang': typeof LangRoute
   '/accessories': typeof AccessoriesRoute
   '/apparel': typeof ApparelRoute
   '/carriers': typeof CarriersRoute
@@ -194,6 +200,7 @@ export interface FileRoutesByTo {
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/c/$slug': typeof CSlugRoute
   '/en/$': typeof EnSplatRoute
+  '/$lang': typeof LangIndexRoute
   '/admin': typeof AdminIndexRoute
   '/en': typeof EnIndexRoute
   '/admin/products/new': typeof AdminProductsNewRoute
@@ -202,7 +209,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/$lang': typeof LangRoute
+  '/$lang': typeof LangRouteWithChildren
   '/accessories': typeof AccessoriesRoute
   '/apparel': typeof ApparelRoute
   '/carriers': typeof CarriersRoute
@@ -220,6 +227,7 @@ export interface FileRoutesById {
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/c/$slug': typeof CSlugRoute
   '/en/$': typeof EnSplatRoute
+  '/$lang/': typeof LangIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/en/': typeof EnIndexRoute
   '/admin/products/new': typeof AdminProductsNewRoute
@@ -247,6 +255,7 @@ export interface FileRouteTypes {
     | '/admin/reset-password'
     | '/c/$slug'
     | '/en/$'
+    | '/$lang/'
     | '/admin/'
     | '/en/'
     | '/admin/products/new'
@@ -254,7 +263,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/$lang'
     | '/accessories'
     | '/apparel'
     | '/carriers'
@@ -272,6 +280,7 @@ export interface FileRouteTypes {
     | '/admin/reset-password'
     | '/c/$slug'
     | '/en/$'
+    | '/$lang'
     | '/admin'
     | '/en'
     | '/admin/products/new'
@@ -297,6 +306,7 @@ export interface FileRouteTypes {
     | '/admin/reset-password'
     | '/c/$slug'
     | '/en/$'
+    | '/$lang/'
     | '/admin/'
     | '/en/'
     | '/admin/products/new'
@@ -305,7 +315,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  LangRoute: typeof LangRoute
+  LangRoute: typeof LangRouteWithChildren
   AccessoriesRoute: typeof AccessoriesRoute
   ApparelRoute: typeof ApparelRoute
   CarriersRoute: typeof CarriersRoute
@@ -413,6 +423,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$lang/': {
+      id: '/$lang/'
+      path: '/'
+      fullPath: '/$lang/'
+      preLoaderRoute: typeof LangIndexRouteImport
+      parentRoute: typeof LangRoute
+    }
     '/en/$': {
       id: '/en/$'
       path: '/en/$'
@@ -493,6 +510,16 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface LangRouteChildren {
+  LangIndexRoute: typeof LangIndexRoute
+}
+
+const LangRouteChildren: LangRouteChildren = {
+  LangIndexRoute: LangIndexRoute,
+}
+
+const LangRouteWithChildren = LangRoute._addFileChildren(LangRouteChildren)
+
 interface AdminProductsRouteChildren {
   AdminProductsNewRoute: typeof AdminProductsNewRoute
   AdminProductsIdEditRoute: typeof AdminProductsIdEditRoute
@@ -509,7 +536,7 @@ const AdminProductsRouteWithChildren = AdminProductsRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  LangRoute: LangRoute,
+  LangRoute: LangRouteWithChildren,
   AccessoriesRoute: AccessoriesRoute,
   ApparelRoute: ApparelRoute,
   CarriersRoute: CarriersRoute,
@@ -533,3 +560,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

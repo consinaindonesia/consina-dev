@@ -48,6 +48,7 @@ import { Route as LangProdukSlugRouteImport } from './routes/$lang.produk.$slug'
 import { Route as LangProductsSlugRouteImport } from './routes/$lang.products.$slug'
 import { Route as LangPermintaanTerkirimRouteImport } from './routes/$lang.permintaan.terkirim'
 import { Route as LangInquirySentRouteImport } from './routes/$lang.inquiry.sent'
+import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as AdminProductsIdEditRouteImport } from './routes/admin/products.$id.edit'
 
 const TentsRoute = TentsRouteImport.update({
@@ -246,6 +247,12 @@ const LangInquirySentRoute = LangInquirySentRouteImport.update({
   path: '/sent',
   getParentRoute: () => LangInquiryRoute,
 } as any)
+const LovableEmailQueueProcessRoute =
+  LovableEmailQueueProcessRouteImport.update({
+    id: '/lovable/email/queue/process',
+    path: '/lovable/email/queue/process',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AdminProductsIdEditRoute = AdminProductsIdEditRouteImport.update({
   id: '/$id/edit',
   path: '/$id/edit',
@@ -293,6 +300,7 @@ export interface FileRoutesByFullPath {
   '/$lang/inquiry/': typeof LangInquiryIndexRoute
   '/$lang/permintaan/': typeof LangPermintaanIndexRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -332,6 +340,7 @@ export interface FileRoutesByTo {
   '/$lang/inquiry': typeof LangInquiryIndexRoute
   '/$lang/permintaan': typeof LangPermintaanIndexRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -375,6 +384,7 @@ export interface FileRoutesById {
   '/$lang/inquiry/': typeof LangInquiryIndexRoute
   '/$lang/permintaan/': typeof LangPermintaanIndexRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -419,6 +429,7 @@ export interface FileRouteTypes {
     | '/$lang/inquiry/'
     | '/$lang/permintaan/'
     | '/admin/products/$id/edit'
+    | '/lovable/email/queue/process'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -458,6 +469,7 @@ export interface FileRouteTypes {
     | '/$lang/inquiry'
     | '/$lang/permintaan'
     | '/admin/products/$id/edit'
+    | '/lovable/email/queue/process'
   id:
     | '__root__'
     | '/'
@@ -500,6 +512,7 @@ export interface FileRouteTypes {
     | '/$lang/inquiry/'
     | '/$lang/permintaan/'
     | '/admin/products/$id/edit'
+    | '/lovable/email/queue/process'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -530,6 +543,7 @@ export interface RootRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
   EnIndexRoute: typeof EnIndexRoute
   AdminSettingsNotificationsRoute: typeof AdminSettingsNotificationsRoute
+  LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -807,6 +821,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangInquirySentRouteImport
       parentRoute: typeof LangInquiryRoute
     }
+    '/lovable/email/queue/process': {
+      id: '/lovable/email/queue/process'
+      path: '/lovable/email/queue/process'
+      fullPath: '/lovable/email/queue/process'
+      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/products/$id/edit': {
       id: '/admin/products/$id/edit'
       path: '/$id/edit'
@@ -929,6 +950,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
   EnIndexRoute: EnIndexRoute,
   AdminSettingsNotificationsRoute: AdminSettingsNotificationsRoute,
+  LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

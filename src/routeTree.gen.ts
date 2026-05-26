@@ -35,6 +35,7 @@ import { Route as AdminCategoriesRouteImport } from './routes/admin/categories'
 import { Route as AdminAttributesRouteImport } from './routes/admin/attributes'
 import { Route as LangPermintaanRouteImport } from './routes/$lang.permintaan'
 import { Route as LangInquiryRouteImport } from './routes/$lang.inquiry'
+import { Route as LangPermintaanIndexRouteImport } from './routes/$lang.permintaan.index'
 import { Route as LangInquiryIndexRouteImport } from './routes/$lang.inquiry.index'
 import { Route as AdminProductsNewRouteImport } from './routes/admin/products.new'
 import { Route as LangProdukSlugRouteImport } from './routes/$lang.produk.$slug'
@@ -173,6 +174,11 @@ const LangInquiryRoute = LangInquiryRouteImport.update({
   path: '/inquiry',
   getParentRoute: () => LangRoute,
 } as any)
+const LangPermintaanIndexRoute = LangPermintaanIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => LangPermintaanRoute,
+} as any)
 const LangInquiryIndexRoute = LangInquiryIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -242,6 +248,7 @@ export interface FileRoutesByFullPath {
   '/$lang/produk/$slug': typeof LangProdukSlugRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/$lang/inquiry/': typeof LangInquiryIndexRoute
+  '/$lang/permintaan/': typeof LangPermintaanIndexRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
 }
 export interface FileRoutesByTo {
@@ -254,7 +261,6 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
-  '/$lang/permintaan': typeof LangPermintaanRouteWithChildren
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
@@ -275,6 +281,7 @@ export interface FileRoutesByTo {
   '/$lang/produk/$slug': typeof LangProdukSlugRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/$lang/inquiry': typeof LangInquiryIndexRoute
+  '/$lang/permintaan': typeof LangPermintaanIndexRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
 }
 export interface FileRoutesById {
@@ -311,6 +318,7 @@ export interface FileRoutesById {
   '/$lang/produk/$slug': typeof LangProdukSlugRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/$lang/inquiry/': typeof LangInquiryIndexRoute
+  '/$lang/permintaan/': typeof LangPermintaanIndexRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
 }
 export interface FileRouteTypes {
@@ -348,6 +356,7 @@ export interface FileRouteTypes {
     | '/$lang/produk/$slug'
     | '/admin/products/new'
     | '/$lang/inquiry/'
+    | '/$lang/permintaan/'
     | '/admin/products/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -360,7 +369,6 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/stores'
     | '/tents'
-    | '/$lang/permintaan'
     | '/admin/attributes'
     | '/admin/categories'
     | '/admin/forgot-password'
@@ -381,6 +389,7 @@ export interface FileRouteTypes {
     | '/$lang/produk/$slug'
     | '/admin/products/new'
     | '/$lang/inquiry'
+    | '/$lang/permintaan'
     | '/admin/products/$id/edit'
   id:
     | '__root__'
@@ -416,6 +425,7 @@ export interface FileRouteTypes {
     | '/$lang/produk/$slug'
     | '/admin/products/new'
     | '/$lang/inquiry/'
+    | '/$lang/permintaan/'
     | '/admin/products/$id/edit'
   fileRoutesById: FileRoutesById
 }
@@ -629,6 +639,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangInquiryRouteImport
       parentRoute: typeof LangRoute
     }
+    '/$lang/permintaan/': {
+      id: '/$lang/permintaan/'
+      path: '/'
+      fullPath: '/$lang/permintaan/'
+      preLoaderRoute: typeof LangPermintaanIndexRouteImport
+      parentRoute: typeof LangPermintaanRoute
+    }
     '/$lang/inquiry/': {
       id: '/$lang/inquiry/'
       path: '/'
@@ -697,10 +714,12 @@ const LangInquiryRouteWithChildren = LangInquiryRoute._addFileChildren(
 
 interface LangPermintaanRouteChildren {
   LangPermintaanTerkirimRoute: typeof LangPermintaanTerkirimRoute
+  LangPermintaanIndexRoute: typeof LangPermintaanIndexRoute
 }
 
 const LangPermintaanRouteChildren: LangPermintaanRouteChildren = {
   LangPermintaanTerkirimRoute: LangPermintaanTerkirimRoute,
+  LangPermintaanIndexRoute: LangPermintaanIndexRoute,
 }
 
 const LangPermintaanRouteWithChildren = LangPermintaanRoute._addFileChildren(

@@ -399,6 +399,7 @@ export type Database = {
       }
       products: {
         Row: {
+          ai_translated_fields: string[]
           attributes: Json
           capacity: string | null
           category_id: string | null
@@ -419,6 +420,7 @@ export type Database = {
           weight_grams: number | null
         }
         Insert: {
+          ai_translated_fields?: string[]
           attributes?: Json
           capacity?: string | null
           category_id?: string | null
@@ -439,6 +441,7 @@ export type Database = {
           weight_grams?: number | null
         }
         Update: {
+          ai_translated_fields?: string[]
           attributes?: Json
           capacity?: string | null
           category_id?: string | null

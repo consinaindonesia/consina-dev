@@ -32,6 +32,7 @@ import { Route as AdminLanguagesRouteImport } from './routes/admin/languages'
 import { Route as AdminInquiriesRouteImport } from './routes/admin/inquiries'
 import { Route as AdminGlossaryRouteImport } from './routes/admin/glossary'
 import { Route as AdminForgotPasswordRouteImport } from './routes/admin/forgot-password'
+import { Route as AdminCustomersRouteImport } from './routes/admin/customers'
 import { Route as AdminCategoriesRouteImport } from './routes/admin/categories'
 import { Route as AdminAttributesRouteImport } from './routes/admin/attributes'
 import { Route as LangPermintaanRouteImport } from './routes/$lang.permintaan'
@@ -161,6 +162,11 @@ const AdminForgotPasswordRoute = AdminForgotPasswordRouteImport.update({
   path: '/admin/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminCustomersRoute = AdminCustomersRouteImport.update({
+  id: '/admin/customers',
+  path: '/admin/customers',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
   id: '/admin/categories',
   path: '/admin/categories',
@@ -242,6 +248,7 @@ export interface FileRoutesByFullPath {
   '/$lang/permintaan': typeof LangPermintaanRouteWithChildren
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/customers': typeof AdminCustomersRoute
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
   '/admin/glossary': typeof AdminGlossaryRoute
   '/admin/inquiries': typeof AdminInquiriesRouteWithChildren
@@ -277,6 +284,7 @@ export interface FileRoutesByTo {
   '/tents': typeof TentsRoute
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/customers': typeof AdminCustomersRoute
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
   '/admin/glossary': typeof AdminGlossaryRoute
   '/admin/inquiries': typeof AdminInquiriesRouteWithChildren
@@ -316,6 +324,7 @@ export interface FileRoutesById {
   '/$lang/permintaan': typeof LangPermintaanRouteWithChildren
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/customers': typeof AdminCustomersRoute
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
   '/admin/glossary': typeof AdminGlossaryRoute
   '/admin/inquiries': typeof AdminInquiriesRouteWithChildren
@@ -356,6 +365,7 @@ export interface FileRouteTypes {
     | '/$lang/permintaan'
     | '/admin/attributes'
     | '/admin/categories'
+    | '/admin/customers'
     | '/admin/forgot-password'
     | '/admin/glossary'
     | '/admin/inquiries'
@@ -391,6 +401,7 @@ export interface FileRouteTypes {
     | '/tents'
     | '/admin/attributes'
     | '/admin/categories'
+    | '/admin/customers'
     | '/admin/forgot-password'
     | '/admin/glossary'
     | '/admin/inquiries'
@@ -429,6 +440,7 @@ export interface FileRouteTypes {
     | '/$lang/permintaan'
     | '/admin/attributes'
     | '/admin/categories'
+    | '/admin/customers'
     | '/admin/forgot-password'
     | '/admin/glossary'
     | '/admin/inquiries'
@@ -466,6 +478,7 @@ export interface RootRouteChildren {
   TentsRoute: typeof TentsRoute
   AdminAttributesRoute: typeof AdminAttributesRoute
   AdminCategoriesRoute: typeof AdminCategoriesRoute
+  AdminCustomersRoute: typeof AdminCustomersRoute
   AdminForgotPasswordRoute: typeof AdminForgotPasswordRoute
   AdminGlossaryRoute: typeof AdminGlossaryRoute
   AdminInquiriesRoute: typeof AdminInquiriesRouteWithChildren
@@ -641,6 +654,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/forgot-password'
       fullPath: '/admin/forgot-password'
       preLoaderRoute: typeof AdminForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/customers': {
+      id: '/admin/customers'
+      path: '/admin/customers'
+      fullPath: '/admin/customers'
+      preLoaderRoute: typeof AdminCustomersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/categories': {
@@ -822,6 +842,7 @@ const rootRouteChildren: RootRouteChildren = {
   TentsRoute: TentsRoute,
   AdminAttributesRoute: AdminAttributesRoute,
   AdminCategoriesRoute: AdminCategoriesRoute,
+  AdminCustomersRoute: AdminCustomersRoute,
   AdminForgotPasswordRoute: AdminForgotPasswordRoute,
   AdminGlossaryRoute: AdminGlossaryRoute,
   AdminInquiriesRoute: AdminInquiriesRouteWithChildren,

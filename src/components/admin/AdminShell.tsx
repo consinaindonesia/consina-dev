@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { toast } from "sonner";
 import {
   Bell,
   Clock,
@@ -19,6 +20,7 @@ import {
   Users,
   X,
   BellRing,
+  Settings,
 } from "lucide-react";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -43,6 +45,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Languages", to: "/admin/languages", icon: Globe },
   { label: "Glossary", to: "/admin/glossary", icon: BookOpen },
   { label: "Users", to: "/admin/users", icon: Users, adminOnly: true },
+  { label: "Notifications", to: "/admin/settings/notifications", icon: Bell, adminOnly: true },
   { label: "Activity Log", to: "/admin/activity", icon: Clock, adminOnly: true },
 ];
 

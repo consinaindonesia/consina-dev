@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { Link, notFound } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Loader2, Filter, X } from "lucide-react";
 import { Nav } from "@/components/site/Nav";
@@ -6,9 +6,8 @@ import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/c/$slug")({
-  component: CategoryPage,
-});
+({
+  component: CategoryPage });
 
 type Category = {
   id: string;
@@ -45,7 +44,7 @@ function formatIDR(n: number) {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(n);
 }
 
-function CategoryPage() {
+export function CategoryPage() {
   const { slug } = Route.useParams();
   const [category, setCategory] = useState<Category | null>(null);
   const [attrDefs, setAttrDefs] = useState<AttributeDef[]>([]);
@@ -135,8 +134,7 @@ function CategoryPage() {
           name_id: p.name_id,
           price_idr: p.price_idr,
           attributes: (p.attributes as Record<string, string> | null) ?? null,
-          product_images: imgs.slice(0, 1),
-        };
+          product_images: imgs.slice(0, 1) };
       });
       setProducts(normalized);
       setLoading(false);
@@ -165,8 +163,7 @@ function CategoryPage() {
             const bn = parseFloat(b);
             if (!isNaN(an) && !isNaN(bn)) return an - bn;
             return a.localeCompare(b);
-          }),
-        });
+          }) });
       }
     }
     return out;

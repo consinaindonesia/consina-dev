@@ -1,21 +1,19 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { products, categoryOrder, type Product } from "@/data/products";
 
-export const Route = createFileRoute("/catalog")({
+({
   head: () => ({
     meta: [
       { title: "Catalog — Consina Outdoor Gear with Promo Prices" },
       { name: "description", content: "Browse the full Consina catalog — carriers, tents, apparel, footwear, camping cookware and accessories with discounted rupiah prices." },
-    ],
-  }),
-  component: CatalogPage,
-});
+    ] }),
+  component: CatalogPage });
 
-function CatalogPage() {
+export function CatalogPage() {
   const { t } = useTranslation();
   const grouped = categoryOrder
     .map((cat) => ({ cat, items: products.filter((p) => p.category === cat) }))

@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -15,7 +15,7 @@ import prodRaptor from "@/assets/prod-raptor.jpg";
 const SITE_URL = "https://consina-website.lovable.app";
 const PAGE_URL = `${SITE_URL}/tents`;
 
-export const Route = createFileRoute("/tents")({
+({
   head: () => ({
     meta: [
       { title: "Tents & Camping Shelter for Indonesia's Terrain | Consina" },
@@ -47,16 +47,9 @@ export const Route = createFileRoute("/tents")({
                 "@type": "Offer",
                 price: p.price.replace(/[^0-9]/g, ""),
                 priceCurrency: "IDR",
-                availability: "https://schema.org/InStock",
-              },
-            },
-          })),
-        }),
-      },
-    ],
-  }),
-  component: TentsPage,
-});
+                availability: "https://schema.org/InStock" } } })) }) },
+    ] }),
+  component: TentsPage });
 
 const products = [
   { name: "Stratus 2P", badge: "2P", desc: "Lightweight 2-person shelter, 4-season rated", price: "IDR 2,100,000", img: prodStratus },
@@ -79,7 +72,7 @@ const related = [
 const capacityFilters = ["All", "1P", "2P", "4P", "6P+"];
 const seasonFilters = ["All", "3-season", "4-season"];
 
-function TentsPage() {
+export function TentsPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Nav />
@@ -193,8 +186,7 @@ function RelatedCategories() {
   const localizedRelated = related.map((r) => ({
     ...r,
     name: t(`categories.${r.slug}` as const, { defaultValue: r.name }),
-    desc: t(`home.categories.${r.slug}_desc` as const, { defaultValue: r.desc }),
-  }));
+    desc: t(`home.categories.${r.slug}_desc` as const, { defaultValue: r.desc }) }));
   return (
     <section className="border-t border-border bg-background py-20 md:py-24">
       <div className="mx-auto max-w-[1280px] px-4 md:px-8">

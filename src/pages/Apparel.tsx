@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -15,7 +15,7 @@ import prodRaptor from "@/assets/prod-raptor.jpg";
 const SITE_URL = "https://consina-website.lovable.app";
 const PAGE_URL = `${SITE_URL}/apparel`;
 
-export const Route = createFileRoute("/apparel")({
+({
   head: () => ({
     meta: [
       { title: "Outdoor Apparel — Jackets, Pants, Shirts | Consina" },
@@ -47,16 +47,9 @@ export const Route = createFileRoute("/apparel")({
                 "@type": "Offer",
                 price: p.price.replace(/[^0-9]/g, ""),
                 priceCurrency: "IDR",
-                availability: "https://schema.org/InStock",
-              },
-            },
-          })),
-        }),
-      },
-    ],
-  }),
-  component: ApparelPage,
-});
+                availability: "https://schema.org/InStock" } } })) }) },
+    ] }),
+  component: ApparelPage });
 
 const products = [
   { name: "Trailwind Jacket", badge: "Jackets", desc: "Wind-resistant, water-repellent shell", price: "IDR 850,000", img: prodTrailwind },
@@ -79,7 +72,7 @@ const related = [
 const typeFilters = ["All", "Jackets", "Pants", "Shirts", "Base Layers"];
 const genderFilters = ["All", "Men", "Women", "Unisex"];
 
-function ApparelPage() {
+export function ApparelPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Nav />
@@ -193,8 +186,7 @@ function RelatedCategories() {
   const localizedRelated = related.map((r) => ({
     ...r,
     name: t(`categories.${r.slug}` as const, { defaultValue: r.name }),
-    desc: t(`home.categories.${r.slug}_desc` as const, { defaultValue: r.desc }),
-  }));
+    desc: t(`home.categories.${r.slug}_desc` as const, { defaultValue: r.desc }) }));
   return (
     <section className="border-t border-border bg-background py-20 md:py-24">
       <div className="mx-auto max-w-[1280px] px-4 md:px-8">

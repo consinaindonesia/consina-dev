@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -15,7 +15,7 @@ import prodCenturion from "@/assets/prod-centurion.jpg";
 const SITE_URL = "https://consina-website.lovable.app";
 const PAGE_URL = `${SITE_URL}/footwear`;
 
-export const Route = createFileRoute("/footwear")({
+({
   head: () => ({
     meta: [
       { title: "Trekking Shoes & Hiking Footwear | Consina" },
@@ -47,16 +47,9 @@ export const Route = createFileRoute("/footwear")({
                 "@type": "Offer",
                 price: p.price.replace(/[^0-9]/g, ""),
                 priceCurrency: "IDR",
-                availability: "https://schema.org/InStock",
-              },
-            },
-          })),
-        }),
-      },
-    ],
-  }),
-  component: FootwearPage,
-});
+                availability: "https://schema.org/InStock" } } })) }) },
+    ] }),
+  component: FootwearPage });
 
 const products = [
   { name: "Trailblazer Mid GTX", badge: "Hiking Boots", desc: "Waterproof mid-cut boot for rugged trails", price: "IDR 1,450,000", img: prodRaptor },
@@ -79,7 +72,7 @@ const related = [
 const typeFilters = ["All", "Hiking Boots", "Trail Runners", "Sandals"];
 const activityFilters = ["All", "Trekking", "Trail Running", "Camping", "Travel"];
 
-function FootwearPage() {
+export function FootwearPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Nav />
@@ -193,8 +186,7 @@ function RelatedCategories() {
   const localizedRelated = related.map((r) => ({
     ...r,
     name: t(`categories.${r.slug}` as const, { defaultValue: r.name }),
-    desc: t(`home.categories.${r.slug}_desc` as const, { defaultValue: r.desc }),
-  }));
+    desc: t(`home.categories.${r.slug}_desc` as const, { defaultValue: r.desc }) }));
   return (
     <section className="border-t border-border bg-background py-20 md:py-24">
       <div className="mx-auto max-w-[1280px] px-4 md:px-8">

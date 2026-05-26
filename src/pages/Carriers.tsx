@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -15,7 +15,7 @@ import prodRaptor from "@/assets/prod-raptor.jpg";
 const SITE_URL = "https://consina-website.lovable.app";
 const PAGE_URL = `${SITE_URL}/carriers`;
 
-export const Route = createFileRoute("/carriers")({
+({
   head: () => ({
     meta: [
       { title: "Hiking Carriers & Backpacks 40L–100L | Consina Indonesia" },
@@ -47,16 +47,9 @@ export const Route = createFileRoute("/carriers")({
                 "@type": "Offer",
                 price: p.price.replace(/[^0-9]/g, ""),
                 priceCurrency: "IDR",
-                availability: "https://schema.org/InStock",
-              },
-            },
-          })),
-        }),
-      },
-    ],
-  }),
-  component: CarriersPage,
-});
+                availability: "https://schema.org/InStock" } } })) }) },
+    ] }),
+  component: CarriersPage });
 
 const products = [
   { name: "Centurion 60L", capacity: "60L", desc: "Less-contact back system for long expeditions", price: "IDR 1,850,000", img: prodCenturion },
@@ -79,7 +72,7 @@ const related = [
 const capacityFilters = ["All", "40L", "60L", "80L", "100L"];
 const useFilters = ["All", "Hiking", "Trekking", "Expedition", "Daily"];
 
-function CarriersPage() {
+export function CarriersPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Nav />
@@ -193,8 +186,7 @@ function RelatedCategories() {
   const localizedRelated = related.map((r) => ({
     ...r,
     name: t(`categories.${r.slug}` as const, { defaultValue: r.name }),
-    desc: t(`home.categories.${r.slug}_desc` as const, { defaultValue: r.desc }),
-  }));
+    desc: t(`home.categories.${r.slug}_desc` as const, { defaultValue: r.desc }) }));
   return (
     <section className="border-t border-border bg-background py-20 md:py-24">
       <div className="mx-auto max-w-[1280px] px-4 md:px-8">

@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -15,7 +15,7 @@ import prodRaptor from "@/assets/prod-raptor.jpg";
 const SITE_URL = "https://consina-website.lovable.app";
 const PAGE_URL = `${SITE_URL}/accessories`;
 
-export const Route = createFileRoute("/accessories")({
+({
   head: () => ({
     meta: [
       { title: "Outdoor Accessories — Bottles, Headlamps, Tools | Consina" },
@@ -47,16 +47,9 @@ export const Route = createFileRoute("/accessories")({
                 "@type": "Offer",
                 price: p.price.replace(/[^0-9]/g, ""),
                 priceCurrency: "IDR",
-                availability: "https://schema.org/InStock",
-              },
-            },
-          })),
-        }),
-      },
-    ],
-  }),
-  component: AccessoriesPage,
-});
+                availability: "https://schema.org/InStock" } } })) }) },
+    ] }),
+  component: AccessoriesPage });
 
 const products = [
   { name: "Hydro Flask 1L", badge: "Bottles", desc: "Insulated stainless steel bottle, 24h cold", price: "IDR 380,000", img: prodCenturion },
@@ -78,7 +71,7 @@ const related = [
 
 const typeFilters = ["All", "Bottles", "Lighting", "Navigation", "Gear", "Electronics", "Cooking", "Safety"];
 
-function AccessoriesPage() {
+export function AccessoriesPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Nav />
@@ -191,8 +184,7 @@ function RelatedCategories() {
   const localizedRelated = related.map((r) => ({
     ...r,
     name: t(`categories.${r.slug}` as const, { defaultValue: r.name }),
-    desc: t(`home.categories.${r.slug}_desc` as const, { defaultValue: r.desc }),
-  }));
+    desc: t(`home.categories.${r.slug}_desc` as const, { defaultValue: r.desc }) }));
   return (
     <section className="border-t border-border bg-background py-20 md:py-24">
       <div className="mx-auto max-w-[1280px] px-4 md:px-8">

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { Search, MapPin, Phone, Clock, Navigation } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -8,7 +8,7 @@ import { Footer } from "@/components/site/Footer";
 const SITE_URL = "https://consina-website.lovable.app";
 const PAGE_URL = `${SITE_URL}/stores`;
 
-export const Route = createFileRoute("/stores")({
+({
   head: () => ({
     meta: [
       { title: "Find a Consina Store — 80+ Locations Across Indonesia" },
@@ -35,17 +35,11 @@ export const Route = createFileRoute("/stores")({
               addressLocality: s.city,
               addressRegion: s.province,
               postalCode: s.postal,
-              addressCountry: "ID",
-            },
+              addressCountry: "ID" },
             areaServed: s.region,
-            parentOrganization: { "@type": "Organization", name: "Consina" },
-          })),
-        }),
-      },
-    ],
-  }),
-  component: StoresPage,
-});
+            parentOrganization: { "@type": "Organization", name: "Consina" } })) }) },
+    ] }),
+  component: StoresPage });
 
 const regions = [
   "All",
@@ -82,8 +76,7 @@ const stores: Store[] = [
     phone: "021-5012-3456",
     hours: "Mon–Sun 10:00–21:00",
     region: "Jakarta & Greater Jakarta",
-    mapsQuery: "Consina Buaran Raya Jakarta",
-  },
+    mapsQuery: "Consina Buaran Raya Jakarta" },
   {
     name: "Consina Bandung Trunojoyo",
     street: "Jl. Trunojoyo No.12",
@@ -93,8 +86,7 @@ const stores: Store[] = [
     phone: "022-423-4567",
     hours: "Mon–Sun 10:00–21:00",
     region: "West Java",
-    mapsQuery: "Consina Trunojoyo Bandung",
-  },
+    mapsQuery: "Consina Trunojoyo Bandung" },
   {
     name: "Consina Yogyakarta Malioboro",
     street: "Jl. Malioboro No.58",
@@ -104,8 +96,7 @@ const stores: Store[] = [
     phone: "0274-555-0123",
     hours: "Mon–Sun 09:00–22:00",
     region: "Central Java",
-    mapsQuery: "Consina Malioboro Yogyakarta",
-  },
+    mapsQuery: "Consina Malioboro Yogyakarta" },
   {
     name: "Consina Surabaya Tunjungan",
     street: "Jl. Tunjungan No.45",
@@ -115,8 +106,7 @@ const stores: Store[] = [
     phone: "031-501-6789",
     hours: "Mon–Sun 10:00–22:00",
     region: "East Java",
-    mapsQuery: "Consina Tunjungan Surabaya",
-  },
+    mapsQuery: "Consina Tunjungan Surabaya" },
   {
     name: "Consina Denpasar Sunset Road",
     street: "Jl. Sunset Road No.88",
@@ -126,8 +116,7 @@ const stores: Store[] = [
     phone: "0361-789-0123",
     hours: "Mon–Sun 10:00–21:00",
     region: "Bali & Nusa Tenggara",
-    mapsQuery: "Consina Sunset Road Denpasar",
-  },
+    mapsQuery: "Consina Sunset Road Denpasar" },
   {
     name: "Consina Medan Sun Plaza",
     street: "Jl. Zainul Arifin No.7",
@@ -137,8 +126,7 @@ const stores: Store[] = [
     phone: "061-456-7890",
     hours: "Mon–Sun 10:00–22:00",
     region: "Sumatra",
-    mapsQuery: "Consina Sun Plaza Medan",
-  },
+    mapsQuery: "Consina Sun Plaza Medan" },
   {
     name: "Consina Balikpapan Plaza",
     street: "Jl. Jenderal Sudirman No.23",
@@ -148,8 +136,7 @@ const stores: Store[] = [
     phone: "0542-333-4455",
     hours: "Mon–Sun 10:00–21:00",
     region: "Kalimantan",
-    mapsQuery: "Consina Balikpapan Plaza",
-  },
+    mapsQuery: "Consina Balikpapan Plaza" },
   {
     name: "Consina Makassar Panakkukang",
     street: "Jl. Boulevard No.56",
@@ -159,11 +146,10 @@ const stores: Store[] = [
     phone: "0411-888-9900",
     hours: "Mon–Sun 10:00–21:00",
     region: "Sulawesi",
-    mapsQuery: "Consina Boulevard Makassar",
-  },
+    mapsQuery: "Consina Boulevard Makassar" },
 ];
 
-function StoresPage() {
+export function StoresPage() {
   const [search, setSearch] = useState("");
   const [activeRegion, setActiveRegion] = useState<string>("All");
 
@@ -204,8 +190,7 @@ function StoresPage() {
 
 function PageHeader({
   search,
-  onSearch,
-}: {
+  onSearch }: {
   search: string;
   onSearch: (v: string) => void;
 }) {
@@ -243,8 +228,7 @@ function PageHeader({
 function RegionTabs({
   active,
   onChange,
-  counts,
-}: {
+  counts }: {
   active: string;
   onChange: (r: string) => void;
   counts: Record<string, number>;

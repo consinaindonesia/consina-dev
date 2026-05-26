@@ -24,6 +24,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as LangIndexRouteImport } from './routes/$lang.index'
 import { Route as EnSplatRouteImport } from './routes/en/$'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
+import { Route as AdminRestocksRouteImport } from './routes/admin/restocks'
 import { Route as AdminResetPasswordRouteImport } from './routes/admin/reset-password'
 import { Route as AdminProductsRouteImport } from './routes/admin/products'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
@@ -117,6 +118,11 @@ const EnSplatRoute = EnSplatRouteImport.update({
 const CSlugRoute = CSlugRouteImport.update({
   id: '/c/$slug',
   path: '/c/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRestocksRoute = AdminRestocksRouteImport.update({
+  id: '/admin/restocks',
+  path: '/admin/restocks',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminResetPasswordRoute = AdminResetPasswordRouteImport.update({
@@ -237,6 +243,7 @@ export interface FileRoutesByFullPath {
   '/admin/login': typeof AdminLoginRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
+  '/admin/restocks': typeof AdminRestocksRoute
   '/c/$slug': typeof CSlugRoute
   '/en/$': typeof EnSplatRoute
   '/$lang/': typeof LangIndexRoute
@@ -270,6 +277,7 @@ export interface FileRoutesByTo {
   '/admin/login': typeof AdminLoginRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
+  '/admin/restocks': typeof AdminRestocksRoute
   '/c/$slug': typeof CSlugRoute
   '/en/$': typeof EnSplatRoute
   '/$lang': typeof LangIndexRoute
@@ -307,6 +315,7 @@ export interface FileRoutesById {
   '/admin/login': typeof AdminLoginRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
+  '/admin/restocks': typeof AdminRestocksRoute
   '/c/$slug': typeof CSlugRoute
   '/en/$': typeof EnSplatRoute
   '/$lang/': typeof LangIndexRoute
@@ -345,6 +354,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/products'
     | '/admin/reset-password'
+    | '/admin/restocks'
     | '/c/$slug'
     | '/en/$'
     | '/$lang/'
@@ -378,6 +388,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/products'
     | '/admin/reset-password'
+    | '/admin/restocks'
     | '/c/$slug'
     | '/en/$'
     | '/$lang'
@@ -414,6 +425,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/products'
     | '/admin/reset-password'
+    | '/admin/restocks'
     | '/c/$slug'
     | '/en/$'
     | '/$lang/'
@@ -449,6 +461,7 @@ export interface RootRouteChildren {
   AdminLoginRoute: typeof AdminLoginRoute
   AdminProductsRoute: typeof AdminProductsRouteWithChildren
   AdminResetPasswordRoute: typeof AdminResetPasswordRoute
+  AdminRestocksRoute: typeof AdminRestocksRoute
   CSlugRoute: typeof CSlugRoute
   EnSplatRoute: typeof EnSplatRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -560,6 +573,13 @@ declare module '@tanstack/react-router' {
       path: '/c/$slug'
       fullPath: '/c/$slug'
       preLoaderRoute: typeof CSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/restocks': {
+      id: '/admin/restocks'
+      path: '/admin/restocks'
+      fullPath: '/admin/restocks'
+      preLoaderRoute: typeof AdminRestocksRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/reset-password': {
@@ -778,6 +798,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminLoginRoute: AdminLoginRoute,
   AdminProductsRoute: AdminProductsRouteWithChildren,
   AdminResetPasswordRoute: AdminResetPasswordRoute,
+  AdminRestocksRoute: AdminRestocksRoute,
   CSlugRoute: CSlugRoute,
   EnSplatRoute: EnSplatRoute,
   AdminIndexRoute: AdminIndexRoute,
@@ -786,3 +807,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

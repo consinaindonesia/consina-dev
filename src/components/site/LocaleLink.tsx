@@ -18,11 +18,8 @@ export interface LocaleLinkProps extends AnchorProps {
 export function LocaleLink({ page, slug, children, ...rest }: LocaleLinkProps) {
   const lang = useLang();
   const to = localizedPath(page, lang, slug ? { slug } : undefined);
-  // Use TanStack Link with a literal path string. We bypass the route-tree
-  // type by casting to a generic anchor wrapper; the splat dispatcher resolves it.
   return (
-    // @ts-expect-error: dynamic `to` is intentional for the localized dispatcher
-    <Link to={to} {...rest}>
+    <Link to={to as never} {...rest}>
       {children}
     </Link>
   );

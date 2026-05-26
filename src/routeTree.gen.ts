@@ -27,6 +27,7 @@ import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as AdminResetPasswordRouteImport } from './routes/admin/reset-password'
 import { Route as AdminProductsRouteImport } from './routes/admin/products'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
+import { Route as AdminLanguagesRouteImport } from './routes/admin/languages'
 import { Route as AdminInquiriesRouteImport } from './routes/admin/inquiries'
 import { Route as AdminForgotPasswordRouteImport } from './routes/admin/forgot-password'
 import { Route as AdminCategoriesRouteImport } from './routes/admin/categories'
@@ -124,6 +125,11 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
   path: '/admin/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminLanguagesRoute = AdminLanguagesRouteImport.update({
+  id: '/admin/languages',
+  path: '/admin/languages',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminInquiriesRoute = AdminInquiriesRouteImport.update({
   id: '/admin/inquiries',
   path: '/admin/inquiries',
@@ -170,6 +176,7 @@ export interface FileRoutesByFullPath {
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
   '/admin/inquiries': typeof AdminInquiriesRoute
+  '/admin/languages': typeof AdminLanguagesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
@@ -195,6 +202,7 @@ export interface FileRoutesByTo {
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
   '/admin/inquiries': typeof AdminInquiriesRoute
+  '/admin/languages': typeof AdminLanguagesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
@@ -222,6 +230,7 @@ export interface FileRoutesById {
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
   '/admin/inquiries': typeof AdminInquiriesRoute
+  '/admin/languages': typeof AdminLanguagesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
@@ -250,6 +259,7 @@ export interface FileRouteTypes {
     | '/admin/categories'
     | '/admin/forgot-password'
     | '/admin/inquiries'
+    | '/admin/languages'
     | '/admin/login'
     | '/admin/products'
     | '/admin/reset-password'
@@ -275,6 +285,7 @@ export interface FileRouteTypes {
     | '/admin/categories'
     | '/admin/forgot-password'
     | '/admin/inquiries'
+    | '/admin/languages'
     | '/admin/login'
     | '/admin/products'
     | '/admin/reset-password'
@@ -301,6 +312,7 @@ export interface FileRouteTypes {
     | '/admin/categories'
     | '/admin/forgot-password'
     | '/admin/inquiries'
+    | '/admin/languages'
     | '/admin/login'
     | '/admin/products'
     | '/admin/reset-password'
@@ -328,6 +340,7 @@ export interface RootRouteChildren {
   AdminCategoriesRoute: typeof AdminCategoriesRoute
   AdminForgotPasswordRoute: typeof AdminForgotPasswordRoute
   AdminInquiriesRoute: typeof AdminInquiriesRoute
+  AdminLanguagesRoute: typeof AdminLanguagesRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminProductsRoute: typeof AdminProductsRouteWithChildren
   AdminResetPasswordRoute: typeof AdminResetPasswordRoute
@@ -465,6 +478,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/languages': {
+      id: '/admin/languages'
+      path: '/admin/languages'
+      fullPath: '/admin/languages'
+      preLoaderRoute: typeof AdminLanguagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/inquiries': {
       id: '/admin/inquiries'
       path: '/admin/inquiries'
@@ -549,6 +569,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminCategoriesRoute: AdminCategoriesRoute,
   AdminForgotPasswordRoute: AdminForgotPasswordRoute,
   AdminInquiriesRoute: AdminInquiriesRoute,
+  AdminLanguagesRoute: AdminLanguagesRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminProductsRoute: AdminProductsRouteWithChildren,
   AdminResetPasswordRoute: AdminResetPasswordRoute,
@@ -560,3 +581,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

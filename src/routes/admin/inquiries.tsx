@@ -69,6 +69,7 @@ type InquiryRow = {
   assigned_to: string | null;
   preferred_store_id: string | null;
   created_at: string;
+  first_contacted_at: string | null;
   inquiry_items: ItemRow[];
   assignee?: { id: string; full_name: string | null; email: string } | null;
 };
@@ -187,7 +188,7 @@ function InquiriesPage() {
       .from("inquiries")
       .select(
         `id, status, customer_name, customer_email, customer_phone, customer_city,
-         message, assigned_to, preferred_store_id, created_at,
+         message, assigned_to, preferred_store_id, created_at, first_contacted_at,
          inquiry_items(id, quantity, notes,
            product:products(id, name_en, name_id, price_idr,
              product_images(image_url, is_primary)))`
@@ -245,7 +246,7 @@ function InquiriesPage() {
               .from("inquiries")
               .select(
                 `id, status, customer_name, customer_email, customer_phone, customer_city,
-                 message, assigned_to, preferred_store_id, created_at,
+                 message, assigned_to, preferred_store_id, created_at, first_contacted_at,
                  inquiry_items(id, quantity, notes,
                    product:products(id, name_en, name_id, price_idr,
                      product_images(image_url, is_primary)))`

@@ -610,6 +610,7 @@ function InquiriesPage() {
                 const imgs = r.inquiry_items.slice(0, 3);
                 const isNew = r.status === "new";
                 const isFlashing = flash.has(r.id);
+                const sla = slaInfo(r.created_at, r.status, r.first_contacted_at);
                 return (
                   <tr
                     key={r.id}
@@ -620,6 +621,7 @@ function InquiriesPage() {
                       "cursor-pointer border-t border-border transition-colors",
                       isNew && "border-l-4 border-l-red-500",
                       isFlashing && "animate-pulse bg-amber-50",
+                      sla && SLA_ROW_CLS[sla.level],
                       "hover:bg-muted/40"
                     )}
                   >
@@ -637,6 +639,14 @@ function InquiriesPage() {
                       <Badge variant="outline" className={meta.cls}>
                         {meta.label}
                       </Badge>
+                      {sla?.level === "breach" && (
+                        <Badge
+                          variant="outline"
+                          className="ml-1.5 border-red-600/40 bg-red-600/10 px-1.5 py-0 text-[10px] font-bold uppercase tracking-wider text-red-700"
+                        >
+                          SLA breach
+                        </Badge>
+                      )}
                     </td>
                     <td className="px-2 py-2.5">
                       <div className="flex items-center gap-1.5">

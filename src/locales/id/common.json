@@ -228,5 +228,11 @@
     "clear_filters": "Hapus filter",
     "products_count_one": "{{count}} produk",
     "products_count_other": "{{count}} produk"
+  },
+  "missing_translation": {
+    "only_id": "Produk ini hanya tersedia dalam Bahasa Indonesia.",
+    "only_en": "Produk ini hanya tersedia dalam Bahasa Inggris.",
+    "switch_to_id": "Lihat versi Bahasa Indonesia",
+    "switch_to_en": "Lihat versi Bahasa Inggris"
   }
 }

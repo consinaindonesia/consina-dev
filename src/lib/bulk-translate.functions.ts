@@ -16,6 +16,30 @@ function colFor(field: Field, lang: "id" | "en") {
   return `${field}_${lang}` as const;
 }
 
+type GlossaryRow = {
+  term_en: string;
+  term_id: string | null;
+  never_translate: boolean;
+  notes: string | null;
+};
+
+function buildGlossaryBlock(rows: GlossaryRow[], target: "id" | "en") {
+  if (!rows.length) return "";
+  const lines = rows.map((g) => {
+    if (g.never_translate) {
+      return `- "${g.term_en}" — preserve exactly, do not translate${g.notes ? ` (${g.notes})` : ""}`;
+    }
+    if (target === "id" && g.term_id) {
+      return `- "${g.term_en}" → translate to "${g.term_id}" in Indonesian`;
+    }
+    if (target === "en" && g.term_id) {
+      return `- "${g.term_id}" → translate to "${g.term_en}" in English`;
+    }
+    return `- "${g.term_en}"${g.notes ? ` (${g.notes})` : ""}`;
+  });
+  return `Brand glossary — apply these rules strictly:\n${lines.join("\n")}`;
+}
+
 async function callClaude(apiKey: string, system: string, user: string) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",

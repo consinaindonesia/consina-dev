@@ -539,6 +539,55 @@ function InquiryDetailPage() {
           )}
         </section>
 
+        {/* Previous inquiries */}
+        {previousInquiries.length > 0 && (
+          <section className="rounded-lg border border-border bg-white p-5">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                Previous inquiries ({previousInquiries.length})
+              </h2>
+              <Link
+                to="/admin/customers/$email"
+                params={{ email: inquiry.customer_email }}
+                className="text-xs font-medium text-primary underline"
+              >
+                View customer profile
+              </Link>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {previousInquiries.map((p) => {
+                const m = STATUS_META[p.status] ?? STATUS_META.new;
+                return (
+                  <Link
+                    key={p.id}
+                    to="/admin/inquiries/$id"
+                    params={{ id: p.id }}
+                    className="rounded-md border border-border p-3 transition hover:bg-muted/40"
+                  >
+                    <div className="mb-2 flex items-center justify-between">
+                      <Badge variant="outline" className={m.cls}>
+                        {m.label}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        #{p.id.slice(0, 8).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {fmtTime(p.created_at)}
+                    </div>
+                    <div className="mt-2 flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        {p.itemCount} item{p.itemCount === 1 ? "" : "s"}
+                      </span>
+                      <span className="font-medium">{fmtIDR(p.total)}</span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
         {/* SECTION 2 — Items */}
         <section className="rounded-lg border border-border bg-white p-5">
           <div className="mb-4 flex items-center justify-between">

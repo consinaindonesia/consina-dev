@@ -50,6 +50,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { CsvImportWizard } from "@/components/admin/CsvImportWizard";
 
 export const Route = createFileRoute("/admin/products")({
   head: () => ({ meta: [{ title: "Products — Admin" }, { name: "robots", content: "noindex" }] }),
@@ -146,6 +147,8 @@ function ProductsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [changeCategoryOpen, setChangeCategoryOpen] = useState(false);
   const [newCategoryId, setNewCategoryId] = useState<string>("");
+  const [importOpen, setImportOpen] = useState(false);
+  const [reloadTick, setReloadTick] = useState(0);
 
   const filtersActive =
     !!search || category !== "all" || status !== "all" || stock !== "all" || lang !== "all";
@@ -262,7 +265,7 @@ function ProductsPage() {
     return () => {
       cancelled = true;
     };
-  }, [search, category, status, stock, lang, page, pageSize]);
+  }, [search, category, status, stock, lang, page, pageSize, reloadTick]);
 
   function clearFilters() {
     setSearchInput("");
@@ -510,7 +513,7 @@ function ProductsPage() {
           </h1>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => toast.info("CSV import coming soon")}>
+          <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
             <Upload className="mr-1.5 h-4 w-4" /> Import CSV
           </Button>
           <Button size="sm" asChild>
@@ -779,6 +782,18 @@ function ProductsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <CsvImportWizard
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        onComplete={() => {
+          // Reset filters so freshly imported rows appear at the top (sorted by updated_at desc)
+          clearFilters();
+          setPage(1);
+          setReloadTick((t) => t + 1);
+          toast.success("Showing newly imported products");
+        }}
+      />
     </AdminShell>
   );
 }

@@ -269,7 +269,8 @@ function InquiryDetailPage() {
     void loadActivity();
   }
 
-  async function updateInquiry(patch: Partial<InquiryRow>, activityAction?: string) {
+  type InquiryPatch = Partial<Omit<InquiryRow, "inquiry_items" | "id">>;
+  async function updateInquiry(patch: InquiryPatch, activityAction?: string) {
     if (!inquiry) return;
     const { error } = await supabase.from("inquiries").update(patch).eq("id", id);
     if (error) return toast.error(error.message);
@@ -278,7 +279,7 @@ function InquiryDetailPage() {
     if (activityAction) await logActivity(activityAction);
   }
 
-  async function changeStatus(next: Status, extra: Partial<InquiryRow> = {}) {
+  async function changeStatus(next: Status, extra: InquiryPatch = {}) {
     await updateInquiry({ status: next, ...extra }, `status_changed_to_${next}`);
   }
 

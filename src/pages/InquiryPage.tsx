@@ -108,14 +108,10 @@ export function InquiryPage() {
     },
   });
 
-  const outItemKeys = useMemo(
-    () =>
-      items
-        .filter((i) => stockMap[i.productId] === "out_of_stock")
-        .map((i) => i.key),
+  const hasOutOfStock = useMemo(
+    () => items.some((i) => stockMap[i.productId] === "out_of_stock"),
     [items, stockMap],
   );
-  const hasOutOfStock = outItemKeys.length > 0;
 
   const { data: stores = [] } = useQuery({
     queryKey: ["active-stores"],

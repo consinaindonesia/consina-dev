@@ -1,4 +1,4 @@
-import { Link, notFound } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Loader2, Filter, X } from "lucide-react";
 import { Nav } from "@/components/site/Nav";
@@ -42,8 +42,7 @@ function formatIDR(n: number) {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(n);
 }
 
-export function CategoryPage() {
-  const { slug } = Route.useParams();
+export function CategoryPage({ slug }: { slug: string }) {
   const [category, setCategory] = useState<Category | null>(null);
   const [attrDefs, setAttrDefs] = useState<AttributeDef[]>([]);
   const [products, setProducts] = useState<ProductRow[]>([]);

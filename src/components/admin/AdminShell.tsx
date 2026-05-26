@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { toast } from "sonner";
 import {
   Bell,
   Clock,
@@ -43,6 +44,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Languages", to: "/admin/languages", icon: Globe },
   { label: "Glossary", to: "/admin/glossary", icon: BookOpen },
   { label: "Users", to: "/admin/users", icon: Users, adminOnly: true },
+  { label: "Notifications", to: "/admin/settings/notifications", icon: Bell, adminOnly: true },
   { label: "Activity Log", to: "/admin/activity", icon: Clock, adminOnly: true },
 ];
 
@@ -75,6 +77,70 @@ function useNewInquiryCount() {
   return count;
 }
 
+type Prefs = {
+  notification_email_scope: "all" | "assigned" | "none";
+  browser_notifications_enabled: boolean;
+  quiet_hours_start: number | null;
+  quiet_hours_end: number | null;
+};
+
+function isInQuietHours(p: Prefs, now = new Date()) {
+  const s = p.quiet_hours_start;
+  const e = p.quiet_hours_end;
+  if (s == null || e == null || s === e) return false;
+  const h = now.getHours();
+  if (s < e) return h >= s && h < e;
+  // crosses midnight (e.g. 22 → 7)
+  return h >= s || h < e;
+}
+
+function useNewInquiryToasts(adminId: string | null, navigate: ReturnType<typeof useNavigate>) {
+  const [prefs, setPrefs] = useState<Prefs | null>(null);
+
+  useEffect(() => {
+    if (!adminId) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("admin_users")
+        .select(
+          "notification_email_scope, browser_notifications_enabled, quiet_hours_start, quiet_hours_end"
+        )
+        .eq("id", adminId)
+        .maybeSingle();
+      if (!cancelled && data) setPrefs(data as Prefs);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [adminId]);
+
+  useEffect(() => {
+    if (!prefs || !prefs.browser_notifications_enabled) return;
+    const channel = supabase
+      .channel("admin-inquiries-toast")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "inquiries" },
+        (payload) => {
+          if (isInQuietHours(prefs)) return;
+          const row = payload.new as { id: string; customer_name: string };
+          toast(`New inquiry from ${row.customer_name}`, {
+            action: {
+              label: "View",
+              onClick: () =>
+                navigate({ to: "/admin/inquiries/$id", params: { id: row.id } }),
+            },
+          });
+        }
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [prefs, navigate]);
+}
+
 function buildCrumbs(pathname: string): { label: string; to?: string }[] {
   const parts = pathname.split("/").filter(Boolean); // ["admin", "products", ...]
   if (parts[0] !== "admin") return [];
@@ -96,6 +162,15 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const newInquiries = useNewInquiryCount();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  useNewInquiryToasts(profile?.id ?? null, navigate);
+
+  // Global tab title badge ("Consina Admin (3 new)")
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const base = document.title.replace(/\s*\(\d+\s+new\)\s*$/, "");
+    document.title = newInquiries > 0 ? `${base} (${newInquiries} new)` : base;
+  }, [newInquiries]);
 
   useEffect(() => {
     if (!loading && !session) navigate({ to: "/admin/login" });
@@ -350,7 +425,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
                   >
                     <button
                       type="button"
-                      onClick={() => setMenuOpen(false)}
+                      onClick={() => {
+                        setMenuOpen(false);
+                        navigate({ to: "/admin/account" });
+                      }}
                       className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-muted"
                     >
                       <UserIcon className="h-4 w-4" /> My Account

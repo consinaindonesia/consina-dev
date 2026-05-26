@@ -35,10 +35,12 @@ import { Route as AdminForgotPasswordRouteImport } from './routes/admin/forgot-p
 import { Route as AdminCustomersRouteImport } from './routes/admin/customers'
 import { Route as AdminCategoriesRouteImport } from './routes/admin/categories'
 import { Route as AdminAttributesRouteImport } from './routes/admin/attributes'
+import { Route as AdminAccountRouteImport } from './routes/admin/account'
 import { Route as LangPermintaanRouteImport } from './routes/$lang.permintaan'
 import { Route as LangInquiryRouteImport } from './routes/$lang.inquiry'
 import { Route as LangPermintaanIndexRouteImport } from './routes/$lang.permintaan.index'
 import { Route as LangInquiryIndexRouteImport } from './routes/$lang.inquiry.index'
+import { Route as AdminSettingsNotificationsRouteImport } from './routes/admin/settings.notifications'
 import { Route as AdminProductsNewRouteImport } from './routes/admin/products.new'
 import { Route as AdminInquiriesIdRouteImport } from './routes/admin/inquiries.$id'
 import { Route as AdminCustomersEmailRouteImport } from './routes/admin/customers.$email'
@@ -178,6 +180,11 @@ const AdminAttributesRoute = AdminAttributesRouteImport.update({
   path: '/admin/attributes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminAccountRoute = AdminAccountRouteImport.update({
+  id: '/admin/account',
+  path: '/admin/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LangPermintaanRoute = LangPermintaanRouteImport.update({
   id: '/permintaan',
   path: '/permintaan',
@@ -198,6 +205,12 @@ const LangInquiryIndexRoute = LangInquiryIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LangInquiryRoute,
 } as any)
+const AdminSettingsNotificationsRoute =
+  AdminSettingsNotificationsRouteImport.update({
+    id: '/admin/settings/notifications',
+    path: '/admin/settings/notifications',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AdminProductsNewRoute = AdminProductsNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -252,6 +265,7 @@ export interface FileRoutesByFullPath {
   '/tents': typeof TentsRoute
   '/$lang/inquiry': typeof LangInquiryRouteWithChildren
   '/$lang/permintaan': typeof LangPermintaanRouteWithChildren
+  '/admin/account': typeof AdminAccountRoute
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/customers': typeof AdminCustomersRouteWithChildren
@@ -275,6 +289,7 @@ export interface FileRoutesByFullPath {
   '/admin/customers/$email': typeof AdminCustomersEmailRoute
   '/admin/inquiries/$id': typeof AdminInquiriesIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
+  '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
   '/$lang/inquiry/': typeof LangInquiryIndexRoute
   '/$lang/permintaan/': typeof LangPermintaanIndexRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
@@ -289,6 +304,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
+  '/admin/account': typeof AdminAccountRoute
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/customers': typeof AdminCustomersRouteWithChildren
@@ -312,6 +328,7 @@ export interface FileRoutesByTo {
   '/admin/customers/$email': typeof AdminCustomersEmailRoute
   '/admin/inquiries/$id': typeof AdminInquiriesIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
+  '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
   '/$lang/inquiry': typeof LangInquiryIndexRoute
   '/$lang/permintaan': typeof LangPermintaanIndexRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
@@ -330,6 +347,7 @@ export interface FileRoutesById {
   '/tents': typeof TentsRoute
   '/$lang/inquiry': typeof LangInquiryRouteWithChildren
   '/$lang/permintaan': typeof LangPermintaanRouteWithChildren
+  '/admin/account': typeof AdminAccountRoute
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/customers': typeof AdminCustomersRouteWithChildren
@@ -353,6 +371,7 @@ export interface FileRoutesById {
   '/admin/customers/$email': typeof AdminCustomersEmailRoute
   '/admin/inquiries/$id': typeof AdminInquiriesIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
+  '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
   '/$lang/inquiry/': typeof LangInquiryIndexRoute
   '/$lang/permintaan/': typeof LangPermintaanIndexRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
@@ -372,6 +391,7 @@ export interface FileRouteTypes {
     | '/tents'
     | '/$lang/inquiry'
     | '/$lang/permintaan'
+    | '/admin/account'
     | '/admin/attributes'
     | '/admin/categories'
     | '/admin/customers'
@@ -395,6 +415,7 @@ export interface FileRouteTypes {
     | '/admin/customers/$email'
     | '/admin/inquiries/$id'
     | '/admin/products/new'
+    | '/admin/settings/notifications'
     | '/$lang/inquiry/'
     | '/$lang/permintaan/'
     | '/admin/products/$id/edit'
@@ -409,6 +430,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/stores'
     | '/tents'
+    | '/admin/account'
     | '/admin/attributes'
     | '/admin/categories'
     | '/admin/customers'
@@ -432,6 +454,7 @@ export interface FileRouteTypes {
     | '/admin/customers/$email'
     | '/admin/inquiries/$id'
     | '/admin/products/new'
+    | '/admin/settings/notifications'
     | '/$lang/inquiry'
     | '/$lang/permintaan'
     | '/admin/products/$id/edit'
@@ -449,6 +472,7 @@ export interface FileRouteTypes {
     | '/tents'
     | '/$lang/inquiry'
     | '/$lang/permintaan'
+    | '/admin/account'
     | '/admin/attributes'
     | '/admin/categories'
     | '/admin/customers'
@@ -472,6 +496,7 @@ export interface FileRouteTypes {
     | '/admin/customers/$email'
     | '/admin/inquiries/$id'
     | '/admin/products/new'
+    | '/admin/settings/notifications'
     | '/$lang/inquiry/'
     | '/$lang/permintaan/'
     | '/admin/products/$id/edit'
@@ -488,6 +513,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StoresRoute: typeof StoresRoute
   TentsRoute: typeof TentsRoute
+  AdminAccountRoute: typeof AdminAccountRoute
   AdminAttributesRoute: typeof AdminAttributesRoute
   AdminCategoriesRoute: typeof AdminCategoriesRoute
   AdminCustomersRoute: typeof AdminCustomersRouteWithChildren
@@ -503,6 +529,7 @@ export interface RootRouteChildren {
   EnSplatRoute: typeof EnSplatRoute
   AdminIndexRoute: typeof AdminIndexRoute
   EnIndexRoute: typeof EnIndexRoute
+  AdminSettingsNotificationsRoute: typeof AdminSettingsNotificationsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -689,6 +716,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAttributesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/account': {
+      id: '/admin/account'
+      path: '/admin/account'
+      fullPath: '/admin/account'
+      preLoaderRoute: typeof AdminAccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/$lang/permintaan': {
       id: '/$lang/permintaan'
       path: '/permintaan'
@@ -716,6 +750,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/$lang/inquiry/'
       preLoaderRoute: typeof LangInquiryIndexRouteImport
       parentRoute: typeof LangInquiryRoute
+    }
+    '/admin/settings/notifications': {
+      id: '/admin/settings/notifications'
+      path: '/admin/settings/notifications'
+      fullPath: '/admin/settings/notifications'
+      preLoaderRoute: typeof AdminSettingsNotificationsRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/admin/products/new': {
       id: '/admin/products/new'
@@ -871,6 +912,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StoresRoute: StoresRoute,
   TentsRoute: TentsRoute,
+  AdminAccountRoute: AdminAccountRoute,
   AdminAttributesRoute: AdminAttributesRoute,
   AdminCategoriesRoute: AdminCategoriesRoute,
   AdminCustomersRoute: AdminCustomersRouteWithChildren,
@@ -886,6 +928,7 @@ const rootRouteChildren: RootRouteChildren = {
   EnSplatRoute: EnSplatRoute,
   AdminIndexRoute: AdminIndexRoute,
   EnIndexRoute: EnIndexRoute,
+  AdminSettingsNotificationsRoute: AdminSettingsNotificationsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

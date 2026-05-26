@@ -148,6 +148,10 @@ function preferredChannel(r: InquiryRow): { label: string; icon: typeof Phone } 
   return { label: "Email", icon: Mail };
 }
 
+function emailKey(e: string) {
+  return (e ?? "").trim().toLowerCase();
+}
+
 function InquiriesPage() {
   const [rows, setRows] = useState<InquiryRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -302,6 +306,24 @@ function InquiriesPage() {
       return true;
     });
   }, [rows, status, range, search]);
+
+  // Mark rows whose customer has at least one earlier inquiry (returning customer)
+  const returningIds = useMemo(() => {
+    const earliestByEmail = new Map<string, number>();
+    for (const r of rows) {
+      const k = emailKey(r.customer_email);
+      const t = new Date(r.created_at).getTime();
+      const cur = earliestByEmail.get(k);
+      if (cur === undefined || t < cur) earliestByEmail.set(k, t);
+    }
+    const out = new Set<string>();
+    for (const r of rows) {
+      const k = emailKey(r.customer_email);
+      const t = new Date(r.created_at).getTime();
+      if ((earliestByEmail.get(k) ?? t) < t) out.add(r.id);
+    }
+    return out;
+  }, [rows]);
 
   const counts = useMemo(() => {
     const c: Record<string, number> = { all: rows.length };
@@ -600,7 +622,17 @@ function InquiriesPage() {
                       </Badge>
                     </td>
                     <td className="px-2 py-2.5">
-                      <div className="font-medium">{r.customer_name}</div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-medium">{r.customer_name}</span>
+                        {returningIds.has(r.id) && (
+                          <Badge
+                            variant="outline"
+                            className="border-violet-500/30 bg-violet-500/10 px-1.5 py-0 text-[10px] font-semibold text-violet-700"
+                          >
+                            Returning
+                          </Badge>
+                        )}
+                      </div>
                       <div className="text-xs text-muted-foreground">
                         {r.customer_city ?? "—"}
                       </div>

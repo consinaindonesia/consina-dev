@@ -1,11 +1,13 @@
 import { Link, notFound } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Loader2, Filter, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-
+import { useLang } from "@/i18n/LangProvider";
+import { formatPrice, localizedField } from "@/i18n/format";
 
 type Category = {
   id: string;
@@ -38,11 +40,9 @@ type ProductRow = {
   product_images: Array<{ thumbnail_url: string | null; image_url: string }>;
 };
 
-function formatIDR(n: number) {
-  return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(n);
-}
-
 export function CategoryPage({ slug }: { slug: string }) {
+  const { t } = useTranslation();
+  const lang = useLang();
   const [category, setCategory] = useState<Category | null>(null);
   const [attrDefs, setAttrDefs] = useState<AttributeDef[]>([]);
   const [products, setProducts] = useState<ProductRow[]>([]);
@@ -205,12 +205,16 @@ export function CategoryPage({ slug }: { slug: string }) {
         <div className="mx-auto max-w-[1280px] px-4 py-12 md:px-8 md:py-16">
           {category ? (
             <>
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">Category</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">
+                {t("category_detail.eyebrow")}
+              </p>
               <h1 className="mt-3 font-[Archivo] text-4xl font-black tracking-tight text-primary md:text-5xl">
-                {category.name_en}
+                {localizedField(category, "name", lang).value}
               </h1>
-              {category.description_en && (
-                <p className="mt-3 max-w-2xl text-base text-muted-foreground">{category.description_en}</p>
+              {localizedField(category, "description", lang).value && (
+                <p className="mt-3 max-w-2xl text-base text-muted-foreground">
+                  {localizedField(category, "description", lang).value}
+                </p>
               )}
             </>
           ) : (
@@ -226,23 +230,23 @@ export function CategoryPage({ slug }: { slug: string }) {
             <div className="sticky top-20">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-foreground">
-                  <Filter className="h-4 w-4" /> Filters
+                  <Filter className="h-4 w-4" /> {t("category_detail.filters_title")}
                 </h2>
                 {activeFilterCount > 0 && (
                   <button onClick={clearFilters} className="text-xs text-muted-foreground hover:text-foreground">
-                    Clear ({activeFilterCount})
+                    {t("category_detail.clear")} ({activeFilterCount})
                   </button>
                 )}
               </div>
 
               {dynamicFilters.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No filters available yet.</p>
+                <p className="text-sm text-muted-foreground">{t("category_detail.no_filters")}</p>
               ) : (
                 <div className="space-y-5">
                   {dynamicFilters.map(({ def, values }) => (
                     <div key={def.id}>
                       <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-foreground">
-                        {def.name_en}
+                        {localizedField(def, "name", lang).value}
                         {def.unit ? ` (${def.unit})` : ""}
                       </h3>
                       <ul className="space-y-1.5">
@@ -274,36 +278,37 @@ export function CategoryPage({ slug }: { slug: string }) {
           <section>
             {loading ? (
               <div className="flex items-center justify-center py-20 text-muted-foreground">
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading products…
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("category_detail.loading")}
               </div>
             ) : filtered.length === 0 ? (
               <div className="rounded-xl border border-dashed border-input bg-card py-16 text-center">
                 <p className="text-sm text-muted-foreground">
                   {products.length === 0
-                    ? "No products in this category yet."
-                    : "No products match the selected filters."}
+                    ? t("category_detail.no_products")
+                    : t("category_detail.no_matching")}
                 </p>
                 {activeFilterCount > 0 && (
                   <Button variant="outline" size="sm" className="mt-4" onClick={clearFilters}>
-                    <X className="mr-1 h-4 w-4" /> Clear filters
+                    <X className="mr-1 h-4 w-4" /> {t("category_detail.clear_filters")}
                   </Button>
                 )}
               </div>
             ) : (
               <>
                 <p className="mb-4 text-sm text-muted-foreground">
-                  {filtered.length} product{filtered.length === 1 ? "" : "s"}
+                  {t("category_detail.products_count", { count: filtered.length })}
                 </p>
                 <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   {filtered.map((p) => {
                     const img = p.product_images[0];
+                    const name = localizedField(p, "name", lang).value;
                     return (
                       <li key={p.id} className="group overflow-hidden rounded-xl border border-border bg-card">
                         <div className="aspect-square overflow-hidden bg-muted">
                           {img ? (
                             <img
                               src={img.thumbnail_url ?? img.image_url}
-                              alt={p.name_en}
+                              alt={name}
                               loading="lazy"
                               className="h-full w-full object-cover transition-transform group-hover:scale-105"
                             />
@@ -313,8 +318,8 @@ export function CategoryPage({ slug }: { slug: string }) {
                         </div>
                         <div className="p-4">
                           <p className="text-xs uppercase tracking-wider text-muted-foreground">{p.sku}</p>
-                          <h3 className="mt-1 font-medium text-foreground">{p.name_en}</h3>
-                          <p className="mt-2 font-semibold text-primary">{formatIDR(p.price_idr)}</p>
+                          <h3 className="mt-1 font-medium text-foreground">{name}</h3>
+                          <p className="mt-2 font-semibold text-primary">{formatPrice(p.price_idr, lang)}</p>
                         </div>
                       </li>
                     );

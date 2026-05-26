@@ -51,28 +51,46 @@ export type Database = {
       }
       admin_users: {
         Row: {
+          browser_notifications_enabled: boolean
           created_at: string
           email: string
           full_name: string | null
           id: string
+          notification_email_scope: string
           preferred_language: string
+          quiet_hours_end: number | null
+          quiet_hours_start: number | null
           role: string
+          whatsapp_notifications_enabled: boolean
+          whatsapp_phone: string | null
         }
         Insert: {
+          browser_notifications_enabled?: boolean
           created_at?: string
           email: string
           full_name?: string | null
           id?: string
+          notification_email_scope?: string
           preferred_language?: string
+          quiet_hours_end?: number | null
+          quiet_hours_start?: number | null
           role?: string
+          whatsapp_notifications_enabled?: boolean
+          whatsapp_phone?: string | null
         }
         Update: {
+          browser_notifications_enabled?: boolean
           created_at?: string
           email?: string
           full_name?: string | null
           id?: string
+          notification_email_scope?: string
           preferred_language?: string
+          quiet_hours_end?: number | null
+          quiet_hours_start?: number | null
           role?: string
+          whatsapp_notifications_enabled?: boolean
+          whatsapp_phone?: string | null
         }
         Relationships: []
       }

@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -156,8 +156,8 @@ function InquiriesPage() {
   const [range, setRange] = useState<DateRange>("all");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [flash, setFlash] = useState<Set<string>>(new Set());
-  const [detail, setDetail] = useState<InquiryRow | null>(null);
   const [admins, setAdmins] = useState<AdminUser[]>([]);
+  const navigate = useNavigate();
   const rowsRef = useRef<InquiryRow[]>([]);
   rowsRef.current = rows;
 
@@ -173,6 +173,7 @@ function InquiriesPage() {
              product_images(image_url, is_primary)))`
       )
       .order("created_at", { ascending: false })
+      .is("deleted_at", null)
       .limit(500);
     setLoading(false);
     if (error) {

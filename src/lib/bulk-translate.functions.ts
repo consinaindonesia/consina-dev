@@ -16,6 +16,30 @@ function colFor(field: Field, lang: "id" | "en") {
   return `${field}_${lang}` as const;
 }
 
+type GlossaryRow = {
+  term_en: string;
+  term_id: string | null;
+  never_translate: boolean;
+  notes: string | null;
+};
+
+function buildGlossaryBlock(rows: GlossaryRow[], target: "id" | "en") {
+  if (!rows.length) return "";
+  const lines = rows.map((g) => {
+    if (g.never_translate) {
+      return `- "${g.term_en}" — preserve exactly, do not translate${g.notes ? ` (${g.notes})` : ""}`;
+    }
+    if (target === "id" && g.term_id) {
+      return `- "${g.term_en}" → translate to "${g.term_id}" in Indonesian`;
+    }
+    if (target === "en" && g.term_id) {
+      return `- "${g.term_id}" → translate to "${g.term_en}" in English`;
+    }
+    return `- "${g.term_en}"${g.notes ? ` (${g.notes})` : ""}`;
+  });
+  return `Brand glossary — apply these rules strictly:\n${lines.join("\n")}`;
+}
+
 async function callClaude(apiKey: string, system: string, user: string) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -64,6 +88,20 @@ export const bulkTranslateProducts = createServerFn({ method: "POST" })
     const target = data.targetLang;
     const source = target === "id" ? "en" : "id";
 
+    // Fetch brand glossary to guide the translator
+    const { data: glossary } = await supabase
+      .from("brand_glossary")
+      .select("term_en, term_id, never_translate, notes");
+    const glossaryBlock = buildGlossaryBlock(
+      (glossary ?? []) as Array<{
+        term_en: string;
+        term_id: string | null;
+        never_translate: boolean;
+        notes: string | null;
+      }>,
+      target,
+    );
+
     const { data: products, error } = await supabase
       .from("products")
       .select(
@@ -97,6 +135,8 @@ export const bulkTranslateProducts = createServerFn({ method: "POST" })
 Source language: ${LANG_NAME[source]}
 Target language: ${LANG_NAME[target]}
 Content type: ${field}
+
+${glossaryBlock}
 
 Rules:
 - Preserve brand tone: adventurous, grounded, community-oriented.

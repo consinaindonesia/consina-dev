@@ -12,6 +12,7 @@ import {
   MapPin,
   Menu,
   MessageSquare,
+  BookOpen,
   Package,
   Search,
   User as UserIcon,
@@ -37,6 +38,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Inquiries", to: "/admin/inquiries", icon: MessageSquare, badge: "inquiries" },
   { label: "Stores", to: "/admin/stores", icon: MapPin },
   { label: "Languages", to: "/admin/languages", icon: Globe },
+  { label: "Glossary", to: "/admin/glossary", icon: BookOpen },
   { label: "Users", to: "/admin/users", icon: Users, adminOnly: true },
   { label: "Activity Log", to: "/admin/activity", icon: Clock, adminOnly: true },
 ];

@@ -33,6 +33,8 @@ import { Route as AdminGlossaryRouteImport } from './routes/admin/glossary'
 import { Route as AdminForgotPasswordRouteImport } from './routes/admin/forgot-password'
 import { Route as AdminCategoriesRouteImport } from './routes/admin/categories'
 import { Route as AdminAttributesRouteImport } from './routes/admin/attributes'
+import { Route as LangPermintaanRouteImport } from './routes/$lang.permintaan'
+import { Route as LangInquiryRouteImport } from './routes/$lang.inquiry'
 import { Route as AdminProductsNewRouteImport } from './routes/admin/products.new'
 import { Route as LangProdukSlugRouteImport } from './routes/$lang.produk.$slug'
 import { Route as LangProductsSlugRouteImport } from './routes/$lang.products.$slug'
@@ -158,6 +160,16 @@ const AdminAttributesRoute = AdminAttributesRouteImport.update({
   path: '/admin/attributes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LangPermintaanRoute = LangPermintaanRouteImport.update({
+  id: '/permintaan',
+  path: '/permintaan',
+  getParentRoute: () => LangRoute,
+} as any)
+const LangInquiryRoute = LangInquiryRouteImport.update({
+  id: '/inquiry',
+  path: '/inquiry',
+  getParentRoute: () => LangRoute,
+} as any)
 const AdminProductsNewRoute = AdminProductsNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -190,6 +202,8 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
+  '/$lang/inquiry': typeof LangInquiryRoute
+  '/$lang/permintaan': typeof LangPermintaanRoute
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
@@ -219,6 +233,8 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
+  '/$lang/inquiry': typeof LangInquiryRoute
+  '/$lang/permintaan': typeof LangPermintaanRoute
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
@@ -250,6 +266,8 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
+  '/$lang/inquiry': typeof LangInquiryRoute
+  '/$lang/permintaan': typeof LangPermintaanRoute
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
@@ -282,6 +300,8 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/stores'
     | '/tents'
+    | '/$lang/inquiry'
+    | '/$lang/permintaan'
     | '/admin/attributes'
     | '/admin/categories'
     | '/admin/forgot-password'
@@ -311,6 +331,8 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/stores'
     | '/tents'
+    | '/$lang/inquiry'
+    | '/$lang/permintaan'
     | '/admin/attributes'
     | '/admin/categories'
     | '/admin/forgot-password'
@@ -341,6 +363,8 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/stores'
     | '/tents'
+    | '/$lang/inquiry'
+    | '/$lang/permintaan'
     | '/admin/attributes'
     | '/admin/categories'
     | '/admin/forgot-password'
@@ -557,6 +581,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAttributesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$lang/permintaan': {
+      id: '/$lang/permintaan'
+      path: '/permintaan'
+      fullPath: '/$lang/permintaan'
+      preLoaderRoute: typeof LangPermintaanRouteImport
+      parentRoute: typeof LangRoute
+    }
+    '/$lang/inquiry': {
+      id: '/$lang/inquiry'
+      path: '/inquiry'
+      fullPath: '/$lang/inquiry'
+      preLoaderRoute: typeof LangInquiryRouteImport
+      parentRoute: typeof LangRoute
+    }
     '/admin/products/new': {
       id: '/admin/products/new'
       path: '/new'
@@ -589,12 +627,16 @@ declare module '@tanstack/react-router' {
 }
 
 interface LangRouteChildren {
+  LangInquiryRoute: typeof LangInquiryRoute
+  LangPermintaanRoute: typeof LangPermintaanRoute
   LangIndexRoute: typeof LangIndexRoute
   LangProductsSlugRoute: typeof LangProductsSlugRoute
   LangProdukSlugRoute: typeof LangProdukSlugRoute
 }
 
 const LangRouteChildren: LangRouteChildren = {
+  LangInquiryRoute: LangInquiryRoute,
+  LangPermintaanRoute: LangPermintaanRoute,
   LangIndexRoute: LangIndexRoute,
   LangProductsSlugRoute: LangProductsSlugRoute,
   LangProdukSlugRoute: LangProdukSlugRoute,
@@ -644,3 +686,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

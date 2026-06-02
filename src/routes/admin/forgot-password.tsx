@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthShell } from "@/components/admin/AuthShell";
+import { logAuthEvent } from "@/lib/activity-log.functions";
 
 export const Route = createFileRoute("/admin/forgot-password")({
   head: () => ({ meta: [{ title: "Reset password — Consina Admin" }, { name: "robots", content: "noindex" }] }),
@@ -23,6 +24,7 @@ function ForgotPage() {
     void supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/admin/reset-password`,
     });
+    void logAuthEvent({ data: { email, kind: "password_reset_requested" } });
     // Always show the same neutral confirmation
     setTimeout(() => {
       setBusy(false);

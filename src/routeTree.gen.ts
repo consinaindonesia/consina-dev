@@ -56,6 +56,8 @@ import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lova
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicHooksWeeklyInquirySummaryRouteImport } from './routes/api/public/hooks/weekly-inquiry-summary'
+import { Route as AdminStoresIdStockRouteImport } from './routes/admin/stores.$id.stock'
+import { Route as AdminProductsIdStockRouteImport } from './routes/admin/products.$id.stock'
 import { Route as AdminProductsIdEditRouteImport } from './routes/admin/products.$id.edit'
 
 const TentsRoute = TentsRouteImport.update({
@@ -298,6 +300,16 @@ const ApiPublicHooksWeeklyInquirySummaryRoute =
     path: '/api/public/hooks/weekly-inquiry-summary',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AdminStoresIdStockRoute = AdminStoresIdStockRouteImport.update({
+  id: '/$id/stock',
+  path: '/$id/stock',
+  getParentRoute: () => AdminStoresRoute,
+} as any)
+const AdminProductsIdStockRoute = AdminProductsIdStockRouteImport.update({
+  id: '/$id/stock',
+  path: '/$id/stock',
+  getParentRoute: () => AdminProductsRoute,
+} as any)
 const AdminProductsIdEditRoute = AdminProductsIdEditRouteImport.update({
   id: '/$id/edit',
   path: '/$id/edit',
@@ -330,7 +342,7 @@ export interface FileRoutesByFullPath {
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/restocks': typeof AdminRestocksRoute
-  '/admin/stores': typeof AdminStoresRoute
+  '/admin/stores': typeof AdminStoresRouteWithChildren
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/en/$': typeof EnSplatRoute
@@ -349,6 +361,8 @@ export interface FileRoutesByFullPath {
   '/$lang/inquiry/': typeof LangInquiryIndexRoute
   '/$lang/permintaan/': typeof LangPermintaanIndexRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
+  '/admin/products/$id/stock': typeof AdminProductsIdStockRoute
+  '/admin/stores/$id/stock': typeof AdminStoresIdStockRoute
   '/api/public/hooks/weekly-inquiry-summary': typeof ApiPublicHooksWeeklyInquirySummaryRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -377,7 +391,7 @@ export interface FileRoutesByTo {
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/restocks': typeof AdminRestocksRoute
-  '/admin/stores': typeof AdminStoresRoute
+  '/admin/stores': typeof AdminStoresRouteWithChildren
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/en/$': typeof EnSplatRoute
@@ -396,6 +410,8 @@ export interface FileRoutesByTo {
   '/$lang/inquiry': typeof LangInquiryIndexRoute
   '/$lang/permintaan': typeof LangPermintaanIndexRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
+  '/admin/products/$id/stock': typeof AdminProductsIdStockRoute
+  '/admin/stores/$id/stock': typeof AdminStoresIdStockRoute
   '/api/public/hooks/weekly-inquiry-summary': typeof ApiPublicHooksWeeklyInquirySummaryRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -428,7 +444,7 @@ export interface FileRoutesById {
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/restocks': typeof AdminRestocksRoute
-  '/admin/stores': typeof AdminStoresRoute
+  '/admin/stores': typeof AdminStoresRouteWithChildren
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/en/$': typeof EnSplatRoute
@@ -447,6 +463,8 @@ export interface FileRoutesById {
   '/$lang/inquiry/': typeof LangInquiryIndexRoute
   '/$lang/permintaan/': typeof LangPermintaanIndexRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
+  '/admin/products/$id/stock': typeof AdminProductsIdStockRoute
+  '/admin/stores/$id/stock': typeof AdminStoresIdStockRoute
   '/api/public/hooks/weekly-inquiry-summary': typeof ApiPublicHooksWeeklyInquirySummaryRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -499,6 +517,8 @@ export interface FileRouteTypes {
     | '/$lang/inquiry/'
     | '/$lang/permintaan/'
     | '/admin/products/$id/edit'
+    | '/admin/products/$id/stock'
+    | '/admin/stores/$id/stock'
     | '/api/public/hooks/weekly-inquiry-summary'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -546,6 +566,8 @@ export interface FileRouteTypes {
     | '/$lang/inquiry'
     | '/$lang/permintaan'
     | '/admin/products/$id/edit'
+    | '/admin/products/$id/stock'
+    | '/admin/stores/$id/stock'
     | '/api/public/hooks/weekly-inquiry-summary'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -596,6 +618,8 @@ export interface FileRouteTypes {
     | '/$lang/inquiry/'
     | '/$lang/permintaan/'
     | '/admin/products/$id/edit'
+    | '/admin/products/$id/stock'
+    | '/admin/stores/$id/stock'
     | '/api/public/hooks/weekly-inquiry-summary'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -625,7 +649,7 @@ export interface RootRouteChildren {
   AdminProductsRoute: typeof AdminProductsRouteWithChildren
   AdminResetPasswordRoute: typeof AdminResetPasswordRoute
   AdminRestocksRoute: typeof AdminRestocksRoute
-  AdminStoresRoute: typeof AdminStoresRoute
+  AdminStoresRoute: typeof AdminStoresRouteWithChildren
   CSlugRoute: typeof CSlugRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   EnSplatRoute: typeof EnSplatRoute
@@ -970,6 +994,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksWeeklyInquirySummaryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/stores/$id/stock': {
+      id: '/admin/stores/$id/stock'
+      path: '/$id/stock'
+      fullPath: '/admin/stores/$id/stock'
+      preLoaderRoute: typeof AdminStoresIdStockRouteImport
+      parentRoute: typeof AdminStoresRoute
+    }
+    '/admin/products/$id/stock': {
+      id: '/admin/products/$id/stock'
+      path: '/$id/stock'
+      fullPath: '/admin/products/$id/stock'
+      preLoaderRoute: typeof AdminProductsIdStockRouteImport
+      parentRoute: typeof AdminProductsRoute
+    }
     '/admin/products/$id/edit': {
       id: '/admin/products/$id/edit'
       path: '/$id/edit'
@@ -1055,15 +1093,29 @@ const AdminInquiriesRouteWithChildren = AdminInquiriesRoute._addFileChildren(
 interface AdminProductsRouteChildren {
   AdminProductsNewRoute: typeof AdminProductsNewRoute
   AdminProductsIdEditRoute: typeof AdminProductsIdEditRoute
+  AdminProductsIdStockRoute: typeof AdminProductsIdStockRoute
 }
 
 const AdminProductsRouteChildren: AdminProductsRouteChildren = {
   AdminProductsNewRoute: AdminProductsNewRoute,
   AdminProductsIdEditRoute: AdminProductsIdEditRoute,
+  AdminProductsIdStockRoute: AdminProductsIdStockRoute,
 }
 
 const AdminProductsRouteWithChildren = AdminProductsRoute._addFileChildren(
   AdminProductsRouteChildren,
+)
+
+interface AdminStoresRouteChildren {
+  AdminStoresIdStockRoute: typeof AdminStoresIdStockRoute
+}
+
+const AdminStoresRouteChildren: AdminStoresRouteChildren = {
+  AdminStoresIdStockRoute: AdminStoresIdStockRoute,
+}
+
+const AdminStoresRouteWithChildren = AdminStoresRoute._addFileChildren(
+  AdminStoresRouteChildren,
 )
 
 const rootRouteChildren: RootRouteChildren = {
@@ -1089,7 +1141,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminProductsRoute: AdminProductsRouteWithChildren,
   AdminResetPasswordRoute: AdminResetPasswordRoute,
   AdminRestocksRoute: AdminRestocksRoute,
-  AdminStoresRoute: AdminStoresRoute,
+  AdminStoresRoute: AdminStoresRouteWithChildren,
   CSlugRoute: CSlugRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   EnSplatRoute: EnSplatRoute,
@@ -1106,3 +1158,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

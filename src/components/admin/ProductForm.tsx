@@ -115,6 +115,17 @@ function parseIDR(s: string) {
 }
 
 const SKU_RE = /^[A-Za-z0-9-]+$/;
+const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+function slugify(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
 
 async function logActivity(
   adminId: string | null,

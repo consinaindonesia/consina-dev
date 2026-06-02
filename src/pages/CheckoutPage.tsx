@@ -359,7 +359,14 @@ export function CheckoutPage() {
               </div>
               <div className="mt-2 flex justify-between border-t border-border pt-3 text-base font-bold">
                 <dt>Total</dt>
-                <dd>{formatPrice(total, lang)}</dd>
+                <dd className="text-right">
+                  <div>{formatPrice(total, lang)}</div>
+                  {usdPerIdr && (
+                    <div className="text-xs font-normal text-muted-foreground">
+                      ≈ ${(total / usdPerIdr).toFixed(2)} USD
+                    </div>
+                  )}
+                </dd>
               </div>
             </dl>
             <Button

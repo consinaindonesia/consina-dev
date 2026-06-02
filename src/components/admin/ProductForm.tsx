@@ -11,6 +11,8 @@ import {
   ArrowLeft,
   ArrowRight,
   X,
+  Upload,
+  Star,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AdminShell } from "@/components/admin/AdminShell";
@@ -76,6 +78,8 @@ export type ProductFormValues = {
   weight_grams: number | null;
   attributes: Attribute[];
   stock_status: "in_stock" | "low_stock" | "out_of_stock";
+  stock: number;
+  images: string[];
   is_featured: boolean;
   is_active: boolean;
   slug: string;
@@ -97,12 +101,34 @@ const EMPTY: ProductFormValues = {
   weight_grams: null,
   attributes: [],
   stock_status: "in_stock",
+  stock: 0,
+  images: [],
   is_featured: false,
   is_active: true,
   slug: "",
   seo_title: "",
   seo_description: "",
 };
+
+function deriveStockStatus(stock: number): ProductFormValues["stock_status"] {
+  if (!stock || stock <= 0) return "out_of_stock";
+  if (stock <= 5) return "low_stock";
+  return "in_stock";
+}
+
+function StockStatusBadge({ status }: { status: ProductFormValues["stock_status"] }) {
+  const map = {
+    in_stock: { label: "In Stock", cls: "bg-emerald-100 text-emerald-800 border-emerald-200" },
+    low_stock: { label: "Low Stock", cls: "bg-amber-100 text-amber-800 border-amber-200" },
+    out_of_stock: { label: "Out of Stock", cls: "bg-red-100 text-red-800 border-red-200" },
+  } as const;
+  const m = map[status];
+  return (
+    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${m.cls}`}>
+      {m.label}
+    </span>
+  );
+}
 
 function formatIDR(n: number) {
   if (!n) return "";
@@ -301,6 +327,10 @@ export function ProductForm(props: ProductFormProps) {
             value: String(value),
           })),
           stock_status: (data.stock_status as ProductFormValues["stock_status"]) ?? "in_stock",
+          stock: (data as { stock?: number | null }).stock ?? 0,
+          images: Array.isArray((data as { images?: string[] | null }).images)
+            ? ((data as { images: string[] }).images)
+            : [],
           is_featured: data.is_featured,
           is_active: data.is_active,
           slug: (data as { slug?: string | null }).slug ?? "",
@@ -460,7 +490,9 @@ export function ProductForm(props: ProductFormProps) {
       capacity: values.capacity || null,
       weight_grams: values.weight_grams,
       attributes: attrsObj,
-      stock_status: values.stock_status,
+      stock: values.stock,
+      stock_status: deriveStockStatus(values.stock),
+      images: values.images,
       is_featured: values.is_featured,
       is_active: values.is_active,
       slug: values.slug.trim() ? values.slug.trim() : slugify(values.name_en || values.name_id) || null,
@@ -508,7 +540,7 @@ export function ProductForm(props: ProductFormProps) {
       toast.success("Product saved");
       if (
         prevStock === "out_of_stock" &&
-        values.stock_status === "in_stock"
+        deriveStockStatus(values.stock) !== "out_of_stock"
       ) {
         const { data: pending, error: pendErr } = await supabase
           .from("notify_when_in_stock")
@@ -606,7 +638,7 @@ export function ProductForm(props: ProductFormProps) {
         <TabsList>
           <TabsTrigger value="basic">Basic Info</TabsTrigger>
           <TabsTrigger value="translations">Translations</TabsTrigger>
-          <TabsTrigger value="images" disabled={mode === "new"}>
+          <TabsTrigger value="images">
             Images
           </TabsTrigger>
           <TabsTrigger value="availability" disabled={mode === "new"}>
@@ -810,22 +842,25 @@ export function ProductForm(props: ProductFormProps) {
                 </div>
               </Field>
 
-              <Field label="Stock Status">
-                <Select
-                  value={values.stock_status}
-                  onValueChange={(v) =>
-                    setField("stock_status", v as ProductFormValues["stock_status"])
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="in_stock">In Stock</SelectItem>
-                    <SelectItem value="low_stock">Low Stock</SelectItem>
-                    <SelectItem value="out_of_stock">Out of Stock</SelectItem>
-                  </SelectContent>
-                </Select>
+              <Field label="Jumlah Stok">
+                <div className="flex items-center gap-3">
+                  <Input
+                    type="number"
+                    min={0}
+                    inputMode="numeric"
+                    value={values.stock}
+                    onChange={(e) => {
+                      const n = e.target.value === "" ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0);
+                      setField("stock", n);
+                    }}
+                    placeholder="0"
+                    className="w-40"
+                  />
+                  <StockStatusBadge status={deriveStockStatus(values.stock)} />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Status stok ditentukan otomatis: 0 = habis, 1–5 = stok menipis, &gt;5 = tersedia.
+                </p>
               </Field>
 
               <div className="flex items-center gap-2 pt-2">
@@ -936,15 +971,23 @@ export function ProductForm(props: ProductFormProps) {
 
         {/* IMAGES */}
         <TabsContent value="images" className="pb-32">
-          {mode === "new" ? (
-            <Card title="Images">
-              <p className="text-sm text-muted-foreground">
-                Save the product first, then come back to add images.
-              </p>
+          <div className="space-y-6">
+            <Card title="Gambar Produk">
+              <ImagesUploader
+                sku={values.sku || (mode === "edit" ? productId : "new")}
+                images={values.images}
+                onChange={(imgs) => setField("images", imgs)}
+              />
             </Card>
-          ) : (
-            <ProductImagesTab productId={productId} sku={values.sku} />
-          )}
+            {mode === "edit" && (
+              <Card title="Galeri Lanjutan (alt text & ordering)">
+                <p className="mb-3 text-xs text-muted-foreground">
+                  Pengelolaan galeri rinci (urutan, alt text, varian thumbnail) tersimpan terpisah dan tetap dipakai pada halaman publik.
+                </p>
+                <ProductImagesTab productId={productId} sku={values.sku} />
+              </Card>
+            )}
+          </div>
         </TabsContent>
 
         {/* AVAILABILITY */}
@@ -1077,6 +1120,195 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
       </h2>
       <div className="space-y-4">{children}</div>
     </section>
+  );
+}
+
+const MAX_IMAGES = 10;
+const MAX_BYTES = 5 * 1024 * 1024;
+const ALLOWED_MIME = new Set(["image/jpeg", "image/png", "image/webp"]);
+
+function ImagesUploader({
+  sku,
+  images,
+  onChange,
+}: {
+  sku: string;
+  images: string[];
+  onChange: (next: string[]) => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const slot = (sku || "untitled").toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "") || "untitled";
+
+  async function handleFiles(files: FileList | File[]) {
+    const list = Array.from(files);
+    if (!list.length) return;
+    const remaining = MAX_IMAGES - images.length;
+    if (remaining <= 0) {
+      toast.error(`Maksimum ${MAX_IMAGES} gambar`);
+      return;
+    }
+    const accepted: File[] = [];
+    for (const f of list.slice(0, remaining)) {
+      if (!ALLOWED_MIME.has(f.type)) {
+        toast.error(`${f.name}: format tidak didukung (hanya JPEG/PNG/WebP)`);
+        continue;
+      }
+      if (f.size > MAX_BYTES) {
+        toast.error(`${f.name}: melebihi 5MB`);
+        continue;
+      }
+      accepted.push(f);
+    }
+    if (!accepted.length) return;
+
+    setUploading(true);
+    const uploaded: string[] = [];
+    try {
+      for (const file of accepted) {
+        const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+        const safe = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const path = `${slot}/${safe}`;
+        const { error: upErr } = await supabase.storage
+          .from("product-images")
+          .upload(path, file, { contentType: file.type, upsert: false });
+        if (upErr) {
+          toast.error(`${file.name}: ${upErr.message}`);
+          continue;
+        }
+        const { data } = supabase.storage.from("product-images").getPublicUrl(path);
+        if (data?.publicUrl) uploaded.push(data.publicUrl);
+      }
+      if (uploaded.length) {
+        onChange([...images, ...uploaded]);
+        toast.success(`${uploaded.length} gambar diunggah`);
+      }
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function move(idx: number, dir: -1 | 1) {
+    const j = idx + dir;
+    if (j < 0 || j >= images.length) return;
+    const next = [...images];
+    [next[idx], next[j]] = [next[j], next[idx]];
+    onChange(next);
+  }
+
+  function remove(idx: number) {
+    onChange(images.filter((_, i) => i !== idx));
+  }
+
+  function setPrimary(idx: number) {
+    if (idx === 0) return;
+    const next = [...images];
+    const [picked] = next.splice(idx, 1);
+    next.unshift(picked);
+    onChange(next);
+  }
+
+  return (
+    <div className="space-y-3">
+      <div
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragOver(true);
+        }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragOver(false);
+          if (e.dataTransfer.files?.length) void handleFiles(e.dataTransfer.files);
+        }}
+        onClick={() => inputRef.current?.click()}
+        className={
+          "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-8 text-center transition " +
+          (dragOver ? "border-primary bg-primary/5" : "border-input hover:border-primary/60 hover:bg-muted/40")
+        }
+      >
+        {uploading ? (
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        ) : (
+          <Upload className="h-6 w-6 text-muted-foreground" />
+        )}
+        <p className="text-sm font-medium">Tarik & lepas gambar di sini, atau klik untuk pilih</p>
+        <p className="text-xs text-muted-foreground">
+          JPEG / PNG / WebP — maks 5MB per file — hingga {MAX_IMAGES} gambar
+        </p>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          multiple
+          hidden
+          onChange={(e) => {
+            if (e.target.files) void handleFiles(e.target.files);
+            if (inputRef.current) inputRef.current.value = "";
+          }}
+        />
+      </div>
+
+      {images.length > 0 && (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+          {images.map((url, i) => (
+            <div
+              key={url + i}
+              className="group relative aspect-square overflow-hidden rounded-lg border border-input bg-muted"
+            >
+              <img src={url} alt={`Gambar ${i + 1}`} className="h-full w-full object-cover" loading="lazy" />
+              {i === 0 && (
+                <span className="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow">
+                  <Star className="h-3 w-3 fill-current" /> Utama
+                </span>
+              )}
+              <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-gradient-to-t from-black/70 to-transparent p-1.5 opacity-0 transition group-hover:opacity-100">
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    onClick={() => move(i, -1)}
+                    disabled={i === 0}
+                    className="rounded bg-white/90 px-1.5 py-0.5 text-xs font-semibold text-foreground disabled:opacity-40"
+                    title="Pindah ke kiri"
+                  >
+                    ←
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => move(i, 1)}
+                    disabled={i === images.length - 1}
+                    className="rounded bg-white/90 px-1.5 py-0.5 text-xs font-semibold text-foreground disabled:opacity-40"
+                    title="Pindah ke kanan"
+                  >
+                    →
+                  </button>
+                  {i !== 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setPrimary(i)}
+                      className="rounded bg-white/90 px-1.5 py-0.5 text-xs font-semibold text-foreground"
+                      title="Jadikan utama"
+                    >
+                      <Star className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => remove(i)}
+                  className="rounded bg-red-600 px-1.5 py-0.5 text-xs font-semibold text-white"
+                  title="Hapus"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 

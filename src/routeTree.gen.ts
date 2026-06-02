@@ -45,6 +45,7 @@ import { Route as LangPermintaanIndexRouteImport } from './routes/$lang.perminta
 import { Route as LangInquiryIndexRouteImport } from './routes/$lang.inquiry.index'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as AdminSettingsNotificationsRouteImport } from './routes/admin/settings.notifications'
+import { Route as AdminReportsRegionalRouteImport } from './routes/admin/reports.regional'
 import { Route as AdminProductsNewRouteImport } from './routes/admin/products.new'
 import { Route as AdminInquiriesIdRouteImport } from './routes/admin/inquiries.$id'
 import { Route as AdminCustomersEmailRouteImport } from './routes/admin/customers.$email'
@@ -241,6 +242,11 @@ const AdminSettingsNotificationsRoute =
     path: '/admin/settings/notifications',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AdminReportsRegionalRoute = AdminReportsRegionalRouteImport.update({
+  id: '/admin/reports/regional',
+  path: '/admin/reports/regional',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminProductsNewRoute = AdminProductsNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -356,6 +362,7 @@ export interface FileRoutesByFullPath {
   '/admin/customers/$email': typeof AdminCustomersEmailRoute
   '/admin/inquiries/$id': typeof AdminInquiriesIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
+  '/admin/reports/regional': typeof AdminReportsRegionalRoute
   '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/$lang/inquiry/': typeof LangInquiryIndexRoute
@@ -405,6 +412,7 @@ export interface FileRoutesByTo {
   '/admin/customers/$email': typeof AdminCustomersEmailRoute
   '/admin/inquiries/$id': typeof AdminInquiriesIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
+  '/admin/reports/regional': typeof AdminReportsRegionalRoute
   '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/$lang/inquiry': typeof LangInquiryIndexRoute
@@ -458,6 +466,7 @@ export interface FileRoutesById {
   '/admin/customers/$email': typeof AdminCustomersEmailRoute
   '/admin/inquiries/$id': typeof AdminInquiriesIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
+  '/admin/reports/regional': typeof AdminReportsRegionalRoute
   '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/$lang/inquiry/': typeof LangInquiryIndexRoute
@@ -512,6 +521,7 @@ export interface FileRouteTypes {
     | '/admin/customers/$email'
     | '/admin/inquiries/$id'
     | '/admin/products/new'
+    | '/admin/reports/regional'
     | '/admin/settings/notifications'
     | '/lovable/email/suppression'
     | '/$lang/inquiry/'
@@ -561,6 +571,7 @@ export interface FileRouteTypes {
     | '/admin/customers/$email'
     | '/admin/inquiries/$id'
     | '/admin/products/new'
+    | '/admin/reports/regional'
     | '/admin/settings/notifications'
     | '/lovable/email/suppression'
     | '/$lang/inquiry'
@@ -613,6 +624,7 @@ export interface FileRouteTypes {
     | '/admin/customers/$email'
     | '/admin/inquiries/$id'
     | '/admin/products/new'
+    | '/admin/reports/regional'
     | '/admin/settings/notifications'
     | '/lovable/email/suppression'
     | '/$lang/inquiry/'
@@ -655,6 +667,7 @@ export interface RootRouteChildren {
   EnSplatRoute: typeof EnSplatRoute
   AdminIndexRoute: typeof AdminIndexRoute
   EnIndexRoute: typeof EnIndexRoute
+  AdminReportsRegionalRoute: typeof AdminReportsRegionalRoute
   AdminSettingsNotificationsRoute: typeof AdminSettingsNotificationsRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicHooksWeeklyInquirySummaryRoute: typeof ApiPublicHooksWeeklyInquirySummaryRoute
@@ -917,6 +930,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSettingsNotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/reports/regional': {
+      id: '/admin/reports/regional'
+      path: '/admin/reports/regional'
+      fullPath: '/admin/reports/regional'
+      preLoaderRoute: typeof AdminReportsRegionalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/products/new': {
       id: '/admin/products/new'
       path: '/new'
@@ -1147,6 +1167,7 @@ const rootRouteChildren: RootRouteChildren = {
   EnSplatRoute: EnSplatRoute,
   AdminIndexRoute: AdminIndexRoute,
   EnIndexRoute: EnIndexRoute,
+  AdminReportsRegionalRoute: AdminReportsRegionalRoute,
   AdminSettingsNotificationsRoute: AdminSettingsNotificationsRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicHooksWeeklyInquirySummaryRoute:

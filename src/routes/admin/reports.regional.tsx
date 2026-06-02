@@ -258,7 +258,7 @@ function RegionalReports() {
       ) : inquiries.length === 0 ? (
         <div className="mt-8">
           <EmptyState
-            icon="BarChart3"
+            icon="BarChart"
             title="No inquiries in this range"
             description="Try a longer time window."
           />

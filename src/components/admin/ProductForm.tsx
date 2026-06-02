@@ -638,7 +638,7 @@ export function ProductForm(props: ProductFormProps) {
         <TabsList>
           <TabsTrigger value="basic">Basic Info</TabsTrigger>
           <TabsTrigger value="translations">Translations</TabsTrigger>
-          <TabsTrigger value="images" disabled={mode === "new"}>
+          <TabsTrigger value="images">
             Images
           </TabsTrigger>
           <TabsTrigger value="availability" disabled={mode === "new"}>
@@ -971,15 +971,23 @@ export function ProductForm(props: ProductFormProps) {
 
         {/* IMAGES */}
         <TabsContent value="images" className="pb-32">
-          {mode === "new" ? (
-            <Card title="Images">
-              <p className="text-sm text-muted-foreground">
-                Save the product first, then come back to add images.
-              </p>
+          <div className="space-y-6">
+            <Card title="Gambar Produk">
+              <ImagesUploader
+                sku={values.sku || (mode === "edit" ? productId : "new")}
+                images={values.images}
+                onChange={(imgs) => setField("images", imgs)}
+              />
             </Card>
-          ) : (
-            <ProductImagesTab productId={productId} sku={values.sku} />
-          )}
+            {mode === "edit" && (
+              <Card title="Galeri Lanjutan (alt text & ordering)">
+                <p className="mb-3 text-xs text-muted-foreground">
+                  Pengelolaan galeri rinci (urutan, alt text, varian thumbnail) tersimpan terpisah dan tetap dipakai pada halaman publik.
+                </p>
+                <ProductImagesTab productId={productId} sku={values.sku} />
+              </Card>
+            )}
+          </div>
         </TabsContent>
 
         {/* AVAILABILITY */}

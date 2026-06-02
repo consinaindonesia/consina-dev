@@ -127,7 +127,7 @@ async function logActivity(
   }
 }
 
-type Tab = "basic" | "translations" | "images" | "availability";
+type Tab = "basic" | "translations" | "images" | "availability" | "seo";
 type ProductFormProps =
   | { mode: "new"; productId?: undefined; initialTab?: Tab }
   | { mode: "edit"; productId: string; initialTab?: Tab };

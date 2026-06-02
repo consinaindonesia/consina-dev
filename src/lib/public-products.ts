@@ -30,6 +30,7 @@ type RawRow = {
   price_idr: number;
   is_featured: boolean;
   category_id: string | null;
+  images: string[] | null;
   categories: { slug: string; name_en: string; name_id: string } | null;
   product_images: Array<{
     image_url: string;
@@ -45,6 +46,7 @@ function normalize(rows: RawRow[]): PublicProduct[] {
       (a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0) || a.sort_order - b.sort_order,
     );
     const top = imgs[0];
+    const flatTop = !top && Array.isArray(r.images) && r.images.length > 0 ? r.images[0] : null;
     return {
       id: r.id,
       sku: r.sku,
@@ -59,8 +61,8 @@ function normalize(rows: RawRow[]): PublicProduct[] {
       category_slug: r.categories?.slug ?? null,
       category_name_en: r.categories?.name_en ?? null,
       category_name_id: r.categories?.name_id ?? null,
-      image_url: top?.image_url ?? null,
-      thumbnail_url: top?.thumbnail_url ?? top?.image_url ?? null,
+      image_url: top?.image_url ?? flatTop ?? null,
+      thumbnail_url: top?.thumbnail_url ?? top?.image_url ?? flatTop ?? null,
     };
   });
 }
@@ -76,7 +78,7 @@ export function usePublicProducts() {
       const { data: rows } = await supabase
         .from("products")
         .select(
-          "id,sku,slug,name_en,name_id,short_description_en,short_description_id,price_idr,is_featured,category_id,categories(slug,name_en,name_id),product_images(image_url,thumbnail_url,is_primary,sort_order)",
+          "id,sku,slug,name_en,name_id,short_description_en,short_description_id,price_idr,is_featured,category_id,images,categories(slug,name_en,name_id),product_images(image_url,thumbnail_url,is_primary,sort_order)",
         )
         .eq("is_active", true)
         .order("is_featured", { ascending: false })

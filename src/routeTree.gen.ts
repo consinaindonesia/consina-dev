@@ -290,9 +290,9 @@ const AdminReportsRegionalRoute = AdminReportsRegionalRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminProductsNewRoute = AdminProductsNewRouteImport.update({
-  id: '/new',
-  path: '/new',
-  getParentRoute: () => AdminProductsRoute,
+  id: '/admin/products/new',
+  path: '/admin/products/new',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminOrdersIdRoute = AdminOrdersIdRouteImport.update({
   id: '/$id',
@@ -374,14 +374,14 @@ const AdminStoresIdStockRoute = AdminStoresIdStockRouteImport.update({
   getParentRoute: () => AdminStoresRoute,
 } as any)
 const AdminProductsIdStockRoute = AdminProductsIdStockRouteImport.update({
-  id: '/$id/stock',
-  path: '/$id/stock',
-  getParentRoute: () => AdminProductsRoute,
+  id: '/admin/products/$id/stock',
+  path: '/admin/products/$id/stock',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminProductsIdEditRoute = AdminProductsIdEditRouteImport.update({
-  id: '/$id/edit',
-  path: '/$id/edit',
-  getParentRoute: () => AdminProductsRoute,
+  id: '/admin/products/$id/edit',
+  path: '/admin/products/$id/edit',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminCustomersEmailExportRoute =
   AdminCustomersEmailExportRouteImport.update({
@@ -815,11 +815,14 @@ export interface RootRouteChildren {
   EnSplatRoute: typeof EnSplatRoute
   AdminIndexRoute: typeof AdminIndexRoute
   EnIndexRoute: typeof EnIndexRoute
+  AdminProductsNewRoute: typeof AdminProductsNewRoute
   AdminReportsRegionalRoute: typeof AdminReportsRegionalRoute
   AdminSettingsNotificationsRoute: typeof AdminSettingsNotificationsRoute
   AdminSettingsPrivacyRoute: typeof AdminSettingsPrivacyRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   AdminProductsIndexRoute: typeof AdminProductsIndexRoute
+  AdminProductsIdEditRoute: typeof AdminProductsIdEditRoute
+  AdminProductsIdStockRoute: typeof AdminProductsIdStockRoute
   ApiPublicHooksMidtransRoute: typeof ApiPublicHooksMidtransRoute
   ApiPublicHooksStripeRoute: typeof ApiPublicHooksStripeRoute
   ApiPublicHooksWeeklyInquirySummaryRoute: typeof ApiPublicHooksWeeklyInquirySummaryRoute
@@ -1133,10 +1136,10 @@ declare module '@tanstack/react-router' {
     }
     '/admin/products/new': {
       id: '/admin/products/new'
-      path: '/new'
+      path: '/admin/products/new'
       fullPath: '/admin/products/new'
       preLoaderRoute: typeof AdminProductsNewRouteImport
-      parentRoute: typeof AdminProductsRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/orders/$id': {
       id: '/admin/orders/$id'
@@ -1245,17 +1248,17 @@ declare module '@tanstack/react-router' {
     }
     '/admin/products/$id/stock': {
       id: '/admin/products/$id/stock'
-      path: '/$id/stock'
+      path: '/admin/products/$id/stock'
       fullPath: '/admin/products/$id/stock'
       preLoaderRoute: typeof AdminProductsIdStockRouteImport
-      parentRoute: typeof AdminProductsRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/products/$id/edit': {
       id: '/admin/products/$id/edit'
-      path: '/$id/edit'
+      path: '/admin/products/$id/edit'
       fullPath: '/admin/products/$id/edit'
       preLoaderRoute: typeof AdminProductsIdEditRouteImport
-      parentRoute: typeof AdminProductsRoute
+      parentRoute: typeof rootRouteImport
     }
     '/admin/customers/$email/export': {
       id: '/admin/customers/$email/export'
@@ -1420,11 +1423,14 @@ const rootRouteChildren: RootRouteChildren = {
   EnSplatRoute: EnSplatRoute,
   AdminIndexRoute: AdminIndexRoute,
   EnIndexRoute: EnIndexRoute,
+  AdminProductsNewRoute: AdminProductsNewRoute,
   AdminReportsRegionalRoute: AdminReportsRegionalRoute,
   AdminSettingsNotificationsRoute: AdminSettingsNotificationsRoute,
   AdminSettingsPrivacyRoute: AdminSettingsPrivacyRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   AdminProductsIndexRoute: AdminProductsIndexRoute,
+  AdminProductsIdEditRoute: AdminProductsIdEditRoute,
+  AdminProductsIdStockRoute: AdminProductsIdStockRoute,
   ApiPublicHooksMidtransRoute: ApiPublicHooksMidtransRoute,
   ApiPublicHooksStripeRoute: ApiPublicHooksStripeRoute,
   ApiPublicHooksWeeklyInquirySummaryRoute:
@@ -1436,13 +1442,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

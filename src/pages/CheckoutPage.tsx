@@ -12,6 +12,26 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/i18n/LangProvider";
 import { formatPrice } from "@/i18n/format";
 
+type PaymentMethod = "bank_transfer" | "midtrans" | "stripe";
+
+function detectIsIndonesian(): boolean {
+  if (typeof navigator === "undefined") return true;
+  const langs = [navigator.language, ...(navigator.languages ?? [])]
+    .filter(Boolean)
+    .map((l) => l.toLowerCase());
+  return langs.some((l) => l.startsWith("id"));
+}
+
+async function fetchUsdRate(): Promise<number | null> {
+  try {
+    const res = await fetch("https://open.er-api.com/v6/latest/USD");
+    const json = (await res.json()) as { rates?: { IDR?: number } };
+    return json.rates?.IDR ?? null;
+  } catch {
+    return null;
+  }
+}
+
 function useSearch(): Record<string, string> {
   if (typeof window === "undefined") return {};
   const out: Record<string, string> = {};
@@ -56,10 +76,23 @@ export function CheckoutPage() {
   const [shippingMethod, setShippingMethod] = useState<"pickup" | "delivery">("pickup");
   const [shippingAddress, setShippingAddress] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<"bank_transfer" | "midtrans">(
-    "bank_transfer",
+  const isIndonesian = useMemo(detectIsIndonesian, []);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
+    isIndonesian ? "midtrans" : "stripe",
   );
   const [submitting, setSubmitting] = useState(false);
+  const [usdPerIdr, setUsdPerIdr] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (isIndonesian) return;
+    let cancelled = false;
+    void fetchUsdRate().then((r) => {
+      if (!cancelled && r) setUsdPerIdr(r);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isIndonesian]);
 
   useEffect(() => {
     let cancelled = false;

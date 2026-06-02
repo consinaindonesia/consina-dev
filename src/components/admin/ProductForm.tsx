@@ -970,7 +970,6 @@ export function ProductForm(props: ProductFormProps) {
             <Card title="URL slug">
               <Field
                 label="Slug"
-                hint="URL-friendly name. Leave empty to auto-generate from the product name on save. Lowercase letters, numbers and hyphens only."
                 error={
                   values.slug && !SLUG_RE.test(values.slug)
                     ? "Use lowercase letters, numbers and hyphens only"
@@ -998,30 +997,28 @@ export function ProductForm(props: ProductFormProps) {
                     Generate
                   </Button>
                 </div>
-                {values.slug ? (
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Preview: <code>/products/{values.slug}</code>
-                  </p>
-                ) : null}
+                <p className="mt-1 text-xs text-muted-foreground">
+                  URL-friendly name. Leave empty to auto-generate from the product name on save. Lowercase letters, numbers and hyphens only.
+                  {values.slug ? (
+                    <> Preview: <code>/products/{values.slug}</code></>
+                  ) : null}
+                </p>
               </Field>
             </Card>
 
             <Card title="Search engine listing">
-              <Field
-                label="SEO title"
-                hint={`Recommended ≤ 60 chars. Currently ${values.seo_title.length}.`}
-              >
+              <Field label="SEO title">
                 <Input
                   value={values.seo_title}
                   maxLength={120}
                   onChange={(e) => setFieldByUser("seo_title", e.target.value)}
                   placeholder={values.name_en || values.name_id}
                 />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Recommended ≤ 60 chars. Currently {values.seo_title.length}.
+                </p>
               </Field>
-              <Field
-                label="SEO description"
-                hint={`Recommended ≤ 160 chars. Currently ${values.seo_description.length}.`}
-              >
+              <Field label="SEO description">
                 <Textarea
                   rows={3}
                   value={values.seo_description}
@@ -1033,6 +1030,9 @@ export function ProductForm(props: ProductFormProps) {
                     values.short_description_en || values.short_description_id
                   }
                 />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Recommended ≤ 160 chars. Currently {values.seo_description.length}.
+                </p>
               </Field>
             </Card>
           </div>

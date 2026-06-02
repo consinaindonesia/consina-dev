@@ -612,6 +612,7 @@ export function ProductForm(props: ProductFormProps) {
           <TabsTrigger value="availability" disabled={mode === "new"}>
             Where available
           </TabsTrigger>
+          <TabsTrigger value="seo">SEO &amp; URL</TabsTrigger>
         </TabsList>
 
         {/* BASIC INFO */}

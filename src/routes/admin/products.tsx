@@ -517,7 +517,7 @@ function ProductsPage() {
             <Upload className="mr-1.5 h-4 w-4" /> Import CSV
           </Button>
           <Button size="sm" asChild>
-            <Link to="/admin/products">
+            <Link to="/admin/products/new">
               <Plus className="mr-1.5 h-4 w-4" /> New Product
             </Link>
           </Button>

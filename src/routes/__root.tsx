@@ -10,6 +10,8 @@ import {
 
 import appCss from "../styles.css?url";
 import "@/i18n";
+import { CookieBanner } from "@/components/CookieBanner";
+import { useRouterState } from "@tanstack/react-router";
 
 function NotFoundComponent() {
   return (
@@ -118,10 +120,13 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isAdmin = pathname.startsWith("/admin");
 
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
+      {!isAdmin && <CookieBanner />}
     </QueryClientProvider>
   );
 }

@@ -8,6 +8,8 @@ import {
   MessageCircle,
   Phone,
   ArrowLeft,
+  Download,
+  Trash2,
 } from "lucide-react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { supabase } from "@/integrations/supabase/client";
@@ -143,6 +145,19 @@ function CustomerDetailPage() {
       >
         <ArrowLeft className="h-3 w-3" /> All customers
       </Link>
+
+      <div className="mb-3 flex flex-wrap gap-2">
+        <Link to="/admin/customers/$email/export" params={{ email }}>
+          <Button size="sm" variant="outline">
+            <Download className="mr-1.5 h-4 w-4" /> Export data
+          </Button>
+        </Link>
+        <Link to="/admin/customers/$email/delete" params={{ email }}>
+          <Button size="sm" variant="outline" className="border-red-500/40 text-red-700 hover:bg-red-500/10">
+            <Trash2 className="mr-1.5 h-4 w-4" /> Delete all data
+          </Button>
+        </Link>
+      </div>
 
       {loading ? (
         <div className="flex items-center justify-center py-16 text-muted-foreground">

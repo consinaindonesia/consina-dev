@@ -628,12 +628,20 @@ export type Database = {
           payment_reference: string | null
           payment_status: string
           refunded_at: string | null
+          shipped_at: string | null
           shipping_address: string | null
+          shipping_city: string | null
           shipping_idr: number
           shipping_method: string
+          shipping_method_id: string | null
+          shipping_method_name: string | null
+          shipping_postal_code: string | null
+          shipping_zone_id: string | null
           status: string
           subtotal_idr: number
           total_idr: number
+          tracking_carrier: string | null
+          tracking_number: string | null
           updated_at: string
         }
         Insert: {
@@ -653,12 +661,20 @@ export type Database = {
           payment_reference?: string | null
           payment_status?: string
           refunded_at?: string | null
+          shipped_at?: string | null
           shipping_address?: string | null
+          shipping_city?: string | null
           shipping_idr?: number
           shipping_method?: string
+          shipping_method_id?: string | null
+          shipping_method_name?: string | null
+          shipping_postal_code?: string | null
+          shipping_zone_id?: string | null
           status?: string
           subtotal_idr?: number
           total_idr?: number
+          tracking_carrier?: string | null
+          tracking_number?: string | null
           updated_at?: string
         }
         Update: {
@@ -678,12 +694,20 @@ export type Database = {
           payment_reference?: string | null
           payment_status?: string
           refunded_at?: string | null
+          shipped_at?: string | null
           shipping_address?: string | null
+          shipping_city?: string | null
           shipping_idr?: number
           shipping_method?: string
+          shipping_method_id?: string | null
+          shipping_method_name?: string | null
+          shipping_postal_code?: string | null
+          shipping_zone_id?: string | null
           status?: string
           subtotal_idr?: number
           total_idr?: number
+          tracking_carrier?: string | null
+          tracking_number?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -841,6 +865,84 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      shipping_methods: {
+        Row: {
+          code: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          multiplier: number
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          multiplier?: number
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          multiplier?: number
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      shipping_zones: {
+        Row: {
+          base_cost_idr: number
+          cities: string[]
+          created_at: string
+          delivery_days_max: number
+          delivery_days_min: number
+          id: string
+          is_active: boolean
+          is_default: boolean
+          per_kg_cost_idr: number
+          region_name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          base_cost_idr?: number
+          cities?: string[]
+          created_at?: string
+          delivery_days_max?: number
+          delivery_days_min?: number
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          per_kg_cost_idr?: number
+          region_name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          base_cost_idr?: number
+          cities?: string[]
+          created_at?: string
+          delivery_days_max?: number
+          delivery_days_min?: number
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          per_kg_cost_idr?: number
+          region_name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       store_stock: {
         Row: {

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { useServerFn } from "@tanstack/react-start";
@@ -32,6 +33,12 @@ type Order = {
   customer_address: string | null;
   shipping_method: string;
   shipping_address: string | null;
+  shipping_city: string | null;
+  shipping_postal_code: string | null;
+  shipping_method_name: string | null;
+  tracking_number: string | null;
+  tracking_carrier: string | null;
+  shipped_at: string | null;
   subtotal_idr: number;
   shipping_idr: number;
   total_idr: number;
@@ -65,6 +72,77 @@ const STATUS_COLOR: Record<string, string> = {
 
 function shortRef(id: string): string {
   return id.replace(/-/g, "").slice(0, 8).toUpperCase();
+}
+
+function ShippingFulfillment({
+  order,
+  onUpdated,
+}: {
+  order: Order;
+  onUpdated: (next: Order) => void;
+}) {
+  const [tracking, setTracking] = useState(order.tracking_number ?? "");
+  const [carrier, setCarrier] = useState(
+    order.tracking_carrier ?? order.shipping_method_name ?? "",
+  );
+  const [busy, setBusy] = useState(false);
+
+  async function markShipped() {
+    if (!tracking.trim()) {
+      toast.error("Enter a tracking number");
+      return;
+    }
+    setBusy(true);
+    const now = new Date().toISOString();
+    const { error } = await supabase
+      .from("orders")
+      .update({
+        tracking_number: tracking.trim(),
+        tracking_carrier: carrier.trim() || null,
+        shipped_at: now,
+        status: "shipped",
+      })
+      .eq("id", order.id);
+    setBusy(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    onUpdated({
+      ...order,
+      tracking_number: tracking.trim(),
+      tracking_carrier: carrier.trim() || null,
+      shipped_at: now,
+      status: "shipped",
+    });
+    toast.success("Order marked as shipped");
+  }
+
+  if (order.shipping_method !== "delivery") return null;
+
+  return (
+    <div className="mt-4 space-y-2 border-t border-border pt-3">
+      <Label className="text-xs">Tracking</Label>
+      <Input
+        value={carrier}
+        onChange={(e) => setCarrier(e.target.value)}
+        placeholder="Carrier (e.g. JNE)"
+      />
+      <Input
+        value={tracking}
+        onChange={(e) => setTracking(e.target.value)}
+        placeholder="Tracking number"
+      />
+      {order.shipped_at ? (
+        <p className="text-xs text-muted-foreground">
+          Shipped {new Date(order.shipped_at).toLocaleString()}
+        </p>
+      ) : null}
+      <Button size="sm" onClick={markShipped} disabled={busy} className="w-full">
+        {order.shipped_at ? "Update tracking" : "Mark as shipped"}
+      </Button>
+    </div>
+  );
 }
 
 function OrderDetailPage() {
@@ -383,11 +461,19 @@ function OrderDetailPage() {
             <div className="rounded-lg border border-border bg-card p-4">
               <h2 className="text-sm font-semibold">Shipping</h2>
               <p className="mt-2 text-sm capitalize">{order.shipping_method}</p>
+              {order.shipping_method_name && (
+                <p className="text-xs text-muted-foreground">
+                  via {order.shipping_method_name}
+                </p>
+              )}
               {order.shipping_address && (
                 <p className="mt-1 text-xs text-muted-foreground">
                   {order.shipping_address}
+                  {order.shipping_city ? `, ${order.shipping_city}` : ""}
+                  {order.shipping_postal_code ? ` ${order.shipping_postal_code}` : ""}
                 </p>
               )}
+              <ShippingFulfillment order={order} onUpdated={setOrder} />
             </div>
 
             <div className="rounded-lg border border-border bg-card p-4">

@@ -11,6 +11,13 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/i18n/LangProvider";
 import { formatPrice } from "@/i18n/format";
+import {
+  fetchShippingOptions,
+  pickZone,
+  quoteShipping,
+  type ShippingMethod as ShipMethod,
+  type ShippingZone,
+} from "@/lib/shipping";
 
 type PaymentMethod = "bank_transfer" | "midtrans" | "stripe";
 
@@ -59,10 +66,9 @@ type ItemRow = {
     name_en: string;
     name_id: string;
     price_idr: number;
+    weight_grams: number | null;
   } | null;
 };
-
-const SHIPPING_FLAT_IDR = 50_000;
 
 export function CheckoutPage() {
   const lang = useLang();
@@ -75,6 +81,8 @@ export function CheckoutPage() {
   const [items, setItems] = useState<ItemRow[]>([]);
   const [shippingMethod, setShippingMethod] = useState<"pickup" | "delivery">("pickup");
   const [shippingAddress, setShippingAddress] = useState("");
+  const [shippingCity, setShippingCity] = useState("");
+  const [shippingPostal, setShippingPostal] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
   const isIndonesian = useMemo(detectIsIndonesian, []);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
@@ -82,6 +90,9 @@ export function CheckoutPage() {
   );
   const [submitting, setSubmitting] = useState(false);
   const [usdPerIdr, setUsdPerIdr] = useState<number | null>(null);
+  const [zones, setZones] = useState<ShippingZone[]>([]);
+  const [methods, setMethods] = useState<ShipMethod[]>([]);
+  const [selectedMethodId, setSelectedMethodId] = useState<string>("");
 
   useEffect(() => {
     if (isIndonesian) return;
@@ -108,11 +119,12 @@ export function CheckoutPage() {
         .maybeSingle();
       const { data: its } = await supabase
         .from("inquiry_items")
-        .select("id, quantity, notes, product:products(id, sku, name_en, name_id, price_idr)")
+        .select("id, quantity, notes, product:products(id, sku, name_en, name_id, price_idr, weight_grams)")
         .eq("inquiry_id", inquiryId);
       if (cancelled) return;
       setInquiry(inq as InquiryRow | null);
       setItems((its as unknown as ItemRow[]) ?? []);
+      if (inq?.customer_city) setShippingCity(inq.customer_city);
       setLoading(false);
     }
     void load();
@@ -120,6 +132,19 @@ export function CheckoutPage() {
       cancelled = true;
     };
   }, [inquiryId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetchShippingOptions().then((opts) => {
+      if (cancelled) return;
+      setZones(opts.zones);
+      setMethods(opts.methods);
+      if (opts.methods[0]) setSelectedMethodId(opts.methods[0].id);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const subtotal = useMemo(
     () =>
@@ -129,14 +154,50 @@ export function CheckoutPage() {
       ),
     [items],
   );
-  const shipping = shippingMethod === "delivery" ? SHIPPING_FLAT_IDR : 0;
+
+  const totalWeightGrams = useMemo(
+    () =>
+      items.reduce(
+        (s, it) => s + (it.product?.weight_grams ?? 500) * it.quantity,
+        0,
+      ),
+    [items],
+  );
+
+  const matchedZone = useMemo(
+    () => (zones.length ? pickZone(zones, shippingCity) : null),
+    [zones, shippingCity],
+  );
+
+  const quotes = useMemo(() => {
+    if (!matchedZone) return [];
+    return methods.map((m) => quoteShipping(matchedZone, m, totalWeightGrams));
+  }, [matchedZone, methods, totalWeightGrams]);
+
+  const selectedQuote = useMemo(
+    () => quotes.find((q) => q.method.id === selectedMethodId) ?? null,
+    [quotes, selectedMethodId],
+  );
+
+  const shipping =
+    shippingMethod === "delivery" ? selectedQuote?.cost_idr ?? 0 : 0;
   const total = subtotal + shipping;
 
   async function handleConfirm() {
     if (!inquiry) return;
-    if (shippingMethod === "delivery" && shippingAddress.trim().length < 10) {
-      toast.error("Please enter a delivery address");
-      return;
+    if (shippingMethod === "delivery") {
+      if (shippingAddress.trim().length < 10) {
+        toast.error("Please enter a delivery address");
+        return;
+      }
+      if (!shippingCity.trim()) {
+        toast.error("Please enter a city");
+        return;
+      }
+      if (!selectedQuote) {
+        toast.error("Please choose a shipping method");
+        return;
+      }
     }
     setSubmitting(true);
     try {
@@ -150,6 +211,15 @@ export function CheckoutPage() {
           customer_address: customerAddress || null,
           shipping_method: shippingMethod,
           shipping_address: shippingMethod === "delivery" ? shippingAddress : null,
+          shipping_city: shippingMethod === "delivery" ? shippingCity || null : null,
+          shipping_postal_code:
+            shippingMethod === "delivery" ? shippingPostal || null : null,
+          shipping_method_id:
+            shippingMethod === "delivery" ? selectedQuote?.method.id ?? null : null,
+          shipping_method_name:
+            shippingMethod === "delivery" ? selectedQuote?.method.name ?? null : null,
+          shipping_zone_id:
+            shippingMethod === "delivery" ? selectedQuote?.zone.id ?? null : null,
           subtotal_idr: subtotal,
           shipping_idr: shipping,
           total_idr: total,
@@ -267,17 +337,74 @@ export function CheckoutPage() {
                 <div className="flex-1">
                   <div className="text-sm font-medium">Home delivery</div>
                   <div className="text-xs text-muted-foreground">
-                    Flat fee {formatPrice(SHIPPING_FLAT_IDR, lang)}
+                    Calculated from your city and order weight (
+                    {(totalWeightGrams / 1000).toFixed(1)} kg)
                   </div>
                   {shippingMethod === "delivery" && (
-                    <div className="mt-3 space-y-2">
-                      <Label className="text-xs">Delivery address</Label>
-                      <Textarea
-                        value={shippingAddress}
-                        onChange={(e) => setShippingAddress(e.target.value)}
-                        rows={3}
-                        placeholder="Street, city, postal code"
-                      />
+                    <div className="mt-3 space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <Label className="text-xs">City</Label>
+                          <Input
+                            value={shippingCity}
+                            onChange={(e) => setShippingCity(e.target.value)}
+                            placeholder="Jakarta"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs">Postal code</Label>
+                          <Input
+                            value={shippingPostal}
+                            onChange={(e) => setShippingPostal(e.target.value)}
+                            placeholder="12345"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label className="text-xs">Street address</Label>
+                        <Textarea
+                          value={shippingAddress}
+                          onChange={(e) => setShippingAddress(e.target.value)}
+                          rows={2}
+                          placeholder="Street, building, unit"
+                        />
+                      </div>
+
+                      {matchedZone && (
+                        <div className="rounded-md border border-border p-3">
+                          <p className="text-xs text-muted-foreground">
+                            Shipping to <strong>{matchedZone.region_name}</strong>{" "}
+                            zone
+                          </p>
+                          <RadioGroup
+                            value={selectedMethodId}
+                            onValueChange={setSelectedMethodId}
+                            className="mt-2 space-y-2"
+                          >
+                            {quotes.map((q) => (
+                              <label
+                                key={q.method.id}
+                                className="flex items-center justify-between gap-3 rounded-md border border-border p-2 cursor-pointer"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <RadioGroupItem value={q.method.id} id={q.method.id} />
+                                  <div>
+                                    <div className="text-sm font-medium">
+                                      {q.method.name}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                      {q.delivery_days_min}–{q.delivery_days_max} days
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="text-sm font-semibold">
+                                  {formatPrice(q.cost_idr, lang)}
+                                </div>
+                              </label>
+                            ))}
+                          </RadioGroup>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

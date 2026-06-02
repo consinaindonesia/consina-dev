@@ -20,6 +20,7 @@ import { useLang } from "@/i18n/LangProvider";
 import { formatPrice, localizedField, hasTranslation } from "@/i18n/format";
 import { MissingTranslationNotice } from "@/components/site/MissingTranslationNotice";
 import { addToInquiry } from "@/lib/inquiry-store";
+import { FindInStore } from "@/components/site/FindInStore";
 
 type Product = {
   id: string;
@@ -479,7 +480,11 @@ export function ProductDetailPage({ slug }: { slug: string }) {
                 size="lg"
                 className="h-12 w-full border-primary/30 text-primary"
               >
-                <Link to="/stores">
+                <Link
+                  to={"/$lang/stores" as never}
+                  params={{ lang } as never}
+                  search={{ product: product.id } as never}
+                >
                   <MapPin className="mr-2 h-4 w-4" />
                   {t("product.find_in_store")}
                 </Link>

@@ -32,6 +32,12 @@ type Order = {
   customer_address: string | null;
   shipping_method: string;
   shipping_address: string | null;
+  shipping_city: string | null;
+  shipping_postal_code: string | null;
+  shipping_method_name: string | null;
+  tracking_number: string | null;
+  tracking_carrier: string | null;
+  shipped_at: string | null;
   subtotal_idr: number;
   shipping_idr: number;
   total_idr: number;

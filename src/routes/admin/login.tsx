@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { logLoginAttempt } from "@/hooks/use-admin-auth";
+import { logAuthEvent } from "@/lib/activity-log.functions";
 
 export const Route = createFileRoute("/admin/login")({
   head: () => ({ meta: [{ title: "Admin Sign In — Consina" }, { name: "robots", content: "noindex" }] }),
@@ -42,7 +42,7 @@ function LoginPage() {
     setBusy(true);
     const { error: err } = await supabase.auth.signInWithPassword({ email, password });
     if (err) {
-      await logLoginAttempt(email, false);
+      void logAuthEvent({ data: { email, kind: "login_failed", metadata: { reason: err.message } } });
       const msg = err.message?.toLowerCase() ?? "";
       if (err.status === 429 || msg.includes("rate") || msg.includes("too many")) {
         setErrorTone("warning");
@@ -54,7 +54,7 @@ function LoginPage() {
       setBusy(false);
       return;
     }
-    await logLoginAttempt(email, true);
+    void logAuthEvent({ data: { email, kind: "login_success" } });
     navigate({ to: "/admin" });
   }
 

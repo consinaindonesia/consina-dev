@@ -842,22 +842,25 @@ export function ProductForm(props: ProductFormProps) {
                 </div>
               </Field>
 
-              <Field label="Stock Status">
-                <Select
-                  value={values.stock_status}
-                  onValueChange={(v) =>
-                    setField("stock_status", v as ProductFormValues["stock_status"])
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="in_stock">In Stock</SelectItem>
-                    <SelectItem value="low_stock">Low Stock</SelectItem>
-                    <SelectItem value="out_of_stock">Out of Stock</SelectItem>
-                  </SelectContent>
-                </Select>
+              <Field label="Jumlah Stok">
+                <div className="flex items-center gap-3">
+                  <Input
+                    type="number"
+                    min={0}
+                    inputMode="numeric"
+                    value={values.stock}
+                    onChange={(e) => {
+                      const n = e.target.value === "" ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0);
+                      setField("stock", n);
+                    }}
+                    placeholder="0"
+                    className="w-40"
+                  />
+                  <StockStatusBadge status={deriveStockStatus(values.stock)} />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Status stok ditentukan otomatis: 0 = habis, 1–5 = stok menipis, &gt;5 = tersedia.
+                </p>
               </Field>
 
               <div className="flex items-center gap-2 pt-2">

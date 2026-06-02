@@ -287,6 +287,7 @@ function PublicStoresPage() {
       .filter((s) => {
         if (region !== "All" && s.region !== region) return false;
         if (openNow && !s.status.open) return false;
+        if (productInfo && !productInfo.storeIds.has(s.id)) return false;
         if (!q) return true;
         return (
           s.name.toLowerCase().includes(q) ||
@@ -301,7 +302,7 @@ function PublicStoresPage() {
           return (a.region || "").localeCompare(b.region || "");
         return a.name.localeCompare(b.name);
       });
-  }, [stores, search, region, openNow, userLoc]);
+  }, [stores, search, region, openNow, userLoc, productInfo]);
 
   const requestGeo = () => {
     if (!navigator.geolocation) return;

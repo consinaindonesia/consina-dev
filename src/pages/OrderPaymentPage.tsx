@@ -188,6 +188,31 @@ export function OrderPaymentPage() {
               </p>
             </div>
           </div>
+        ) : isStripe ? (
+          <div className="mt-8 space-y-4">
+            <p className="text-sm text-muted-foreground">
+              You'll be redirected to Stripe to complete payment securely with
+              an international credit or debit card. Charged in IDR.
+            </p>
+            <Button
+              size="lg"
+              className="w-full"
+              onClick={handlePayStripe}
+              disabled={redirecting}
+            >
+              {redirecting ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <CreditCard className="mr-2 h-4 w-4" />
+              )}
+              Pay with Stripe
+            </Button>
+            {order.payment_status === "verifying" && (
+              <p className="text-xs text-amber-700">
+                We're verifying your last payment. Refresh in a moment.
+              </p>
+            )}
+          </div>
         ) : isMidtrans ? (
           <div className="mt-8 space-y-4">
             <p className="text-sm text-muted-foreground">

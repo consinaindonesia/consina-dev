@@ -662,7 +662,7 @@ function LeafletMap({
         spiderfyOnMaxZoom: true,
         disableClusteringAtZoom: 12,
       });
-      map.addLayer(cluster);
+      map.addLayer(cluster as import("leaflet").Layer);
 
       mapRef.current = map;
       clusterRef.current = cluster;

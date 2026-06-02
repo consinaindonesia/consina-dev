@@ -327,6 +327,10 @@ export function ProductForm(props: ProductFormProps) {
             value: String(value),
           })),
           stock_status: (data.stock_status as ProductFormValues["stock_status"]) ?? "in_stock",
+          stock: (data as { stock?: number | null }).stock ?? 0,
+          images: Array.isArray((data as { images?: string[] | null }).images)
+            ? ((data as { images: string[] }).images)
+            : [],
           is_featured: data.is_featured,
           is_active: data.is_active,
           slug: (data as { slug?: string | null }).slug ?? "",

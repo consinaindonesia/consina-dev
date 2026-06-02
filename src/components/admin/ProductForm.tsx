@@ -18,6 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { translateText } from "@/lib/translate.functions";
 import { ProductImagesTab } from "@/components/admin/ProductImagesTab";
+import { StockEditor } from "@/components/admin/StockEditor";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -126,7 +127,7 @@ async function logActivity(
   }
 }
 
-type Tab = "basic" | "translations" | "images";
+type Tab = "basic" | "translations" | "images" | "availability";
 type ProductFormProps =
   | { mode: "new"; productId?: undefined; initialTab?: Tab }
   | { mode: "edit"; productId: string; initialTab?: Tab };
@@ -585,6 +586,9 @@ export function ProductForm(props: ProductFormProps) {
           <TabsTrigger value="images" disabled={mode === "new"}>
             Images
           </TabsTrigger>
+          <TabsTrigger value="availability" disabled={mode === "new"}>
+            Where available
+          </TabsTrigger>
         </TabsList>
 
         {/* BASIC INFO */}
@@ -916,6 +920,23 @@ export function ProductForm(props: ProductFormProps) {
             </Card>
           ) : (
             <ProductImagesTab productId={productId} sku={values.sku} />
+          )}
+        </TabsContent>
+
+        {/* AVAILABILITY */}
+        <TabsContent value="availability" className="pb-32">
+          {mode === "new" ? (
+            <Card title="Where available">
+              <p className="text-sm text-muted-foreground">
+                Save the product first, then assign it to stores.
+              </p>
+            </Card>
+          ) : (
+            <Card title="Where available">
+              <StockEditor
+                mode={{ kind: "byProduct", productId, productName: values.name_en }}
+              />
+            </Card>
           )}
         </TabsContent>
       </Tabs>

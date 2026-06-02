@@ -68,6 +68,7 @@ import { Route as ApiPublicHooksMidtransRouteImport } from './routes/api/public/
 import { Route as AdminStoresIdStockRouteImport } from './routes/admin/stores.$id.stock'
 import { Route as AdminProductsIdStockRouteImport } from './routes/admin/products.$id.stock'
 import { Route as AdminProductsIdEditRouteImport } from './routes/admin/products.$id.edit'
+import { Route as AdminCustomersEmailExportRouteImport } from './routes/admin/customers.$email.export'
 
 const TentsRoute = TentsRouteImport.update({
   id: '/tents',
@@ -369,6 +370,12 @@ const AdminProductsIdEditRoute = AdminProductsIdEditRouteImport.update({
   path: '/$id/edit',
   getParentRoute: () => AdminProductsRoute,
 } as any)
+const AdminCustomersEmailExportRoute =
+  AdminCustomersEmailExportRouteImport.update({
+    id: '/export',
+    path: '/export',
+    getParentRoute: () => AdminCustomersEmailRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -412,7 +419,7 @@ export interface FileRoutesByFullPath {
   '/$lang/permintaan/terkirim': typeof LangPermintaanTerkirimRoute
   '/$lang/products/$slug': typeof LangProductsSlugRoute
   '/$lang/produk/$slug': typeof LangProdukSlugRoute
-  '/admin/customers/$email': typeof AdminCustomersEmailRoute
+  '/admin/customers/$email': typeof AdminCustomersEmailRouteWithChildren
   '/admin/inquiries/$id': typeof AdminInquiriesIdRoute
   '/admin/orders/$id': typeof AdminOrdersIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
@@ -421,6 +428,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/$lang/inquiry/': typeof LangInquiryIndexRoute
   '/$lang/permintaan/': typeof LangPermintaanIndexRoute
+  '/admin/customers/$email/export': typeof AdminCustomersEmailExportRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
   '/admin/products/$id/stock': typeof AdminProductsIdStockRoute
   '/admin/stores/$id/stock': typeof AdminStoresIdStockRoute
@@ -470,7 +478,7 @@ export interface FileRoutesByTo {
   '/$lang/permintaan/terkirim': typeof LangPermintaanTerkirimRoute
   '/$lang/products/$slug': typeof LangProductsSlugRoute
   '/$lang/produk/$slug': typeof LangProdukSlugRoute
-  '/admin/customers/$email': typeof AdminCustomersEmailRoute
+  '/admin/customers/$email': typeof AdminCustomersEmailRouteWithChildren
   '/admin/inquiries/$id': typeof AdminInquiriesIdRoute
   '/admin/orders/$id': typeof AdminOrdersIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
@@ -479,6 +487,7 @@ export interface FileRoutesByTo {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/$lang/inquiry': typeof LangInquiryIndexRoute
   '/$lang/permintaan': typeof LangPermintaanIndexRoute
+  '/admin/customers/$email/export': typeof AdminCustomersEmailExportRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
   '/admin/products/$id/stock': typeof AdminProductsIdStockRoute
   '/admin/stores/$id/stock': typeof AdminStoresIdStockRoute
@@ -532,7 +541,7 @@ export interface FileRoutesById {
   '/$lang/permintaan/terkirim': typeof LangPermintaanTerkirimRoute
   '/$lang/products/$slug': typeof LangProductsSlugRoute
   '/$lang/produk/$slug': typeof LangProdukSlugRoute
-  '/admin/customers/$email': typeof AdminCustomersEmailRoute
+  '/admin/customers/$email': typeof AdminCustomersEmailRouteWithChildren
   '/admin/inquiries/$id': typeof AdminInquiriesIdRoute
   '/admin/orders/$id': typeof AdminOrdersIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
@@ -541,6 +550,7 @@ export interface FileRoutesById {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/$lang/inquiry/': typeof LangInquiryIndexRoute
   '/$lang/permintaan/': typeof LangPermintaanIndexRoute
+  '/admin/customers/$email/export': typeof AdminCustomersEmailExportRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
   '/admin/products/$id/stock': typeof AdminProductsIdStockRoute
   '/admin/stores/$id/stock': typeof AdminStoresIdStockRoute
@@ -604,6 +614,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/$lang/inquiry/'
     | '/$lang/permintaan/'
+    | '/admin/customers/$email/export'
     | '/admin/products/$id/edit'
     | '/admin/products/$id/stock'
     | '/admin/stores/$id/stock'
@@ -662,6 +673,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/$lang/inquiry'
     | '/$lang/permintaan'
+    | '/admin/customers/$email/export'
     | '/admin/products/$id/edit'
     | '/admin/products/$id/stock'
     | '/admin/stores/$id/stock'
@@ -723,6 +735,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/$lang/inquiry/'
     | '/$lang/permintaan/'
+    | '/admin/customers/$email/export'
     | '/admin/products/$id/edit'
     | '/admin/products/$id/stock'
     | '/admin/stores/$id/stock'
@@ -1192,6 +1205,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProductsIdEditRouteImport
       parentRoute: typeof AdminProductsRoute
     }
+    '/admin/customers/$email/export': {
+      id: '/admin/customers/$email/export'
+      path: '/export'
+      fullPath: '/admin/customers/$email/export'
+      preLoaderRoute: typeof AdminCustomersEmailExportRouteImport
+      parentRoute: typeof AdminCustomersEmailRoute
+    }
   }
 }
 
@@ -1247,12 +1267,23 @@ const LangRouteChildren: LangRouteChildren = {
 
 const LangRouteWithChildren = LangRoute._addFileChildren(LangRouteChildren)
 
+interface AdminCustomersEmailRouteChildren {
+  AdminCustomersEmailExportRoute: typeof AdminCustomersEmailExportRoute
+}
+
+const AdminCustomersEmailRouteChildren: AdminCustomersEmailRouteChildren = {
+  AdminCustomersEmailExportRoute: AdminCustomersEmailExportRoute,
+}
+
+const AdminCustomersEmailRouteWithChildren =
+  AdminCustomersEmailRoute._addFileChildren(AdminCustomersEmailRouteChildren)
+
 interface AdminCustomersRouteChildren {
-  AdminCustomersEmailRoute: typeof AdminCustomersEmailRoute
+  AdminCustomersEmailRoute: typeof AdminCustomersEmailRouteWithChildren
 }
 
 const AdminCustomersRouteChildren: AdminCustomersRouteChildren = {
-  AdminCustomersEmailRoute: AdminCustomersEmailRoute,
+  AdminCustomersEmailRoute: AdminCustomersEmailRouteWithChildren,
 }
 
 const AdminCustomersRouteWithChildren = AdminCustomersRoute._addFileChildren(

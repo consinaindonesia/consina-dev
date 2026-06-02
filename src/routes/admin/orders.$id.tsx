@@ -389,11 +389,19 @@ function OrderDetailPage() {
             <div className="rounded-lg border border-border bg-card p-4">
               <h2 className="text-sm font-semibold">Shipping</h2>
               <p className="mt-2 text-sm capitalize">{order.shipping_method}</p>
+              {order.shipping_method_name && (
+                <p className="text-xs text-muted-foreground">
+                  via {order.shipping_method_name}
+                </p>
+              )}
               {order.shipping_address && (
                 <p className="mt-1 text-xs text-muted-foreground">
                   {order.shipping_address}
+                  {order.shipping_city ? `, ${order.shipping_city}` : ""}
+                  {order.shipping_postal_code ? ` ${order.shipping_postal_code}` : ""}
                 </p>
               )}
+              <ShippingFulfillment order={order} onUpdated={setOrder} />
             </div>
 
             <div className="rounded-lg border border-border bg-card p-4">

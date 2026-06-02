@@ -360,7 +360,11 @@ function FeaturedProducts() {
           const desc = localizedField(p, "short_description", lang).value;
           return (
             <div key={p.id} className="group">
-              <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-muted">
+              <Link
+                to={`/${lang}/${prefix}/${p.slug ?? p.sku}` as never}
+                aria-label={name}
+                className="block relative aspect-[4/5] overflow-hidden rounded-xl bg-muted cursor-pointer"
+              >
                 {p.image_url ? (
                   <img
                     src={p.image_url}
@@ -369,7 +373,7 @@ function FeaturedProducts() {
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                 ) : null}
-              </div>
+              </Link>
               <div className="mt-4">
                 <h3 className="font-[Archivo] text-base font-bold leading-snug text-primary">{name}</h3>
                 {desc ? <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{desc}</p> : null}

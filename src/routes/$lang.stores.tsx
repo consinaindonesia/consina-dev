@@ -655,8 +655,9 @@ function LeafletMap({
         maxZoom: 19,
       }).addTo(map);
 
-      // @ts-expect-error - markerClusterGroup added by plugin
-      const cluster = L.markerClusterGroup({
+      const cluster = (L as unknown as {
+        markerClusterGroup: (opts: unknown) => unknown;
+      }).markerClusterGroup({
         showCoverageOnHover: false,
         spiderfyOnMaxZoom: true,
         disableClusteringAtZoom: 12,

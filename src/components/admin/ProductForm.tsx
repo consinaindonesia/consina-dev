@@ -292,6 +292,9 @@ export function ProductForm(props: ProductFormProps) {
           stock_status: (data.stock_status as ProductFormValues["stock_status"]) ?? "in_stock",
           is_featured: data.is_featured,
           is_active: data.is_active,
+          slug: (data as { slug?: string | null }).slug ?? "",
+          seo_title: (data as { seo_title?: string | null }).seo_title ?? "",
+          seo_description: (data as { seo_description?: string | null }).seo_description ?? "",
         };
         setValues(next);
         setInitialSnapshot(JSON.stringify(next));

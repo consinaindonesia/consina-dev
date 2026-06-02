@@ -675,6 +675,9 @@ function ProductsPage() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => toast.info("Edit coming soon")}>Edit</DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                              <Link to="/admin/products/$id/stock" params={{ id: r.id }}>Where available</Link>
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => toast.info("Duplicate coming soon")}>Duplicate</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => toggleActive(r, false)}>Archive</DropdownMenuItem>
                             <DropdownMenuSeparator />

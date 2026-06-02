@@ -69,6 +69,7 @@ import { Route as AdminStoresIdStockRouteImport } from './routes/admin/stores.$i
 import { Route as AdminProductsIdStockRouteImport } from './routes/admin/products.$id.stock'
 import { Route as AdminProductsIdEditRouteImport } from './routes/admin/products.$id.edit'
 import { Route as AdminCustomersEmailExportRouteImport } from './routes/admin/customers.$email.export'
+import { Route as AdminCustomersEmailDeleteRouteImport } from './routes/admin/customers.$email.delete'
 
 const TentsRoute = TentsRouteImport.update({
   id: '/tents',
@@ -376,6 +377,12 @@ const AdminCustomersEmailExportRoute =
     path: '/export',
     getParentRoute: () => AdminCustomersEmailRoute,
   } as any)
+const AdminCustomersEmailDeleteRoute =
+  AdminCustomersEmailDeleteRouteImport.update({
+    id: '/delete',
+    path: '/delete',
+    getParentRoute: () => AdminCustomersEmailRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -428,6 +435,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/$lang/inquiry/': typeof LangInquiryIndexRoute
   '/$lang/permintaan/': typeof LangPermintaanIndexRoute
+  '/admin/customers/$email/delete': typeof AdminCustomersEmailDeleteRoute
   '/admin/customers/$email/export': typeof AdminCustomersEmailExportRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
   '/admin/products/$id/stock': typeof AdminProductsIdStockRoute
@@ -487,6 +495,7 @@ export interface FileRoutesByTo {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/$lang/inquiry': typeof LangInquiryIndexRoute
   '/$lang/permintaan': typeof LangPermintaanIndexRoute
+  '/admin/customers/$email/delete': typeof AdminCustomersEmailDeleteRoute
   '/admin/customers/$email/export': typeof AdminCustomersEmailExportRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
   '/admin/products/$id/stock': typeof AdminProductsIdStockRoute
@@ -550,6 +559,7 @@ export interface FileRoutesById {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/$lang/inquiry/': typeof LangInquiryIndexRoute
   '/$lang/permintaan/': typeof LangPermintaanIndexRoute
+  '/admin/customers/$email/delete': typeof AdminCustomersEmailDeleteRoute
   '/admin/customers/$email/export': typeof AdminCustomersEmailExportRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
   '/admin/products/$id/stock': typeof AdminProductsIdStockRoute
@@ -614,6 +624,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/$lang/inquiry/'
     | '/$lang/permintaan/'
+    | '/admin/customers/$email/delete'
     | '/admin/customers/$email/export'
     | '/admin/products/$id/edit'
     | '/admin/products/$id/stock'
@@ -673,6 +684,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/$lang/inquiry'
     | '/$lang/permintaan'
+    | '/admin/customers/$email/delete'
     | '/admin/customers/$email/export'
     | '/admin/products/$id/edit'
     | '/admin/products/$id/stock'
@@ -735,6 +747,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/$lang/inquiry/'
     | '/$lang/permintaan/'
+    | '/admin/customers/$email/delete'
     | '/admin/customers/$email/export'
     | '/admin/products/$id/edit'
     | '/admin/products/$id/stock'
@@ -1212,6 +1225,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCustomersEmailExportRouteImport
       parentRoute: typeof AdminCustomersEmailRoute
     }
+    '/admin/customers/$email/delete': {
+      id: '/admin/customers/$email/delete'
+      path: '/delete'
+      fullPath: '/admin/customers/$email/delete'
+      preLoaderRoute: typeof AdminCustomersEmailDeleteRouteImport
+      parentRoute: typeof AdminCustomersEmailRoute
+    }
   }
 }
 
@@ -1268,10 +1288,12 @@ const LangRouteChildren: LangRouteChildren = {
 const LangRouteWithChildren = LangRoute._addFileChildren(LangRouteChildren)
 
 interface AdminCustomersEmailRouteChildren {
+  AdminCustomersEmailDeleteRoute: typeof AdminCustomersEmailDeleteRoute
   AdminCustomersEmailExportRoute: typeof AdminCustomersEmailExportRoute
 }
 
 const AdminCustomersEmailRouteChildren: AdminCustomersEmailRouteChildren = {
+  AdminCustomersEmailDeleteRoute: AdminCustomersEmailDeleteRoute,
   AdminCustomersEmailExportRoute: AdminCustomersEmailExportRoute,
 }
 

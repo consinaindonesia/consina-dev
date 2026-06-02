@@ -119,7 +119,7 @@ const stores = [
   { city: "Bali", addr: "Denpasar — Jl. Teuku Umar", phone: "+62 361 224 998" },
 ];
 
-function HomePage() {
+export function HomePage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Nav />

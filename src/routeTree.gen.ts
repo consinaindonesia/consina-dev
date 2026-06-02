@@ -29,6 +29,7 @@ import { Route as AdminStoresRouteImport } from './routes/admin/stores'
 import { Route as AdminRestocksRouteImport } from './routes/admin/restocks'
 import { Route as AdminResetPasswordRouteImport } from './routes/admin/reset-password'
 import { Route as AdminProductsRouteImport } from './routes/admin/products'
+import { Route as AdminOrdersRouteImport } from './routes/admin/orders'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminLanguagesRouteImport } from './routes/admin/languages'
 import { Route as AdminInquiriesRouteImport } from './routes/admin/inquiries'
@@ -161,6 +162,11 @@ const AdminResetPasswordRoute = AdminResetPasswordRouteImport.update({
 const AdminProductsRoute = AdminProductsRouteImport.update({
   id: '/admin/products',
   path: '/admin/products',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminOrdersRoute = AdminOrdersRouteImport.update({
+  id: '/admin/orders',
+  path: '/admin/orders',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
@@ -358,6 +364,7 @@ export interface FileRoutesByFullPath {
   '/admin/inquiries': typeof AdminInquiriesRouteWithChildren
   '/admin/languages': typeof AdminLanguagesRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/restocks': typeof AdminRestocksRoute
@@ -410,6 +417,7 @@ export interface FileRoutesByTo {
   '/admin/inquiries': typeof AdminInquiriesRouteWithChildren
   '/admin/languages': typeof AdminLanguagesRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/restocks': typeof AdminRestocksRoute
@@ -466,6 +474,7 @@ export interface FileRoutesById {
   '/admin/inquiries': typeof AdminInquiriesRouteWithChildren
   '/admin/languages': typeof AdminLanguagesRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/restocks': typeof AdminRestocksRoute
@@ -523,6 +532,7 @@ export interface FileRouteTypes {
     | '/admin/inquiries'
     | '/admin/languages'
     | '/admin/login'
+    | '/admin/orders'
     | '/admin/products'
     | '/admin/reset-password'
     | '/admin/restocks'
@@ -575,6 +585,7 @@ export interface FileRouteTypes {
     | '/admin/inquiries'
     | '/admin/languages'
     | '/admin/login'
+    | '/admin/orders'
     | '/admin/products'
     | '/admin/reset-password'
     | '/admin/restocks'
@@ -630,6 +641,7 @@ export interface FileRouteTypes {
     | '/admin/inquiries'
     | '/admin/languages'
     | '/admin/login'
+    | '/admin/orders'
     | '/admin/products'
     | '/admin/reset-password'
     | '/admin/restocks'
@@ -682,6 +694,7 @@ export interface RootRouteChildren {
   AdminInquiriesRoute: typeof AdminInquiriesRouteWithChildren
   AdminLanguagesRoute: typeof AdminLanguagesRoute
   AdminLoginRoute: typeof AdminLoginRoute
+  AdminOrdersRoute: typeof AdminOrdersRoute
   AdminProductsRoute: typeof AdminProductsRouteWithChildren
   AdminResetPasswordRoute: typeof AdminResetPasswordRoute
   AdminRestocksRoute: typeof AdminRestocksRoute
@@ -840,6 +853,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/products'
       fullPath: '/admin/products'
       preLoaderRoute: typeof AdminProductsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/orders': {
+      id: '/admin/orders'
+      path: '/admin/orders'
+      fullPath: '/admin/orders'
+      preLoaderRoute: typeof AdminOrdersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/login': {
@@ -1200,6 +1220,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminInquiriesRoute: AdminInquiriesRouteWithChildren,
   AdminLanguagesRoute: AdminLanguagesRoute,
   AdminLoginRoute: AdminLoginRoute,
+  AdminOrdersRoute: AdminOrdersRoute,
   AdminProductsRoute: AdminProductsRouteWithChildren,
   AdminResetPasswordRoute: AdminResetPasswordRoute,
   AdminRestocksRoute: AdminRestocksRoute,

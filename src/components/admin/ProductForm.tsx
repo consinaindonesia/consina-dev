@@ -963,6 +963,80 @@ export function ProductForm(props: ProductFormProps) {
             </Card>
           )}
         </TabsContent>
+
+        {/* SEO & URL */}
+        <TabsContent value="seo" className="pb-32">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <Card title="URL slug">
+              <Field
+                label="Slug"
+                hint="URL-friendly name. Leave empty to auto-generate from the product name on save. Lowercase letters, numbers and hyphens only."
+                error={
+                  values.slug && !SLUG_RE.test(values.slug)
+                    ? "Use lowercase letters, numbers and hyphens only"
+                    : undefined
+                }
+              >
+                <div className="flex gap-2">
+                  <Input
+                    value={values.slug}
+                    onChange={(e) =>
+                      setFieldByUser("slug", e.target.value.toLowerCase())
+                    }
+                    placeholder={slugify(values.name_en || values.name_id) || "my-product-name"}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() =>
+                      setFieldByUser(
+                        "slug",
+                        slugify(values.name_en || values.name_id),
+                      )
+                    }
+                  >
+                    Generate
+                  </Button>
+                </div>
+                {values.slug ? (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Preview: <code>/products/{values.slug}</code>
+                  </p>
+                ) : null}
+              </Field>
+            </Card>
+
+            <Card title="Search engine listing">
+              <Field
+                label="SEO title"
+                hint={`Recommended ≤ 60 chars. Currently ${values.seo_title.length}.`}
+              >
+                <Input
+                  value={values.seo_title}
+                  maxLength={120}
+                  onChange={(e) => setFieldByUser("seo_title", e.target.value)}
+                  placeholder={values.name_en || values.name_id}
+                />
+              </Field>
+              <Field
+                label="SEO description"
+                hint={`Recommended ≤ 160 chars. Currently ${values.seo_description.length}.`}
+              >
+                <Textarea
+                  rows={3}
+                  value={values.seo_description}
+                  maxLength={300}
+                  onChange={(e) =>
+                    setFieldByUser("seo_description", e.target.value)
+                  }
+                  placeholder={
+                    values.short_description_en || values.short_description_id
+                  }
+                />
+              </Field>
+            </Card>
+          </div>
+        </TabsContent>
       </Tabs>
 
       {/* Sticky save bar */}

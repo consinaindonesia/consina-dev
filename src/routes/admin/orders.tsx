@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, ShoppingBag } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { EmptyState } from "@/components/admin/EmptyState";
 import { Button } from "@/components/ui/button";
@@ -134,7 +134,7 @@ function OrdersPage() {
             </div>
           ) : orders.length === 0 ? (
             <EmptyState
-              icon={ShoppingBag}
+              icon="ShoppingBag"
               title="No orders yet"
               description="Orders created from customer checkouts will appear here."
             />

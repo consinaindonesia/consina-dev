@@ -1123,6 +1123,195 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
   );
 }
 
+const MAX_IMAGES = 10;
+const MAX_BYTES = 5 * 1024 * 1024;
+const ALLOWED_MIME = new Set(["image/jpeg", "image/png", "image/webp"]);
+
+function ImagesUploader({
+  sku,
+  images,
+  onChange,
+}: {
+  sku: string;
+  images: string[];
+  onChange: (next: string[]) => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const slot = (sku || "untitled").toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "") || "untitled";
+
+  async function handleFiles(files: FileList | File[]) {
+    const list = Array.from(files);
+    if (!list.length) return;
+    const remaining = MAX_IMAGES - images.length;
+    if (remaining <= 0) {
+      toast.error(`Maksimum ${MAX_IMAGES} gambar`);
+      return;
+    }
+    const accepted: File[] = [];
+    for (const f of list.slice(0, remaining)) {
+      if (!ALLOWED_MIME.has(f.type)) {
+        toast.error(`${f.name}: format tidak didukung (hanya JPEG/PNG/WebP)`);
+        continue;
+      }
+      if (f.size > MAX_BYTES) {
+        toast.error(`${f.name}: melebihi 5MB`);
+        continue;
+      }
+      accepted.push(f);
+    }
+    if (!accepted.length) return;
+
+    setUploading(true);
+    const uploaded: string[] = [];
+    try {
+      for (const file of accepted) {
+        const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+        const safe = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const path = `${slot}/${safe}`;
+        const { error: upErr } = await supabase.storage
+          .from("product-images")
+          .upload(path, file, { contentType: file.type, upsert: false });
+        if (upErr) {
+          toast.error(`${file.name}: ${upErr.message}`);
+          continue;
+        }
+        const { data } = supabase.storage.from("product-images").getPublicUrl(path);
+        if (data?.publicUrl) uploaded.push(data.publicUrl);
+      }
+      if (uploaded.length) {
+        onChange([...images, ...uploaded]);
+        toast.success(`${uploaded.length} gambar diunggah`);
+      }
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function move(idx: number, dir: -1 | 1) {
+    const j = idx + dir;
+    if (j < 0 || j >= images.length) return;
+    const next = [...images];
+    [next[idx], next[j]] = [next[j], next[idx]];
+    onChange(next);
+  }
+
+  function remove(idx: number) {
+    onChange(images.filter((_, i) => i !== idx));
+  }
+
+  function setPrimary(idx: number) {
+    if (idx === 0) return;
+    const next = [...images];
+    const [picked] = next.splice(idx, 1);
+    next.unshift(picked);
+    onChange(next);
+  }
+
+  return (
+    <div className="space-y-3">
+      <div
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragOver(true);
+        }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragOver(false);
+          if (e.dataTransfer.files?.length) void handleFiles(e.dataTransfer.files);
+        }}
+        onClick={() => inputRef.current?.click()}
+        className={
+          "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-8 text-center transition " +
+          (dragOver ? "border-primary bg-primary/5" : "border-input hover:border-primary/60 hover:bg-muted/40")
+        }
+      >
+        {uploading ? (
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        ) : (
+          <Upload className="h-6 w-6 text-muted-foreground" />
+        )}
+        <p className="text-sm font-medium">Tarik & lepas gambar di sini, atau klik untuk pilih</p>
+        <p className="text-xs text-muted-foreground">
+          JPEG / PNG / WebP — maks 5MB per file — hingga {MAX_IMAGES} gambar
+        </p>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          multiple
+          hidden
+          onChange={(e) => {
+            if (e.target.files) void handleFiles(e.target.files);
+            if (inputRef.current) inputRef.current.value = "";
+          }}
+        />
+      </div>
+
+      {images.length > 0 && (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+          {images.map((url, i) => (
+            <div
+              key={url + i}
+              className="group relative aspect-square overflow-hidden rounded-lg border border-input bg-muted"
+            >
+              <img src={url} alt={`Gambar ${i + 1}`} className="h-full w-full object-cover" loading="lazy" />
+              {i === 0 && (
+                <span className="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow">
+                  <Star className="h-3 w-3 fill-current" /> Utama
+                </span>
+              )}
+              <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-gradient-to-t from-black/70 to-transparent p-1.5 opacity-0 transition group-hover:opacity-100">
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    onClick={() => move(i, -1)}
+                    disabled={i === 0}
+                    className="rounded bg-white/90 px-1.5 py-0.5 text-xs font-semibold text-foreground disabled:opacity-40"
+                    title="Pindah ke kiri"
+                  >
+                    ←
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => move(i, 1)}
+                    disabled={i === images.length - 1}
+                    className="rounded bg-white/90 px-1.5 py-0.5 text-xs font-semibold text-foreground disabled:opacity-40"
+                    title="Pindah ke kanan"
+                  >
+                    →
+                  </button>
+                  {i !== 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setPrimary(i)}
+                      className="rounded bg-white/90 px-1.5 py-0.5 text-xs font-semibold text-foreground"
+                      title="Jadikan utama"
+                    >
+                      <Star className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => remove(i)}
+                  className="rounded bg-red-600 px-1.5 py-0.5 text-xs font-semibold text-white"
+                  title="Hapus"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Field({
   label,
   required,

@@ -29,6 +29,7 @@ import { Route as AdminStoresRouteImport } from './routes/admin/stores'
 import { Route as AdminRestocksRouteImport } from './routes/admin/restocks'
 import { Route as AdminResetPasswordRouteImport } from './routes/admin/reset-password'
 import { Route as AdminProductsRouteImport } from './routes/admin/products'
+import { Route as AdminOrdersRouteImport } from './routes/admin/orders'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminLanguagesRouteImport } from './routes/admin/languages'
 import { Route as AdminInquiriesRouteImport } from './routes/admin/inquiries'
@@ -41,17 +42,20 @@ import { Route as AdminAccountRouteImport } from './routes/admin/account'
 import { Route as LangStoresRouteImport } from './routes/$lang.stores'
 import { Route as LangPermintaanRouteImport } from './routes/$lang.permintaan'
 import { Route as LangInquiryRouteImport } from './routes/$lang.inquiry'
+import { Route as LangCheckoutRouteImport } from './routes/$lang.checkout'
 import { Route as LangPermintaanIndexRouteImport } from './routes/$lang.permintaan.index'
 import { Route as LangInquiryIndexRouteImport } from './routes/$lang.inquiry.index'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as AdminSettingsNotificationsRouteImport } from './routes/admin/settings.notifications'
 import { Route as AdminReportsRegionalRouteImport } from './routes/admin/reports.regional'
 import { Route as AdminProductsNewRouteImport } from './routes/admin/products.new'
+import { Route as AdminOrdersIdRouteImport } from './routes/admin/orders.$id'
 import { Route as AdminInquiriesIdRouteImport } from './routes/admin/inquiries.$id'
 import { Route as AdminCustomersEmailRouteImport } from './routes/admin/customers.$email'
 import { Route as LangProdukSlugRouteImport } from './routes/$lang.produk.$slug'
 import { Route as LangProductsSlugRouteImport } from './routes/$lang.products.$slug'
 import { Route as LangPermintaanTerkirimRouteImport } from './routes/$lang.permintaan.terkirim'
+import { Route as LangOrderIdRouteImport } from './routes/$lang.order.$id'
 import { Route as LangInquirySentRouteImport } from './routes/$lang.inquiry.sent'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
@@ -161,6 +165,11 @@ const AdminProductsRoute = AdminProductsRouteImport.update({
   path: '/admin/products',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminOrdersRoute = AdminOrdersRouteImport.update({
+  id: '/admin/orders',
+  path: '/admin/orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
   id: '/admin/login',
   path: '/admin/login',
@@ -221,6 +230,11 @@ const LangInquiryRoute = LangInquiryRouteImport.update({
   path: '/inquiry',
   getParentRoute: () => LangRoute,
 } as any)
+const LangCheckoutRoute = LangCheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => LangRoute,
+} as any)
 const LangPermintaanIndexRoute = LangPermintaanIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -252,6 +266,11 @@ const AdminProductsNewRoute = AdminProductsNewRouteImport.update({
   path: '/new',
   getParentRoute: () => AdminProductsRoute,
 } as any)
+const AdminOrdersIdRoute = AdminOrdersIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AdminOrdersRoute,
+} as any)
 const AdminInquiriesIdRoute = AdminInquiriesIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -276,6 +295,11 @@ const LangPermintaanTerkirimRoute = LangPermintaanTerkirimRouteImport.update({
   id: '/terkirim',
   path: '/terkirim',
   getParentRoute: () => LangPermintaanRoute,
+} as any)
+const LangOrderIdRoute = LangOrderIdRouteImport.update({
+  id: '/order/$id',
+  path: '/order/$id',
+  getParentRoute: () => LangRoute,
 } as any)
 const LangInquirySentRoute = LangInquirySentRouteImport.update({
   id: '/sent',
@@ -333,6 +357,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
+  '/$lang/checkout': typeof LangCheckoutRoute
   '/$lang/inquiry': typeof LangInquiryRouteWithChildren
   '/$lang/permintaan': typeof LangPermintaanRouteWithChildren
   '/$lang/stores': typeof LangStoresRoute
@@ -345,6 +370,7 @@ export interface FileRoutesByFullPath {
   '/admin/inquiries': typeof AdminInquiriesRouteWithChildren
   '/admin/languages': typeof AdminLanguagesRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/orders': typeof AdminOrdersRouteWithChildren
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/restocks': typeof AdminRestocksRoute
@@ -356,11 +382,13 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/en/': typeof EnIndexRoute
   '/$lang/inquiry/sent': typeof LangInquirySentRoute
+  '/$lang/order/$id': typeof LangOrderIdRoute
   '/$lang/permintaan/terkirim': typeof LangPermintaanTerkirimRoute
   '/$lang/products/$slug': typeof LangProductsSlugRoute
   '/$lang/produk/$slug': typeof LangProdukSlugRoute
   '/admin/customers/$email': typeof AdminCustomersEmailRoute
   '/admin/inquiries/$id': typeof AdminInquiriesIdRoute
+  '/admin/orders/$id': typeof AdminOrdersIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/reports/regional': typeof AdminReportsRegionalRoute
   '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
@@ -385,6 +413,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
+  '/$lang/checkout': typeof LangCheckoutRoute
   '/$lang/stores': typeof LangStoresRoute
   '/admin/account': typeof AdminAccountRoute
   '/admin/attributes': typeof AdminAttributesRoute
@@ -395,6 +424,7 @@ export interface FileRoutesByTo {
   '/admin/inquiries': typeof AdminInquiriesRouteWithChildren
   '/admin/languages': typeof AdminLanguagesRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/orders': typeof AdminOrdersRouteWithChildren
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/restocks': typeof AdminRestocksRoute
@@ -406,11 +436,13 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/en': typeof EnIndexRoute
   '/$lang/inquiry/sent': typeof LangInquirySentRoute
+  '/$lang/order/$id': typeof LangOrderIdRoute
   '/$lang/permintaan/terkirim': typeof LangPermintaanTerkirimRoute
   '/$lang/products/$slug': typeof LangProductsSlugRoute
   '/$lang/produk/$slug': typeof LangProdukSlugRoute
   '/admin/customers/$email': typeof AdminCustomersEmailRoute
   '/admin/inquiries/$id': typeof AdminInquiriesIdRoute
+  '/admin/orders/$id': typeof AdminOrdersIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/reports/regional': typeof AdminReportsRegionalRoute
   '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
@@ -437,6 +469,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
+  '/$lang/checkout': typeof LangCheckoutRoute
   '/$lang/inquiry': typeof LangInquiryRouteWithChildren
   '/$lang/permintaan': typeof LangPermintaanRouteWithChildren
   '/$lang/stores': typeof LangStoresRoute
@@ -449,6 +482,7 @@ export interface FileRoutesById {
   '/admin/inquiries': typeof AdminInquiriesRouteWithChildren
   '/admin/languages': typeof AdminLanguagesRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/orders': typeof AdminOrdersRouteWithChildren
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/restocks': typeof AdminRestocksRoute
@@ -460,11 +494,13 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/en/': typeof EnIndexRoute
   '/$lang/inquiry/sent': typeof LangInquirySentRoute
+  '/$lang/order/$id': typeof LangOrderIdRoute
   '/$lang/permintaan/terkirim': typeof LangPermintaanTerkirimRoute
   '/$lang/products/$slug': typeof LangProductsSlugRoute
   '/$lang/produk/$slug': typeof LangProdukSlugRoute
   '/admin/customers/$email': typeof AdminCustomersEmailRoute
   '/admin/inquiries/$id': typeof AdminInquiriesIdRoute
+  '/admin/orders/$id': typeof AdminOrdersIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/reports/regional': typeof AdminReportsRegionalRoute
   '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
@@ -492,6 +528,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/stores'
     | '/tents'
+    | '/$lang/checkout'
     | '/$lang/inquiry'
     | '/$lang/permintaan'
     | '/$lang/stores'
@@ -504,6 +541,7 @@ export interface FileRouteTypes {
     | '/admin/inquiries'
     | '/admin/languages'
     | '/admin/login'
+    | '/admin/orders'
     | '/admin/products'
     | '/admin/reset-password'
     | '/admin/restocks'
@@ -515,11 +553,13 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/en/'
     | '/$lang/inquiry/sent'
+    | '/$lang/order/$id'
     | '/$lang/permintaan/terkirim'
     | '/$lang/products/$slug'
     | '/$lang/produk/$slug'
     | '/admin/customers/$email'
     | '/admin/inquiries/$id'
+    | '/admin/orders/$id'
     | '/admin/products/new'
     | '/admin/reports/regional'
     | '/admin/settings/notifications'
@@ -544,6 +584,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/stores'
     | '/tents'
+    | '/$lang/checkout'
     | '/$lang/stores'
     | '/admin/account'
     | '/admin/attributes'
@@ -554,6 +595,7 @@ export interface FileRouteTypes {
     | '/admin/inquiries'
     | '/admin/languages'
     | '/admin/login'
+    | '/admin/orders'
     | '/admin/products'
     | '/admin/reset-password'
     | '/admin/restocks'
@@ -565,11 +607,13 @@ export interface FileRouteTypes {
     | '/admin'
     | '/en'
     | '/$lang/inquiry/sent'
+    | '/$lang/order/$id'
     | '/$lang/permintaan/terkirim'
     | '/$lang/products/$slug'
     | '/$lang/produk/$slug'
     | '/admin/customers/$email'
     | '/admin/inquiries/$id'
+    | '/admin/orders/$id'
     | '/admin/products/new'
     | '/admin/reports/regional'
     | '/admin/settings/notifications'
@@ -595,6 +639,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/stores'
     | '/tents'
+    | '/$lang/checkout'
     | '/$lang/inquiry'
     | '/$lang/permintaan'
     | '/$lang/stores'
@@ -607,6 +652,7 @@ export interface FileRouteTypes {
     | '/admin/inquiries'
     | '/admin/languages'
     | '/admin/login'
+    | '/admin/orders'
     | '/admin/products'
     | '/admin/reset-password'
     | '/admin/restocks'
@@ -618,11 +664,13 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/en/'
     | '/$lang/inquiry/sent'
+    | '/$lang/order/$id'
     | '/$lang/permintaan/terkirim'
     | '/$lang/products/$slug'
     | '/$lang/produk/$slug'
     | '/admin/customers/$email'
     | '/admin/inquiries/$id'
+    | '/admin/orders/$id'
     | '/admin/products/new'
     | '/admin/reports/regional'
     | '/admin/settings/notifications'
@@ -658,6 +706,7 @@ export interface RootRouteChildren {
   AdminInquiriesRoute: typeof AdminInquiriesRouteWithChildren
   AdminLanguagesRoute: typeof AdminLanguagesRoute
   AdminLoginRoute: typeof AdminLoginRoute
+  AdminOrdersRoute: typeof AdminOrdersRouteWithChildren
   AdminProductsRoute: typeof AdminProductsRouteWithChildren
   AdminResetPasswordRoute: typeof AdminResetPasswordRoute
   AdminRestocksRoute: typeof AdminRestocksRoute
@@ -818,6 +867,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProductsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/orders': {
+      id: '/admin/orders'
+      path: '/admin/orders'
+      fullPath: '/admin/orders'
+      preLoaderRoute: typeof AdminOrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/login': {
       id: '/admin/login'
       path: '/admin/login'
@@ -902,6 +958,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangInquiryRouteImport
       parentRoute: typeof LangRoute
     }
+    '/$lang/checkout': {
+      id: '/$lang/checkout'
+      path: '/checkout'
+      fullPath: '/$lang/checkout'
+      preLoaderRoute: typeof LangCheckoutRouteImport
+      parentRoute: typeof LangRoute
+    }
     '/$lang/permintaan/': {
       id: '/$lang/permintaan/'
       path: '/'
@@ -944,6 +1007,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProductsNewRouteImport
       parentRoute: typeof AdminProductsRoute
     }
+    '/admin/orders/$id': {
+      id: '/admin/orders/$id'
+      path: '/$id'
+      fullPath: '/admin/orders/$id'
+      preLoaderRoute: typeof AdminOrdersIdRouteImport
+      parentRoute: typeof AdminOrdersRoute
+    }
     '/admin/inquiries/$id': {
       id: '/admin/inquiries/$id'
       path: '/$id'
@@ -978,6 +1048,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/$lang/permintaan/terkirim'
       preLoaderRoute: typeof LangPermintaanTerkirimRouteImport
       parentRoute: typeof LangPermintaanRoute
+    }
+    '/$lang/order/$id': {
+      id: '/$lang/order/$id'
+      path: '/order/$id'
+      fullPath: '/$lang/order/$id'
+      preLoaderRoute: typeof LangOrderIdRouteImport
+      parentRoute: typeof LangRoute
     }
     '/$lang/inquiry/sent': {
       id: '/$lang/inquiry/sent'
@@ -1067,19 +1144,23 @@ const LangPermintaanRouteWithChildren = LangPermintaanRoute._addFileChildren(
 )
 
 interface LangRouteChildren {
+  LangCheckoutRoute: typeof LangCheckoutRoute
   LangInquiryRoute: typeof LangInquiryRouteWithChildren
   LangPermintaanRoute: typeof LangPermintaanRouteWithChildren
   LangStoresRoute: typeof LangStoresRoute
   LangIndexRoute: typeof LangIndexRoute
+  LangOrderIdRoute: typeof LangOrderIdRoute
   LangProductsSlugRoute: typeof LangProductsSlugRoute
   LangProdukSlugRoute: typeof LangProdukSlugRoute
 }
 
 const LangRouteChildren: LangRouteChildren = {
+  LangCheckoutRoute: LangCheckoutRoute,
   LangInquiryRoute: LangInquiryRouteWithChildren,
   LangPermintaanRoute: LangPermintaanRouteWithChildren,
   LangStoresRoute: LangStoresRoute,
   LangIndexRoute: LangIndexRoute,
+  LangOrderIdRoute: LangOrderIdRoute,
   LangProductsSlugRoute: LangProductsSlugRoute,
   LangProdukSlugRoute: LangProdukSlugRoute,
 }
@@ -1108,6 +1189,18 @@ const AdminInquiriesRouteChildren: AdminInquiriesRouteChildren = {
 
 const AdminInquiriesRouteWithChildren = AdminInquiriesRoute._addFileChildren(
   AdminInquiriesRouteChildren,
+)
+
+interface AdminOrdersRouteChildren {
+  AdminOrdersIdRoute: typeof AdminOrdersIdRoute
+}
+
+const AdminOrdersRouteChildren: AdminOrdersRouteChildren = {
+  AdminOrdersIdRoute: AdminOrdersIdRoute,
+}
+
+const AdminOrdersRouteWithChildren = AdminOrdersRoute._addFileChildren(
+  AdminOrdersRouteChildren,
 )
 
 interface AdminProductsRouteChildren {
@@ -1158,6 +1251,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminInquiriesRoute: AdminInquiriesRouteWithChildren,
   AdminLanguagesRoute: AdminLanguagesRoute,
   AdminLoginRoute: AdminLoginRoute,
+  AdminOrdersRoute: AdminOrdersRouteWithChildren,
   AdminProductsRoute: AdminProductsRouteWithChildren,
   AdminResetPasswordRoute: AdminResetPasswordRoute,
   AdminRestocksRoute: AdminRestocksRoute,

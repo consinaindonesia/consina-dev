@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, CreditCard } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useLang } from "@/i18n/LangProvider";
 import { Button } from "@/components/ui/button";
@@ -60,6 +60,26 @@ export function InquirySentPage() {
       <Button asChild size="lg" className="mt-8">
         <Link to={home as never}>{t("inquiry_sent.continue")}</Link>
       </Button>
+
+      {search.ref && (
+        <Button
+          asChild
+          variant="outline"
+          size="lg"
+          className="mt-3"
+        >
+          <Link
+            to={
+              (lang === "id"
+                ? `/id/checkout?inquiry=${search.ref}`
+                : `/en/checkout?inquiry=${search.ref}`) as never
+            }
+          >
+            <CreditCard className="mr-2 h-4 w-4" />
+            Pay now (bank transfer)
+          </Link>
+        </Button>
+      )}
 
       <p className="mt-6 text-xs text-muted-foreground">
         {t("inquiry_sent.save_note")}

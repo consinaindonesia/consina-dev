@@ -563,6 +563,119 @@ export type Database = {
         }
         Relationships: []
       }
+      order_items: {
+        Row: {
+          attributes: Json | null
+          created_at: string
+          id: string
+          line_total_idr: number
+          order_id: string
+          product_id: string | null
+          product_name: string | null
+          quantity: number
+          sku: string | null
+          unit_price_idr: number
+        }
+        Insert: {
+          attributes?: Json | null
+          created_at?: string
+          id?: string
+          line_total_idr?: number
+          order_id: string
+          product_id?: string | null
+          product_name?: string | null
+          quantity?: number
+          sku?: string | null
+          unit_price_idr?: number
+        }
+        Update: {
+          attributes?: Json | null
+          created_at?: string
+          id?: string
+          line_total_idr?: number
+          order_id?: string
+          product_id?: string | null
+          product_name?: string | null
+          quantity?: number
+          sku?: string | null
+          unit_price_idr?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          created_at: string
+          customer_address: string | null
+          customer_email: string
+          customer_name: string
+          customer_phone: string
+          id: string
+          inquiry_id: string | null
+          notes: string | null
+          payment_method: string
+          payment_proof_url: string | null
+          payment_reference: string | null
+          payment_status: string
+          shipping_address: string | null
+          shipping_idr: number
+          shipping_method: string
+          status: string
+          subtotal_idr: number
+          total_idr: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_address?: string | null
+          customer_email: string
+          customer_name: string
+          customer_phone: string
+          id?: string
+          inquiry_id?: string | null
+          notes?: string | null
+          payment_method?: string
+          payment_proof_url?: string | null
+          payment_reference?: string | null
+          payment_status?: string
+          shipping_address?: string | null
+          shipping_idr?: number
+          shipping_method?: string
+          status?: string
+          subtotal_idr?: number
+          total_idr?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_address?: string | null
+          customer_email?: string
+          customer_name?: string
+          customer_phone?: string
+          id?: string
+          inquiry_id?: string | null
+          notes?: string | null
+          payment_method?: string
+          payment_proof_url?: string | null
+          payment_reference?: string | null
+          payment_status?: string
+          shipping_address?: string | null
+          shipping_idr?: number
+          shipping_method?: string
+          status?: string
+          subtotal_idr?: number
+          total_idr?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       product_images: {
         Row: {
           alt_text_en: string | null

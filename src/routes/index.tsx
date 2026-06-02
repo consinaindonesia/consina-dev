@@ -1,11 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ArrowRight, ArrowUpRight, MapPin, Mountain, Leaf, Users, Mail, Phone, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
-import { products, categoryOrder } from "@/data/products";
+import { usePublicProducts, type PublicProduct, getSiteUrl } from "@/lib/public-products";
+import { useLang } from "@/i18n/LangProvider";
+import { formatPrice, localizedField } from "@/i18n/format";
 import hero from "@/assets/hero-mountain.jpg";
 import catCarriers from "@/assets/cat-carriers.jpg";
 import catTents from "@/assets/cat-tents.jpg";
@@ -15,12 +17,7 @@ import catAccessories from "@/assets/cat-accessories.jpg";
 import story from "@/assets/story.jpg";
 import communityCleanup from "@/assets/community-cleanup.jpg";
 import storyHiker from "@/assets/story-hiker.jpg";
-import prodCenturion from "@/assets/prod-centurion.jpg";
-import prodRaptor from "@/assets/prod-raptor.jpg";
-import prodStratus from "@/assets/prod-stratus.jpg";
-import prodTrailwind from "@/assets/prod-trailwind.jpg";
-
-const SITE_URL = "https://consina-website.lovable.app";
+const SITE_URL = getSiteUrl();
 
 const faqs = [
   {
@@ -107,24 +104,12 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-function catStats(filter: string) {
-  const items = products.filter((p) => p.category === filter);
-  const max = items.length ? Math.max(...items.map((i) => i.discount)) : 0;
-  return { count: items.length, max };
-}
 const categories = [
-  { name: "Carriers", slug: "carriers", filter: "Bags & Carriers", desc: "Backpacks 40–100L for every adventure", img: catCarriers },
-  { name: "Tents & Shelter", slug: "tents", filter: "Tents & Shelter", desc: "From solo overnighters to group expeditions", img: catTents },
-  { name: "Apparel", slug: "apparel", filter: "Apparel", desc: "Jackets, pants, and shirts for the trail", img: catApparel },
-  { name: "Footwear", slug: "footwear", filter: "Footwear", desc: "Trekking shoes built for Indonesian terrain", img: catFootwear },
-  { name: "Accessories", slug: "accessories", filter: "Camping & Cookware", desc: "Bottles, headlamps, compasses, and more", img: catAccessories },
-] as const;
-
-const bestsellers = [
-  { name: "Centurion 60L Carrier", desc: "Less-contact back system for long expeditions", price: "IDR 1,850,000", img: prodCenturion },
-  { name: "Raptor 45L Carrier", desc: "Day-to-weekend hiking companion", price: "IDR 1,250,000", img: prodRaptor },
-  { name: "Stratus 2P Tent", desc: "Lightweight 2-person shelter, 4-season rated", price: "IDR 2,100,000", img: prodStratus },
-  { name: "Trailwind Jacket", desc: "Wind-resistant, water-repellent shell", price: "IDR 850,000", img: prodTrailwind },
+  { name: "Carriers", slug: "carriers", desc: "Backpacks 40–100L for every adventure", img: catCarriers },
+  { name: "Tents & Shelter", slug: "tents", desc: "From solo overnighters to group expeditions", img: catTents },
+  { name: "Apparel", slug: "apparel", desc: "Jackets, pants, and shirts for the trail", img: catApparel },
+  { name: "Footwear", slug: "footwear", desc: "Trekking shoes built for Indonesian terrain", img: catFootwear },
+  { name: "Accessories", slug: "accessories", desc: "Bottles, headlamps, compasses, and more", img: catAccessories },
 ] as const;
 
 const stores = [

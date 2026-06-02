@@ -114,10 +114,11 @@ function CatalogPage() {
 
 function ProductCard({ p, lang }: { p: PublicProduct; lang: "id" | "en" }) {
   const name = localizedField(p, "name", lang).value;
-  const slugPrefix = lang === "id" ? "produk" : "products";
+  const to = lang === "id" ? "/$lang/produk/$slug" : "/$lang/products/$slug";
   return (
     <Link
-      to={`/${lang}/${slugPrefix}/${encodeURIComponent(p.sku)}` as string}
+      to={to}
+      params={{ lang, slug: p.sku }}
       className="group block"
     >
       <div className="relative aspect-square overflow-hidden rounded-sm bg-muted">

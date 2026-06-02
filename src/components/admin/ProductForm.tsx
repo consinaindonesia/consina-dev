@@ -540,7 +540,7 @@ export function ProductForm(props: ProductFormProps) {
       toast.success("Product saved");
       if (
         prevStock === "out_of_stock" &&
-        values.stock_status === "in_stock"
+        deriveStockStatus(values.stock) !== "out_of_stock"
       ) {
         const { data: pending, error: pendErr } = await supabase
           .from("notify_when_in_stock")

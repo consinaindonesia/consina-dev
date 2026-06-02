@@ -333,6 +333,11 @@ function PublicStoresPage() {
                 ? "Loading stores…"
                 : `${enriched.length} of ${stores.length} stores match your filters.`}
             </p>
+            {productInfo && (
+              <div className="mt-4 inline-flex items-center gap-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-1.5 text-xs font-medium text-primary">
+                Showing stores that carry <span className="font-semibold">{productInfo.name}</span>
+              </div>
+            )}
           </div>
         </header>
 

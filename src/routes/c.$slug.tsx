@@ -113,7 +113,7 @@ function CategoryPage() {
       const { data: prods } = await supabase
         .from("products")
         .select(
-          "id,sku,name_en,name_id,price_idr,attributes,product_images(thumbnail_url,image_url,is_primary,sort_order)",
+          "id,sku,slug,name_en,name_id,price_idr,attributes,product_images(thumbnail_url,image_url,is_primary,sort_order)",
         )
         .eq("category_id", cat.id)
         .eq("is_active", true)
@@ -129,7 +129,7 @@ function CategoryPage() {
         imgs.sort((a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0) || a.sort_order - b.sort_order);
         return {
           id: p.id,
-          slug: null,
+          slug: (p as { slug?: string | null }).slug ?? null,
           sku: p.sku,
           name_en: p.name_en,
           name_id: p.name_id,

@@ -117,7 +117,7 @@ function ProductCard({ p, lang }: { p: PublicProduct; lang: "id" | "en" }) {
   const prefix = lang === "id" ? "produk" : "products";
   return (
     <Link
-      to={`/${lang}/${prefix}/${p.sku}` as never}
+      to={`/${lang}/${prefix}/${p.slug ?? p.sku}` as never}
       className="group block"
     >
       <div className="relative aspect-square overflow-hidden rounded-sm bg-muted">

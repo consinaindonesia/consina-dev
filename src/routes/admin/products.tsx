@@ -52,7 +52,7 @@ import {
 } from "@/components/ui/dialog";
 import { CsvImportWizard } from "@/components/admin/CsvImportWizard";
 
-export const Route = createFileRoute("/admin/products/")({
+export const Route = createFileRoute("/admin/products")({
   head: () => ({ meta: [{ title: "Products — Admin" }, { name: "robots", content: "noindex" }] }),
   validateSearch: (s: Record<string, unknown>): { lang?: LangFilter } => {
     const v = s.lang;

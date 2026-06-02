@@ -96,7 +96,7 @@ function OrderDetailPage() {
   async function setPaymentStatus(payment_status: string, status?: string) {
     if (!order) return;
     setSaving(true);
-    const patch: Record<string, unknown> = { payment_status };
+    const patch: { payment_status: string; status?: string } = { payment_status };
     if (status) patch.status = status;
     const { error } = await supabase.from("orders").update(patch).eq("id", order.id);
     if (error) {

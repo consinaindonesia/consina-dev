@@ -49,6 +49,7 @@ import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/em
 import { Route as AdminSettingsNotificationsRouteImport } from './routes/admin/settings.notifications'
 import { Route as AdminReportsRegionalRouteImport } from './routes/admin/reports.regional'
 import { Route as AdminProductsNewRouteImport } from './routes/admin/products.new'
+import { Route as AdminOrdersIdRouteImport } from './routes/admin/orders.$id'
 import { Route as AdminInquiriesIdRouteImport } from './routes/admin/inquiries.$id'
 import { Route as AdminCustomersEmailRouteImport } from './routes/admin/customers.$email'
 import { Route as LangProdukSlugRouteImport } from './routes/$lang.produk.$slug'
@@ -265,6 +266,11 @@ const AdminProductsNewRoute = AdminProductsNewRouteImport.update({
   path: '/new',
   getParentRoute: () => AdminProductsRoute,
 } as any)
+const AdminOrdersIdRoute = AdminOrdersIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AdminOrdersRoute,
+} as any)
 const AdminInquiriesIdRoute = AdminInquiriesIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -364,7 +370,7 @@ export interface FileRoutesByFullPath {
   '/admin/inquiries': typeof AdminInquiriesRouteWithChildren
   '/admin/languages': typeof AdminLanguagesRoute
   '/admin/login': typeof AdminLoginRoute
-  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/orders': typeof AdminOrdersRouteWithChildren
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/restocks': typeof AdminRestocksRoute
@@ -382,6 +388,7 @@ export interface FileRoutesByFullPath {
   '/$lang/produk/$slug': typeof LangProdukSlugRoute
   '/admin/customers/$email': typeof AdminCustomersEmailRoute
   '/admin/inquiries/$id': typeof AdminInquiriesIdRoute
+  '/admin/orders/$id': typeof AdminOrdersIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/reports/regional': typeof AdminReportsRegionalRoute
   '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
@@ -417,7 +424,7 @@ export interface FileRoutesByTo {
   '/admin/inquiries': typeof AdminInquiriesRouteWithChildren
   '/admin/languages': typeof AdminLanguagesRoute
   '/admin/login': typeof AdminLoginRoute
-  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/orders': typeof AdminOrdersRouteWithChildren
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/restocks': typeof AdminRestocksRoute
@@ -435,6 +442,7 @@ export interface FileRoutesByTo {
   '/$lang/produk/$slug': typeof LangProdukSlugRoute
   '/admin/customers/$email': typeof AdminCustomersEmailRoute
   '/admin/inquiries/$id': typeof AdminInquiriesIdRoute
+  '/admin/orders/$id': typeof AdminOrdersIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/reports/regional': typeof AdminReportsRegionalRoute
   '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
@@ -474,7 +482,7 @@ export interface FileRoutesById {
   '/admin/inquiries': typeof AdminInquiriesRouteWithChildren
   '/admin/languages': typeof AdminLanguagesRoute
   '/admin/login': typeof AdminLoginRoute
-  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/orders': typeof AdminOrdersRouteWithChildren
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/restocks': typeof AdminRestocksRoute
@@ -492,6 +500,7 @@ export interface FileRoutesById {
   '/$lang/produk/$slug': typeof LangProdukSlugRoute
   '/admin/customers/$email': typeof AdminCustomersEmailRoute
   '/admin/inquiries/$id': typeof AdminInquiriesIdRoute
+  '/admin/orders/$id': typeof AdminOrdersIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/reports/regional': typeof AdminReportsRegionalRoute
   '/admin/settings/notifications': typeof AdminSettingsNotificationsRoute
@@ -550,6 +559,7 @@ export interface FileRouteTypes {
     | '/$lang/produk/$slug'
     | '/admin/customers/$email'
     | '/admin/inquiries/$id'
+    | '/admin/orders/$id'
     | '/admin/products/new'
     | '/admin/reports/regional'
     | '/admin/settings/notifications'
@@ -603,6 +613,7 @@ export interface FileRouteTypes {
     | '/$lang/produk/$slug'
     | '/admin/customers/$email'
     | '/admin/inquiries/$id'
+    | '/admin/orders/$id'
     | '/admin/products/new'
     | '/admin/reports/regional'
     | '/admin/settings/notifications'
@@ -659,6 +670,7 @@ export interface FileRouteTypes {
     | '/$lang/produk/$slug'
     | '/admin/customers/$email'
     | '/admin/inquiries/$id'
+    | '/admin/orders/$id'
     | '/admin/products/new'
     | '/admin/reports/regional'
     | '/admin/settings/notifications'
@@ -694,7 +706,7 @@ export interface RootRouteChildren {
   AdminInquiriesRoute: typeof AdminInquiriesRouteWithChildren
   AdminLanguagesRoute: typeof AdminLanguagesRoute
   AdminLoginRoute: typeof AdminLoginRoute
-  AdminOrdersRoute: typeof AdminOrdersRoute
+  AdminOrdersRoute: typeof AdminOrdersRouteWithChildren
   AdminProductsRoute: typeof AdminProductsRouteWithChildren
   AdminResetPasswordRoute: typeof AdminResetPasswordRoute
   AdminRestocksRoute: typeof AdminRestocksRoute
@@ -995,6 +1007,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProductsNewRouteImport
       parentRoute: typeof AdminProductsRoute
     }
+    '/admin/orders/$id': {
+      id: '/admin/orders/$id'
+      path: '/$id'
+      fullPath: '/admin/orders/$id'
+      preLoaderRoute: typeof AdminOrdersIdRouteImport
+      parentRoute: typeof AdminOrdersRoute
+    }
     '/admin/inquiries/$id': {
       id: '/admin/inquiries/$id'
       path: '/$id'
@@ -1172,6 +1191,18 @@ const AdminInquiriesRouteWithChildren = AdminInquiriesRoute._addFileChildren(
   AdminInquiriesRouteChildren,
 )
 
+interface AdminOrdersRouteChildren {
+  AdminOrdersIdRoute: typeof AdminOrdersIdRoute
+}
+
+const AdminOrdersRouteChildren: AdminOrdersRouteChildren = {
+  AdminOrdersIdRoute: AdminOrdersIdRoute,
+}
+
+const AdminOrdersRouteWithChildren = AdminOrdersRoute._addFileChildren(
+  AdminOrdersRouteChildren,
+)
+
 interface AdminProductsRouteChildren {
   AdminProductsNewRoute: typeof AdminProductsNewRoute
   AdminProductsIdEditRoute: typeof AdminProductsIdEditRoute
@@ -1220,7 +1251,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminInquiriesRoute: AdminInquiriesRouteWithChildren,
   AdminLanguagesRoute: AdminLanguagesRoute,
   AdminLoginRoute: AdminLoginRoute,
-  AdminOrdersRoute: AdminOrdersRoute,
+  AdminOrdersRoute: AdminOrdersRouteWithChildren,
   AdminProductsRoute: AdminProductsRouteWithChildren,
   AdminResetPasswordRoute: AdminResetPasswordRoute,
   AdminRestocksRoute: AdminRestocksRoute,

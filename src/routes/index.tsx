@@ -1,11 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ArrowRight, ArrowUpRight, MapPin, Mountain, Leaf, Users, Mail, Phone, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
-import { products, categoryOrder } from "@/data/products";
+import { usePublicProducts, type PublicProduct, getSiteUrl } from "@/lib/public-products";
+import { useLang } from "@/i18n/LangProvider";
+import { formatPrice, localizedField } from "@/i18n/format";
 import hero from "@/assets/hero-mountain.jpg";
 import catCarriers from "@/assets/cat-carriers.jpg";
 import catTents from "@/assets/cat-tents.jpg";
@@ -15,12 +17,7 @@ import catAccessories from "@/assets/cat-accessories.jpg";
 import story from "@/assets/story.jpg";
 import communityCleanup from "@/assets/community-cleanup.jpg";
 import storyHiker from "@/assets/story-hiker.jpg";
-import prodCenturion from "@/assets/prod-centurion.jpg";
-import prodRaptor from "@/assets/prod-raptor.jpg";
-import prodStratus from "@/assets/prod-stratus.jpg";
-import prodTrailwind from "@/assets/prod-trailwind.jpg";
-
-const SITE_URL = "https://consina-website.lovable.app";
+const SITE_URL = getSiteUrl();
 
 const faqs = [
   {
@@ -107,24 +104,12 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-function catStats(filter: string) {
-  const items = products.filter((p) => p.category === filter);
-  const max = items.length ? Math.max(...items.map((i) => i.discount)) : 0;
-  return { count: items.length, max };
-}
 const categories = [
-  { name: "Carriers", slug: "carriers", filter: "Bags & Carriers", desc: "Backpacks 40–100L for every adventure", img: catCarriers },
-  { name: "Tents & Shelter", slug: "tents", filter: "Tents & Shelter", desc: "From solo overnighters to group expeditions", img: catTents },
-  { name: "Apparel", slug: "apparel", filter: "Apparel", desc: "Jackets, pants, and shirts for the trail", img: catApparel },
-  { name: "Footwear", slug: "footwear", filter: "Footwear", desc: "Trekking shoes built for Indonesian terrain", img: catFootwear },
-  { name: "Accessories", slug: "accessories", filter: "Camping & Cookware", desc: "Bottles, headlamps, compasses, and more", img: catAccessories },
-] as const;
-
-const bestsellers = [
-  { name: "Centurion 60L Carrier", desc: "Less-contact back system for long expeditions", price: "IDR 1,850,000", img: prodCenturion },
-  { name: "Raptor 45L Carrier", desc: "Day-to-weekend hiking companion", price: "IDR 1,250,000", img: prodRaptor },
-  { name: "Stratus 2P Tent", desc: "Lightweight 2-person shelter, 4-season rated", price: "IDR 2,100,000", img: prodStratus },
-  { name: "Trailwind Jacket", desc: "Wind-resistant, water-repellent shell", price: "IDR 850,000", img: prodTrailwind },
+  { name: "Carriers", slug: "carriers", desc: "Backpacks 40–100L for every adventure", img: catCarriers },
+  { name: "Tents & Shelter", slug: "tents", desc: "From solo overnighters to group expeditions", img: catTents },
+  { name: "Apparel", slug: "apparel", desc: "Jackets, pants, and shirts for the trail", img: catApparel },
+  { name: "Footwear", slug: "footwear", desc: "Trekking shoes built for Indonesian terrain", img: catFootwear },
+  { name: "Accessories", slug: "accessories", desc: "Bottles, headlamps, compasses, and more", img: catAccessories },
 ] as const;
 
 const stores = [
@@ -134,7 +119,7 @@ const stores = [
   { city: "Bali", addr: "Denpasar — Jl. Teuku Umar", phone: "+62 361 224 998" },
 ];
 
-function HomePage() {
+export function HomePage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Nav />
@@ -260,10 +245,20 @@ function BrandStory() {
 /* ---------- Categories ---------- */
 function Categories() {
   const { t } = useTranslation();
+  const { products } = usePublicProducts();
+  const counts = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const p of products) {
+      if (!p.category_slug) continue;
+      map.set(p.category_slug, (map.get(p.category_slug) ?? 0) + 1);
+    }
+    return map;
+  }, [products]);
   const localizedCategories = categories.map((c) => ({
     ...c,
     name: t(`categories.${c.slug}` as const),
     desc: t(`home.categories.${c.slug}_desc` as const),
+    count: counts.get(c.slug) ?? 0,
   }));
   return (
     <section className="bg-background py-24 md:py-32">
@@ -294,18 +289,18 @@ function Categories() {
 
 type CategoryItem = {
   slug: (typeof categories)[number]["slug"];
-  filter: string;
   img: string;
   name: string;
   desc: string;
+  count: number;
 };
 
 function CategoryCard({ cat }: { cat: CategoryItem }) {
   const { t } = useTranslation();
-  const stats = catStats(cat.filter);
   return (
     <Link
-      to={`/${cat.slug}`}
+      to="/c/$slug"
+      params={{ slug: cat.slug }}
       className="group flex aspect-square flex-col overflow-hidden rounded-xl border border-[#d4b896] bg-background transition duration-300 hover:-translate-y-1 hover:shadow-lg"
     >
       {/* Image area — top 60% */}
@@ -316,11 +311,6 @@ function CategoryCard({ cat }: { cat: CategoryItem }) {
           loading="lazy"
           className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
-        {stats.max > 0 && (
-          <span className="absolute left-3 top-3 rounded-full bg-[#1a3a2e] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
-            {t("labels.up_to_off", { percent: stats.max })}
-          </span>
-        )}
       </div>
 
       {/* Text area — bottom 40% */}
@@ -330,7 +320,7 @@ function CategoryCard({ cat }: { cat: CategoryItem }) {
             {cat.name}
           </h3>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-            {cat.desc}{stats.count ? ` · ${stats.count} ${t("labels.items")}` : ""}
+            {cat.desc}{cat.count ? ` · ${cat.count} ${t("labels.items")}` : ""}
           </p>
         </div>
         <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-[#1a3a2e] transition group-hover:gap-2">
@@ -344,6 +334,13 @@ function CategoryCard({ cat }: { cat: CategoryItem }) {
 /* ---------- Featured Products ---------- */
 function FeaturedProducts() {
   const { t } = useTranslation();
+  const lang = useLang();
+  const { products } = usePublicProducts();
+  const featured: PublicProduct[] = useMemo(() => {
+    const f = products.filter((p) => p.is_featured);
+    return (f.length ? f : products).slice(0, 4);
+  }, [products]);
+  const prefix = lang === "id" ? "produk" : "products";
   return (
     <section className="mx-auto max-w-[1280px] px-4 py-24 md:px-8 md:py-32">
       {/* Section heading */}
@@ -358,39 +355,35 @@ function FeaturedProducts() {
 
       {/* Product grid */}
       <div className="mt-14 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-        {bestsellers.map((p) => (
-          <div key={p.name} className="group">
-            {/* Image — 4:5 aspect ratio */}
-            <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-muted">
-              <img
-                src={p.img}
-                alt={p.name}
-                width={800}
-                height={1000}
-                loading="lazy"
-                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
+        {featured.map((p) => {
+          const name = localizedField(p, "name", lang).value;
+          const desc = localizedField(p, "short_description", lang).value;
+          return (
+            <div key={p.id} className="group">
+              <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-muted">
+                {p.image_url ? (
+                  <img
+                    src={p.image_url}
+                    alt={name}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                ) : null}
+              </div>
+              <div className="mt-4">
+                <h3 className="font-[Archivo] text-base font-bold leading-snug text-primary">{name}</h3>
+                {desc ? <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{desc}</p> : null}
+                <p className="mt-2 text-sm font-semibold text-primary">{formatPrice(p.price_idr, lang)}</p>
+                <Link
+                  to={`/${lang}/${prefix}/${p.sku}` as never}
+                  className="mt-3 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-[#1a3a2e] transition group-hover:gap-2"
+                >
+                  {t("cta.view_details")} <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
             </div>
-            {/* Text */}
-            <div className="mt-4">
-              <h3 className="font-[Archivo] text-base font-bold leading-snug text-primary">
-                {p.name}
-              </h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {p.desc}
-              </p>
-              <p className="mt-2 text-sm font-semibold text-primary">
-                {p.price}
-              </p>
-              <Link
-                to="/catalog"
-                className="mt-3 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-[#1a3a2e] transition group-hover:gap-2"
-              >
-                {t("cta.view_details")} <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );

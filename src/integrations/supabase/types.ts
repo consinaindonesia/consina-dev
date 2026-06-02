@@ -619,11 +619,15 @@ export type Database = {
           customer_phone: string
           id: string
           inquiry_id: string | null
+          midtrans_transaction_status: string | null
           notes: string | null
+          paid_at: string | null
           payment_method: string
           payment_proof_url: string | null
+          payment_provider: string
           payment_reference: string | null
           payment_status: string
+          refunded_at: string | null
           shipping_address: string | null
           shipping_idr: number
           shipping_method: string
@@ -640,11 +644,15 @@ export type Database = {
           customer_phone: string
           id?: string
           inquiry_id?: string | null
+          midtrans_transaction_status?: string | null
           notes?: string | null
+          paid_at?: string | null
           payment_method?: string
           payment_proof_url?: string | null
+          payment_provider?: string
           payment_reference?: string | null
           payment_status?: string
+          refunded_at?: string | null
           shipping_address?: string | null
           shipping_idr?: number
           shipping_method?: string
@@ -661,11 +669,15 @@ export type Database = {
           customer_phone?: string
           id?: string
           inquiry_id?: string | null
+          midtrans_transaction_status?: string | null
           notes?: string | null
+          paid_at?: string | null
           payment_method?: string
           payment_proof_url?: string | null
+          payment_provider?: string
           payment_reference?: string | null
           payment_status?: string
+          refunded_at?: string | null
           shipping_address?: string | null
           shipping_idr?: number
           shipping_method?: string
@@ -673,6 +685,42 @@ export type Database = {
           subtotal_idr?: number
           total_idr?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      payment_events: {
+        Row: {
+          created_at: string
+          fraud_status: string | null
+          id: string
+          order_id: string
+          provider: string
+          raw: Json | null
+          signature_key: string | null
+          transaction_id: string | null
+          transaction_status: string | null
+        }
+        Insert: {
+          created_at?: string
+          fraud_status?: string | null
+          id?: string
+          order_id: string
+          provider: string
+          raw?: Json | null
+          signature_key?: string | null
+          transaction_id?: string | null
+          transaction_status?: string | null
+        }
+        Update: {
+          created_at?: string
+          fraud_status?: string | null
+          id?: string
+          order_id?: string
+          provider?: string
+          raw?: Json | null
+          signature_key?: string | null
+          transaction_id?: string | null
+          transaction_status?: string | null
         }
         Relationships: []
       }

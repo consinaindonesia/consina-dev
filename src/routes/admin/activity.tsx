@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Download, Loader2, Search } from "lucide-react";
+import { Clock, Download, Loader2, Search } from "lucide-react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { EmptyState } from "@/components/admin/EmptyState";
 import { supabase } from "@/integrations/supabase/client";
@@ -241,7 +241,7 @@ function ActivityPage() {
             <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading…
           </div>
         ) : filtered.length === 0 ? (
-          <EmptyState title="No activity" description="Nothing matches your filters." />
+          <EmptyState icon={Clock} title="No activity" description="Nothing matches your filters." />
         ) : (
           <div className="max-h-[70vh] overflow-auto">
             <table className="w-full text-sm">

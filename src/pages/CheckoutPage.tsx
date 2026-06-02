@@ -289,30 +289,42 @@ export function CheckoutPage() {
             <h2 className="text-sm font-semibold">Payment method</h2>
             <RadioGroup
               value={paymentMethod}
-              onValueChange={(v) =>
-                setPaymentMethod(v as "bank_transfer" | "midtrans")
-              }
+              onValueChange={(v) => setPaymentMethod(v as PaymentMethod)}
               className="mt-3 space-y-2"
             >
-              <label className="flex items-center gap-3 rounded-md border border-border p-3 cursor-pointer">
-                <RadioGroupItem value="bank_transfer" id="bt" />
-                <div>
-                  <div className="text-sm font-medium">Manual Bank Transfer</div>
-                  <div className="text-xs text-muted-foreground">
-                    Transfer to our bank account and upload proof
-                  </div>
-                </div>
-              </label>
-              <label className="flex items-center gap-3 rounded-md border border-border p-3 cursor-pointer">
-                <RadioGroupItem value="midtrans" id="mt" />
-                <div>
-                  <div className="text-sm font-medium">Midtrans</div>
-                  <div className="text-xs text-muted-foreground">
-                    Pay with QRIS, GoPay, OVO, Dana, ShopeePay, credit card,
-                    or bank transfer
-                  </div>
-                </div>
-              </label>
+              {(isIndonesian
+                ? (["midtrans", "bank_transfer", "stripe"] as const)
+                : (["stripe", "midtrans", "bank_transfer"] as const)
+              ).map((method) => {
+                const meta = {
+                  bank_transfer: {
+                    title: "Manual Bank Transfer",
+                    desc: "Transfer to our bank account and upload proof",
+                  },
+                  midtrans: {
+                    title: "Midtrans",
+                    desc: "QRIS, GoPay, OVO, Dana, ShopeePay, credit card, or bank transfer",
+                  },
+                  stripe: {
+                    title: isIndonesian
+                      ? "Stripe (international cards)"
+                      : "Stripe — recommended for international cards",
+                    desc: "Pay with Visa, Mastercard, Amex. Charged in IDR.",
+                  },
+                }[method];
+                return (
+                  <label
+                    key={method}
+                    className="flex items-center gap-3 rounded-md border border-border p-3 cursor-pointer"
+                  >
+                    <RadioGroupItem value={method} id={method} />
+                    <div>
+                      <div className="text-sm font-medium">{meta.title}</div>
+                      <div className="text-xs text-muted-foreground">{meta.desc}</div>
+                    </div>
+                  </label>
+                );
+              })}
             </RadioGroup>
           </div>
 

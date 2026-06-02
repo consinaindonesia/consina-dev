@@ -337,17 +337,74 @@ export function CheckoutPage() {
                 <div className="flex-1">
                   <div className="text-sm font-medium">Home delivery</div>
                   <div className="text-xs text-muted-foreground">
-                    Flat fee {formatPrice(SHIPPING_FLAT_IDR, lang)}
+                    Calculated from your city and order weight (
+                    {(totalWeightGrams / 1000).toFixed(1)} kg)
                   </div>
                   {shippingMethod === "delivery" && (
-                    <div className="mt-3 space-y-2">
-                      <Label className="text-xs">Delivery address</Label>
-                      <Textarea
-                        value={shippingAddress}
-                        onChange={(e) => setShippingAddress(e.target.value)}
-                        rows={3}
-                        placeholder="Street, city, postal code"
-                      />
+                    <div className="mt-3 space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <Label className="text-xs">City</Label>
+                          <Input
+                            value={shippingCity}
+                            onChange={(e) => setShippingCity(e.target.value)}
+                            placeholder="Jakarta"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs">Postal code</Label>
+                          <Input
+                            value={shippingPostal}
+                            onChange={(e) => setShippingPostal(e.target.value)}
+                            placeholder="12345"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label className="text-xs">Street address</Label>
+                        <Textarea
+                          value={shippingAddress}
+                          onChange={(e) => setShippingAddress(e.target.value)}
+                          rows={2}
+                          placeholder="Street, building, unit"
+                        />
+                      </div>
+
+                      {matchedZone && (
+                        <div className="rounded-md border border-border p-3">
+                          <p className="text-xs text-muted-foreground">
+                            Shipping to <strong>{matchedZone.region_name}</strong>{" "}
+                            zone
+                          </p>
+                          <RadioGroup
+                            value={selectedMethodId}
+                            onValueChange={setSelectedMethodId}
+                            className="mt-2 space-y-2"
+                          >
+                            {quotes.map((q) => (
+                              <label
+                                key={q.method.id}
+                                className="flex items-center justify-between gap-3 rounded-md border border-border p-2 cursor-pointer"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <RadioGroupItem value={q.method.id} id={q.method.id} />
+                                  <div>
+                                    <div className="text-sm font-medium">
+                                      {q.method.name}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                      {q.delivery_days_min}–{q.delivery_days_max} days
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="text-sm font-semibold">
+                                  {formatPrice(q.cost_idr, lang)}
+                                </div>
+                              </label>
+                            ))}
+                          </RadioGroup>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

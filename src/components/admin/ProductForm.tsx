@@ -11,6 +11,8 @@ import {
   ArrowLeft,
   ArrowRight,
   X,
+  Upload,
+  Star,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AdminShell } from "@/components/admin/AdminShell";
@@ -76,6 +78,8 @@ export type ProductFormValues = {
   weight_grams: number | null;
   attributes: Attribute[];
   stock_status: "in_stock" | "low_stock" | "out_of_stock";
+  stock: number;
+  images: string[];
   is_featured: boolean;
   is_active: boolean;
   slug: string;
@@ -97,12 +101,34 @@ const EMPTY: ProductFormValues = {
   weight_grams: null,
   attributes: [],
   stock_status: "in_stock",
+  stock: 0,
+  images: [],
   is_featured: false,
   is_active: true,
   slug: "",
   seo_title: "",
   seo_description: "",
 };
+
+function deriveStockStatus(stock: number): ProductFormValues["stock_status"] {
+  if (!stock || stock <= 0) return "out_of_stock";
+  if (stock <= 5) return "low_stock";
+  return "in_stock";
+}
+
+function StockStatusBadge({ status }: { status: ProductFormValues["stock_status"] }) {
+  const map = {
+    in_stock: { label: "In Stock", cls: "bg-emerald-100 text-emerald-800 border-emerald-200" },
+    low_stock: { label: "Low Stock", cls: "bg-amber-100 text-amber-800 border-amber-200" },
+    out_of_stock: { label: "Out of Stock", cls: "bg-red-100 text-red-800 border-red-200" },
+  } as const;
+  const m = map[status];
+  return (
+    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${m.cls}`}>
+      {m.label}
+    </span>
+  );
+}
 
 function formatIDR(n: number) {
   if (!n) return "";

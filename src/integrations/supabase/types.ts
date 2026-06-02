@@ -18,26 +18,41 @@ export type Database = {
         Row: {
           action: string
           admin_user_id: string | null
+          after: Json | null
+          before: Json | null
           created_at: string
           entity_id: string | null
           entity_type: string
           id: string
+          ip_address: string | null
+          metadata: Json | null
+          user_agent: string | null
         }
         Insert: {
           action: string
           admin_user_id?: string | null
+          after?: Json | null
+          before?: Json | null
           created_at?: string
           entity_id?: string | null
           entity_type: string
           id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          user_agent?: string | null
         }
         Update: {
           action?: string
           admin_user_id?: string | null
+          after?: Json | null
+          before?: Json | null
           created_at?: string
           entity_id?: string | null
           entity_type?: string
           id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          user_agent?: string | null
         }
         Relationships: [
           {

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthShell } from "@/components/admin/AuthShell";
+import { logAuthEvent } from "@/lib/activity-log.functions";
 
 export const Route = createFileRoute("/admin/reset-password")({
   head: () => ({ meta: [{ title: "Set new password — Consina Admin" }, { name: "robots", content: "noindex" }] }),
@@ -62,6 +63,10 @@ function ResetPage() {
         setErr(error.message);
       }
       return;
+    }
+    const { data: u } = await supabase.auth.getUser();
+    if (u.user?.email) {
+      void logAuthEvent({ data: { email: u.user.email, kind: "password_changed", metadata: { via: "reset_link" } } });
     }
     await supabase.auth.signOut();
     navigate({ to: "/admin/login", search: { reset: "1" } as never });

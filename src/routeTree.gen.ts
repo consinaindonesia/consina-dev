@@ -39,6 +39,7 @@ import { Route as AdminForgotPasswordRouteImport } from './routes/admin/forgot-p
 import { Route as AdminCustomersRouteImport } from './routes/admin/customers'
 import { Route as AdminCategoriesRouteImport } from './routes/admin/categories'
 import { Route as AdminAttributesRouteImport } from './routes/admin/attributes'
+import { Route as AdminActivityRouteImport } from './routes/admin/activity'
 import { Route as AdminAccountRouteImport } from './routes/admin/account'
 import { Route as LangStoresRouteImport } from './routes/$lang.stores'
 import { Route as LangPermintaanRouteImport } from './routes/$lang.permintaan'
@@ -218,6 +219,11 @@ const AdminAttributesRoute = AdminAttributesRouteImport.update({
   path: '/admin/attributes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminActivityRoute = AdminActivityRouteImport.update({
+  id: '/admin/activity',
+  path: '/admin/activity',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminAccountRoute = AdminAccountRouteImport.update({
   id: '/admin/account',
   path: '/admin/account',
@@ -380,6 +386,7 @@ export interface FileRoutesByFullPath {
   '/$lang/permintaan': typeof LangPermintaanRouteWithChildren
   '/$lang/stores': typeof LangStoresRoute
   '/admin/account': typeof AdminAccountRoute
+  '/admin/activity': typeof AdminActivityRoute
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/customers': typeof AdminCustomersRouteWithChildren
@@ -437,6 +444,7 @@ export interface FileRoutesByTo {
   '/$lang/checkout': typeof LangCheckoutRoute
   '/$lang/stores': typeof LangStoresRoute
   '/admin/account': typeof AdminAccountRoute
+  '/admin/activity': typeof AdminActivityRoute
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/customers': typeof AdminCustomersRouteWithChildren
@@ -498,6 +506,7 @@ export interface FileRoutesById {
   '/$lang/permintaan': typeof LangPermintaanRouteWithChildren
   '/$lang/stores': typeof LangStoresRoute
   '/admin/account': typeof AdminAccountRoute
+  '/admin/activity': typeof AdminActivityRoute
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/customers': typeof AdminCustomersRouteWithChildren
@@ -560,6 +569,7 @@ export interface FileRouteTypes {
     | '/$lang/permintaan'
     | '/$lang/stores'
     | '/admin/account'
+    | '/admin/activity'
     | '/admin/attributes'
     | '/admin/categories'
     | '/admin/customers'
@@ -617,6 +627,7 @@ export interface FileRouteTypes {
     | '/$lang/checkout'
     | '/$lang/stores'
     | '/admin/account'
+    | '/admin/activity'
     | '/admin/attributes'
     | '/admin/categories'
     | '/admin/customers'
@@ -677,6 +688,7 @@ export interface FileRouteTypes {
     | '/$lang/permintaan'
     | '/$lang/stores'
     | '/admin/account'
+    | '/admin/activity'
     | '/admin/attributes'
     | '/admin/categories'
     | '/admin/customers'
@@ -734,6 +746,7 @@ export interface RootRouteChildren {
   StoresRoute: typeof StoresRoute
   TentsRoute: typeof TentsRoute
   AdminAccountRoute: typeof AdminAccountRoute
+  AdminActivityRoute: typeof AdminActivityRoute
   AdminAttributesRoute: typeof AdminAttributesRoute
   AdminCategoriesRoute: typeof AdminCategoriesRoute
   AdminCustomersRoute: typeof AdminCustomersRouteWithChildren
@@ -974,6 +987,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/attributes'
       fullPath: '/admin/attributes'
       preLoaderRoute: typeof AdminAttributesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/activity': {
+      id: '/admin/activity'
+      path: '/admin/activity'
+      fullPath: '/admin/activity'
+      preLoaderRoute: typeof AdminActivityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/account': {
@@ -1303,6 +1323,7 @@ const rootRouteChildren: RootRouteChildren = {
   StoresRoute: StoresRoute,
   TentsRoute: TentsRoute,
   AdminAccountRoute: AdminAccountRoute,
+  AdminActivityRoute: AdminActivityRoute,
   AdminAttributesRoute: AdminAttributesRoute,
   AdminCategoriesRoute: AdminCategoriesRoute,
   AdminCustomersRoute: AdminCustomersRouteWithChildren,
@@ -1336,13 +1357,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

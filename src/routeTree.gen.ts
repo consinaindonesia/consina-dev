@@ -38,6 +38,7 @@ import { Route as AdminCustomersRouteImport } from './routes/admin/customers'
 import { Route as AdminCategoriesRouteImport } from './routes/admin/categories'
 import { Route as AdminAttributesRouteImport } from './routes/admin/attributes'
 import { Route as AdminAccountRouteImport } from './routes/admin/account'
+import { Route as LangStoresRouteImport } from './routes/$lang.stores'
 import { Route as LangPermintaanRouteImport } from './routes/$lang.permintaan'
 import { Route as LangInquiryRouteImport } from './routes/$lang.inquiry'
 import { Route as LangPermintaanIndexRouteImport } from './routes/$lang.permintaan.index'
@@ -202,6 +203,11 @@ const AdminAccountRoute = AdminAccountRouteImport.update({
   path: '/admin/account',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LangStoresRoute = LangStoresRouteImport.update({
+  id: '/stores',
+  path: '/stores',
+  getParentRoute: () => LangRoute,
+} as any)
 const LangPermintaanRoute = LangPermintaanRouteImport.update({
   id: '/permintaan',
   path: '/permintaan',
@@ -311,6 +317,7 @@ export interface FileRoutesByFullPath {
   '/tents': typeof TentsRoute
   '/$lang/inquiry': typeof LangInquiryRouteWithChildren
   '/$lang/permintaan': typeof LangPermintaanRouteWithChildren
+  '/$lang/stores': typeof LangStoresRoute
   '/admin/account': typeof AdminAccountRoute
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
@@ -357,6 +364,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
+  '/$lang/stores': typeof LangStoresRoute
   '/admin/account': typeof AdminAccountRoute
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
@@ -407,6 +415,7 @@ export interface FileRoutesById {
   '/tents': typeof TentsRoute
   '/$lang/inquiry': typeof LangInquiryRouteWithChildren
   '/$lang/permintaan': typeof LangPermintaanRouteWithChildren
+  '/$lang/stores': typeof LangStoresRoute
   '/admin/account': typeof AdminAccountRoute
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
@@ -458,6 +467,7 @@ export interface FileRouteTypes {
     | '/tents'
     | '/$lang/inquiry'
     | '/$lang/permintaan'
+    | '/$lang/stores'
     | '/admin/account'
     | '/admin/attributes'
     | '/admin/categories'
@@ -504,6 +514,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/stores'
     | '/tents'
+    | '/$lang/stores'
     | '/admin/account'
     | '/admin/attributes'
     | '/admin/categories'
@@ -553,6 +564,7 @@ export interface FileRouteTypes {
     | '/tents'
     | '/$lang/inquiry'
     | '/$lang/permintaan'
+    | '/$lang/stores'
     | '/admin/account'
     | '/admin/attributes'
     | '/admin/categories'
@@ -832,6 +844,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAccountRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$lang/stores': {
+      id: '/$lang/stores'
+      path: '/stores'
+      fullPath: '/$lang/stores'
+      preLoaderRoute: typeof LangStoresRouteImport
+      parentRoute: typeof LangRoute
+    }
     '/$lang/permintaan': {
       id: '/$lang/permintaan'
       path: '/permintaan'
@@ -992,6 +1011,7 @@ const LangPermintaanRouteWithChildren = LangPermintaanRoute._addFileChildren(
 interface LangRouteChildren {
   LangInquiryRoute: typeof LangInquiryRouteWithChildren
   LangPermintaanRoute: typeof LangPermintaanRouteWithChildren
+  LangStoresRoute: typeof LangStoresRoute
   LangIndexRoute: typeof LangIndexRoute
   LangProductsSlugRoute: typeof LangProductsSlugRoute
   LangProdukSlugRoute: typeof LangProdukSlugRoute
@@ -1000,6 +1020,7 @@ interface LangRouteChildren {
 const LangRouteChildren: LangRouteChildren = {
   LangInquiryRoute: LangInquiryRouteWithChildren,
   LangPermintaanRoute: LangPermintaanRouteWithChildren,
+  LangStoresRoute: LangStoresRoute,
   LangIndexRoute: LangIndexRoute,
   LangProductsSlugRoute: LangProductsSlugRoute,
   LangProdukSlugRoute: LangProdukSlugRoute,

@@ -29,7 +29,6 @@ import { Route as AdminStoresRouteImport } from './routes/admin/stores'
 import { Route as AdminShippingRouteImport } from './routes/admin/shipping'
 import { Route as AdminRestocksRouteImport } from './routes/admin/restocks'
 import { Route as AdminResetPasswordRouteImport } from './routes/admin/reset-password'
-import { Route as AdminProductsRouteImport } from './routes/admin/products'
 import { Route as AdminOrdersRouteImport } from './routes/admin/orders'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminLanguagesRouteImport } from './routes/admin/languages'
@@ -46,6 +45,7 @@ import { Route as LangPrivacyRouteImport } from './routes/$lang.privacy'
 import { Route as LangPermintaanRouteImport } from './routes/$lang.permintaan'
 import { Route as LangInquiryRouteImport } from './routes/$lang.inquiry'
 import { Route as LangCheckoutRouteImport } from './routes/$lang.checkout'
+import { Route as AdminProductsIndexRouteImport } from './routes/admin/products.index'
 import { Route as LangPermintaanIndexRouteImport } from './routes/$lang.permintaan.index'
 import { Route as LangInquiryIndexRouteImport } from './routes/$lang.inquiry.index'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
@@ -173,11 +173,6 @@ const AdminResetPasswordRoute = AdminResetPasswordRouteImport.update({
   path: '/admin/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminProductsRoute = AdminProductsRouteImport.update({
-  id: '/admin/products',
-  path: '/admin/products',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminOrdersRoute = AdminOrdersRouteImport.update({
   id: '/admin/orders',
   path: '/admin/orders',
@@ -257,6 +252,11 @@ const LangCheckoutRoute = LangCheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
   getParentRoute: () => LangRoute,
+} as any)
+const AdminProductsIndexRoute = AdminProductsIndexRouteImport.update({
+  id: '/admin/products/',
+  path: '/admin/products/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const LangPermintaanIndexRoute = LangPermintaanIndexRouteImport.update({
   id: '/',
@@ -423,7 +423,6 @@ export interface FileRoutesByFullPath {
   '/admin/languages': typeof AdminLanguagesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/orders': typeof AdminOrdersRouteWithChildren
-  '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/restocks': typeof AdminRestocksRoute
   '/admin/shipping': typeof AdminShippingRoute
@@ -449,6 +448,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/$lang/inquiry/': typeof LangInquiryIndexRoute
   '/$lang/permintaan/': typeof LangPermintaanIndexRoute
+  '/admin/products/': typeof AdminProductsIndexRoute
   '/admin/customers/$email/delete': typeof AdminCustomersEmailDeleteRoute
   '/admin/customers/$email/export': typeof AdminCustomersEmailExportRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
@@ -485,7 +485,6 @@ export interface FileRoutesByTo {
   '/admin/languages': typeof AdminLanguagesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/orders': typeof AdminOrdersRouteWithChildren
-  '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/restocks': typeof AdminRestocksRoute
   '/admin/shipping': typeof AdminShippingRoute
@@ -511,6 +510,7 @@ export interface FileRoutesByTo {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/$lang/inquiry': typeof LangInquiryIndexRoute
   '/$lang/permintaan': typeof LangPermintaanIndexRoute
+  '/admin/products': typeof AdminProductsIndexRoute
   '/admin/customers/$email/delete': typeof AdminCustomersEmailDeleteRoute
   '/admin/customers/$email/export': typeof AdminCustomersEmailExportRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
@@ -551,7 +551,6 @@ export interface FileRoutesById {
   '/admin/languages': typeof AdminLanguagesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/orders': typeof AdminOrdersRouteWithChildren
-  '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/restocks': typeof AdminRestocksRoute
   '/admin/shipping': typeof AdminShippingRoute
@@ -577,6 +576,7 @@ export interface FileRoutesById {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/$lang/inquiry/': typeof LangInquiryIndexRoute
   '/$lang/permintaan/': typeof LangPermintaanIndexRoute
+  '/admin/products/': typeof AdminProductsIndexRoute
   '/admin/customers/$email/delete': typeof AdminCustomersEmailDeleteRoute
   '/admin/customers/$email/export': typeof AdminCustomersEmailExportRoute
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
@@ -618,7 +618,6 @@ export interface FileRouteTypes {
     | '/admin/languages'
     | '/admin/login'
     | '/admin/orders'
-    | '/admin/products'
     | '/admin/reset-password'
     | '/admin/restocks'
     | '/admin/shipping'
@@ -644,6 +643,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/$lang/inquiry/'
     | '/$lang/permintaan/'
+    | '/admin/products/'
     | '/admin/customers/$email/delete'
     | '/admin/customers/$email/export'
     | '/admin/products/$id/edit'
@@ -680,7 +680,6 @@ export interface FileRouteTypes {
     | '/admin/languages'
     | '/admin/login'
     | '/admin/orders'
-    | '/admin/products'
     | '/admin/reset-password'
     | '/admin/restocks'
     | '/admin/shipping'
@@ -706,6 +705,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/$lang/inquiry'
     | '/$lang/permintaan'
+    | '/admin/products'
     | '/admin/customers/$email/delete'
     | '/admin/customers/$email/export'
     | '/admin/products/$id/edit'
@@ -745,7 +745,6 @@ export interface FileRouteTypes {
     | '/admin/languages'
     | '/admin/login'
     | '/admin/orders'
-    | '/admin/products'
     | '/admin/reset-password'
     | '/admin/restocks'
     | '/admin/shipping'
@@ -771,6 +770,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/$lang/inquiry/'
     | '/$lang/permintaan/'
+    | '/admin/products/'
     | '/admin/customers/$email/delete'
     | '/admin/customers/$email/export'
     | '/admin/products/$id/edit'
@@ -806,7 +806,6 @@ export interface RootRouteChildren {
   AdminLanguagesRoute: typeof AdminLanguagesRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminOrdersRoute: typeof AdminOrdersRouteWithChildren
-  AdminProductsRoute: typeof AdminProductsRouteWithChildren
   AdminResetPasswordRoute: typeof AdminResetPasswordRoute
   AdminRestocksRoute: typeof AdminRestocksRoute
   AdminShippingRoute: typeof AdminShippingRoute
@@ -820,6 +819,7 @@ export interface RootRouteChildren {
   AdminSettingsNotificationsRoute: typeof AdminSettingsNotificationsRoute
   AdminSettingsPrivacyRoute: typeof AdminSettingsPrivacyRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
+  AdminProductsIndexRoute: typeof AdminProductsIndexRoute
   ApiPublicHooksMidtransRoute: typeof ApiPublicHooksMidtransRoute
   ApiPublicHooksStripeRoute: typeof ApiPublicHooksStripeRoute
   ApiPublicHooksWeeklyInquirySummaryRoute: typeof ApiPublicHooksWeeklyInquirySummaryRoute
@@ -970,13 +970,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/products': {
-      id: '/admin/products'
-      path: '/admin/products'
-      fullPath: '/admin/products'
-      preLoaderRoute: typeof AdminProductsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin/orders': {
       id: '/admin/orders'
       path: '/admin/orders'
@@ -1088,6 +1081,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/$lang/checkout'
       preLoaderRoute: typeof LangCheckoutRouteImport
       parentRoute: typeof LangRoute
+    }
+    '/admin/products/': {
+      id: '/admin/products/'
+      path: '/admin/products'
+      fullPath: '/admin/products/'
+      preLoaderRoute: typeof AdminProductsIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/$lang/permintaan/': {
       id: '/$lang/permintaan/'
@@ -1377,22 +1377,6 @@ const AdminOrdersRouteWithChildren = AdminOrdersRoute._addFileChildren(
   AdminOrdersRouteChildren,
 )
 
-interface AdminProductsRouteChildren {
-  AdminProductsNewRoute: typeof AdminProductsNewRoute
-  AdminProductsIdEditRoute: typeof AdminProductsIdEditRoute
-  AdminProductsIdStockRoute: typeof AdminProductsIdStockRoute
-}
-
-const AdminProductsRouteChildren: AdminProductsRouteChildren = {
-  AdminProductsNewRoute: AdminProductsNewRoute,
-  AdminProductsIdEditRoute: AdminProductsIdEditRoute,
-  AdminProductsIdStockRoute: AdminProductsIdStockRoute,
-}
-
-const AdminProductsRouteWithChildren = AdminProductsRoute._addFileChildren(
-  AdminProductsRouteChildren,
-)
-
 interface AdminStoresRouteChildren {
   AdminStoresIdStockRoute: typeof AdminStoresIdStockRoute
 }
@@ -1427,7 +1411,6 @@ const rootRouteChildren: RootRouteChildren = {
   AdminLanguagesRoute: AdminLanguagesRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminOrdersRoute: AdminOrdersRouteWithChildren,
-  AdminProductsRoute: AdminProductsRouteWithChildren,
   AdminResetPasswordRoute: AdminResetPasswordRoute,
   AdminRestocksRoute: AdminRestocksRoute,
   AdminShippingRoute: AdminShippingRoute,
@@ -1441,6 +1424,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminSettingsNotificationsRoute: AdminSettingsNotificationsRoute,
   AdminSettingsPrivacyRoute: AdminSettingsPrivacyRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
+  AdminProductsIndexRoute: AdminProductsIndexRoute,
   ApiPublicHooksMidtransRoute: ApiPublicHooksMidtransRoute,
   ApiPublicHooksStripeRoute: ApiPublicHooksStripeRoute,
   ApiPublicHooksWeeklyInquirySummaryRoute:
@@ -1452,3 +1436,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

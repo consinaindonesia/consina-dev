@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { useServerFn } from "@tanstack/react-start";
 import { refundMidtransOrder } from "@/lib/midtrans.functions";
+import { refundStripeOrder } from "@/lib/stripe.functions";
 
 export const Route = createFileRoute("/admin/orders/$id")({
   head: () => ({
@@ -74,6 +75,7 @@ function OrderDetailPage() {
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const refund = useServerFn(refundMidtransOrder);
+  const refundStripe = useServerFn(refundStripeOrder);
 
   async function handleRefund() {
     if (!order) return;
@@ -82,6 +84,22 @@ function OrderDetailPage() {
     setSaving(true);
     try {
       await refund({ data: { orderId: order.id, reason } });
+      setOrder({ ...order, payment_status: "refunded", status: "cancelled" });
+      toast.success("Refund processed");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Refund failed");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleRefundStripe() {
+    if (!order) return;
+    const reason = window.prompt("Reason for refund:", "Refunded by admin");
+    if (reason === null) return;
+    setSaving(true);
+    try {
+      await refundStripe({ data: { orderId: order.id, reason } });
       setOrder({ ...order, payment_status: "refunded", status: "cancelled" });
       toast.success("Refund processed");
     } catch (err) {
@@ -297,6 +315,23 @@ function OrderDetailPage() {
                     </Button>
                     <p className="mt-2 text-xs text-muted-foreground">
                       Issues a full refund through Midtrans and marks the order
+                      cancelled.
+                    </p>
+                  </div>
+                )}
+              {order.payment_provider === "stripe" &&
+                order.payment_status === "paid" && (
+                  <div className="mt-4 border-t border-border pt-4">
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleRefundStripe}
+                      disabled={saving}
+                    >
+                      Refund via Stripe
+                    </Button>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Issues a full refund through Stripe and marks the order
                       cancelled.
                     </p>
                   </div>

@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/i18n/LangProvider";
 import { formatPrice } from "@/i18n/format";
 import { createMidtransSnap } from "@/lib/midtrans.functions";
+import { createStripeCheckoutSession } from "@/lib/stripe.functions";
 
 type OrderRow = {
   id: string;
@@ -49,6 +50,7 @@ export function OrderPaymentPage() {
   const [redirecting, setRedirecting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const createSnap = useServerFn(createMidtransSnap);
+  const createStripe = useServerFn(createStripeCheckoutSession);
 
   useEffect(() => {
     let cancelled = false;
@@ -129,12 +131,28 @@ export function OrderPaymentPage() {
   const isPaid = order.payment_status === "paid";
   const hasProof = !!order.payment_proof_url;
   const isMidtrans = order.payment_method === "midtrans";
+  const isStripe = order.payment_method === "stripe";
 
   async function handlePayMidtrans() {
     if (!order) return;
     setRedirecting(true);
     try {
       const { redirectUrl } = await createSnap({ data: { orderId: order.id } });
+      window.location.href = redirectUrl;
+    } catch (err) {
+      console.error(err);
+      toast.error(err instanceof Error ? err.message : "Could not start payment");
+      setRedirecting(false);
+    }
+  }
+
+  async function handlePayStripe() {
+    if (!order) return;
+    setRedirecting(true);
+    try {
+      const { redirectUrl } = await createStripe({
+        data: { orderId: order.id, origin: window.location.origin },
+      });
       window.location.href = redirectUrl;
     } catch (err) {
       console.error(err);
@@ -169,6 +187,31 @@ export function OrderPaymentPage() {
                 Your order is now being prepared.
               </p>
             </div>
+          </div>
+        ) : isStripe ? (
+          <div className="mt-8 space-y-4">
+            <p className="text-sm text-muted-foreground">
+              You'll be redirected to Stripe to complete payment securely with
+              an international credit or debit card. Charged in IDR.
+            </p>
+            <Button
+              size="lg"
+              className="w-full"
+              onClick={handlePayStripe}
+              disabled={redirecting}
+            >
+              {redirecting ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <CreditCard className="mr-2 h-4 w-4" />
+              )}
+              Pay with Stripe
+            </Button>
+            {order.payment_status === "verifying" && (
+              <p className="text-xs text-amber-700">
+                We're verifying your last payment. Refresh in a moment.
+              </p>
+            )}
           </div>
         ) : isMidtrans ? (
           <div className="mt-8 space-y-4">

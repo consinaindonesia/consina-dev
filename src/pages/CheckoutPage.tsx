@@ -12,6 +12,26 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/i18n/LangProvider";
 import { formatPrice } from "@/i18n/format";
 
+type PaymentMethod = "bank_transfer" | "midtrans" | "stripe";
+
+function detectIsIndonesian(): boolean {
+  if (typeof navigator === "undefined") return true;
+  const langs = [navigator.language, ...(navigator.languages ?? [])]
+    .filter(Boolean)
+    .map((l) => l.toLowerCase());
+  return langs.some((l) => l.startsWith("id"));
+}
+
+async function fetchUsdRate(): Promise<number | null> {
+  try {
+    const res = await fetch("https://open.er-api.com/v6/latest/USD");
+    const json = (await res.json()) as { rates?: { IDR?: number } };
+    return json.rates?.IDR ?? null;
+  } catch {
+    return null;
+  }
+}
+
 function useSearch(): Record<string, string> {
   if (typeof window === "undefined") return {};
   const out: Record<string, string> = {};
@@ -56,10 +76,23 @@ export function CheckoutPage() {
   const [shippingMethod, setShippingMethod] = useState<"pickup" | "delivery">("pickup");
   const [shippingAddress, setShippingAddress] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<"bank_transfer" | "midtrans">(
-    "bank_transfer",
+  const isIndonesian = useMemo(detectIsIndonesian, []);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
+    isIndonesian ? "midtrans" : "stripe",
   );
   const [submitting, setSubmitting] = useState(false);
+  const [usdPerIdr, setUsdPerIdr] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (isIndonesian) return;
+    let cancelled = false;
+    void fetchUsdRate().then((r) => {
+      if (!cancelled && r) setUsdPerIdr(r);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isIndonesian]);
 
   useEffect(() => {
     let cancelled = false;
@@ -256,30 +289,42 @@ export function CheckoutPage() {
             <h2 className="text-sm font-semibold">Payment method</h2>
             <RadioGroup
               value={paymentMethod}
-              onValueChange={(v) =>
-                setPaymentMethod(v as "bank_transfer" | "midtrans")
-              }
+              onValueChange={(v) => setPaymentMethod(v as PaymentMethod)}
               className="mt-3 space-y-2"
             >
-              <label className="flex items-center gap-3 rounded-md border border-border p-3 cursor-pointer">
-                <RadioGroupItem value="bank_transfer" id="bt" />
-                <div>
-                  <div className="text-sm font-medium">Manual Bank Transfer</div>
-                  <div className="text-xs text-muted-foreground">
-                    Transfer to our bank account and upload proof
-                  </div>
-                </div>
-              </label>
-              <label className="flex items-center gap-3 rounded-md border border-border p-3 cursor-pointer">
-                <RadioGroupItem value="midtrans" id="mt" />
-                <div>
-                  <div className="text-sm font-medium">Midtrans</div>
-                  <div className="text-xs text-muted-foreground">
-                    Pay with QRIS, GoPay, OVO, Dana, ShopeePay, credit card,
-                    or bank transfer
-                  </div>
-                </div>
-              </label>
+              {(isIndonesian
+                ? (["midtrans", "bank_transfer", "stripe"] as const)
+                : (["stripe", "midtrans", "bank_transfer"] as const)
+              ).map((method) => {
+                const meta = {
+                  bank_transfer: {
+                    title: "Manual Bank Transfer",
+                    desc: "Transfer to our bank account and upload proof",
+                  },
+                  midtrans: {
+                    title: "Midtrans",
+                    desc: "QRIS, GoPay, OVO, Dana, ShopeePay, credit card, or bank transfer",
+                  },
+                  stripe: {
+                    title: isIndonesian
+                      ? "Stripe (international cards)"
+                      : "Stripe — recommended for international cards",
+                    desc: "Pay with Visa, Mastercard, Amex. Charged in IDR.",
+                  },
+                }[method];
+                return (
+                  <label
+                    key={method}
+                    className="flex items-center gap-3 rounded-md border border-border p-3 cursor-pointer"
+                  >
+                    <RadioGroupItem value={method} id={method} />
+                    <div>
+                      <div className="text-sm font-medium">{meta.title}</div>
+                      <div className="text-xs text-muted-foreground">{meta.desc}</div>
+                    </div>
+                  </label>
+                );
+              })}
             </RadioGroup>
           </div>
 
@@ -314,7 +359,14 @@ export function CheckoutPage() {
               </div>
               <div className="mt-2 flex justify-between border-t border-border pt-3 text-base font-bold">
                 <dt>Total</dt>
-                <dd>{formatPrice(total, lang)}</dd>
+                <dd className="text-right">
+                  <div>{formatPrice(total, lang)}</div>
+                  {usdPerIdr && (
+                    <div className="text-xs font-normal text-muted-foreground">
+                      ≈ ${(total / usdPerIdr).toFixed(2)} USD
+                    </div>
+                  )}
+                </dd>
               </div>
             </dl>
             <Button

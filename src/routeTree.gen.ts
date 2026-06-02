@@ -41,6 +41,7 @@ import { Route as AdminAccountRouteImport } from './routes/admin/account'
 import { Route as LangStoresRouteImport } from './routes/$lang.stores'
 import { Route as LangPermintaanRouteImport } from './routes/$lang.permintaan'
 import { Route as LangInquiryRouteImport } from './routes/$lang.inquiry'
+import { Route as LangCheckoutRouteImport } from './routes/$lang.checkout'
 import { Route as LangPermintaanIndexRouteImport } from './routes/$lang.permintaan.index'
 import { Route as LangInquiryIndexRouteImport } from './routes/$lang.inquiry.index'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
@@ -52,6 +53,7 @@ import { Route as AdminCustomersEmailRouteImport } from './routes/admin/customer
 import { Route as LangProdukSlugRouteImport } from './routes/$lang.produk.$slug'
 import { Route as LangProductsSlugRouteImport } from './routes/$lang.products.$slug'
 import { Route as LangPermintaanTerkirimRouteImport } from './routes/$lang.permintaan.terkirim'
+import { Route as LangOrderIdRouteImport } from './routes/$lang.order.$id'
 import { Route as LangInquirySentRouteImport } from './routes/$lang.inquiry.sent'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
@@ -221,6 +223,11 @@ const LangInquiryRoute = LangInquiryRouteImport.update({
   path: '/inquiry',
   getParentRoute: () => LangRoute,
 } as any)
+const LangCheckoutRoute = LangCheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => LangRoute,
+} as any)
 const LangPermintaanIndexRoute = LangPermintaanIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -276,6 +283,11 @@ const LangPermintaanTerkirimRoute = LangPermintaanTerkirimRouteImport.update({
   id: '/terkirim',
   path: '/terkirim',
   getParentRoute: () => LangPermintaanRoute,
+} as any)
+const LangOrderIdRoute = LangOrderIdRouteImport.update({
+  id: '/order/$id',
+  path: '/order/$id',
+  getParentRoute: () => LangRoute,
 } as any)
 const LangInquirySentRoute = LangInquirySentRouteImport.update({
   id: '/sent',
@@ -333,6 +345,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
+  '/$lang/checkout': typeof LangCheckoutRoute
   '/$lang/inquiry': typeof LangInquiryRouteWithChildren
   '/$lang/permintaan': typeof LangPermintaanRouteWithChildren
   '/$lang/stores': typeof LangStoresRoute
@@ -356,6 +369,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/en/': typeof EnIndexRoute
   '/$lang/inquiry/sent': typeof LangInquirySentRoute
+  '/$lang/order/$id': typeof LangOrderIdRoute
   '/$lang/permintaan/terkirim': typeof LangPermintaanTerkirimRoute
   '/$lang/products/$slug': typeof LangProductsSlugRoute
   '/$lang/produk/$slug': typeof LangProdukSlugRoute
@@ -385,6 +399,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
+  '/$lang/checkout': typeof LangCheckoutRoute
   '/$lang/stores': typeof LangStoresRoute
   '/admin/account': typeof AdminAccountRoute
   '/admin/attributes': typeof AdminAttributesRoute
@@ -406,6 +421,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/en': typeof EnIndexRoute
   '/$lang/inquiry/sent': typeof LangInquirySentRoute
+  '/$lang/order/$id': typeof LangOrderIdRoute
   '/$lang/permintaan/terkirim': typeof LangPermintaanTerkirimRoute
   '/$lang/products/$slug': typeof LangProductsSlugRoute
   '/$lang/produk/$slug': typeof LangProdukSlugRoute
@@ -437,6 +453,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
+  '/$lang/checkout': typeof LangCheckoutRoute
   '/$lang/inquiry': typeof LangInquiryRouteWithChildren
   '/$lang/permintaan': typeof LangPermintaanRouteWithChildren
   '/$lang/stores': typeof LangStoresRoute
@@ -460,6 +477,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/en/': typeof EnIndexRoute
   '/$lang/inquiry/sent': typeof LangInquirySentRoute
+  '/$lang/order/$id': typeof LangOrderIdRoute
   '/$lang/permintaan/terkirim': typeof LangPermintaanTerkirimRoute
   '/$lang/products/$slug': typeof LangProductsSlugRoute
   '/$lang/produk/$slug': typeof LangProdukSlugRoute
@@ -492,6 +510,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/stores'
     | '/tents'
+    | '/$lang/checkout'
     | '/$lang/inquiry'
     | '/$lang/permintaan'
     | '/$lang/stores'
@@ -515,6 +534,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/en/'
     | '/$lang/inquiry/sent'
+    | '/$lang/order/$id'
     | '/$lang/permintaan/terkirim'
     | '/$lang/products/$slug'
     | '/$lang/produk/$slug'
@@ -544,6 +564,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/stores'
     | '/tents'
+    | '/$lang/checkout'
     | '/$lang/stores'
     | '/admin/account'
     | '/admin/attributes'
@@ -565,6 +586,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/en'
     | '/$lang/inquiry/sent'
+    | '/$lang/order/$id'
     | '/$lang/permintaan/terkirim'
     | '/$lang/products/$slug'
     | '/$lang/produk/$slug'
@@ -595,6 +617,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/stores'
     | '/tents'
+    | '/$lang/checkout'
     | '/$lang/inquiry'
     | '/$lang/permintaan'
     | '/$lang/stores'
@@ -618,6 +641,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/en/'
     | '/$lang/inquiry/sent'
+    | '/$lang/order/$id'
     | '/$lang/permintaan/terkirim'
     | '/$lang/products/$slug'
     | '/$lang/produk/$slug'
@@ -902,6 +926,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangInquiryRouteImport
       parentRoute: typeof LangRoute
     }
+    '/$lang/checkout': {
+      id: '/$lang/checkout'
+      path: '/checkout'
+      fullPath: '/$lang/checkout'
+      preLoaderRoute: typeof LangCheckoutRouteImport
+      parentRoute: typeof LangRoute
+    }
     '/$lang/permintaan/': {
       id: '/$lang/permintaan/'
       path: '/'
@@ -978,6 +1009,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/$lang/permintaan/terkirim'
       preLoaderRoute: typeof LangPermintaanTerkirimRouteImport
       parentRoute: typeof LangPermintaanRoute
+    }
+    '/$lang/order/$id': {
+      id: '/$lang/order/$id'
+      path: '/order/$id'
+      fullPath: '/$lang/order/$id'
+      preLoaderRoute: typeof LangOrderIdRouteImport
+      parentRoute: typeof LangRoute
     }
     '/$lang/inquiry/sent': {
       id: '/$lang/inquiry/sent'
@@ -1067,19 +1105,23 @@ const LangPermintaanRouteWithChildren = LangPermintaanRoute._addFileChildren(
 )
 
 interface LangRouteChildren {
+  LangCheckoutRoute: typeof LangCheckoutRoute
   LangInquiryRoute: typeof LangInquiryRouteWithChildren
   LangPermintaanRoute: typeof LangPermintaanRouteWithChildren
   LangStoresRoute: typeof LangStoresRoute
   LangIndexRoute: typeof LangIndexRoute
+  LangOrderIdRoute: typeof LangOrderIdRoute
   LangProductsSlugRoute: typeof LangProductsSlugRoute
   LangProdukSlugRoute: typeof LangProdukSlugRoute
 }
 
 const LangRouteChildren: LangRouteChildren = {
+  LangCheckoutRoute: LangCheckoutRoute,
   LangInquiryRoute: LangInquiryRouteWithChildren,
   LangPermintaanRoute: LangPermintaanRouteWithChildren,
   LangStoresRoute: LangStoresRoute,
   LangIndexRoute: LangIndexRoute,
+  LangOrderIdRoute: LangOrderIdRoute,
   LangProductsSlugRoute: LangProductsSlugRoute,
   LangProdukSlugRoute: LangProdukSlugRoute,
 }
@@ -1179,3 +1221,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

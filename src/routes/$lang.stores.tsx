@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { useTranslation } from "react-i18next";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Search,
   MapPin,

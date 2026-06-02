@@ -26,6 +26,7 @@ import { Route as EnSplatRouteImport } from './routes/en/$'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as AdminStoresRouteImport } from './routes/admin/stores'
+import { Route as AdminShippingRouteImport } from './routes/admin/shipping'
 import { Route as AdminRestocksRouteImport } from './routes/admin/restocks'
 import { Route as AdminResetPasswordRouteImport } from './routes/admin/reset-password'
 import { Route as AdminProductsRouteImport } from './routes/admin/products'
@@ -150,6 +151,11 @@ const CSlugRoute = CSlugRouteImport.update({
 const AdminStoresRoute = AdminStoresRouteImport.update({
   id: '/admin/stores',
   path: '/admin/stores',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminShippingRoute = AdminShippingRouteImport.update({
+  id: '/admin/shipping',
+  path: '/admin/shipping',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRestocksRoute = AdminRestocksRouteImport.update({
@@ -386,6 +392,7 @@ export interface FileRoutesByFullPath {
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/restocks': typeof AdminRestocksRoute
+  '/admin/shipping': typeof AdminShippingRoute
   '/admin/stores': typeof AdminStoresRouteWithChildren
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -442,6 +449,7 @@ export interface FileRoutesByTo {
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/restocks': typeof AdminRestocksRoute
+  '/admin/shipping': typeof AdminShippingRoute
   '/admin/stores': typeof AdminStoresRouteWithChildren
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -502,6 +510,7 @@ export interface FileRoutesById {
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/reset-password': typeof AdminResetPasswordRoute
   '/admin/restocks': typeof AdminRestocksRoute
+  '/admin/shipping': typeof AdminShippingRoute
   '/admin/stores': typeof AdminStoresRouteWithChildren
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -563,6 +572,7 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/reset-password'
     | '/admin/restocks'
+    | '/admin/shipping'
     | '/admin/stores'
     | '/c/$slug'
     | '/email/unsubscribe'
@@ -619,6 +629,7 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/reset-password'
     | '/admin/restocks'
+    | '/admin/shipping'
     | '/admin/stores'
     | '/c/$slug'
     | '/email/unsubscribe'
@@ -678,6 +689,7 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/reset-password'
     | '/admin/restocks'
+    | '/admin/shipping'
     | '/admin/stores'
     | '/c/$slug'
     | '/email/unsubscribe'
@@ -734,6 +746,7 @@ export interface RootRouteChildren {
   AdminProductsRoute: typeof AdminProductsRouteWithChildren
   AdminResetPasswordRoute: typeof AdminResetPasswordRoute
   AdminRestocksRoute: typeof AdminRestocksRoute
+  AdminShippingRoute: typeof AdminShippingRoute
   AdminStoresRoute: typeof AdminStoresRouteWithChildren
   CSlugRoute: typeof CSlugRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
@@ -870,6 +883,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/stores'
       fullPath: '/admin/stores'
       preLoaderRoute: typeof AdminStoresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/shipping': {
+      id: '/admin/shipping'
+      path: '/admin/shipping'
+      fullPath: '/admin/shipping'
+      preLoaderRoute: typeof AdminShippingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/restocks': {
@@ -1295,6 +1315,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminProductsRoute: AdminProductsRouteWithChildren,
   AdminResetPasswordRoute: AdminResetPasswordRoute,
   AdminRestocksRoute: AdminRestocksRoute,
+  AdminShippingRoute: AdminShippingRoute,
   AdminStoresRoute: AdminStoresRouteWithChildren,
   CSlugRoute: CSlugRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,

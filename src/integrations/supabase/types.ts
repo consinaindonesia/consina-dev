@@ -64,6 +64,48 @@ export type Database = {
           },
         ]
       }
+      activity_log_archive: {
+        Row: {
+          action: string
+          admin_user_id: string | null
+          after: Json | null
+          before: Json | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          admin_user_id?: string | null
+          after?: Json | null
+          before?: Json | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          admin_user_id?: string | null
+          after?: Json | null
+          before?: Json | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       admin_users: {
         Row: {
           browser_notifications_enabled: boolean
@@ -403,6 +445,50 @@ export type Database = {
           used_at?: string | null
         }
         Relationships: []
+      }
+      gdpr_requests: {
+        Row: {
+          affected_count: number
+          affected_inquiry_ids: string[]
+          created_at: string
+          customer_email: string
+          id: string
+          metadata: Json | null
+          notes: string | null
+          performed_by: string | null
+          request_type: string
+        }
+        Insert: {
+          affected_count?: number
+          affected_inquiry_ids?: string[]
+          created_at?: string
+          customer_email: string
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          performed_by?: string | null
+          request_type: string
+        }
+        Update: {
+          affected_count?: number
+          affected_inquiry_ids?: string[]
+          created_at?: string
+          customer_email?: string
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          performed_by?: string | null
+          request_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gdpr_requests_performed_by_fkey"
+            columns: ["performed_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       inquiries: {
         Row: {
@@ -1099,6 +1185,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      anonymize_customer_email: {
+        Args: { _email: string }
+        Returns: {
+          inquiry_id: string
+        }[]
+      }
       current_admin_role: { Args: never; Returns: string }
       delete_email: {
         Args: { message_id: number; queue_name: string }
@@ -1127,6 +1219,7 @@ export type Database = {
           read_ct: number
         }[]
       }
+      run_data_retention: { Args: never; Returns: Json }
     }
     Enums: {
       [_ in never]: never

@@ -78,6 +78,9 @@ export type ProductFormValues = {
   stock_status: "in_stock" | "low_stock" | "out_of_stock";
   is_featured: boolean;
   is_active: boolean;
+  slug: string;
+  seo_title: string;
+  seo_description: string;
 };
 
 const EMPTY: ProductFormValues = {
@@ -96,6 +99,9 @@ const EMPTY: ProductFormValues = {
   stock_status: "in_stock",
   is_featured: false,
   is_active: true,
+  slug: "",
+  seo_title: "",
+  seo_description: "",
 };
 
 function formatIDR(n: number) {
@@ -109,6 +115,17 @@ function parseIDR(s: string) {
 }
 
 const SKU_RE = /^[A-Za-z0-9-]+$/;
+const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+function slugify(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
 
 async function logActivity(
   adminId: string | null,
@@ -127,7 +144,7 @@ async function logActivity(
   }
 }
 
-type Tab = "basic" | "translations" | "images" | "availability";
+type Tab = "basic" | "translations" | "images" | "availability" | "seo";
 type ProductFormProps =
   | { mode: "new"; productId?: undefined; initialTab?: Tab }
   | { mode: "edit"; productId: string; initialTab?: Tab };
@@ -286,6 +303,9 @@ export function ProductForm(props: ProductFormProps) {
           stock_status: (data.stock_status as ProductFormValues["stock_status"]) ?? "in_stock",
           is_featured: data.is_featured,
           is_active: data.is_active,
+          slug: (data as { slug?: string | null }).slug ?? "",
+          seo_title: (data as { seo_title?: string | null }).seo_title ?? "",
+          seo_description: (data as { seo_description?: string | null }).seo_description ?? "",
         };
         setValues(next);
         setInitialSnapshot(JSON.stringify(next));
@@ -443,6 +463,9 @@ export function ProductForm(props: ProductFormProps) {
       stock_status: values.stock_status,
       is_featured: values.is_featured,
       is_active: values.is_active,
+      slug: values.slug.trim() ? values.slug.trim() : slugify(values.name_en || values.name_id) || null,
+      seo_title: values.seo_title.trim() || null,
+      seo_description: values.seo_description.trim() || null,
     };
 
     if (mode === "new") {
@@ -589,6 +612,7 @@ export function ProductForm(props: ProductFormProps) {
           <TabsTrigger value="availability" disabled={mode === "new"}>
             Where available
           </TabsTrigger>
+          <TabsTrigger value="seo">SEO &amp; URL</TabsTrigger>
         </TabsList>
 
         {/* BASIC INFO */}
@@ -938,6 +962,80 @@ export function ProductForm(props: ProductFormProps) {
               />
             </Card>
           )}
+        </TabsContent>
+
+        {/* SEO & URL */}
+        <TabsContent value="seo" className="pb-32">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <Card title="URL slug">
+              <Field
+                label="Slug"
+                error={
+                  values.slug && !SLUG_RE.test(values.slug)
+                    ? "Use lowercase letters, numbers and hyphens only"
+                    : undefined
+                }
+              >
+                <div className="flex gap-2">
+                  <Input
+                    value={values.slug}
+                    onChange={(e) =>
+                      setFieldByUser("slug", e.target.value.toLowerCase())
+                    }
+                    placeholder={slugify(values.name_en || values.name_id) || "my-product-name"}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() =>
+                      setFieldByUser(
+                        "slug",
+                        slugify(values.name_en || values.name_id),
+                      )
+                    }
+                  >
+                    Generate
+                  </Button>
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  URL-friendly name. Leave empty to auto-generate from the product name on save. Lowercase letters, numbers and hyphens only.
+                  {values.slug ? (
+                    <> Preview: <code>/products/{values.slug}</code></>
+                  ) : null}
+                </p>
+              </Field>
+            </Card>
+
+            <Card title="Search engine listing">
+              <Field label="SEO title">
+                <Input
+                  value={values.seo_title}
+                  maxLength={120}
+                  onChange={(e) => setFieldByUser("seo_title", e.target.value)}
+                  placeholder={values.name_en || values.name_id}
+                />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Recommended ≤ 60 chars. Currently {values.seo_title.length}.
+                </p>
+              </Field>
+              <Field label="SEO description">
+                <Textarea
+                  rows={3}
+                  value={values.seo_description}
+                  maxLength={300}
+                  onChange={(e) =>
+                    setFieldByUser("seo_description", e.target.value)
+                  }
+                  placeholder={
+                    values.short_description_en || values.short_description_id
+                  }
+                />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Recommended ≤ 160 chars. Currently {values.seo_description.length}.
+                </p>
+              </Field>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
 

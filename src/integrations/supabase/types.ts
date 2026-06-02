@@ -807,9 +807,12 @@ export type Database = {
           name_en: string
           name_id: string
           price_idr: number
+          seo_description: string | null
+          seo_title: string | null
           short_description_en: string | null
           short_description_id: string | null
           sku: string
+          slug: string | null
           stock_status: string
           updated_at: string
           weight_grams: number | null
@@ -828,9 +831,12 @@ export type Database = {
           name_en: string
           name_id: string
           price_idr?: number
+          seo_description?: string | null
+          seo_title?: string | null
           short_description_en?: string | null
           short_description_id?: string | null
           sku: string
+          slug?: string | null
           stock_status?: string
           updated_at?: string
           weight_grams?: number | null
@@ -849,9 +855,12 @@ export type Database = {
           name_en?: string
           name_id?: string
           price_idr?: number
+          seo_description?: string | null
+          seo_title?: string | null
           short_description_en?: string | null
           short_description_id?: string | null
           sku?: string
+          slug?: string | null
           stock_status?: string
           updated_at?: string
           weight_grams?: number | null

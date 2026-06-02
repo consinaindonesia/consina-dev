@@ -375,7 +375,7 @@ function FeaturedProducts() {
                 {desc ? <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{desc}</p> : null}
                 <p className="mt-2 text-sm font-semibold text-primary">{formatPrice(p.price_idr, lang)}</p>
                 <Link
-                  to={`/${lang}/${prefix}/${p.sku}` as never}
+                  to={`/${lang}/${prefix}/${p.slug ?? p.sku}` as never}
                   className="mt-3 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-[#1a3a2e] transition group-hover:gap-2"
                 >
                   {t("cta.view_details")} <ArrowRight className="h-3.5 w-3.5" />

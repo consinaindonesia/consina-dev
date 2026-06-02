@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 export type PublicProduct = {
   id: string;
   sku: string;
+  slug: string | null;
   name_en: string;
   name_id: string;
   short_description_en: string | null;
@@ -21,6 +22,7 @@ export type PublicProduct = {
 type RawRow = {
   id: string;
   sku: string;
+  slug: string | null;
   name_en: string;
   name_id: string;
   short_description_en: string | null;
@@ -46,6 +48,7 @@ function normalize(rows: RawRow[]): PublicProduct[] {
     return {
       id: r.id,
       sku: r.sku,
+      slug: r.slug ?? null,
       name_en: r.name_en,
       name_id: r.name_id,
       short_description_en: r.short_description_en,
@@ -73,7 +76,7 @@ export function usePublicProducts() {
       const { data: rows } = await supabase
         .from("products")
         .select(
-          "id,sku,name_en,name_id,short_description_en,short_description_id,price_idr,is_featured,category_id,categories(slug,name_en,name_id),product_images(image_url,thumbnail_url,is_primary,sort_order)",
+          "id,sku,slug,name_en,name_id,short_description_en,short_description_id,price_idr,is_featured,category_id,categories(slug,name_en,name_id),product_images(image_url,thumbnail_url,is_primary,sort_order)",
         )
         .eq("is_active", true)
         .order("is_featured", { ascending: false })

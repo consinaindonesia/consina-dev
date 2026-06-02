@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { CheckCircle2, Copy, Loader2, Upload } from "lucide-react";
+import { CheckCircle2, Copy, Loader2, Upload, CreditCard } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/i18n/LangProvider";
 import { formatPrice } from "@/i18n/format";
+import { createMidtransSnap } from "@/lib/midtrans.functions";
 
 type OrderRow = {
   id: string;
@@ -44,7 +46,9 @@ export function OrderPaymentPage() {
   const [order, setOrder] = useState<OrderRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const createSnap = useServerFn(createMidtransSnap);
 
   useEffect(() => {
     let cancelled = false;
@@ -124,6 +128,20 @@ export function OrderPaymentPage() {
   const ref = shortRef(order.id);
   const isPaid = order.payment_status === "paid";
   const hasProof = !!order.payment_proof_url;
+  const isMidtrans = order.payment_method === "midtrans";
+
+  async function handlePayMidtrans() {
+    if (!order) return;
+    setRedirecting(true);
+    try {
+      const { redirectUrl } = await createSnap({ data: { orderId: order.id } });
+      window.location.href = redirectUrl;
+    } catch (err) {
+      console.error(err);
+      toast.error(err instanceof Error ? err.message : "Could not start payment");
+      setRedirecting(false);
+    }
+  }
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10 sm:py-14">
@@ -151,6 +169,31 @@ export function OrderPaymentPage() {
                 Your order is now being prepared.
               </p>
             </div>
+          </div>
+        ) : isMidtrans ? (
+          <div className="mt-8 space-y-4">
+            <p className="text-sm text-muted-foreground">
+              You'll be redirected to Midtrans to complete payment with QRIS,
+              GoPay, OVO, Dana, ShopeePay, credit card, or bank transfer.
+            </p>
+            <Button
+              size="lg"
+              className="w-full"
+              onClick={handlePayMidtrans}
+              disabled={redirecting}
+            >
+              {redirecting ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <CreditCard className="mr-2 h-4 w-4" />
+              )}
+              Pay now
+            </Button>
+            {order.payment_status === "verifying" && (
+              <p className="text-xs text-amber-700">
+                We're verifying your last payment. Refresh in a moment.
+              </p>
+            )}
           </div>
         ) : (
           <>

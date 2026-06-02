@@ -9,6 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { useServerFn } from "@tanstack/react-start";
+import { refundMidtransOrder } from "@/lib/midtrans.functions";
 
 export const Route = createFileRoute("/admin/orders/$id")({
   head: () => ({
@@ -33,6 +35,7 @@ type Order = {
   shipping_idr: number;
   total_idr: number;
   payment_method: string;
+  payment_provider?: string | null;
   payment_status: string;
   payment_reference: string | null;
   payment_proof_url: string | null;
@@ -70,6 +73,23 @@ function OrderDetailPage() {
   const [loading, setLoading] = useState(true);
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const refund = useServerFn(refundMidtransOrder);
+
+  async function handleRefund() {
+    if (!order) return;
+    const reason = window.prompt("Reason for refund (shown to Midtrans):", "Refunded by admin");
+    if (reason === null) return;
+    setSaving(true);
+    try {
+      await refund({ data: { orderId: order.id, reason } });
+      setOrder({ ...order, payment_status: "refunded", status: "cancelled" });
+      toast.success("Refund processed");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Refund failed");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -259,9 +279,28 @@ function OrderDetailPage() {
                 </div>
               ) : (
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Customer hasn't uploaded payment proof yet.
+                  {order.payment_method === "midtrans"
+                    ? "Paid via Midtrans — no manual proof needed."
+                    : "Customer hasn't uploaded payment proof yet."}
                 </p>
               )}
+              {order.payment_provider === "midtrans" &&
+                order.payment_status === "paid" && (
+                  <div className="mt-4 border-t border-border pt-4">
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleRefund}
+                      disabled={saving}
+                    >
+                      Refund via Midtrans
+                    </Button>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Issues a full refund through Midtrans and marks the order
+                      cancelled.
+                    </p>
+                  </div>
+                )}
             </div>
 
             <div className="rounded-lg border border-border bg-card p-4">

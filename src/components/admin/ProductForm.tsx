@@ -452,6 +452,9 @@ export function ProductForm(props: ProductFormProps) {
       stock_status: values.stock_status,
       is_featured: values.is_featured,
       is_active: values.is_active,
+      slug: values.slug.trim() ? values.slug.trim() : slugify(values.name_en || values.name_id) || null,
+      seo_title: values.seo_title.trim() || null,
+      seo_description: values.seo_description.trim() || null,
     };
 
     if (mode === "new") {

@@ -12,6 +12,7 @@ import {
   X,
   Loader2,
   Search,
+  Boxes,
 } from "lucide-react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { Button } from "@/components/ui/button";
@@ -556,6 +557,16 @@ function StoresPage() {
                           aria-label="Edit"
                         >
                           <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          asChild
+                          aria-label="Manage stock"
+                        >
+                          <Link to="/admin/stores/$id/stock" params={{ id: s.id }}>
+                            <Boxes className="h-3.5 w-3.5" />
+                          </Link>
                         </Button>
                         {s.latitude && s.longitude ? (
                           <Button variant="ghost" size="sm" asChild aria-label="View on map">

@@ -16,6 +16,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/$lang/stores")({
+  validateSearch: (s: Record<string, unknown>): { product?: string } => {
+    const v = typeof s.product === "string" ? s.product : undefined;
+    return v ? { product: v } : {};
+  },
   head: () => ({
     meta: [
       { title: "Find a Consina Store — Locations Across Indonesia" },
@@ -194,7 +198,9 @@ function haversineKm(
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 function PublicStoresPage() {
+  const { product: productFilter } = Route.useSearch();
   const [stores, setStores] = useState<Store[]>([]);
+  const [productInfo, setProductInfo] = useState<{ name: string; storeIds: Set<string> } | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [region, setRegion] = useState<string>("All");
@@ -227,6 +233,30 @@ function PublicStoresPage() {
     };
   }, []);
 
+  // If a product context is present, load product name + the set of stores carrying it.
+  useEffect(() => {
+    if (!productFilter) {
+      setProductInfo(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const [{ data: p }, { data: ss }] = await Promise.all([
+        supabase.from("products").select("name_en, name_id").eq("id", productFilter).maybeSingle(),
+        supabase.from("store_stock").select("store_id").eq("product_id", productFilter),
+      ]);
+      if (cancelled) return;
+      const name = (p as { name_en?: string; name_id?: string } | null);
+      setProductInfo({
+        name: name?.name_en ?? name?.name_id ?? "this product",
+        storeIds: new Set(((ss ?? []) as { store_id: string }[]).map((r) => r.store_id)),
+      });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [productFilter]);
+
   // ask geolocation on mount
   useEffect(() => {
     if (typeof window === "undefined" || !navigator.geolocation) return;
@@ -257,6 +287,7 @@ function PublicStoresPage() {
       .filter((s) => {
         if (region !== "All" && s.region !== region) return false;
         if (openNow && !s.status.open) return false;
+        if (productInfo && !productInfo.storeIds.has(s.id)) return false;
         if (!q) return true;
         return (
           s.name.toLowerCase().includes(q) ||
@@ -271,7 +302,7 @@ function PublicStoresPage() {
           return (a.region || "").localeCompare(b.region || "");
         return a.name.localeCompare(b.name);
       });
-  }, [stores, search, region, openNow, userLoc]);
+  }, [stores, search, region, openNow, userLoc, productInfo]);
 
   const requestGeo = () => {
     if (!navigator.geolocation) return;
@@ -302,6 +333,11 @@ function PublicStoresPage() {
                 ? "Loading stores…"
                 : `${enriched.length} of ${stores.length} stores match your filters.`}
             </p>
+            {productInfo && (
+              <div className="mt-4 inline-flex items-center gap-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-1.5 text-xs font-medium text-primary">
+                Showing stores that carry <span className="font-semibold">{productInfo.name}</span>
+              </div>
+            )}
           </div>
         </header>
 

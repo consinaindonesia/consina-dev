@@ -903,6 +903,7 @@ export type Database = {
           description_en: string | null
           description_id: string | null
           id: string
+          images: string[]
           is_active: boolean
           is_featured: boolean
           name_en: string
@@ -914,6 +915,7 @@ export type Database = {
           short_description_id: string | null
           sku: string
           slug: string | null
+          stock: number
           stock_status: string
           updated_at: string
           weight_grams: number | null
@@ -927,6 +929,7 @@ export type Database = {
           description_en?: string | null
           description_id?: string | null
           id?: string
+          images?: string[]
           is_active?: boolean
           is_featured?: boolean
           name_en: string
@@ -938,6 +941,7 @@ export type Database = {
           short_description_id?: string | null
           sku: string
           slug?: string | null
+          stock?: number
           stock_status?: string
           updated_at?: string
           weight_grams?: number | null
@@ -951,6 +955,7 @@ export type Database = {
           description_en?: string | null
           description_id?: string | null
           id?: string
+          images?: string[]
           is_active?: boolean
           is_featured?: boolean
           name_en?: string
@@ -962,6 +967,7 @@ export type Database = {
           short_description_id?: string | null
           sku?: string
           slug?: string | null
+          stock?: number
           stock_status?: string
           updated_at?: string
           weight_grams?: number | null

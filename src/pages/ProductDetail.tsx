@@ -37,6 +37,7 @@ type Product = {
   weight_grams: number | null;
   attributes: Record<string, string> | null;
   stock_status: "in_stock" | "low_stock" | "out_of_stock";
+  images?: string[] | null;
 };
 
 type ProductImage = {
@@ -93,7 +94,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
       setMissing(false);
 
       const selectCols =
-        "id,sku,category_id,name_id,name_en,short_description_id,short_description_en,description_id,description_en,price_idr,capacity,weight_grams,attributes,stock_status,product_images(image_url,large_url,thumbnail_url,alt_text_id,alt_text_en,is_primary,sort_order)";
+        "id,sku,category_id,name_id,name_en,short_description_id,short_description_en,description_id,description_en,price_idr,capacity,weight_grams,attributes,stock_status,images,product_images(image_url,large_url,thumbnail_url,alt_text_id,alt_text_en,is_primary,sort_order)";
 
       // Prefer slug lookup; fall back to SKU so old URLs keep working.
       let { data: prods } = await supabase
@@ -119,9 +120,21 @@ export function ProductDetailPage({ slug }: { slug: string }) {
         setLoading(false);
         return;
       }
-      const imgs = (prod.product_images ?? []).slice().sort(
+      let imgs = (prod.product_images ?? []).slice().sort(
         (a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0) || a.sort_order - b.sort_order,
       );
+      // Fallback to flat products.images[] (written by the New Product form)
+      if (imgs.length === 0 && Array.isArray(prod.images) && prod.images.length > 0) {
+        imgs = prod.images.map((url, i) => ({
+          image_url: url,
+          large_url: url,
+          thumbnail_url: url,
+          alt_text_id: null,
+          alt_text_en: null,
+          is_primary: i === 0,
+          sort_order: i,
+        }));
+      }
       setProduct(prod);
       setImages(imgs);
 
@@ -139,7 +152,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
             .order("sort_order"),
           supabase
             .from("products")
-            .select("id,sku,name_id,name_en,price_idr,product_images(thumbnail_url,image_url,is_primary,sort_order)")
+            .select("id,sku,name_id,name_en,price_idr,images,product_images(thumbnail_url,image_url,is_primary,sort_order)")
             .eq("category_id", prod.category_id)
             .eq("is_active", true)
             .neq("id", prod.id)
@@ -162,13 +175,16 @@ export function ProductDetailPage({ slug }: { slug: string }) {
             }>;
             ri.sort((a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0) || a.sort_order - b.sort_order);
             const top = ri[0];
+            const flat = Array.isArray((r as { images?: string[] }).images)
+              ? (r as { images?: string[] }).images
+              : null;
             return {
               id: r.id,
               sku: r.sku,
               name_id: r.name_id,
               name_en: r.name_en,
               price_idr: r.price_idr,
-              thumb: top ? (top.thumbnail_url ?? top.image_url) : null,
+              thumb: top ? (top.thumbnail_url ?? top.image_url) : (flat && flat[0]) || null,
             };
           }),
         );

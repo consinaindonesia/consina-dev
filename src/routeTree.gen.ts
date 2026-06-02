@@ -61,6 +61,7 @@ import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lova
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicHooksWeeklyInquirySummaryRouteImport } from './routes/api/public/hooks/weekly-inquiry-summary'
+import { Route as ApiPublicHooksMidtransRouteImport } from './routes/api/public/hooks/midtrans'
 import { Route as AdminStoresIdStockRouteImport } from './routes/admin/stores.$id.stock'
 import { Route as AdminProductsIdStockRouteImport } from './routes/admin/products.$id.stock'
 import { Route as AdminProductsIdEditRouteImport } from './routes/admin/products.$id.edit'
@@ -330,6 +331,11 @@ const ApiPublicHooksWeeklyInquirySummaryRoute =
     path: '/api/public/hooks/weekly-inquiry-summary',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksMidtransRoute = ApiPublicHooksMidtransRouteImport.update({
+  id: '/api/public/hooks/midtrans',
+  path: '/api/public/hooks/midtrans',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminStoresIdStockRoute = AdminStoresIdStockRouteImport.update({
   id: '/$id/stock',
   path: '/$id/stock',
@@ -398,6 +404,7 @@ export interface FileRoutesByFullPath {
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
   '/admin/products/$id/stock': typeof AdminProductsIdStockRoute
   '/admin/stores/$id/stock': typeof AdminStoresIdStockRoute
+  '/api/public/hooks/midtrans': typeof ApiPublicHooksMidtransRoute
   '/api/public/hooks/weekly-inquiry-summary': typeof ApiPublicHooksWeeklyInquirySummaryRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -452,6 +459,7 @@ export interface FileRoutesByTo {
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
   '/admin/products/$id/stock': typeof AdminProductsIdStockRoute
   '/admin/stores/$id/stock': typeof AdminStoresIdStockRoute
+  '/api/public/hooks/midtrans': typeof ApiPublicHooksMidtransRoute
   '/api/public/hooks/weekly-inquiry-summary': typeof ApiPublicHooksWeeklyInquirySummaryRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -510,6 +518,7 @@ export interface FileRoutesById {
   '/admin/products/$id/edit': typeof AdminProductsIdEditRoute
   '/admin/products/$id/stock': typeof AdminProductsIdStockRoute
   '/admin/stores/$id/stock': typeof AdminStoresIdStockRoute
+  '/api/public/hooks/midtrans': typeof ApiPublicHooksMidtransRoute
   '/api/public/hooks/weekly-inquiry-summary': typeof ApiPublicHooksWeeklyInquirySummaryRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -569,6 +578,7 @@ export interface FileRouteTypes {
     | '/admin/products/$id/edit'
     | '/admin/products/$id/stock'
     | '/admin/stores/$id/stock'
+    | '/api/public/hooks/midtrans'
     | '/api/public/hooks/weekly-inquiry-summary'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -623,6 +633,7 @@ export interface FileRouteTypes {
     | '/admin/products/$id/edit'
     | '/admin/products/$id/stock'
     | '/admin/stores/$id/stock'
+    | '/api/public/hooks/midtrans'
     | '/api/public/hooks/weekly-inquiry-summary'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -680,6 +691,7 @@ export interface FileRouteTypes {
     | '/admin/products/$id/edit'
     | '/admin/products/$id/stock'
     | '/admin/stores/$id/stock'
+    | '/api/public/hooks/midtrans'
     | '/api/public/hooks/weekly-inquiry-summary'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -719,6 +731,7 @@ export interface RootRouteChildren {
   AdminReportsRegionalRoute: typeof AdminReportsRegionalRoute
   AdminSettingsNotificationsRoute: typeof AdminSettingsNotificationsRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
+  ApiPublicHooksMidtransRoute: typeof ApiPublicHooksMidtransRoute
   ApiPublicHooksWeeklyInquirySummaryRoute: typeof ApiPublicHooksWeeklyInquirySummaryRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
@@ -1091,6 +1104,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksWeeklyInquirySummaryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/midtrans': {
+      id: '/api/public/hooks/midtrans'
+      path: '/api/public/hooks/midtrans'
+      fullPath: '/api/public/hooks/midtrans'
+      preLoaderRoute: typeof ApiPublicHooksMidtransRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/stores/$id/stock': {
       id: '/admin/stores/$id/stock'
       path: '/$id/stock'
@@ -1264,6 +1284,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminReportsRegionalRoute: AdminReportsRegionalRoute,
   AdminSettingsNotificationsRoute: AdminSettingsNotificationsRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
+  ApiPublicHooksMidtransRoute: ApiPublicHooksMidtransRoute,
   ApiPublicHooksWeeklyInquirySummaryRoute:
     ApiPublicHooksWeeklyInquirySummaryRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,

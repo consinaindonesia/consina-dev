@@ -56,6 +56,9 @@ export function CheckoutPage() {
   const [shippingMethod, setShippingMethod] = useState<"pickup" | "delivery">("pickup");
   const [shippingAddress, setShippingAddress] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"bank_transfer" | "midtrans">(
+    "bank_transfer",
+  );
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -117,7 +120,8 @@ export function CheckoutPage() {
           subtotal_idr: subtotal,
           shipping_idr: shipping,
           total_idr: total,
-          payment_method: "bank_transfer",
+          payment_method: paymentMethod,
+          payment_provider: paymentMethod,
           payment_status: "pending",
           status: "new",
         })
@@ -250,19 +254,32 @@ export function CheckoutPage() {
 
           <div className="rounded-lg border border-border p-4">
             <h2 className="text-sm font-semibold">Payment method</h2>
-            <RadioGroup value="bank_transfer" className="mt-3 space-y-2">
+            <RadioGroup
+              value={paymentMethod}
+              onValueChange={(v) =>
+                setPaymentMethod(v as "bank_transfer" | "midtrans")
+              }
+              className="mt-3 space-y-2"
+            >
               <label className="flex items-center gap-3 rounded-md border border-border p-3 cursor-pointer">
                 <RadioGroupItem value="bank_transfer" id="bt" />
-                <span className="text-sm font-medium">Bank Transfer</span>
+                <div>
+                  <div className="text-sm font-medium">Manual Bank Transfer</div>
+                  <div className="text-xs text-muted-foreground">
+                    Transfer to our bank account and upload proof
+                  </div>
+                </div>
               </label>
-              <div className="flex items-center gap-3 rounded-md border border-border p-3 opacity-50">
-                <RadioGroupItem value="midtrans" id="mt" disabled />
-                <span className="text-sm">Midtrans (coming soon)</span>
-              </div>
-              <div className="flex items-center gap-3 rounded-md border border-border p-3 opacity-50">
-                <RadioGroupItem value="stripe" id="st" disabled />
-                <span className="text-sm">Stripe (coming soon)</span>
-              </div>
+              <label className="flex items-center gap-3 rounded-md border border-border p-3 cursor-pointer">
+                <RadioGroupItem value="midtrans" id="mt" />
+                <div>
+                  <div className="text-sm font-medium">Midtrans</div>
+                  <div className="text-xs text-muted-foreground">
+                    Pay with QRIS, GoPay, OVO, Dana, ShopeePay, credit card,
+                    or bank transfer
+                  </div>
+                </div>
+              </label>
             </RadioGroup>
           </div>
 

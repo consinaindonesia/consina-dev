@@ -536,6 +536,9 @@ export function ProductDetailPage({ slug }: { slug: string }) {
           </aside>
         </div>
 
+        {/* Find in store */}
+        <FindInStore productId={product.id} lang={lang} />
+
         {/* Related */}
         {related.length > 0 && (
           <section className="mt-16">

@@ -92,14 +92,25 @@ export function ProductDetailPage({ slug }: { slug: string }) {
       setLoading(true);
       setMissing(false);
 
-      const { data: prods } = await supabase
+      const selectCols =
+        "id,sku,category_id,name_id,name_en,short_description_id,short_description_en,description_id,description_en,price_idr,capacity,weight_grams,attributes,stock_status,product_images(image_url,large_url,thumbnail_url,alt_text_id,alt_text_en,is_primary,sort_order)";
+
+      // Prefer slug lookup; fall back to SKU so old URLs keep working.
+      let { data: prods } = await supabase
         .from("products")
-        .select(
-          "id,sku,category_id,name_id,name_en,short_description_id,short_description_en,description_id,description_en,price_idr,capacity,weight_grams,attributes,stock_status,product_images(image_url,large_url,thumbnail_url,alt_text_id,alt_text_en,is_primary,sort_order)",
-        )
-        .ilike("sku", slug)
+        .select(selectCols)
+        .eq("slug", slug)
         .eq("is_active", true)
         .limit(1);
+
+      if (!prods || prods.length === 0) {
+        ({ data: prods } = await supabase
+          .from("products")
+          .select(selectCols)
+          .ilike("sku", slug)
+          .eq("is_active", true)
+          .limit(1));
+      }
 
       const prod = prods?.[0] as (Product & { product_images: ProductImage[] }) | undefined;
       if (cancelled) return;

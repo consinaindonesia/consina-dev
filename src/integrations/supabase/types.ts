@@ -681,6 +681,48 @@ export type Database = {
           },
         ]
       }
+      store_stock: {
+        Row: {
+          created_at: string
+          id: string
+          last_updated_at: string
+          product_id: string
+          stock_quantity: number | null
+          store_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_updated_at?: string
+          product_id: string
+          stock_quantity?: number | null
+          store_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_updated_at?: string
+          product_id?: string
+          stock_quantity?: number | null
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_stock_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_stock_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stores: {
         Row: {
           address: string | null

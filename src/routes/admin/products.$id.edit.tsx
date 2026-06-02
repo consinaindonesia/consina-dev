@@ -1,13 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ProductForm } from "@/components/admin/ProductForm";
 
-type Tab = "basic" | "translations" | "images";
+type Tab = "basic" | "translations" | "images" | "availability";
 
 export const Route = createFileRoute("/admin/products/$id/edit")({
   head: () => ({ meta: [{ title: "Edit Product — Admin" }, { name: "robots", content: "noindex" }] }),
   validateSearch: (s: Record<string, unknown>): { tab?: Tab } => {
     const v = s.tab;
-    return v === "basic" || v === "translations" || v === "images" ? { tab: v } : {};
+    return v === "basic" || v === "translations" || v === "images" || v === "availability"
+      ? { tab: v }
+      : {};
   },
   component: EditProductPage,
 });

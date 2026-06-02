@@ -78,6 +78,9 @@ export type ProductFormValues = {
   stock_status: "in_stock" | "low_stock" | "out_of_stock";
   is_featured: boolean;
   is_active: boolean;
+  slug: string;
+  seo_title: string;
+  seo_description: string;
 };
 
 const EMPTY: ProductFormValues = {
@@ -96,6 +99,9 @@ const EMPTY: ProductFormValues = {
   stock_status: "in_stock",
   is_featured: false,
   is_active: true,
+  slug: "",
+  seo_title: "",
+  seo_description: "",
 };
 
 function formatIDR(n: number) {

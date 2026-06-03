@@ -296,6 +296,7 @@ function VariantRow({
   isLast,
   saving,
   uploading,
+  hideSave,
   onPatch,
   onSave,
   onDelete,
@@ -308,6 +309,7 @@ function VariantRow({
   isLast: boolean;
   saving: boolean;
   uploading: boolean;
+  hideSave?: boolean;
   onPatch: (p: Partial<Variant>) => void;
   onSave: () => void;
   onDelete: () => void;
@@ -439,6 +441,7 @@ function VariantRow({
           </Button>
         </div>
       </div>
+      {!hideSave && (
       <div className="mt-3 flex justify-end">
         <Button
           type="button"
@@ -450,6 +453,7 @@ function VariantRow({
           {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : isNew ? "Add color" : "Save"}
         </Button>
       </div>
+      )}
     </li>
   );
 }

@@ -994,6 +994,24 @@ export function ProductForm(props: ProductFormProps) {
           </div>
         </TabsContent>
 
+        {/* COLOR VARIANTS */}
+        <TabsContent value="variants" className="pb-32">
+          {mode === "new" ? (
+            <Card title="Color Variants">
+              <p className="text-sm text-muted-foreground">
+                Save the product first, then add color variants.
+              </p>
+            </Card>
+          ) : (
+            <Card title="Color Variants">
+              <p className="mb-3 text-xs text-muted-foreground">
+                Add the colors this product is available in. Each color shows on the public product page as a swatch and, if you upload an image, switches the main product photo when selected.
+              </p>
+              <ProductVariantsTab productId={productId} sku={values.sku} />
+            </Card>
+          )}
+        </TabsContent>
+
         {/* AVAILABILITY */}
         <TabsContent value="availability" className="pb-32">
           {mode === "new" ? (

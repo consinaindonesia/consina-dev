@@ -363,14 +363,14 @@ function FeaturedProducts() {
               <Link
                 to={`/${lang}/${prefix}/${p.slug ?? p.sku}` as never}
                 aria-label={name}
-                className="block relative aspect-[4/5] overflow-hidden rounded-xl bg-muted cursor-pointer"
+                className="block relative aspect-square w-full max-w-[1080px] overflow-hidden rounded-xl bg-muted cursor-pointer"
               >
                 {p.image_url ? (
                   <img
                     src={p.image_url}
                     alt={name}
                     loading="lazy"
-                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
                   />
                 ) : null}
               </Link>

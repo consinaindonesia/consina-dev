@@ -640,6 +640,7 @@ export function ProductForm(props: ProductFormProps) {
                 setValues(draftAvailable);
                 setDraftAvailable(null);
                 setDraftDismissed(true);
+                setStockTouched(true);
                 toast.success("Draft restored");
               }}
             >

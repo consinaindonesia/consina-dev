@@ -736,7 +736,6 @@ export function ProductForm(props: ProductFormProps) {
                   <Input
                     value={values.sku}
                     onChange={(e) => setField("sku", e.target.value.toUpperCase())}
-                    placeholder="e.g., CRR-CEN-60"
                     className="font-mono pr-8"
                   />
                   <div className="absolute right-2 top-1/2 -translate-y-1/2">
@@ -774,7 +773,6 @@ export function ProductForm(props: ProductFormProps) {
                 <Input
                   value={values.capacity}
                   onChange={(e) => setField("capacity", e.target.value)}
-                  placeholder="e.g., 60L"
                 />
               </Field>
 
@@ -786,7 +784,6 @@ export function ProductForm(props: ProductFormProps) {
                   onChange={(e) =>
                     setField("weight_grams", e.target.value ? parseInt(e.target.value, 10) : null)
                   }
-                  placeholder="e.g., 1500"
                 />
               </Field>
 
@@ -915,7 +912,6 @@ export function ProductForm(props: ProductFormProps) {
                     inputMode="numeric"
                     value={formatIDR(values.price_idr)}
                     onChange={(e) => setField("price_idr", parseIDR(e.target.value))}
-                    placeholder="e.g., 1.850.000"
                     className="pl-10"
                   />
                 </div>

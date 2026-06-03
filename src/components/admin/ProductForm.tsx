@@ -845,7 +845,6 @@ export function ProductForm(props: ProductFormProps) {
                     categoryAttrs.some((d) => d.slug === attr.key) ? null : (
                     <div key={idx} className="flex gap-2">
                       <Input
-                        placeholder="Key (e.g. Material)"
                         value={attr.key}
                         onChange={(e) =>
                           setValues((p) => ({
@@ -857,7 +856,6 @@ export function ProductForm(props: ProductFormProps) {
                         }
                       />
                       <Input
-                        placeholder="Value (e.g. Polyester 600D)"
                         value={attr.value}
                         onChange={(e) =>
                           setValues((p) => ({
@@ -1248,7 +1246,6 @@ export function ProductForm(props: ProductFormProps) {
                     onChange={(e) =>
                       setFieldByUser("slug", e.target.value.toLowerCase())
                     }
-                    placeholder={slugify(values.name_en || values.name_id) || "my-product-name"}
                   />
                   <Button
                     type="button"
@@ -1278,7 +1275,6 @@ export function ProductForm(props: ProductFormProps) {
                   value={values.seo_title}
                   maxLength={120}
                   onChange={(e) => setFieldByUser("seo_title", e.target.value)}
-                  placeholder={values.name_en || values.name_id}
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
                   Recommended ≤ 60 chars. Currently {values.seo_title.length}.
@@ -1291,9 +1287,6 @@ export function ProductForm(props: ProductFormProps) {
                   maxLength={300}
                   onChange={(e) =>
                     setFieldByUser("seo_description", e.target.value)
-                  }
-                  placeholder={
-                    values.short_description_en || values.short_description_id
                   }
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
@@ -1630,7 +1623,6 @@ function LangColumn({
           <Input
             value={values[nameKey]}
             onChange={(e) => setField(nameKey, e.target.value)}
-            placeholder={isID ? "Contoh: Tas Carrier Centaurus 60L" : "e.g., Centaurus 60L Carrier"}
           />
         </div>
 
@@ -1655,11 +1647,6 @@ function LangColumn({
             maxLength={SHORT_MAX}
             value={shortVal}
             onChange={(e) => setField(shortKey, e.target.value)}
-            placeholder={
-              isID
-                ? "Ringkasan singkat untuk daftar produk…"
-                : "One-line summary for product list and meta description…"
-            }
           />
         </div>
 
@@ -1671,9 +1658,6 @@ function LangColumn({
           <RichTextEditor
             value={values[descKey]}
             onChange={(html) => setField(descKey, html)}
-            placeholder={
-              isID ? "Dirancang untuk ekspedisi…" : "Built for multi-day expeditions…"
-            }
           />
         </div>
       </div>

@@ -6,6 +6,7 @@ import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useLang } from "@/i18n/LangProvider";
+import { PriceDisplay } from "@/components/site/PriceDisplay";
 
 export const Route = createFileRoute("/c/$slug")({
   component: CategoryPage,
@@ -38,15 +39,20 @@ type ProductRow = {
   name_en: string;
   name_id: string;
   price_idr: number;
+  original_price_idr: number | null;
+  sale_price_idr: number | null;
+  is_on_sale: boolean;
   attributes: Record<string, string> | null;
   product_images: Array<{ thumbnail_url: string | null; image_url: string }>;
   images: string[] | null;
   variants: Array<{ color_hex: string; color_name: string }>;
+  size_variants: Array<{
+    price_idr: number | null;
+    original_price_idr: number | null;
+    stock: number | null;
+  }>;
 };
 
-function formatIDR(n: number) {
-  return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(n);
-}
 
 function CategoryPage() {
   const { slug } = Route.useParams();
@@ -117,7 +123,7 @@ function CategoryPage() {
       const { data: prods } = await supabase
         .from("products")
         .select(
-          "id,sku,slug,name_en,name_id,price_idr,attributes,images,product_images(thumbnail_url,image_url,is_primary,sort_order),product_variants(color_hex,color_name,sort_order)",
+          "id,sku,slug,name_en,name_id,price_idr,original_price_idr,sale_price_idr,is_on_sale,attributes,images,product_images(thumbnail_url,image_url,is_primary,sort_order),product_variants(color_hex,color_name,sort_order)",
         )
         .eq("category_id", cat.id)
         .eq("is_active", true)
@@ -148,10 +154,14 @@ function CategoryPage() {
           name_en: p.name_en,
           name_id: p.name_id,
           price_idr: p.price_idr,
+          original_price_idr: (p as { original_price_idr?: number | null }).original_price_idr ?? null,
+          sale_price_idr: (p as { sale_price_idr?: number | null }).sale_price_idr ?? null,
+          is_on_sale: !!(p as { is_on_sale?: boolean }).is_on_sale,
           attributes: (p.attributes as Record<string, string> | null) ?? null,
           product_images: merged,
           images: flat,
           variants: variantsRaw,
+          size_variants: [],
         };
       });
       setProducts(normalized);
@@ -356,7 +366,7 @@ function CategoryPage() {
                               )}
                             </div>
                           )}
-                          <p className="mt-2 font-semibold text-primary">{formatIDR(p.price_idr)}</p>
+                          <PriceDisplay product={p} lang={lang} size="sm" className="mt-2" />
                         </div>
                         </Link>
                       </li>

@@ -10,6 +10,9 @@ export type PublicProduct = {
   short_description_en: string | null;
   short_description_id: string | null;
   price_idr: number;
+  original_price_idr: number | null;
+  sale_price_idr: number | null;
+  is_on_sale: boolean;
   is_featured: boolean;
   category_id: string | null;
   category_slug: string | null;
@@ -18,6 +21,11 @@ export type PublicProduct = {
   image_url: string | null;
   thumbnail_url: string | null;
   variants: Array<{ color_hex: string; color_name: string }>;
+  size_variants: Array<{
+    price_idr: number | null;
+    original_price_idr: number | null;
+    stock: number | null;
+  }>;
 };
 
 type RawRow = {
@@ -29,6 +37,9 @@ type RawRow = {
   short_description_en: string | null;
   short_description_id: string | null;
   price_idr: number;
+  original_price_idr: number | null;
+  sale_price_idr: number | null;
+  is_on_sale: boolean | null;
   is_featured: boolean;
   category_id: string | null;
   images: string[] | null;
@@ -44,6 +55,11 @@ type RawRow = {
     color_name: string;
     sort_order: number;
   }> | null;
+  product_size_variants: Array<{
+    price_idr: number | null;
+    original_price_idr: number | null;
+    stock: number | null;
+  }> | null;
 };
 
 function normalize(rows: RawRow[]): PublicProduct[] {
@@ -57,6 +73,11 @@ function normalize(rows: RawRow[]): PublicProduct[] {
       .slice()
       .sort((a, b) => a.sort_order - b.sort_order)
       .map((v) => ({ color_hex: v.color_hex, color_name: v.color_name }));
+    const size_variants = (r.product_size_variants ?? []).map((v) => ({
+      price_idr: v.price_idr,
+      original_price_idr: v.original_price_idr,
+      stock: v.stock,
+    }));
     return {
       id: r.id,
       sku: r.sku,
@@ -66,6 +87,9 @@ function normalize(rows: RawRow[]): PublicProduct[] {
       short_description_en: r.short_description_en,
       short_description_id: r.short_description_id,
       price_idr: r.price_idr,
+      original_price_idr: r.original_price_idr ?? null,
+      sale_price_idr: r.sale_price_idr ?? null,
+      is_on_sale: !!r.is_on_sale,
       is_featured: r.is_featured,
       category_id: r.category_id,
       category_slug: r.categories?.slug ?? null,
@@ -74,6 +98,7 @@ function normalize(rows: RawRow[]): PublicProduct[] {
       image_url: top?.image_url ?? flatTop ?? null,
       thumbnail_url: top?.thumbnail_url ?? top?.image_url ?? flatTop ?? null,
       variants,
+      size_variants,
     };
   });
 }
@@ -89,7 +114,7 @@ export function usePublicProducts() {
       const { data: rows } = await supabase
         .from("products")
         .select(
-          "id,sku,slug,name_en,name_id,short_description_en,short_description_id,price_idr,is_featured,category_id,images,categories(slug,name_en,name_id),product_images(image_url,thumbnail_url,is_primary,sort_order),product_variants(color_hex,color_name,sort_order)",
+          "id,sku,slug,name_en,name_id,short_description_en,short_description_id,price_idr,original_price_idr,sale_price_idr,is_on_sale,is_featured,category_id,images,categories(slug,name_en,name_id),product_images(image_url,thumbnail_url,is_primary,sort_order),product_variants(color_hex,color_name,sort_order)",
         )
         .eq("is_active", true)
         .order("is_featured", { ascending: false })

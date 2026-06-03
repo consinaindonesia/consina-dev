@@ -21,6 +21,8 @@ import { formatPrice, localizedField, hasTranslation } from "@/i18n/format";
 import { MissingTranslationNotice } from "@/components/site/MissingTranslationNotice";
 import { addToInquiry } from "@/lib/inquiry-store";
 import { FindInStore } from "@/components/site/FindInStore";
+import { PriceDisplay } from "@/components/site/PriceDisplay";
+import { SizeGuideDialog, type SizeGuide } from "@/components/site/SizeGuideDialog";
 
 type Product = {
   id: string;
@@ -33,6 +35,10 @@ type Product = {
   description_id: string | null;
   description_en: string | null;
   price_idr: number;
+  original_price_idr: number | null;
+  sale_price_idr: number | null;
+  is_on_sale: boolean;
+  size_guide_id: string | null;
   capacity: string | null;
   weight_grams: number | null;
   attributes: Record<string, string> | null;
@@ -86,6 +92,10 @@ export function ProductDetailPage({ slug }: { slug: string }) {
   const [attrDefs, setAttrDefs] = useState<AttributeDef[]>([]);
   const [variants, setVariants] = useState<ColorVariant[]>([]);
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
+  const [sizeOptionTypes, setSizeOptionTypes] = useState<Array<{ id: string; name: string; values: Array<{ id: string; value: string }> }>>([]);
+  const [sizeVariants, setSizeVariants] = useState<Array<{ id: string; option_value_ids: string[]; price_idr: number | null; original_price_idr: number | null; stock: number }>>([]);
+  const [selectedSizeId, setSelectedSizeId] = useState<string | null>(null);
+  const [sizeGuide, setSizeGuide] = useState<SizeGuide | null>(null);
   const [related, setRelated] = useState<Array<{ id: string; sku: string; name_id: string; name_en: string; price_idr: number; thumb: string | null }>>([]);
   const [loading, setLoading] = useState(true);
   const [missing, setMissing] = useState(false);
@@ -105,7 +115,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
       setMissing(false);
 
       const selectCols =
-        "id,sku,category_id,name_id,name_en,short_description_id,short_description_en,description_id,description_en,price_idr,capacity,weight_grams,attributes,stock_status,images,product_images(image_url,large_url,thumbnail_url,alt_text_id,alt_text_en,is_primary,sort_order)";
+        "id,sku,category_id,name_id,name_en,short_description_id,short_description_en,description_id,description_en,price_idr,original_price_idr,sale_price_idr,is_on_sale,size_guide_id,capacity,weight_grams,attributes,stock_status,images,product_images(image_url,large_url,thumbnail_url,alt_text_id,alt_text_en,is_primary,sort_order)";
 
       // Prefer slug lookup; fall back to SKU so old URLs keep working.
       let { data: prods } = await supabase
@@ -159,6 +169,61 @@ export function ProductDetailPage({ slug }: { slug: string }) {
       const vs = (vRows ?? []) as ColorVariant[];
       setVariants(vs);
       setSelectedVariantId(vs[0]?.id ?? null);
+
+      // Size variants (separate queries — no FK needed)
+      const [{ data: otRows }, { data: svRows }] = await Promise.all([
+        supabase
+          .from("product_option_types" as never)
+          .select("id,name,sort_order")
+          .eq("product_id", prod.id)
+          .order("sort_order"),
+        supabase
+          .from("product_size_variants" as never)
+          .select("id,option_value_ids,price_idr,original_price_idr,stock,sort_order")
+          .eq("product_id", prod.id)
+          .order("sort_order"),
+      ]);
+      const types = ((otRows ?? []) as unknown as Array<{ id: string; name: string }>);
+      let typesWithValues: Array<{ id: string; name: string; values: Array<{ id: string; value: string }> }> = [];
+      if (types.length > 0) {
+        const { data: ovRows } = await supabase
+          .from("product_option_values" as never)
+          .select("id,option_type_id,value,sort_order")
+          .in("option_type_id", types.map((t) => t.id))
+          .order("sort_order");
+        const ovs = ((ovRows ?? []) as unknown as Array<{ id: string; option_type_id: string; value: string }>);
+        typesWithValues = types.map((t) => ({
+          id: t.id,
+          name: t.name,
+          values: ovs.filter((v) => v.option_type_id === t.id).map((v) => ({ id: v.id, value: v.value })),
+        }));
+      }
+      if (cancelled) return;
+      setSizeOptionTypes(typesWithValues);
+      const svs = ((svRows ?? []) as unknown as Array<{ id: string; option_value_ids: string[]; price_idr: number | null; original_price_idr: number | null; stock: number }>);
+      setSizeVariants(svs);
+      setSelectedSizeId(svs[0]?.id ?? null);
+
+      // Size guide
+      if (prod.size_guide_id) {
+        const { data: sg } = await supabase
+          .from("size_guides" as never)
+          .select("id,name,description,headers,rows")
+          .eq("id", prod.size_guide_id)
+          .maybeSingle();
+        if (!cancelled && sg) {
+          const r = sg as unknown as { id: string; name: string; description: string | null; headers: unknown; rows: unknown };
+          setSizeGuide({
+            id: r.id,
+            name: r.name,
+            description: r.description,
+            headers: Array.isArray(r.headers) ? (r.headers as string[]) : [],
+            rows: Array.isArray(r.rows) ? (r.rows as string[][]) : [],
+          });
+        }
+      } else {
+        setSizeGuide(null);
+      }
 
       if (prod.category_id) {
         const [{ data: cat }, { data: catAttrs }, { data: rel }] = await Promise.all([
@@ -393,9 +458,21 @@ export function ProductDetailPage({ slug }: { slug: string }) {
             )}
 
             <div className="mt-5 flex items-center gap-3">
-              <span className="text-3xl font-bold text-primary">
-                {formatPrice(product.price_idr, lang)}
-              </span>
+              <PriceDisplay
+                product={{
+                  price_idr: product.price_idr,
+                  original_price_idr: product.original_price_idr,
+                  sale_price_idr: product.sale_price_idr,
+                  is_on_sale: product.is_on_sale,
+                  size_variants: sizeVariants.map((v) => ({
+                    price_idr: v.price_idr,
+                    original_price_idr: v.original_price_idr,
+                    stock: v.stock,
+                  })),
+                }}
+                lang={lang}
+                size="lg"
+              />
               <Badge variant="outline" className={`border ${stockBadge.cls}`}>
                 {stockBadge.text}
               </Badge>

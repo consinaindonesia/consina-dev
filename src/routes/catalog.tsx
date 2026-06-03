@@ -6,7 +6,8 @@ import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { usePublicProducts, type PublicProduct } from "@/lib/public-products";
 import { useLang } from "@/i18n/LangProvider";
-import { formatPrice, localizedField } from "@/i18n/format";
+import { localizedField } from "@/i18n/format";
+import { PriceDisplay } from "@/components/site/PriceDisplay";
 
 export const Route = createFileRoute("/catalog")({
   head: () => ({
@@ -154,9 +155,7 @@ function ProductCard({ p, lang }: { p: PublicProduct; lang: "id" | "en" }) {
             )}
           </div>
         )}
-        <div className="mt-2 flex items-baseline gap-2">
-          <span className="text-sm font-semibold text-secondary">{formatPrice(p.price_idr, lang)}</span>
-        </div>
+        <PriceDisplay product={p} lang={lang} size="sm" className="mt-2" />
       </div>
     </Link>
   );

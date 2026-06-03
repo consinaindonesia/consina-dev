@@ -913,6 +913,87 @@ export function ProductForm(props: ProductFormProps) {
                 </div>
               </Field>
 
+              <Field label="Original price (IDR)">
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                    Rp
+                  </span>
+                  <Input
+                    inputMode="numeric"
+                    value={formatIDR(values.original_price_idr ?? 0)}
+                    onChange={(e) => {
+                      const n = parseIDR(e.target.value);
+                      setField("original_price_idr", n > 0 ? n : null);
+                    }}
+                    placeholder="—"
+                    className="pl-10"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Shown struck-through next to the current price. Leave empty if not on sale.
+                </p>
+              </Field>
+
+              <Field label="Sale price (IDR)">
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                    Rp
+                  </span>
+                  <Input
+                    inputMode="numeric"
+                    value={formatIDR(values.sale_price_idr ?? 0)}
+                    onChange={(e) => {
+                      const n = parseIDR(e.target.value);
+                      setField("sale_price_idr", n > 0 ? n : null);
+                    }}
+                    placeholder="—"
+                    className="pl-10"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Optional discounted price that overrides the regular price when set.
+                </p>
+              </Field>
+
+              <div className="flex items-center gap-2 pt-1">
+                <Checkbox
+                  id="is_on_sale"
+                  checked={values.is_on_sale}
+                  onCheckedChange={(c) => setField("is_on_sale", c === true)}
+                />
+                <Label htmlFor="is_on_sale" className="cursor-pointer text-sm">
+                  Mark as on sale (shows -% badge)
+                </Label>
+              </div>
+
+              <Field label="Size guide">
+                <Select
+                  value={values.size_guide_id ?? "__none__"}
+                  onValueChange={(v) =>
+                    setField("size_guide_id", v === "__none__" ? null : v)
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="None" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">None</SelectItem>
+                    {sizeGuides.map((g) => (
+                      <SelectItem key={g.id} value={g.id}>
+                        {g.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Shown as a "Size guide" dialog on the product page. Manage guides under{" "}
+                  <Link to="/admin/size-guides" className="underline">
+                    Size guides
+                  </Link>
+                  .
+                </p>
+              </Field>
+
               <Field label="Jumlah Stok">
                 <div className="flex items-center gap-3">
                   <Input
@@ -1079,6 +1160,22 @@ export function ProductForm(props: ProductFormProps) {
             ) : (
               <ProductVariantsTab productId={productId} sku={values.sku} />
             )}
+          </Card>
+        </TabsContent>
+
+        {/* SIZE VARIANTS */}
+        <TabsContent value="sizes" className="pb-32">
+          <Card title="Size Variants">
+            <p className="mb-3 text-xs text-muted-foreground">
+              Define option types (e.g. "Ukuran" with S/M/L/XL), then generate combinations. Each combination can have its own SKU, price, stock, and image. Leave empty if the product has no sizes.
+              {mode === "new" && " Variants you add here will be saved when you save the product."}
+            </p>
+            <ProductSizeVariantsTab
+              productId={mode === "new" ? null : productId}
+              sku={values.sku}
+              staged={sizeData}
+              onStagedChange={setSizeData}
+            />
           </Card>
         </TabsContent>
 

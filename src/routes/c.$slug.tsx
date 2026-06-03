@@ -6,6 +6,7 @@ import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useLang } from "@/i18n/LangProvider";
+import { PriceDisplay } from "@/components/site/PriceDisplay";
 
 export const Route = createFileRoute("/c/$slug")({
   component: CategoryPage,

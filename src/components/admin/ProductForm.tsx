@@ -360,6 +360,11 @@ export function ProductForm(props: ProductFormProps) {
           original_price_idr: (data as { original_price_idr?: number | null }).original_price_idr ?? null,
           sale_price_idr: (data as { sale_price_idr?: number | null }).sale_price_idr ?? null,
           is_on_sale: !!(data as { is_on_sale?: boolean }).is_on_sale,
+          discount_percent:
+            (data as { discount_percent?: number | string | null }).discount_percent === null ||
+            (data as { discount_percent?: number | string | null }).discount_percent === undefined
+              ? null
+              : Number((data as { discount_percent?: number | string | null }).discount_percent),
           size_guide_id: (data as { size_guide_id?: string | null }).size_guide_id ?? null,
           capacity: data.capacity ?? "",
           weight_grams: data.weight_grams,
@@ -531,6 +536,7 @@ export function ProductForm(props: ProductFormProps) {
       original_price_idr: values.original_price_idr,
       sale_price_idr: values.sale_price_idr,
       is_on_sale: values.is_on_sale,
+      discount_percent: values.discount_percent,
       size_guide_id: values.size_guide_id,
       capacity: values.capacity || null,
       weight_grams: values.weight_grams,

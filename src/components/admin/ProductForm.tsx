@@ -83,6 +83,7 @@ export type ProductFormValues = {
   original_price_idr: number | null;
   sale_price_idr: number | null;
   is_on_sale: boolean;
+  discount_percent: number | null;
   size_guide_id: string | null;
   capacity: string;
   weight_grams: number | null;
@@ -110,6 +111,7 @@ const EMPTY: ProductFormValues = {
   original_price_idr: null,
   sale_price_idr: null,
   is_on_sale: false,
+  discount_percent: null,
   size_guide_id: null,
   capacity: "",
   weight_grams: null,

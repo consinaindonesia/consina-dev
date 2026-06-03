@@ -303,6 +303,24 @@ export type Database = {
           },
         ]
       }
+      category_size_guides: {
+        Row: {
+          category_id: string
+          created_at: string
+          size_guide_id: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          size_guide_id: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          size_guide_id?: string
+        }
+        Relationships: []
+      }
       category_slug_redirects: {
         Row: {
           category_id: string | null
@@ -893,6 +911,96 @@ export type Database = {
           },
         ]
       }
+      product_option_types: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          product_id: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          product_id: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          product_id?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      product_option_values: {
+        Row: {
+          created_at: string
+          id: string
+          option_type_id: string
+          sort_order: number
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          option_type_id: string
+          sort_order?: number
+          value: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          option_type_id?: string
+          sort_order?: number
+          value?: string
+        }
+        Relationships: []
+      }
+      product_size_variants: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string | null
+          option_value_ids: string[]
+          original_price_idr: number | null
+          price_idr: number | null
+          product_id: string
+          sku: string | null
+          sort_order: number
+          stock: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          option_value_ids?: string[]
+          original_price_idr?: number | null
+          price_idr?: number | null
+          product_id: string
+          sku?: string | null
+          sort_order?: number
+          stock?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          option_value_ids?: string[]
+          original_price_idr?: number | null
+          price_idr?: number | null
+          product_id?: string
+          sku?: string | null
+          sort_order?: number
+          stock?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       product_variants: {
         Row: {
           color_hex: string
@@ -950,13 +1058,17 @@ export type Database = {
           images: string[]
           is_active: boolean
           is_featured: boolean
+          is_on_sale: boolean
           name_en: string
           name_id: string
+          original_price_idr: number | null
           price_idr: number
+          sale_price_idr: number | null
           seo_description: string | null
           seo_title: string | null
           short_description_en: string | null
           short_description_id: string | null
+          size_guide_id: string | null
           sku: string
           slug: string | null
           stock: number
@@ -976,13 +1088,17 @@ export type Database = {
           images?: string[]
           is_active?: boolean
           is_featured?: boolean
+          is_on_sale?: boolean
           name_en: string
           name_id: string
+          original_price_idr?: number | null
           price_idr?: number
+          sale_price_idr?: number | null
           seo_description?: string | null
           seo_title?: string | null
           short_description_en?: string | null
           short_description_id?: string | null
+          size_guide_id?: string | null
           sku: string
           slug?: string | null
           stock?: number
@@ -1002,13 +1118,17 @@ export type Database = {
           images?: string[]
           is_active?: boolean
           is_featured?: boolean
+          is_on_sale?: boolean
           name_en?: string
           name_id?: string
+          original_price_idr?: number | null
           price_idr?: number
+          sale_price_idr?: number | null
           seo_description?: string | null
           seo_title?: string | null
           short_description_en?: string | null
           short_description_id?: string | null
+          size_guide_id?: string | null
           sku?: string
           slug?: string | null
           stock?: number
@@ -1100,6 +1220,36 @@ export type Database = {
           per_kg_cost_idr?: number
           region_name?: string
           sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      size_guides: {
+        Row: {
+          created_at: string
+          description: string | null
+          headers: Json
+          id: string
+          name: string
+          rows: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          headers?: Json
+          id?: string
+          name: string
+          rows?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          headers?: Json
+          id?: string
+          name?: string
+          rows?: Json
           updated_at?: string
         }
         Relationships: []

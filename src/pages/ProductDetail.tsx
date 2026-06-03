@@ -484,6 +484,55 @@ export function ProductDetailPage({ slug }: { slug: string }) {
               </p>
             )}
 
+            {/* Size variants */}
+            {sizeOptionTypes.length > 0 && sizeVariants.length > 0 && (
+              <div className="mt-6 space-y-4">
+                {sizeOptionTypes.map((ot) => (
+                  <div key={ot.id}>
+                    <div className="mb-2 flex items-center justify-between">
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-foreground">
+                        {ot.name}
+                      </label>
+                      {sizeGuide && (
+                        <SizeGuideDialog
+                          guide={sizeGuide}
+                          triggerLabel={lang === "id" ? "Panduan Ukuran" : "Size Guide"}
+                        />
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {ot.values.map((val) => {
+                        const matching = sizeVariants.find((sv) =>
+                          sv.option_value_ids.includes(val.id),
+                        );
+                        const outOfStock = matching ? matching.stock <= 0 : true;
+                        const active = matching?.id === selectedSizeId;
+                        return (
+                          <button
+                            key={val.id}
+                            type="button"
+                            disabled={!matching || outOfStock}
+                            onClick={() => matching && setSelectedSizeId(matching.id)}
+                            className={
+                              "min-w-[3rem] rounded-md border-2 px-3 py-2 text-sm font-semibold transition " +
+                              (active
+                                ? "border-primary bg-primary/10 text-primary"
+                                : outOfStock
+                                  ? "border-border bg-muted text-muted-foreground line-through opacity-60"
+                                  : "border-border bg-background text-foreground hover:border-primary/50")
+                            }
+                            aria-pressed={active}
+                          >
+                            {val.value}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* Color variants */}
             {variants.length > 0 && (
               <div className="mt-6">

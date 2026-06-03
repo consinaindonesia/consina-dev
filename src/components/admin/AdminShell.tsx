@@ -22,6 +22,7 @@ import {
   BellRing,
   ShoppingBag,
   Truck,
+  Ruler,
 } from "lucide-react";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,6 +40,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Products", to: "/admin/products", icon: Package },
   { label: "Categories", to: "/admin/categories", icon: Folder },
   { label: "Attributes", to: "/admin/attributes", icon: Tag },
+  { label: "Size guides", to: "/admin/size-guides", icon: Ruler },
   { label: "Inquiries", to: "/admin/inquiries", icon: MessageSquare, badge: "inquiries" },
   { label: "Orders", to: "/admin/orders", icon: ShoppingBag },
   { label: "Customers", to: "/admin/customers", icon: UserIcon },

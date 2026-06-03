@@ -580,7 +580,7 @@ function FeaturedProducts() {
               <div className="mt-4">
                 <h3 className="font-[Archivo] text-base font-bold leading-snug text-primary">{name}</h3>
                 {desc ? <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{desc}</p> : null}
-                <p className="mt-2 text-sm font-semibold text-primary">{formatPrice(p.price_idr, lang)}</p>
+                <PriceDisplay product={p} lang={lang} size="sm" className="mt-2" />
                 <Link
                   to={`/${lang}/${prefix}/${p.slug ?? p.sku}` as never}
                   className="mt-3 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-[#1a3a2e] transition group-hover:gap-2"

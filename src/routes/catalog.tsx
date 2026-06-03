@@ -6,7 +6,8 @@ import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { usePublicProducts, type PublicProduct } from "@/lib/public-products";
 import { useLang } from "@/i18n/LangProvider";
-import { formatPrice, localizedField } from "@/i18n/format";
+import { localizedField } from "@/i18n/format";
+import { PriceDisplay } from "@/components/site/PriceDisplay";
 
 export const Route = createFileRoute("/catalog")({
   head: () => ({

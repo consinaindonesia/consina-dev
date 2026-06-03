@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/i18n/LangProvider";
 import { formatPrice } from "@/i18n/format";
-import { createMidtransSnap } from "@/lib/midtrans.functions";
+import { createMidtransSnap, getMidtransConfig } from "@/lib/midtrans.functions";
 import { createStripeCheckoutSession } from "@/lib/stripe.functions";
 
 type OrderRow = {
@@ -41,6 +41,47 @@ function deadlineFrom(createdAt: string): string {
   return d.toLocaleString();
 }
 
+declare global {
+  interface Window {
+    snap?: {
+      pay: (
+        token: string,
+        callbacks?: {
+          onSuccess?: (result: unknown) => void;
+          onPending?: (result: unknown) => void;
+          onError?: (result: unknown) => void;
+          onClose?: () => void;
+        },
+      ) => void;
+    };
+  }
+}
+
+function loadSnapJs(clientKey: string, isProduction: boolean): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (typeof window === "undefined") return resolve();
+    if (window.snap) return resolve();
+    const src = isProduction
+      ? "https://app.midtrans.com/snap/snap.js"
+      : "https://app.sandbox.midtrans.com/snap/snap.js";
+    const existing = document.querySelector<HTMLScriptElement>(
+      `script[src="${src}"]`,
+    );
+    if (existing) {
+      existing.addEventListener("load", () => resolve());
+      existing.addEventListener("error", () => reject(new Error("snap.js failed to load")));
+      return;
+    }
+    const s = document.createElement("script");
+    s.src = src;
+    s.async = true;
+    s.setAttribute("data-client-key", clientKey);
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error("snap.js failed to load"));
+    document.head.appendChild(s);
+  });
+}
+
 export function OrderPaymentPage() {
   const { id } = useParams({ strict: false }) as { id?: string };
   const lang = useLang();
@@ -50,6 +91,7 @@ export function OrderPaymentPage() {
   const [redirecting, setRedirecting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const createSnap = useServerFn(createMidtransSnap);
+  const fetchMidtransConfig = useServerFn(getMidtransConfig);
   const createStripe = useServerFn(createStripeCheckoutSession);
 
   useEffect(() => {
@@ -137,8 +179,32 @@ export function OrderPaymentPage() {
     if (!order) return;
     setRedirecting(true);
     try {
-      const { redirectUrl } = await createSnap({ data: { orderId: order.id } });
-      window.location.href = redirectUrl;
+      const [{ token }, cfg] = await Promise.all([
+        createSnap({ data: { orderId: order.id } }),
+        fetchMidtransConfig(),
+      ]);
+      if (!cfg.clientKey) throw new Error("Midtrans client key missing");
+      await loadSnapJs(cfg.clientKey, cfg.isProduction);
+      if (!window.snap) throw new Error("Snap.js not available");
+      window.snap.pay(token, {
+        onSuccess: () => {
+          toast.success("Payment successful");
+          setOrder((o) => (o ? { ...o, payment_status: "paid" } : o));
+          setRedirecting(false);
+        },
+        onPending: () => {
+          toast.info("Payment pending verification");
+          setOrder((o) => (o ? { ...o, payment_status: "verifying" } : o));
+          setRedirecting(false);
+        },
+        onError: () => {
+          toast.error("Payment failed");
+          setRedirecting(false);
+        },
+        onClose: () => {
+          setRedirecting(false);
+        },
+      });
     } catch (err) {
       console.error(err);
       toast.error(err instanceof Error ? err.message : "Could not start payment");

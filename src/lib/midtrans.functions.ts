@@ -4,9 +4,12 @@ import { createClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 function isProduction(): boolean {
-  const key = process.env.MIDTRANS_SERVER_KEY ?? "";
-  // Sandbox server keys are prefixed with "SB-Mid-server-".
-  return !key.startsWith("SB-");
+  // Explicit override wins; otherwise default to sandbox unless the server
+  // key is unambiguously a production key (Midtrans prod keys are NOT
+  // prefixed with "SB-"; sandbox keys MAY be prefixed with "SB-" but some
+  // dashboards also issue sandbox keys without the prefix). Default safe.
+  const env = (process.env.MIDTRANS_ENV ?? "sandbox").toLowerCase();
+  return env === "production" || env === "live";
 }
 
 function snapBaseUrl(): string {
@@ -121,6 +124,18 @@ export const createMidtransSnap = createServerFn({ method: "POST" })
       .eq("id", order.id);
 
     return { redirectUrl: body.redirect_url, token: body.token };
+  });
+
+/**
+ * Public: returns the Midtrans client key + environment so the frontend
+ * can load the correct snap.js and invoke snap.pay() inline.
+ */
+export const getMidtransConfig = createServerFn({ method: "GET" }).handler(
+  async () => {
+    return {
+      clientKey: process.env.MIDTRANS_CLIENT_KEY ?? "",
+      isProduction: isProduction(),
+    };
   });
 
 /**

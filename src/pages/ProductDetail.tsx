@@ -458,9 +458,21 @@ export function ProductDetailPage({ slug }: { slug: string }) {
             )}
 
             <div className="mt-5 flex items-center gap-3">
-              <span className="text-3xl font-bold text-primary">
-                {formatPrice(product.price_idr, lang)}
-              </span>
+              <PriceDisplay
+                product={{
+                  price_idr: product.price_idr,
+                  original_price_idr: product.original_price_idr,
+                  sale_price_idr: product.sale_price_idr,
+                  is_on_sale: product.is_on_sale,
+                  size_variants: sizeVariants.map((v) => ({
+                    price_idr: v.price_idr,
+                    original_price_idr: v.original_price_idr,
+                    stock: v.stock,
+                  })),
+                }}
+                lang={lang}
+                size="lg"
+              />
               <Badge variant="outline" className={`border ${stockBadge.cls}`}>
                 {stockBadge.text}
               </Badge>

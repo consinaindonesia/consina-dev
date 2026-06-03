@@ -2,20 +2,19 @@ import { Link } from "@tanstack/react-router";
 import { Instagram, Facebook, Youtube } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { usePublicCategories } from "@/hooks/use-public-categories";
+import { useLang } from "@/i18n/LangProvider";
+import { localizedField } from "@/i18n/format";
 
 export function Footer() {
   const { t } = useTranslation();
+  const lang = useLang();
+  const { data: categories } = usePublicCategories();
+  const shopLinks = (categories ?? []).map((c) => ({
+    label: localizedField(c, "name", lang).value,
+    slug: c.slug,
+  }));
   const cols = [
-    {
-      title: t("footer.shop"),
-      items: [
-        t("footer.items.carriers"),
-        t("footer.items.tents"),
-        t("footer.items.apparel"),
-        t("footer.items.footwear"),
-        t("footer.items.accessories"),
-      ],
-    },
     {
       title: t("footer.company"),
       items: [
@@ -62,6 +61,24 @@ export function Footer() {
                 </a>
               ))}
             </div>
+          </div>
+          <div>
+            <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
+              {t("footer.shop")}
+            </h4>
+            <ul className="mt-5 space-y-3">
+              {shopLinks.map((l) => (
+                <li key={l.slug}>
+                  <Link
+                    to={"/c/$slug" as never}
+                    params={{ slug: l.slug } as never}
+                    className="text-sm text-primary-foreground/75 transition hover:text-primary-foreground"
+                  >
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
           {cols.map((c) => (
             <div key={c.title}>

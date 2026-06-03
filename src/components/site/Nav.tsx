@@ -5,20 +5,19 @@ import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { LangSuggestionBanner } from "./LangSuggestionBanner";
 import { InquiryDrawer } from "./InquiryDrawer";
+import { usePublicCategories, type PublicCategory } from "@/hooks/use-public-categories";
+import { useLang } from "@/i18n/LangProvider";
+import { localizedField } from "@/i18n/format";
 
 export function Nav() {
   const { t } = useTranslation();
+  const lang = useLang();
   const [open, setOpen] = useState(false);
   const [shopOpen, setShopOpen] = useState(false);
   const [mobileShopOpen, setMobileShopOpen] = useState(false);
+  const { data: categories, isLoading: catsLoading } = usePublicCategories();
 
-  const shopItems = [
-    { to: "/carriers", label: t("categories.carriers") },
-    { to: "/tents", label: t("categories.tents") },
-    { to: "/apparel", label: t("categories.apparel") },
-    { to: "/footwear", label: t("categories.footwear") },
-    { to: "/accessories", label: t("categories.accessories") },
-  ] as const;
+  const catLabel = (c: PublicCategory) => localizedField(c, "name", lang).value;
 
   const mainLinks = [
     { to: "/catalog", label: t("nav.catalog") },
@@ -57,15 +56,43 @@ export function Nav() {
             </button>
             {shopOpen && (
               <div className="absolute -left-4 top-full min-w-[200px] rounded-xl border border-border bg-background py-2 shadow-lg">
-                {shopItems.map((item) => (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    className="block px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted hover:text-primary"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
+                {catsLoading ? (
+                  <div className="space-y-2 px-4 py-2">
+                    {[0, 1, 2, 3].map((i) => (
+                      <div key={i} className="h-4 w-32 animate-pulse rounded bg-muted" />
+                    ))}
+                  </div>
+                ) : !categories || categories.length === 0 ? (
+                  <div className="px-4 py-2 text-sm text-muted-foreground">
+                    {t("nav.no_categories", { defaultValue: "No categories" })}
+                  </div>
+                ) : (
+                  categories.map((cat) => (
+                    <div key={cat.id}>
+                      <Link
+                        to={"/c/$slug" as never}
+                        params={{ slug: cat.slug } as never}
+                        className="block px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted hover:text-primary"
+                      >
+                        {catLabel(cat)}
+                      </Link>
+                      {cat.children.length > 0 && (
+                        <div className="ml-2 border-l border-border">
+                          {cat.children.map((sub) => (
+                            <Link
+                              key={sub.id}
+                              to={"/c/$slug" as never}
+                              params={{ slug: sub.slug } as never}
+                              className="block px-4 py-2 text-xs font-medium text-foreground/75 transition-colors hover:bg-muted hover:text-primary"
+                            >
+                              {catLabel(sub)}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
               </div>
             )}
           </div>
@@ -126,15 +153,28 @@ export function Nav() {
             </button>
             {mobileShopOpen && (
               <div className="ml-4 flex flex-col gap-1 border-l border-border pl-3">
-                {shopItems.map((item) => (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    onClick={() => setOpen(false)}
-                    className="rounded-md px-3 py-2 text-sm font-medium text-foreground/80 hover:bg-muted hover:text-primary"
-                  >
-                    {item.label}
-                  </Link>
+                {(categories ?? []).map((cat) => (
+                  <div key={cat.id} className="flex flex-col">
+                    <Link
+                      to={"/c/$slug" as never}
+                      params={{ slug: cat.slug } as never}
+                      onClick={() => setOpen(false)}
+                      className="rounded-md px-3 py-2 text-sm font-medium text-foreground/80 hover:bg-muted hover:text-primary"
+                    >
+                      {catLabel(cat)}
+                    </Link>
+                    {cat.children.map((sub) => (
+                      <Link
+                        key={sub.id}
+                        to={"/c/$slug" as never}
+                        params={{ slug: sub.slug } as never}
+                        onClick={() => setOpen(false)}
+                        className="ml-3 rounded-md px-3 py-1.5 text-xs font-medium text-foreground/70 hover:bg-muted hover:text-primary"
+                      >
+                        {catLabel(sub)}
+                      </Link>
+                    ))}
+                  </div>
                 ))}
               </div>
             )}

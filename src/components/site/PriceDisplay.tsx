@@ -6,6 +6,7 @@ export type PriceDisplayProduct = {
   original_price_idr?: number | null;
   sale_price_idr?: number | null;
   is_on_sale?: boolean | null;
+  discount_percent?: number | string | null;
   size_variants?: Array<{
     price_idr: number | null;
     original_price_idr: number | null;
@@ -53,6 +54,16 @@ export function resolvePricing(p: PriceDisplayProduct) {
         v.original_price_idr > v.price_idr,
     );
 
+  const explicitPct =
+    p.discount_percent === null || p.discount_percent === undefined
+      ? null
+      : Number(p.discount_percent);
+  const derivedPct = baseOriginal ? discountPct(baseOriginal, baseCurrent) : 0;
+  const badgePct =
+    explicitPct !== null && Number.isFinite(explicitPct) && explicitPct > 0
+      ? explicitPct
+      : derivedPct;
+
   return {
     min,
     max,
@@ -60,7 +71,7 @@ export function resolvePricing(p: PriceDisplayProduct) {
     current: baseCurrent,
     original: baseOriginal,
     onSale,
-    discount: baseOriginal ? discountPct(baseOriginal, baseCurrent) : 0,
+    discount: badgePct,
   };
 }
 
@@ -106,9 +117,10 @@ export function PriceDisplay({
 }
 
 function DiscountBadge({ pct }: { pct: number }) {
+  const display = Number.isInteger(pct) ? pct.toString() : pct.toFixed(1);
   return (
     <span className="inline-flex items-center rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
-      -{pct}%
+      -{display}%
     </span>
   );
 }

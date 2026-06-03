@@ -38,6 +38,7 @@ type Product = {
   original_price_idr: number | null;
   sale_price_idr: number | null;
   is_on_sale: boolean;
+  discount_percent: number | string | null;
   size_guide_id: string | null;
   capacity: string | null;
   weight_grams: number | null;
@@ -115,7 +116,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
       setMissing(false);
 
       const selectCols =
-        "id,sku,category_id,name_id,name_en,short_description_id,short_description_en,description_id,description_en,price_idr,original_price_idr,sale_price_idr,is_on_sale,size_guide_id,capacity,weight_grams,attributes,stock_status,images,product_images(image_url,large_url,thumbnail_url,alt_text_id,alt_text_en,is_primary,sort_order)";
+        "id,sku,category_id,name_id,name_en,short_description_id,short_description_en,description_id,description_en,price_idr,original_price_idr,sale_price_idr,is_on_sale,discount_percent,size_guide_id,capacity,weight_grams,attributes,stock_status,images,product_images(image_url,large_url,thumbnail_url,alt_text_id,alt_text_en,is_primary,sort_order)";
 
       // Prefer slug lookup; fall back to SKU so old URLs keep working.
       let { data: prods } = await supabase
@@ -464,6 +465,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
                   original_price_idr: product.original_price_idr,
                   sale_price_idr: product.sale_price_idr,
                   is_on_sale: product.is_on_sale,
+                  discount_percent: product.discount_percent,
                   size_variants: sizeVariants.map((v) => ({
                     price_idr: v.price_idr,
                     original_price_idr: v.original_price_idr,

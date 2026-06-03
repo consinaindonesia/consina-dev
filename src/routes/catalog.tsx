@@ -155,9 +155,7 @@ function ProductCard({ p, lang }: { p: PublicProduct; lang: "id" | "en" }) {
             )}
           </div>
         )}
-        <div className="mt-2 flex items-baseline gap-2">
-          <span className="text-sm font-semibold text-secondary">{formatPrice(p.price_idr, lang)}</span>
-        </div>
+        <PriceDisplay product={p} lang={lang} size="sm" className="mt-2" />
       </div>
     </Link>
   );

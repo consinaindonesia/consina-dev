@@ -21,6 +21,11 @@ import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { translateText } from "@/lib/translate.functions";
 import { ProductImagesTab } from "@/components/admin/ProductImagesTab";
 import { ProductVariantsTab, type StagedVariant } from "@/components/admin/ProductVariantsTab";
+import {
+  ProductSizeVariantsTab,
+  persistSizeData,
+  type StagedSizeData,
+} from "@/components/admin/ProductSizeVariantsTab";
 import { StockEditor } from "@/components/admin/StockEditor";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -75,6 +80,10 @@ export type ProductFormValues = {
   short_description_en: string;
   short_description_id: string;
   price_idr: number;
+  original_price_idr: number | null;
+  sale_price_idr: number | null;
+  is_on_sale: boolean;
+  size_guide_id: string | null;
   capacity: string;
   weight_grams: number | null;
   attributes: Attribute[];
@@ -98,6 +107,10 @@ const EMPTY: ProductFormValues = {
   short_description_en: "",
   short_description_id: "",
   price_idr: 0,
+  original_price_idr: null,
+  sale_price_idr: null,
+  is_on_sale: false,
+  size_guide_id: null,
   capacity: "",
   weight_grams: null,
   attributes: [],

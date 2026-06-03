@@ -184,7 +184,7 @@ async function logActivity(
   }
 }
 
-type Tab = "basic" | "translations" | "images" | "variants" | "availability" | "seo";
+type Tab = "basic" | "translations" | "images" | "variants" | "sizes" | "availability" | "seo";
 type ProductFormProps =
   | { mode: "new"; productId?: undefined; initialTab?: Tab }
   | { mode: "edit"; productId: string; initialTab?: Tab };
@@ -708,6 +708,9 @@ export function ProductForm(props: ProductFormProps) {
           </TabsTrigger>
           <TabsTrigger value="variants">
             Color Variants
+          </TabsTrigger>
+          <TabsTrigger value="sizes">
+            Size Variants
           </TabsTrigger>
           <TabsTrigger value="availability" disabled={mode === "new"}>
             Where available

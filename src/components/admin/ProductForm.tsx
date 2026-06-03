@@ -1163,6 +1163,22 @@ export function ProductForm(props: ProductFormProps) {
           </Card>
         </TabsContent>
 
+        {/* SIZE VARIANTS */}
+        <TabsContent value="sizes" className="pb-32">
+          <Card title="Size Variants">
+            <p className="mb-3 text-xs text-muted-foreground">
+              Define option types (e.g. "Ukuran" with S/M/L/XL), then generate combinations. Each combination can have its own SKU, price, stock, and image. Leave empty if the product has no sizes.
+              {mode === "new" && " Variants you add here will be saved when you save the product."}
+            </p>
+            <ProductSizeVariantsTab
+              productId={mode === "new" ? null : productId}
+              sku={values.sku}
+              staged={sizeData}
+              onStagedChange={setSizeData}
+            />
+          </Card>
+        </TabsContent>
+
         {/* AVAILABILITY */}
         <TabsContent value="availability" className="pb-32">
           {mode === "new" ? (

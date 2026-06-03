@@ -153,7 +153,7 @@ function Hero() {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-primary/40 via-primary/30 to-background" />
       </div>
-      <div className="mx-auto flex min-h-[88vh] max-w-[1280px] flex-col justify-end px-4 pb-16 pt-32 md:px-8 md:pb-24">
+      <div className="mx-auto flex min-h-[88vh] max-w-[1280px] flex-col justify-end px-4 pb-8 pt-32 md:px-8 md:pb-12 lg:pb-16">
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">
           {t("home.hero.tagline")}
         </p>
@@ -201,7 +201,7 @@ function Hero() {
 function BrandStory() {
   const { t } = useTranslation();
   return (
-    <section className="mx-auto max-w-[1280px] px-4 py-24 md:px-8 md:py-32">
+    <section className="mx-auto max-w-[1280px] px-4 py-8 md:px-8 md:py-12 lg:py-20">
       <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
         {/* LEFT COLUMN — Image */}
         <div className="order-1">
@@ -261,14 +261,14 @@ function Categories() {
     count: counts.get(c.slug) ?? 0,
   }));
   return (
-    <section className="bg-background py-24 md:py-32">
+    <section className="bg-background py-8 md:py-12 lg:py-20">
       <div className="mx-auto max-w-[1280px] px-4 md:px-8">
         {/* Section heading */}
         <div className="text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">
             {t("home.categories.eyebrow")}
           </p>
-          <h2 className="mt-3 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl">
+          <h2 className="mt-2 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl">
             {t("home.categories.title")}
           </h2>
           <p className="mt-3 text-base text-muted-foreground">
@@ -277,7 +277,7 @@ function Categories() {
         </div>
 
         {/* Cards grid */}
-        <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+        <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 md:mt-10">
           {localizedCategories.map((cat) => (
             <CategoryCard key={cat.slug} cat={cat} />
           ))}
@@ -342,19 +342,19 @@ function FeaturedProducts() {
   }, [products]);
   const prefix = lang === "id" ? "produk" : "products";
   return (
-    <section className="mx-auto max-w-[1280px] px-4 py-24 md:px-8 md:py-32">
+    <section className="mx-auto max-w-[1280px] px-4 py-8 md:px-8 md:py-12 lg:py-20">
       {/* Section heading */}
       <div className="text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">
           {t("home.featured.eyebrow")}
         </p>
-        <h2 className="mt-3 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl">
+        <h2 className="mt-2 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl">
           {t("home.featured.title")}
         </h2>
       </div>
 
       {/* Product grid */}
-      <div className="mt-14 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-8 md:mt-10 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
         {featured.map((p) => {
           const name = localizedField(p, "name", lang).value;
           const desc = localizedField(p, "short_description", lang).value;
@@ -398,7 +398,7 @@ function Community() {
   const { t } = useTranslation();
   return (
     <section className="bg-[#1a3a2e]">
-      <div className="mx-auto grid max-w-[1280px] items-center gap-10 px-4 py-24 md:grid-cols-2 md:px-8 md:py-32">
+      <div className="mx-auto grid max-w-[1280px] items-center gap-10 px-4 py-8 md:grid-cols-2 md:px-8 md:py-12 lg:py-20">
         {/* LEFT COLUMN — Text */}
         <div className="order-2 md:order-1">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#d4b896]">
@@ -441,14 +441,14 @@ function Community() {
 function StoreLocator() {
   const { t } = useTranslation();
   return (
-    <section className="mx-auto max-w-[1280px] px-4 py-24 md:px-8 md:py-32">
+    <section className="mx-auto max-w-[1280px] px-4 py-8 md:px-8 md:py-12 lg:py-20">
       <div className="grid gap-12 lg:grid-cols-12">
         <div className="lg:col-span-5">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">{t("home.store_locator.eyebrow")}</p>
-          <h2 className="mt-3 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl">
+          <h2 className="mt-2 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl">
             {t("home.store_locator.title")}
           </h2>
-          <p className="mt-6 max-w-md text-base leading-relaxed text-muted-foreground">
+          <p className="mt-3 max-w-md text-base leading-relaxed text-muted-foreground">
             {t("home.store_locator.subtitle")}
           </p>
           <Link
@@ -489,13 +489,13 @@ function FAQSection() {
   const { t } = useTranslation();
   const [open, setOpen] = useState<number | null>(0);
   return (
-    <section className="bg-background py-24 md:py-32" aria-labelledby="faq-heading">
+    <section className="bg-background py-8 md:py-12 lg:py-20" aria-labelledby="faq-heading">
       <div className="mx-auto max-w-3xl px-4 md:px-8">
         <div className="text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">{t("home.faq.eyebrow")}</p>
           <h2
             id="faq-heading"
-            className="mt-3 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl"
+            className="mt-2 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl"
           >
             {t("home.faq.title")}
           </h2>
@@ -504,7 +504,7 @@ function FAQSection() {
           </p>
         </div>
 
-        <ul className="mt-12 divide-y divide-border border-y border-border">
+        <ul className="mt-8 md:mt-10 divide-y divide-border border-y border-border">
           {faqs.map((f, i) => {
             const isOpen = open === i;
             return (
@@ -599,14 +599,14 @@ function ContactSectionInner() {
   };
 
   return (
-    <section className="bg-muted/60 py-24 md:py-32">
+    <section className="bg-muted/60 py-8 md:py-12 lg:py-20">
       <div className="mx-auto grid max-w-[1280px] gap-14 px-4 md:grid-cols-2 md:px-8">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">{t("home.contact.eyebrow")}</p>
-          <h2 className="mt-3 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl">
+          <h2 className="mt-2 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl">
             {t("home.contact.title_1")}<br />{t("home.contact.title_2")}
           </h2>
-          <p className="mt-6 max-w-md text-base leading-relaxed text-muted-foreground">
+          <p className="mt-3 max-w-md text-base leading-relaxed text-muted-foreground">
             {t("home.contact.subtitle")}
           </p>
           <div className="mt-10 space-y-4 text-sm">

@@ -21,6 +21,11 @@ import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { translateText } from "@/lib/translate.functions";
 import { ProductImagesTab } from "@/components/admin/ProductImagesTab";
 import { ProductVariantsTab, type StagedVariant } from "@/components/admin/ProductVariantsTab";
+import {
+  ProductSizeVariantsTab,
+  persistSizeData,
+  type StagedSizeData,
+} from "@/components/admin/ProductSizeVariantsTab";
 import { StockEditor } from "@/components/admin/StockEditor";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -75,6 +80,10 @@ export type ProductFormValues = {
   short_description_en: string;
   short_description_id: string;
   price_idr: number;
+  original_price_idr: number | null;
+  sale_price_idr: number | null;
+  is_on_sale: boolean;
+  size_guide_id: string | null;
   capacity: string;
   weight_grams: number | null;
   attributes: Attribute[];
@@ -98,6 +107,10 @@ const EMPTY: ProductFormValues = {
   short_description_en: "",
   short_description_id: "",
   price_idr: 0,
+  original_price_idr: null,
+  sale_price_idr: null,
+  is_on_sale: false,
+  size_guide_id: null,
   capacity: "",
   weight_grams: null,
   attributes: [],
@@ -171,7 +184,7 @@ async function logActivity(
   }
 }
 
-type Tab = "basic" | "translations" | "images" | "variants" | "availability" | "seo";
+type Tab = "basic" | "translations" | "images" | "variants" | "sizes" | "availability" | "seo";
 type ProductFormProps =
   | { mode: "new"; productId?: undefined; initialTab?: Tab }
   | { mode: "edit"; productId: string; initialTab?: Tab };
@@ -195,6 +208,21 @@ export function ProductForm(props: ProductFormProps) {
 
   // Staged color variants (only used in `new` mode before first save)
   const [stagedVariants, setStagedVariants] = useState<StagedVariant[]>([]);
+
+  // Size variants staged data (used in both new + edit modes; persisted on save)
+  const [sizeData, setSizeData] = useState<StagedSizeData>({ option_types: [], variants: [] });
+
+  // Size guides for the dropdown
+  const [sizeGuides, setSizeGuides] = useState<Array<{ id: string; name: string }>>([]);
+  useEffect(() => {
+    void supabase
+      .from("size_guides" as never)
+      .select("id,name")
+      .order("name")
+      .then(({ data }) =>
+        setSizeGuides(((data ?? []) as unknown as Array<{ id: string; name: string }>) ),
+      );
+  }, []);
 
   // Track whether the user has interacted with the stock field so new products start empty.
   const [stockTouched, setStockTouched] = useState(false);
@@ -327,6 +355,10 @@ export function ProductForm(props: ProductFormProps) {
           short_description_en: (data as { short_description_en?: string | null }).short_description_en ?? "",
           short_description_id: (data as { short_description_id?: string | null }).short_description_id ?? "",
           price_idr: data.price_idr ?? 0,
+          original_price_idr: (data as { original_price_idr?: number | null }).original_price_idr ?? null,
+          sale_price_idr: (data as { sale_price_idr?: number | null }).sale_price_idr ?? null,
+          is_on_sale: !!(data as { is_on_sale?: boolean }).is_on_sale,
+          size_guide_id: (data as { size_guide_id?: string | null }).size_guide_id ?? null,
           capacity: data.capacity ?? "",
           weight_grams: data.weight_grams,
           attributes: Object.entries(attrsObj).map(([key, value]) => ({
@@ -494,6 +526,10 @@ export function ProductForm(props: ProductFormProps) {
       short_description_en: values.short_description_en || null,
       short_description_id: values.short_description_id || null,
       price_idr: values.price_idr,
+      original_price_idr: values.original_price_idr,
+      sale_price_idr: values.sale_price_idr,
+      is_on_sale: values.is_on_sale,
+      size_guide_id: values.size_guide_id,
       capacity: values.capacity || null,
       weight_grams: values.weight_grams,
       attributes: attrsObj,
@@ -536,6 +572,7 @@ export function ProductForm(props: ProductFormProps) {
           if (vErr) toast.error("Saved product, but color variants failed: " + vErr.message);
         }
       }
+      await persistSizeData(data.id, sizeData);
       toast.success("Product created");
       setInitialSnapshot(JSON.stringify(values));
       try { localStorage.removeItem(draftKey); } catch { /* ignore */ }
@@ -563,6 +600,7 @@ export function ProductForm(props: ProductFormProps) {
         return;
       }
       void logActivity(profile?.id ?? null, "updated", productId);
+      await persistSizeData(productId, sizeData);
       toast.success("Product saved");
       if (
         prevStock === "out_of_stock" &&
@@ -670,6 +708,9 @@ export function ProductForm(props: ProductFormProps) {
           </TabsTrigger>
           <TabsTrigger value="variants">
             Color Variants
+          </TabsTrigger>
+          <TabsTrigger value="sizes">
+            Size Variants
           </TabsTrigger>
           <TabsTrigger value="availability" disabled={mode === "new"}>
             Where available

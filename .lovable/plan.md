@@ -1,69 +1,87 @@
-# Product Color Variants
+## Goal
 
-Add per-product color variants with admin editor and automatic public display.
+Extend the catalog to support **size (and other option-type) variants with per-variant SKU/price/stock/image**, **discount pricing**, and **admin-managed size guides** assignable per category. Keep existing color variants, product cards, cart/checkout, and Consina design untouched unless strictly required.
 
-## 1. Database
+## Data model (new migration)
 
-New migration creating `public.product_variants`:
+Three new tables + a few additive columns. No destructive changes to existing tables.
 
-- `id uuid pk default gen_random_uuid()`
-- `product_id uuid not null` (logical FK to products.id)
-- `color_name text not null`
-- `color_hex text not null` (validated format `#RRGGBB`)
-- `image_url text null`
-- `stock integer null`
-- `sort_order integer not null default 0`
-- `created_at`, `updated_at` timestamptz with `set_updated_at` trigger
+```text
+products
+  + original_price_idr int null            -- "coret" price
+  + sale_price_idr     int null            -- if set, this is what customers pay
+  + is_on_sale         bool default false  -- explicit promo flag (queryable)
+  + size_guide_id      uuid null           -- optional direct override
 
-GRANTs:
-- `anon, authenticated`: SELECT (variants of active products, enforced via RLS using EXISTS on products)
-- `authenticated`: full CRUD via `is_admin_or_editor()`
-- `service_role`: ALL
+product_option_types  (per product: "Ukuran", "Lebar", ...)
+  id, product_id, name, sort_order
 
-RLS:
-- `public read product_variants of active products` — SELECT for anon/authenticated where parent product `is_active = true`
-- `staff manage product_variants` — ALL for `is_admin_or_editor()`
+product_option_values (custom free-text values: "S","M","41","42")
+  id, option_type_id, value, sort_order
 
-Index on `(product_id, sort_order)`.
+product_size_variants (the combinations table — separate from product_variants/colors)
+  id, product_id,
+  option_values uuid[]   -- references product_option_values.id (1+ values per row)
+  sku text null, price_idr int null, original_price_idr int null,
+  stock int default 0, image_url text null, sort_order int
 
-## 2. Admin UI (`src/components/admin/ProductForm.tsx`)
+size_guides
+  id, name, description, rows jsonb  -- [{label:"S", chest:"90", ...}], headers jsonb
 
-Add new tab **"Variants"** after Images (or a card inside Basic Info — using a tab to keep parity with existing image tab).
+category_size_guides
+  category_id (pk), size_guide_id
+```
 
-New component `src/components/admin/ProductVariantsTab.tsx`:
-- Loads existing variants on mount via `supabase.from("product_variants").select(...).eq("product_id", id).order("sort_order")`.
-- Local state array of rows; each row: `{ id?, color_name, color_hex, image_url, stock, sort_order }`.
-- Buttons: **+ Add color**, per-row delete, up/down reorder.
-- Inputs per row: name (text), hex (text + `<input type="color">` swatch synced), stock (number), image upload (reusing existing storage bucket `product-images`).
-- Save handler: diff against initial → upsert changed/new rows, delete removed rows. Hook into the existing product save flow (call from parent ProductForm after product upsert) or expose a `Save variants` button on the tab if simpler. Prefer integrating into the parent submit so it saves atomically with the product.
+RLS: public-read for active products' children; staff (`is_admin_or_editor`) manage. Mirror existing `product_variants` policies. Grants for `anon` (select) + `authenticated` + `service_role`.
 
-For the "new" mode (no product id yet), keep variants in local state and persist after the product row is inserted.
+Color variants (`product_variants`) are unchanged.
 
-## 3. Public display
+## Admin
 
-### Product detail (`src/pages/ProductDetail.tsx`)
-- Fetch variants for the product (`product_variants` ordered by `sort_order`).
-- Render swatch row: circular buttons styled with `background-color: var(--hex)` and accessible labels (color name).
-- On select, if `image_url` set, switch the main product image to that URL. Show selected color name and (if `stock` set) the variant stock.
+- **ProductForm — Pricing fields**: add `original_price_idr`, `sale_price_idr`, `is_on_sale` inputs to the Basic Info tab (small block under price). New mode keeps them empty.
+- **New "Size Variants" tab** in `ProductForm` (separate from existing Color Variants tab):
+  - Option-type editor: add types with custom names + free-text values.
+  - Auto-generated combinations table; each row has SKU, price, original price, stock, image upload.
+  - Supports staged mode (in memory before first save) like ProductVariantsTab.
+- **Size Guides admin** (`/admin/size-guides`): list/create/edit guides with header row + rows table (JSON-backed). Assign guides to categories from the category editor (or inside the guide).
 
-### Product cards
-- Extend `usePublicProducts` (and the category page query in `src/routes/c.$slug.tsx`) to also pull variants: `product_variants(color_hex, sort_order)`.
-- Add `variants: { color_hex: string }[]` to `PublicProduct` type.
-- In product cards (catalog, category, home featured), render up to ~5 small color dots below the title when variants exist.
+## Public site
 
-## 4. Files
+- `usePublicProducts` / product detail query: include `size_variants`, `option_types`, `option_values`, sale fields, and resolved size guide.
+- **Cards/listings**: if size variants have multiple prices, show "Rp X – Rp Y". If `sale_price_idr` set, render struck-through original + sale price + `-NN%` badge. Color dots stay as-is.
+- **Product detail**:
+  - Show size selector (radio chips per option type) alongside existing color picker.
+  - Selecting a combination updates displayed price, stock/availability, and (if present) variant image. Out-of-stock combos are visually disabled.
+  - "Panduan Ukuran" button next to the size selector → Dialog showing the assigned size guide table. Hidden if no guide.
+- Inquiry/checkout payloads include the selected size variant id + label so existing flow keeps working.
 
-- `supabase/migrations/<timestamp>_product_variants.sql` (new)
-- `src/components/admin/ProductVariantsTab.tsx` (new)
-- `src/components/admin/ProductForm.tsx` (edit — add tab + wire save)
-- `src/lib/public-products.ts` (edit — include variants in select + type)
-- `src/pages/ProductDetail.tsx` (edit — swatch UI + image switch)
-- `src/routes/catalog.tsx` (edit — dots on cards)
-- `src/routes/c.$slug.tsx` (edit — include variants in query + dots on cards)
-- Optionally `src/routes/index.tsx` featured cards (dots).
+## Backward compatibility
 
-## 5. Out of scope
+- All new columns nullable / defaulted; products with no size variants behave exactly as today (single price, single stock).
+- Existing `product_variants` (colors) untouched. Cards still render color dots from the same shape.
+- Shared `usePublicProducts` returns same fields plus new optional ones — consumers ignore unknowns.
+- No styling/layout changes to existing components beyond appending the new UI blocks.
 
-- No price-per-variant (only stock).
-- No size variants (colors only as requested).
-- No cart/checkout integration of selected color beyond display (existing inquiry/order flow unchanged).
+## File plan
+
+New:
+- `supabase/migrations/<ts>_size_variants_and_promos.sql`
+- `src/components/admin/ProductSizeVariantsTab.tsx`
+- `src/components/admin/SizeGuidePicker.tsx`
+- `src/routes/admin/size-guides.tsx` (+ edit route)
+- `src/components/site/SizeGuideDialog.tsx`
+- `src/components/site/PriceDisplay.tsx` (small helper for sale/range; opt-in)
+
+Edited (minimal, additive):
+- `src/components/admin/ProductForm.tsx` — add pricing fields + new tab + save logic for size variants/option types.
+- `src/lib/public-products.ts` — extend query/normalize with new tables + sale fields.
+- `src/pages/ProductDetail.tsx` — size selector, size-guide button, sale price rendering.
+- Card components used in `routes/index.tsx`, `routes/catalog.tsx`, `routes/c.$slug.tsx` — call `PriceDisplay` instead of inline price (keep markup/classes the same).
+
+## Out of scope (per instructions)
+
+- No refactor of cart/checkout/Midtrans logic beyond passing the selected variant id.
+- No design changes to category carousel, brand story, footer, etc.
+- No edits to auto-generated files (`types.ts`, `routeTree.gen.ts` manually).
+
+Proceeding will start with the database migration (needs your approval), then admin UI, then public surfaces.

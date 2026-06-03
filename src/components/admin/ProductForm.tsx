@@ -196,6 +196,9 @@ export function ProductForm(props: ProductFormProps) {
   // Staged color variants (only used in `new` mode before first save)
   const [stagedVariants, setStagedVariants] = useState<StagedVariant[]>([]);
 
+  // Track whether the user has interacted with the stock field so new products start empty.
+  const [stockTouched, setStockTouched] = useState(false);
+
   // Translations tab UI state
   const [translationView, setTranslationView] = useState<"both" | "id" | "en">("both");
   const [translating, setTranslating] = useState<"to_en" | "to_id" | null>(null);
@@ -541,6 +544,7 @@ export function ProductForm(props: ProductFormProps) {
         setInitialSnapshot(JSON.stringify(EMPTY));
         setErrors({});
         setStagedVariants([]);
+        setStockTouched(false);
         setTab("basic");
       } else {
         navigate({ to: "/admin/products/$id/edit", params: { id: data.id } });
@@ -636,6 +640,7 @@ export function ProductForm(props: ProductFormProps) {
                 setValues(draftAvailable);
                 setDraftAvailable(null);
                 setDraftDismissed(true);
+                setStockTouched(true);
                 toast.success("Draft restored");
               }}
             >
@@ -873,8 +878,9 @@ export function ProductForm(props: ProductFormProps) {
                     type="number"
                     min={0}
                     inputMode="numeric"
-                    value={values.stock}
+                    value={mode === "new" && !stockTouched ? "" : values.stock}
                     onChange={(e) => {
+                      if (!stockTouched) setStockTouched(true);
                       const n = e.target.value === "" ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0);
                       setField("stock", n);
                     }}

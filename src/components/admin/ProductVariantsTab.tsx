@@ -11,6 +11,14 @@ const MAX_BYTES = 5 * 1024 * 1024;
 const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp"]);
 const HEX_RE = /^#[0-9a-f]{6}$/i;
 
+export type StagedVariant = {
+  color_name: string;
+  color_hex: string;
+  image_url: string | null;
+  stock: number | null;
+  sort_order: number;
+};
+
 type Variant = {
   id: string;
   product_id: string;
@@ -28,16 +36,48 @@ function tmpId() {
 export function ProductVariantsTab({
   productId,
   sku,
+  staged,
+  onStagedChange,
 }: {
-  productId: string;
+  productId: string | null;
   sku: string;
+  staged?: StagedVariant[];
+  onStagedChange?: (rows: StagedVariant[]) => void;
 }) {
-  const [rows, setRows] = useState<Variant[]>([]);
-  const [loading, setLoading] = useState(true);
+  const stagedMode = productId === null;
+  const [rows, setRows] = useState<Variant[]>(() =>
+    stagedMode
+      ? (staged ?? []).map((s, i) => ({
+          id: "tmp-" + i + "-" + Math.random().toString(36).slice(2, 8),
+          product_id: "",
+          ...s,
+          sort_order: s.sort_order ?? i,
+        }))
+      : [],
+  );
+  const [loading, setLoading] = useState(!stagedMode);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [uploadingId, setUploadingId] = useState<string | null>(null);
 
+  const emitStaged = useCallback(
+    (next: Variant[]) => {
+      if (stagedMode && onStagedChange) {
+        onStagedChange(
+          next.map((r, i) => ({
+            color_name: r.color_name,
+            color_hex: r.color_hex,
+            image_url: r.image_url,
+            stock: r.stock,
+            sort_order: i,
+          })),
+        );
+      }
+    },
+    [stagedMode, onStagedChange],
+  );
+
   const refresh = useCallback(async () => {
+    if (stagedMode || !productId) return;
     setLoading(true);
     const { data, error } = await supabase
       .from("product_variants")
@@ -50,30 +90,38 @@ export function ProductVariantsTab({
       setRows((data ?? []) as Variant[]);
     }
     setLoading(false);
-  }, [productId]);
+  }, [productId, stagedMode]);
 
   useEffect(() => {
     void refresh();
   }, [refresh]);
 
   function patchRow(id: string, patch: Partial<Variant>) {
-    setRows((p) => p.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+    setRows((p) => {
+      const next = p.map((r) => (r.id === id ? { ...r, ...patch } : r));
+      emitStaged(next);
+      return next;
+    });
   }
 
   function addRow() {
     const nextOrder = rows.length;
-    setRows((p) => [
-      ...p,
-      {
-        id: tmpId(),
-        product_id: productId,
-        color_name: "",
-        color_hex: "#000000",
-        image_url: null,
-        stock: null,
-        sort_order: nextOrder,
-      },
-    ]);
+    setRows((p) => {
+      const next = [
+        ...p,
+        {
+          id: tmpId(),
+          product_id: productId ?? "",
+          color_name: "",
+          color_hex: "#000000",
+          image_url: null,
+          stock: null,
+          sort_order: nextOrder,
+        },
+      ];
+      emitStaged(next);
+      return next;
+    });
   }
 
   async function saveRow(row: Variant) {
@@ -85,6 +133,7 @@ export function ProductVariantsTab({
       toast.error("Color hex must be like #1a1a1a");
       return;
     }
+    if (stagedMode || !productId) return;
     setSavingId(row.id);
     const payload = {
       product_id: productId,
@@ -123,8 +172,12 @@ export function ProductVariantsTab({
 
   async function deleteRow(row: Variant) {
     if (!confirm(`Delete color "${row.color_name || "(unnamed)"}"?`)) return;
-    if (row.id.startsWith("tmp-")) {
-      setRows((p) => p.filter((r) => r.id !== row.id));
+    if (row.id.startsWith("tmp-") || stagedMode) {
+      setRows((p) => {
+        const next = p.filter((r) => r.id !== row.id);
+        emitStaged(next);
+        return next;
+      });
       return;
     }
     const { error } = await supabase
@@ -147,6 +200,8 @@ export function ProductVariantsTab({
     [next[idx], next[j]] = [next[j], next[idx]];
     const reseq = next.map((r, i) => ({ ...r, sort_order: i }));
     setRows(reseq);
+    emitStaged(reseq);
+    if (stagedMode) return;
     // Persist sort_order for any saved (non-tmp) rows
     const updates = reseq
       .filter((r) => !r.id.startsWith("tmp-"))
@@ -176,7 +231,7 @@ export function ProductVariantsTab({
     setUploadingId(row.id);
     try {
       const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-      const safe = sku.replace(/[^A-Za-z0-9_-]/g, "_") || productId;
+      const safe = sku.replace(/[^A-Za-z0-9_-]/g, "_") || productId || "new";
       const path = `${safe}/variants/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
       const { error: upErr } = await supabase.storage
         .from(BUCKET)
@@ -217,6 +272,7 @@ export function ProductVariantsTab({
               isLast={idx === rows.length - 1}
               saving={savingId === row.id}
               uploading={uploadingId === row.id}
+              hideSave={stagedMode}
               onPatch={(p) => patchRow(row.id, p)}
               onSave={() => void saveRow(row)}
               onDelete={() => void deleteRow(row)}

@@ -13,6 +13,7 @@ export type PublicProduct = {
   original_price_idr: number | null;
   sale_price_idr: number | null;
   is_on_sale: boolean;
+  discount_percent: number | null;
   is_featured: boolean;
   category_id: string | null;
   category_slug: string | null;
@@ -40,6 +41,7 @@ type RawRow = {
   original_price_idr: number | null;
   sale_price_idr: number | null;
   is_on_sale: boolean | null;
+  discount_percent: number | string | null;
   is_featured: boolean;
   category_id: string | null;
   images: string[] | null;
@@ -90,6 +92,10 @@ function normalize(rows: RawRow[]): PublicProduct[] {
       original_price_idr: r.original_price_idr ?? null,
       sale_price_idr: r.sale_price_idr ?? null,
       is_on_sale: !!r.is_on_sale,
+      discount_percent:
+        r.discount_percent === null || r.discount_percent === undefined
+          ? null
+          : Number(r.discount_percent),
       is_featured: r.is_featured,
       category_id: r.category_id,
       category_slug: r.categories?.slug ?? null,
@@ -114,7 +120,7 @@ export function usePublicProducts() {
       const { data: rows } = await supabase
         .from("products")
         .select(
-          "id,sku,slug,name_en,name_id,short_description_en,short_description_id,price_idr,original_price_idr,sale_price_idr,is_on_sale,is_featured,category_id,images,categories(slug,name_en,name_id),product_images(image_url,thumbnail_url,is_primary,sort_order),product_variants(color_hex,color_name,sort_order),product_size_variants(price_idr,original_price_idr,stock)",
+          "id,sku,slug,name_en,name_id,short_description_en,short_description_id,price_idr,original_price_idr,sale_price_idr,is_on_sale,discount_percent,is_featured,category_id,images,categories(slug,name_en,name_id),product_images(image_url,thumbnail_url,is_primary,sort_order),product_variants(color_hex,color_name,sort_order),product_size_variants(price_idr,original_price_idr,stock)",
         )
         .eq("is_active", true)
         .order("is_featured", { ascending: false })

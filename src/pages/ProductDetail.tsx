@@ -57,6 +57,15 @@ type Category = {
   name_en: string;
 };
 
+type ColorVariant = {
+  id: string;
+  color_name: string;
+  color_hex: string;
+  image_url: string | null;
+  stock: number | null;
+  sort_order: number;
+};
+
 type AttributeDef = {
   id: string;
   slug: string;
@@ -75,6 +84,8 @@ export function ProductDetailPage({ slug }: { slug: string }) {
   const [images, setImages] = useState<ProductImage[]>([]);
   const [category, setCategory] = useState<Category | null>(null);
   const [attrDefs, setAttrDefs] = useState<AttributeDef[]>([]);
+  const [variants, setVariants] = useState<ColorVariant[]>([]);
+  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
   const [related, setRelated] = useState<Array<{ id: string; sku: string; name_id: string; name_en: string; price_idr: number; thumb: string | null }>>([]);
   const [loading, setLoading] = useState(true);
   const [missing, setMissing] = useState(false);
@@ -137,6 +148,17 @@ export function ProductDetailPage({ slug }: { slug: string }) {
       }
       setProduct(prod);
       setImages(imgs);
+
+      // Load color variants for this product (separate query keeps types simple).
+      const { data: vRows } = await supabase
+        .from("product_variants")
+        .select("id,color_name,color_hex,image_url,stock,sort_order")
+        .eq("product_id", prod.id)
+        .order("sort_order");
+      if (cancelled) return;
+      const vs = (vRows ?? []) as ColorVariant[];
+      setVariants(vs);
+      setSelectedVariantId(vs[0]?.id ?? null);
 
       if (prod.category_id) {
         const [{ data: cat }, { data: catAttrs }, { data: rel }] = await Promise.all([
@@ -281,6 +303,8 @@ export function ProductDetailPage({ slug }: { slug: string }) {
   }
 
   const mainImg = images[activeImage] ?? images[0];
+  const selectedVariant = variants.find((v) => v.id === selectedVariantId) ?? null;
+  const variantImageUrl = selectedVariant?.image_url ?? null;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -311,7 +335,13 @@ export function ProductDetailPage({ slug }: { slug: string }) {
           {/* Gallery */}
           <div>
             <div className="aspect-square overflow-hidden rounded-2xl border border-border bg-muted">
-              {mainImg ? (
+              {variantImageUrl ? (
+                <img
+                  src={variantImageUrl}
+                  alt={selectedVariant?.color_name ?? nameField.value}
+                  className="h-full w-full object-cover"
+                />
+              ) : mainImg ? (
                 <img
                   src={mainImg.large_url ?? mainImg.image_url}
                   alt={(lang === "id" ? mainImg.alt_text_id : mainImg.alt_text_en) ?? nameField.value}
@@ -375,6 +405,45 @@ export function ProductDetailPage({ slug }: { slug: string }) {
               <p className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-800">
                 {t("product.low_stock_notice")}
               </p>
+            )}
+
+            {/* Color variants */}
+            {variants.length > 0 && (
+              <div className="mt-6">
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-foreground">
+                  {lang === "id" ? "Warna" : "Color"}
+                  {selectedVariant && (
+                    <span className="ml-2 text-muted-foreground normal-case tracking-normal">
+                      {selectedVariant.color_name}
+                      {typeof selectedVariant.stock === "number" && (
+                        <span className="ml-2 text-[10px] uppercase tracking-wider">
+                          · {selectedVariant.stock} {lang === "id" ? "stok" : "in stock"}
+                        </span>
+                      )}
+                    </span>
+                  )}
+                </label>
+                <div className="flex flex-wrap items-center gap-2">
+                  {variants.map((v) => {
+                    const active = v.id === selectedVariantId;
+                    return (
+                      <button
+                        key={v.id}
+                        type="button"
+                        onClick={() => setSelectedVariantId(v.id)}
+                        title={v.color_name}
+                        aria-label={v.color_name}
+                        aria-pressed={active}
+                        className={
+                          "h-9 w-9 rounded-full border-2 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary " +
+                          (active ? "border-primary ring-2 ring-primary/30" : "border-border hover:border-primary/50")
+                        }
+                        style={{ backgroundColor: v.color_hex }}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
             )}
 
             {/* Attribute selectors */}

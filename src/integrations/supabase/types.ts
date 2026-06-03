@@ -319,7 +319,22 @@ export type Database = {
           created_at?: string
           size_guide_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "category_size_guides_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: true
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_size_guides_size_guide_id_fkey"
+            columns: ["size_guide_id"]
+            isOneToOne: false
+            referencedRelation: "size_guides"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       category_slug_redirects: {
         Row: {
@@ -933,7 +948,15 @@ export type Database = {
           product_id?: string
           sort_order?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "product_option_types_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_option_values: {
         Row: {
@@ -957,7 +980,15 @@ export type Database = {
           sort_order?: number
           value?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "product_option_values_option_type_id_fkey"
+            columns: ["option_type_id"]
+            isOneToOne: false
+            referencedRelation: "product_option_types"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_size_variants: {
         Row: {
@@ -999,7 +1030,15 @@ export type Database = {
           stock?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "product_size_variants_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_variants: {
         Row: {
@@ -1142,6 +1181,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_size_guide_id_fkey"
+            columns: ["size_guide_id"]
+            isOneToOne: false
+            referencedRelation: "size_guides"
             referencedColumns: ["id"]
           },
         ]

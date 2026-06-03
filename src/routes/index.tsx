@@ -9,6 +9,7 @@ import { usePublicProducts, type PublicProduct, getSiteUrl } from "@/lib/public-
 import { usePublicCategories, type PublicCategory } from "@/hooks/use-public-categories";
 import { useLang } from "@/i18n/LangProvider";
 import { formatPrice, localizedField } from "@/i18n/format";
+import { PriceDisplay } from "@/components/site/PriceDisplay";
 import hero from "@/assets/hero-mountain.jpg";
 import catCarriers from "@/assets/cat-carriers.jpg";
 import catTents from "@/assets/cat-tents.jpg";

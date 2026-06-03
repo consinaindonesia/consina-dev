@@ -196,6 +196,9 @@ export function ProductForm(props: ProductFormProps) {
   // Staged color variants (only used in `new` mode before first save)
   const [stagedVariants, setStagedVariants] = useState<StagedVariant[]>([]);
 
+  // Track whether the user has interacted with the stock field so new products start empty.
+  const [stockTouched, setStockTouched] = useState(false);
+
   // Translations tab UI state
   const [translationView, setTranslationView] = useState<"both" | "id" | "en">("both");
   const [translating, setTranslating] = useState<"to_en" | "to_id" | null>(null);

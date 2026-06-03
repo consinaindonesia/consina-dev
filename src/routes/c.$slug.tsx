@@ -38,15 +38,20 @@ type ProductRow = {
   name_en: string;
   name_id: string;
   price_idr: number;
+  original_price_idr: number | null;
+  sale_price_idr: number | null;
+  is_on_sale: boolean;
   attributes: Record<string, string> | null;
   product_images: Array<{ thumbnail_url: string | null; image_url: string }>;
   images: string[] | null;
   variants: Array<{ color_hex: string; color_name: string }>;
+  size_variants: Array<{
+    price_idr: number | null;
+    original_price_idr: number | null;
+    stock: number | null;
+  }>;
 };
 
-function formatIDR(n: number) {
-  return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(n);
-}
 
 function CategoryPage() {
   const { slug } = Route.useParams();

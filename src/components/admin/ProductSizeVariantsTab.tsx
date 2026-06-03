@@ -96,11 +96,11 @@ export function ProductSizeVariantsTab({
 
   const emitStaged = useCallback(
     (types: StagedOptionType[], vars: StagedSizeVariant[]) => {
-      if (stagedMode && onStagedChange) {
+      if (onStagedChange) {
         onStagedChange({ option_types: types, variants: vars });
       }
     },
-    [stagedMode, onStagedChange],
+    [onStagedChange],
   );
 
   // -- load from DB --
@@ -556,6 +556,27 @@ export async function persistSizeData(
   productId: string,
   data: StagedSizeData,
 ): Promise<boolean> {
+  // Replace-all strategy: delete then re-insert. Safe because no FKs reference these.
+  await supabase
+    .from("product_size_variants" as never)
+    .delete()
+    .eq("product_id", productId);
+  // Delete option values via cascade-like manual: load types first
+  const { data: oldTypes } = await supabase
+    .from("product_option_types" as never)
+    .select("id")
+    .eq("product_id", productId);
+  const oldTypeIds = ((oldTypes ?? []) as unknown as Array<{ id: string }>).map((t) => t.id);
+  if (oldTypeIds.length > 0) {
+    await supabase
+      .from("product_option_values" as never)
+      .delete()
+      .in("option_type_id", oldTypeIds);
+    await supabase
+      .from("product_option_types" as never)
+      .delete()
+      .eq("product_id", productId);
+  }
   if (data.option_types.length === 0 && data.variants.length === 0) return true;
   // Insert option types
   const typesPayload = data.option_types

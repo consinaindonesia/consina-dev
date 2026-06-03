@@ -572,6 +572,7 @@ export function ProductForm(props: ProductFormProps) {
           if (vErr) toast.error("Saved product, but color variants failed: " + vErr.message);
         }
       }
+      await persistSizeData(data.id, sizeData);
       toast.success("Product created");
       setInitialSnapshot(JSON.stringify(values));
       try { localStorage.removeItem(draftKey); } catch { /* ignore */ }
@@ -599,6 +600,7 @@ export function ProductForm(props: ProductFormProps) {
         return;
       }
       void logActivity(profile?.id ?? null, "updated", productId);
+      await persistSizeData(productId, sizeData);
       toast.success("Product saved");
       if (
         prevStock === "out_of_stock" &&

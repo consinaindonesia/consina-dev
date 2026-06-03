@@ -183,8 +183,27 @@ function Hero() {
 /* ---------- Brand Story ---------- */
 function BrandStory() {
   const { t } = useTranslation();
+  const [expanded, setExpanded] = useState(false);
+  const textWrapRef = useRef<HTMLDivElement>(null);
+
+  const paragraphs = [
+    t("home.story.p1"),
+    t("home.story.p2"),
+    t("home.story.p3"),
+  ].filter(Boolean);
+
+  const first = paragraphs[0] ?? "";
+  const rest = paragraphs.slice(1);
+
+  const handleToggle = () => {
+    if (expanded && textWrapRef.current) {
+      textWrapRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+    setExpanded((v) => !v);
+  };
+
   return (
-    <section className="mx-auto max-w-[1280px] px-4 py-24 md:px-8 md:py-32">
+    <section className="mx-auto max-w-[1280px] px-4 py-8 md:px-8 md:py-12 lg:py-20">
       <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
         {/* LEFT COLUMN — Image */}
         <div className="order-1">
@@ -201,21 +220,70 @@ function BrandStory() {
         </div>
 
         {/* RIGHT COLUMN — Text */}
-        <div className="order-2">
+        <div className="order-2" ref={textWrapRef}>
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">
             {t("home.story.eyebrow")}
           </p>
           <h2 className="mt-4 font-[Archivo] text-4xl font-black leading-[1.05] tracking-tight text-primary md:text-5xl">
             {t("home.story.title")}
           </h2>
-          <div className="mt-8 space-y-5 text-base leading-relaxed text-foreground/80 md:text-lg">
-            <p>{t("home.story.p1")}</p>
-            <p>{t("home.story.p2")}</p>
-            <p>{t("home.story.p3")}</p>
+
+          <div className="relative mt-6 md:mt-8">
+            {/* Constrained width for comfortable reading */}
+            <div className="max-w-prose">
+              {/* Always-visible first paragraph */}
+              <p className="text-base leading-[1.75] text-foreground/80 md:text-lg">
+                {first}
+              </p>
+
+              {/* Collapsible remaining paragraphs */}
+              <div
+                className="grid transition-[grid-template-rows] duration-500 ease-out"
+                style={{ gridTemplateRows: expanded ? "1fr" : "0fr" }}
+              >
+                <div className="min-h-0 overflow-hidden">
+                  <div className="mt-5 space-y-5 text-base leading-[1.75] text-foreground/80 md:text-lg">
+                    {rest.map((p, i) => (
+                      <p key={i}>{p}</p>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Fade gradient when collapsed */}
+              {!expanded && (
+                <div
+                  className="pointer-events-none absolute bottom-0 left-0 right-0 h-12 transition-opacity duration-300"
+                  style={{
+                    background:
+                      "linear-gradient(to bottom, transparent, var(--background))",
+                  }}
+                />
+              )}
+            </div>
+
+            {/* Toggle */}
+            <button
+              type="button"
+              onClick={handleToggle}
+              aria-expanded={expanded}
+              className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-primary/20 px-5 py-2.5 text-sm font-semibold uppercase tracking-wider text-primary transition hover:bg-primary/5 hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+            >
+              {expanded ? (
+                <>
+                  Lebih Sedikit <ChevronUp className="h-4 w-4" />
+                </>
+              ) : (
+                <>
+                  Lebih Detail <ChevronDown className="h-4 w-4" />
+                </>
+              )}
+            </button>
           </div>
+
           <Link
             to="/"
-            className="mt-10 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-secondary"
+            className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-secondary"
           >
             {t("cta.learn_more")} <span className="text-base">→</span>
           </Link>

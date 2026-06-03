@@ -20,6 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { translateText } from "@/lib/translate.functions";
 import { ProductImagesTab } from "@/components/admin/ProductImagesTab";
+import { ProductVariantsTab } from "@/components/admin/ProductVariantsTab";
 import { StockEditor } from "@/components/admin/StockEditor";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -170,7 +171,7 @@ async function logActivity(
   }
 }
 
-type Tab = "basic" | "translations" | "images" | "availability" | "seo";
+type Tab = "basic" | "translations" | "images" | "variants" | "availability" | "seo";
 type ProductFormProps =
   | { mode: "new"; productId?: undefined; initialTab?: Tab }
   | { mode: "edit"; productId: string; initialTab?: Tab };
@@ -640,6 +641,9 @@ export function ProductForm(props: ProductFormProps) {
           <TabsTrigger value="translations">Translations</TabsTrigger>
           <TabsTrigger value="images">
             Images
+          </TabsTrigger>
+          <TabsTrigger value="variants" disabled={mode === "new"}>
+            Color Variants
           </TabsTrigger>
           <TabsTrigger value="availability" disabled={mode === "new"}>
             Where available

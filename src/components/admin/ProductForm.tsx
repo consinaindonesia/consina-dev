@@ -209,6 +209,21 @@ export function ProductForm(props: ProductFormProps) {
   // Staged color variants (only used in `new` mode before first save)
   const [stagedVariants, setStagedVariants] = useState<StagedVariant[]>([]);
 
+  // Size variants staged data (used in both new + edit modes; persisted on save)
+  const [sizeData, setSizeData] = useState<StagedSizeData>({ option_types: [], variants: [] });
+
+  // Size guides for the dropdown
+  const [sizeGuides, setSizeGuides] = useState<Array<{ id: string; name: string }>>([]);
+  useEffect(() => {
+    void supabase
+      .from("size_guides" as never)
+      .select("id,name")
+      .order("name")
+      .then(({ data }) =>
+        setSizeGuides(((data ?? []) as unknown as Array<{ id: string; name: string }>) ),
+      );
+  }, []);
+
   // Track whether the user has interacted with the stock field so new products start empty.
   const [stockTouched, setStockTouched] = useState(false);
 
@@ -340,6 +355,10 @@ export function ProductForm(props: ProductFormProps) {
           short_description_en: (data as { short_description_en?: string | null }).short_description_en ?? "",
           short_description_id: (data as { short_description_id?: string | null }).short_description_id ?? "",
           price_idr: data.price_idr ?? 0,
+          original_price_idr: (data as { original_price_idr?: number | null }).original_price_idr ?? null,
+          sale_price_idr: (data as { sale_price_idr?: number | null }).sale_price_idr ?? null,
+          is_on_sale: !!(data as { is_on_sale?: boolean }).is_on_sale,
+          size_guide_id: (data as { size_guide_id?: string | null }).size_guide_id ?? null,
           capacity: data.capacity ?? "",
           weight_grams: data.weight_grams,
           attributes: Object.entries(attrsObj).map(([key, value]) => ({

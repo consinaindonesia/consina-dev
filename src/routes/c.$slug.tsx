@@ -122,7 +122,7 @@ function CategoryPage() {
       const { data: prods } = await supabase
         .from("products")
         .select(
-          "id,sku,slug,name_en,name_id,price_idr,attributes,images,product_images(thumbnail_url,image_url,is_primary,sort_order),product_variants(color_hex,color_name,sort_order)",
+          "id,sku,slug,name_en,name_id,price_idr,original_price_idr,sale_price_idr,is_on_sale,attributes,images,product_images(thumbnail_url,image_url,is_primary,sort_order),product_variants(color_hex,color_name,sort_order),product_size_variants(price_idr,original_price_idr,stock)",
         )
         .eq("category_id", cat.id)
         .eq("is_active", true)
@@ -153,10 +153,22 @@ function CategoryPage() {
           name_en: p.name_en,
           name_id: p.name_id,
           price_idr: p.price_idr,
+          original_price_idr: (p as { original_price_idr?: number | null }).original_price_idr ?? null,
+          sale_price_idr: (p as { sale_price_idr?: number | null }).sale_price_idr ?? null,
+          is_on_sale: !!(p as { is_on_sale?: boolean }).is_on_sale,
           attributes: (p.attributes as Record<string, string> | null) ?? null,
           product_images: merged,
           images: flat,
           variants: variantsRaw,
+          size_variants: (((p as { product_size_variants?: Array<{
+            price_idr: number | null;
+            original_price_idr: number | null;
+            stock: number | null;
+          }> }).product_size_variants) ?? []).map((sv) => ({
+            price_idr: sv.price_idr,
+            original_price_idr: sv.original_price_idr,
+            stock: sv.stock,
+          })),
         };
       });
       setProducts(normalized);

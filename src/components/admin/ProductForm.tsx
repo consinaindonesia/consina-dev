@@ -533,7 +533,7 @@ export function ProductForm(props: ProductFormProps) {
       short_description_en: values.short_description_en || null,
       short_description_id: values.short_description_id || null,
       price_idr: values.price_idr,
-      original_price_idr: values.original_price_idr,
+      original_price_idr: null,
       sale_price_idr: values.sale_price_idr,
       is_on_sale: values.is_on_sale,
       discount_percent: values.discount_percent,

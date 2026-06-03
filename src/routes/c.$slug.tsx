@@ -5,6 +5,7 @@ import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { useLang } from "@/i18n/LangProvider";
 
 export const Route = createFileRoute("/c/$slug")({
   component: CategoryPage,
@@ -39,6 +40,7 @@ type ProductRow = {
   price_idr: number;
   attributes: Record<string, string> | null;
   product_images: Array<{ thumbnail_url: string | null; image_url: string }>;
+  images: string[] | null;
 };
 
 function formatIDR(n: number) {
@@ -47,6 +49,7 @@ function formatIDR(n: number) {
 
 function CategoryPage() {
   const { slug } = Route.useParams();
+  const lang = useLang();
   const [category, setCategory] = useState<Category | null>(null);
   const [attrDefs, setAttrDefs] = useState<AttributeDef[]>([]);
   const [products, setProducts] = useState<ProductRow[]>([]);
@@ -113,7 +116,7 @@ function CategoryPage() {
       const { data: prods } = await supabase
         .from("products")
         .select(
-          "id,sku,slug,name_en,name_id,price_idr,attributes,product_images(thumbnail_url,image_url,is_primary,sort_order)",
+          "id,sku,slug,name_en,name_id,price_idr,attributes,images,product_images(thumbnail_url,image_url,is_primary,sort_order)",
         )
         .eq("category_id", cat.id)
         .eq("is_active", true)
@@ -127,6 +130,12 @@ function CategoryPage() {
           sort_order: number;
         }>;
         imgs.sort((a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0) || a.sort_order - b.sort_order);
+        const flat = Array.isArray((p as { images?: string[] }).images) ? (p as { images: string[] }).images : [];
+        const merged = imgs.length > 0
+          ? imgs.slice(0, 1)
+          : flat.length > 0
+            ? [{ thumbnail_url: flat[0], image_url: flat[0] }]
+            : [];
         return {
           id: p.id,
           slug: (p as { slug?: string | null }).slug ?? null,
@@ -135,7 +144,8 @@ function CategoryPage() {
           name_id: p.name_id,
           price_idr: p.price_idr,
           attributes: (p.attributes as Record<string, string> | null) ?? null,
-          product_images: imgs.slice(0, 1),
+          product_images: merged,
+          images: flat,
         };
       });
       setProducts(normalized);
@@ -303,8 +313,11 @@ function CategoryPage() {
                 <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   {filtered.map((p) => {
                     const img = p.product_images[0];
+                    const prefix = lang === "id" ? "produk" : "products";
+                    const detailHref = `/${lang}/${prefix}/${p.slug ?? p.sku}`;
                     return (
-                      <li key={p.id} className="group overflow-hidden rounded-xl border border-border bg-card">
+                      <li key={p.id} className="group overflow-hidden rounded-xl border border-border bg-card transition hover:shadow-md">
+                        <Link to={detailHref as never} className="block cursor-pointer">
                         <div className="aspect-square overflow-hidden bg-muted">
                           {img ? (
                             <img
@@ -322,6 +335,7 @@ function CategoryPage() {
                           <h3 className="mt-1 font-medium text-foreground">{p.name_en}</h3>
                           <p className="mt-2 font-semibold text-primary">{formatIDR(p.price_idr)}</p>
                         </div>
+                        </Link>
                       </li>
                     );
                   })}

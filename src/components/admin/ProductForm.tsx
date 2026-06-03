@@ -20,6 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { translateText } from "@/lib/translate.functions";
 import { ProductImagesTab } from "@/components/admin/ProductImagesTab";
+import { ProductVariantsTab } from "@/components/admin/ProductVariantsTab";
 import { StockEditor } from "@/components/admin/StockEditor";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -170,7 +171,7 @@ async function logActivity(
   }
 }
 
-type Tab = "basic" | "translations" | "images" | "availability" | "seo";
+type Tab = "basic" | "translations" | "images" | "variants" | "availability" | "seo";
 type ProductFormProps =
   | { mode: "new"; productId?: undefined; initialTab?: Tab }
   | { mode: "edit"; productId: string; initialTab?: Tab };
@@ -641,6 +642,9 @@ export function ProductForm(props: ProductFormProps) {
           <TabsTrigger value="images">
             Images
           </TabsTrigger>
+          <TabsTrigger value="variants" disabled={mode === "new"}>
+            Color Variants
+          </TabsTrigger>
           <TabsTrigger value="availability" disabled={mode === "new"}>
             Where available
           </TabsTrigger>
@@ -988,6 +992,24 @@ export function ProductForm(props: ProductFormProps) {
               </Card>
             )}
           </div>
+        </TabsContent>
+
+        {/* COLOR VARIANTS */}
+        <TabsContent value="variants" className="pb-32">
+          {mode === "new" ? (
+            <Card title="Color Variants">
+              <p className="text-sm text-muted-foreground">
+                Save the product first, then add color variants.
+              </p>
+            </Card>
+          ) : (
+            <Card title="Color Variants">
+              <p className="mb-3 text-xs text-muted-foreground">
+                Add the colors this product is available in. Each color shows on the public product page as a swatch and, if you upload an image, switches the main product photo when selected.
+              </p>
+              <ProductVariantsTab productId={productId} sku={values.sku} />
+            </Card>
+          )}
         </TabsContent>
 
         {/* AVAILABILITY */}

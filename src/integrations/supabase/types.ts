@@ -893,6 +893,50 @@ export type Database = {
           },
         ]
       }
+      product_variants: {
+        Row: {
+          color_hex: string
+          color_name: string
+          created_at: string
+          id: string
+          image_url: string | null
+          product_id: string
+          sort_order: number
+          stock: number | null
+          updated_at: string
+        }
+        Insert: {
+          color_hex: string
+          color_name: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          product_id: string
+          sort_order?: number
+          stock?: number | null
+          updated_at?: string
+        }
+        Update: {
+          color_hex?: string
+          color_name?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          product_id?: string
+          sort_order?: number
+          stock?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_variants_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           ai_translated_fields: string[]

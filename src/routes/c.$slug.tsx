@@ -41,6 +41,7 @@ type ProductRow = {
   attributes: Record<string, string> | null;
   product_images: Array<{ thumbnail_url: string | null; image_url: string }>;
   images: string[] | null;
+  variants: Array<{ color_hex: string; color_name: string }>;
 };
 
 function formatIDR(n: number) {
@@ -116,7 +117,7 @@ function CategoryPage() {
       const { data: prods } = await supabase
         .from("products")
         .select(
-          "id,sku,slug,name_en,name_id,price_idr,attributes,images,product_images(thumbnail_url,image_url,is_primary,sort_order)",
+          "id,sku,slug,name_en,name_id,price_idr,attributes,images,product_images(thumbnail_url,image_url,is_primary,sort_order),product_variants(color_hex,color_name,sort_order)",
         )
         .eq("category_id", cat.id)
         .eq("is_active", true)
@@ -136,6 +137,10 @@ function CategoryPage() {
           : flat.length > 0
             ? [{ thumbnail_url: flat[0], image_url: flat[0] }]
             : [];
+        const variantsRaw = ((p as { product_variants?: Array<{ color_hex: string; color_name: string; sort_order: number }> }).product_variants ?? [])
+          .slice()
+          .sort((a, b) => a.sort_order - b.sort_order)
+          .map((v) => ({ color_hex: v.color_hex, color_name: v.color_name }));
         return {
           id: p.id,
           slug: (p as { slug?: string | null }).slug ?? null,
@@ -146,6 +151,7 @@ function CategoryPage() {
           attributes: (p.attributes as Record<string, string> | null) ?? null,
           product_images: merged,
           images: flat,
+          variants: variantsRaw,
         };
       });
       setProducts(normalized);
@@ -333,6 +339,23 @@ function CategoryPage() {
                         <div className="p-4">
                           <p className="text-xs uppercase tracking-wider text-muted-foreground">{p.sku}</p>
                           <h3 className="mt-1 font-medium text-foreground">{p.name_en}</h3>
+                          {p.variants.length > 0 && (
+                            <div className="mt-2 flex items-center gap-1">
+                              {p.variants.slice(0, 5).map((v, i) => (
+                                <span
+                                  key={i}
+                                  title={v.color_name}
+                                  className="h-3 w-3 rounded-full border border-border"
+                                  style={{ backgroundColor: v.color_hex }}
+                                />
+                              ))}
+                              {p.variants.length > 5 && (
+                                <span className="ml-1 text-[10px] font-medium text-muted-foreground">
+                                  +{p.variants.length - 5}
+                                </span>
+                              )}
+                            </div>
+                          )}
                           <p className="mt-2 font-semibold text-primary">{formatIDR(p.price_idr)}</p>
                         </div>
                         </Link>

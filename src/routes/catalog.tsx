@@ -137,6 +137,23 @@ function ProductCard({ p, lang }: { p: PublicProduct; lang: "id" | "en" }) {
         <h3 className="line-clamp-2 font-[Archivo] text-sm font-bold leading-snug text-primary">
           {name}
         </h3>
+        {p.variants.length > 0 && (
+          <div className="mt-2 flex items-center gap-1">
+            {p.variants.slice(0, 5).map((v, i) => (
+              <span
+                key={i}
+                title={v.color_name}
+                className="h-3 w-3 rounded-full border border-border"
+                style={{ backgroundColor: v.color_hex }}
+              />
+            ))}
+            {p.variants.length > 5 && (
+              <span className="ml-1 text-[10px] font-medium text-muted-foreground">
+                +{p.variants.length - 5}
+              </span>
+            )}
+          </div>
+        )}
         <div className="mt-2 flex items-baseline gap-2">
           <span className="text-sm font-semibold text-secondary">{formatPrice(p.price_idr, lang)}</span>
         </div>

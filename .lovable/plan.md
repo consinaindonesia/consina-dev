@@ -1,146 +1,69 @@
-# Language-Prefixed Routing
+# Product Color Variants
 
-Move the entire public site under `/id/*` and `/en/*` with translated slugs, automatic redirect from unprefixed URLs, a language context, auto-prefixed internal links, and full SEO (hreflang, html lang, sitemap).
+Add per-product color variants with admin editor and automatic public display.
 
-Admin (`/admin/*`) stays unprefixed and English-only.
+## 1. Database
 
----
+New migration creating `public.product_variants`:
 
-## 1. Slug map
+- `id uuid pk default gen_random_uuid()`
+- `product_id uuid not null` (logical FK to products.id)
+- `color_name text not null`
+- `color_hex text not null` (validated format `#RRGGBB`)
+- `image_url text null`
+- `stock integer null`
+- `sort_order integer not null default 0`
+- `created_at`, `updated_at` timestamptz with `set_updated_at` trigger
 
-Single source of truth in `src/i18n/routes.ts`:
+GRANTs:
+- `anon, authenticated`: SELECT (variants of active products, enforced via RLS using EXISTS on products)
+- `authenticated`: full CRUD via `is_admin_or_editor()`
+- `service_role`: ALL
 
-```
-PAGES = {
-  home:        { id: "",            en: ""            }, // /id, /en
-  catalog:     { id: "katalog",     en: "catalog"     },
-  stores:      { id: "toko",        en: "stores"      },
-  contact:     { id: "kontak",      en: "contact"     },
-  carriers:    { id: "kategori/carriers",   en: "categories/carriers" },
-  tents:       { id: "kategori/tents",      en: "categories/tents" },
-  apparel:     { id: "kategori/apparel",    en: "categories/apparel" },
-  footwear:    { id: "kategori/footwear",   en: "categories/footwear" },
-  accessories: { id: "kategori/accessories", en: "categories/accessories" },
-  product:     { id: "produk",      en: "products"    }, // + /$slug
-}
-```
+RLS:
+- `public read product_variants of active products` — SELECT for anon/authenticated where parent product `is_active = true`
+- `staff manage product_variants` — ALL for `is_admin_or_editor()`
 
-Helpers: `localizedPath(key, lang, params?)`, `parseLocalizedPath(pathname)` (returns `{ lang, key, params }` or null).
+Index on `(product_id, sort_order)`.
 
-Note: there is no `/contact` page today. Skip it for now or add a stub — confirm during build. Default: skip, only translate routes that exist.
+## 2. Admin UI (`src/components/admin/ProductForm.tsx`)
 
----
+Add new tab **"Variants"** after Images (or a card inside Basic Info — using a tab to keep parity with existing image tab).
 
-## 2. Route tree restructure
+New component `src/components/admin/ProductVariantsTab.tsx`:
+- Loads existing variants on mount via `supabase.from("product_variants").select(...).eq("product_id", id).order("sort_order")`.
+- Local state array of rows; each row: `{ id?, color_name, color_hex, image_url, stock, sort_order }`.
+- Buttons: **+ Add color**, per-row delete, up/down reorder.
+- Inputs per row: name (text), hex (text + `<input type="color">` swatch synced), stock (number), image upload (reusing existing storage bucket `product-images`).
+- Save handler: diff against initial → upsert changed/new rows, delete removed rows. Hook into the existing product save flow (call from parent ProductForm after product upsert) or expose a `Save variants` button on the tab if simpler. Prefer integrating into the parent submit so it saves atomically with the product.
 
-Move every public route under a pathless `_public.$lang` layout segment using TanStack's optional/dynamic param. Concrete file layout:
+For the "new" mode (no product id yet), keep variants in local state and persist after the product row is inserted.
 
-```
-src/routes/
-  __root.tsx                  (sets html lang dynamically)
-  index.tsx                   (server handler: 302 → /id or /en based on Accept-Language)
-  $lang.tsx                   (layout: validates lang in ["id","en"], provides LangContext, renders <Outlet/>)
-  $lang.index.tsx             (home)
-  $lang.katalog.tsx           ← rendered for ID; route path uses literal slug
-  $lang.catalog.tsx           ← rendered for EN
-  ...
-  admin/...                   (unchanged, no prefix)
-  sitemap[.]xml.ts            (lists both languages × all pages)
-```
+## 3. Public display
 
-Problem: TanStack file routes can't have two different literal slugs map to the same `$lang` parent cleanly. **Better approach** — use splat with manual matching:
+### Product detail (`src/pages/ProductDetail.tsx`)
+- Fetch variants for the product (`product_variants` ordered by `sort_order`).
+- Render swatch row: circular buttons styled with `background-color: var(--hex)` and accessible labels (color name).
+- On select, if `image_url` set, switch the main product image to that URL. Show selected color name and (if `stock` set) the variant stock.
 
-```
-src/routes/
-  $lang/
-    index.tsx                 // /id, /en — home
-    $.tsx                     // /id/* , /en/* — splat resolves to a page via parseLocalizedPath
-```
+### Product cards
+- Extend `usePublicProducts` (and the category page query in `src/routes/c.$slug.tsx`) to also pull variants: `product_variants(color_hex, sort_order)`.
+- Add `variants: { color_hex: string }[]` to `PublicProduct` type.
+- In product cards (catalog, category, home featured), render up to ~5 small color dots below the title when variants exist.
 
-The splat route reads `params._splat`, calls `parseLocalizedPath`, and renders the matching page component (imported from `src/pages/`). 404 if no match.
+## 4. Files
 
-This keeps a single splat handler per language and avoids 14 route files per language. Page components move from `src/routes/*.tsx` to `src/pages/*.tsx` (plain React components, no `createFileRoute`). Route files become thin wrappers.
+- `supabase/migrations/<timestamp>_product_variants.sql` (new)
+- `src/components/admin/ProductVariantsTab.tsx` (new)
+- `src/components/admin/ProductForm.tsx` (edit — add tab + wire save)
+- `src/lib/public-products.ts` (edit — include variants in select + type)
+- `src/pages/ProductDetail.tsx` (edit — swatch UI + image switch)
+- `src/routes/catalog.tsx` (edit — dots on cards)
+- `src/routes/c.$slug.tsx` (edit — include variants in query + dots on cards)
+- Optionally `src/routes/index.tsx` featured cards (dots).
 
-Top-level `/` becomes a server-handler-only file that 302-redirects based on `Accept-Language` header (server) or `navigator.language` (client fallback via tiny component).
+## 5. Out of scope
 
----
-
-## 3. Language context
-
-`src/i18n/LangProvider.tsx`:
-- `LangContext` exposes `{ lang: "id" | "en" }`
-- `$lang.tsx` layout reads `params.lang`, validates, calls `i18n.changeLanguage(lang)` in an effect, writes cookie, renders provider + `<Outlet/>`
-- `useLang()` hook for components
-- `useLocalizedPath(key, params?)` returns the correctly-prefixed href for the current lang
-
----
-
-## 4. Internal links
-
-Add `<LocaleLink to="catalog" />` wrapper around TanStack `<Link>`:
-- Accepts a page key from PAGES (not a raw path)
-- Resolves to `/{lang}/{slug}` using current lang
-- All existing `<Link to="/catalog">` etc. in `Nav.tsx`, `Footer.tsx`, route bodies migrate to `<LocaleLink to="catalog" />`
-
-LanguageSwitcher: instead of cookie + reload, navigate to the equivalent localized path in the other language (use `parseLocalizedPath` to find the current page key, then `localizedPath(key, otherLang)`).
-
----
-
-## 5. Root + SEO
-
-`__root.tsx`:
-- `RootShell` reads lang from route match (via `useRouterState`) and sets `<html lang={lang}>`; defaults to `id` on `/` before redirect
-- Adds `<link rel="alternate" hreflang="id" href=".../id/{slug}">` and same for `en` and `x-default` via per-route `head()` — implemented as a helper `localeHead(key, params?)` called from each page's `head()`
-
-Each page component exports a `head` builder used by the splat route (since the splat owns `createFileRoute`, it builds head per resolved page).
-
----
-
-## 6. Sitemap
-
-`sitemap[.]xml.ts` iterates `PAGES × ["id","en"]` and emits both URLs with `<xhtml:link rel="alternate" hreflang>` entries per Google guidelines. Adds product entries from `src/data/products.ts` for both langs.
-
----
-
-## 7. Admin
-
-Untouched. Still at `/admin/*`. Admin UI stays English. Confirm `LangProvider` isn't required there (admin routes don't render `$lang` layout).
-
----
-
-## Technical details
-
-- **Splat-based routing trade-off:** loses TanStack's per-file `head()` and type-safe `<Link to>` autocomplete for public pages. Mitigated by `LocaleLink` (type-safe over PAGES keys) and `localeHead()` helper.
-- **i18n init:** `src/i18n/index.ts` no longer detects from URL on boot; `$lang` layout drives `changeLanguage`. Initial lang on `/` before redirect = `id` (default).
-- **Server redirect at `/`:** `src/routes/index.tsx` uses `server.handlers.GET` reading `Accept-Language` header, returns 302 to `/id` or `/en`. Client fallback (for SPA navigation) does the same via a tiny component using `navigator.language`.
-- **Legacy URLs:** old `/catalog`, `/stores`, etc. — add a top-level splat `$.tsx` at root that 302s to the localized equivalent (best-effort: try matching the path against both lang slug tables, fall back to `/id`).
-- **Delete** `src/routes/en/index.tsx`, `src/routes/en/$.tsx` (replaced by new system).
-
----
-
-## Files created
-- `src/i18n/routes.ts`
-- `src/i18n/LangProvider.tsx`
-- `src/components/site/LocaleLink.tsx`
-- `src/pages/{Home,Catalog,Stores,Carriers,Tents,Apparel,Footwear,Accessories}.tsx` (moved from `src/routes/`)
-- `src/routes/$lang/index.tsx`
-- `src/routes/$lang/$.tsx`
-- `src/routes/$.tsx` (legacy redirect)
-
-## Files edited
-- `src/routes/__root.tsx`, `src/routes/index.tsx`
-- `src/components/site/Nav.tsx`, `src/components/site/Footer.tsx`, `src/components/site/LanguageSwitcher.tsx`
-- `src/routes/sitemap[.]xml.ts`
-- `src/i18n/index.ts`
-
-## Files deleted
-- `src/routes/{catalog,stores,carriers,tents,apparel,footwear,accessories}.tsx` (replaced by `src/pages/*` + splat)
-- `src/routes/en/index.tsx`, `src/routes/en/$.tsx`
-
----
-
-## Open questions
-
-1. **Contact page** doesn't exist — skip the `/kontak` ↔ `/contact` slug pair, or add a stub page?
-2. **Product detail route** — `src/routes/c.$slug.tsx` exists (category by slug). Confirm: should it also move under `/id/produk/$slug` and `/en/products/$slug`, and is `c.$slug` the product page or something else? I'll inspect before editing.
-3. **Old unprefixed URLs in the wild** (already shared/indexed): keep 302 redirects forever (recommended) or hard-remove?
+- No price-per-variant (only stock).
+- No size variants (colors only as requested).
+- No cart/checkout integration of selected color beyond display (existing inquiry/order flow unchanged).

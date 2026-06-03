@@ -544,6 +544,7 @@ export function ProductForm(props: ProductFormProps) {
         setInitialSnapshot(JSON.stringify(EMPTY));
         setErrors({});
         setStagedVariants([]);
+        setStockTouched(false);
         setTab("basic");
       } else {
         navigate({ to: "/admin/products/$id/edit", params: { id: data.id } });

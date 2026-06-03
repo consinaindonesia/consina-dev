@@ -22,6 +22,7 @@ import {
   BellRing,
   ShoppingBag,
   Truck,
+  Ruler,
 } from "lucide-react";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
 import { supabase } from "@/integrations/supabase/client";

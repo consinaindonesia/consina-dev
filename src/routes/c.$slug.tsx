@@ -366,7 +366,7 @@ function CategoryPage() {
                               )}
                             </div>
                           )}
-                          <p className="mt-2 font-semibold text-primary">{formatIDR(p.price_idr)}</p>
+                          <PriceDisplay product={p} lang={lang} size="sm" className="mt-2" />
                         </div>
                         </Link>
                       </li>

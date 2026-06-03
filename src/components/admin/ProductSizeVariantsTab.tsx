@@ -326,7 +326,6 @@ export function ProductSizeVariantsTab({
                   <Input
                     value={t.name}
                     onChange={(e) => updateOptionType(t.tmpId, { name: e.target.value })}
-                    placeholder="Ukuran"
                     className="max-w-xs"
                   />
                   <Button
@@ -350,7 +349,6 @@ export function ProductSizeVariantsTab({
                         onChange={(e) =>
                           updateOptionValue(t.tmpId, v.tmpId, e.target.value)
                         }
-                        placeholder="S"
                         className="w-16 bg-transparent text-sm focus:outline-none"
                       />
                       <button

@@ -327,7 +327,6 @@ function VariantRow({
           <Input
             value={row.color_name}
             onChange={(e) => onPatch({ color_name: e.target.value })}
-            placeholder="Hitam"
           />
         </div>
         <div className="space-y-1">
@@ -343,7 +342,6 @@ function VariantRow({
             <Input
               value={row.color_hex}
               onChange={(e) => onPatch({ color_hex: e.target.value })}
-              placeholder="#1a1a1a"
               className="font-mono"
             />
           </div>

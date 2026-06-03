@@ -634,7 +634,6 @@ function AltTextDialog({
               id="alt-id"
               value={altId}
               onChange={(e) => setAltId(e.target.value)}
-              placeholder="Tas carrier Consina Centurion 60L hijau hutan…"
             />
           </div>
           <div className="space-y-1.5">
@@ -643,7 +642,6 @@ function AltTextDialog({
               id="alt-en"
               value={altEn}
               onChange={(e) => setAltEn(e.target.value)}
-              placeholder="Forest green Consina Centurion 60L carrier…"
             />
           </div>
         </div>

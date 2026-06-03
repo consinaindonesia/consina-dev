@@ -921,27 +921,6 @@ export function ProductForm(props: ProductFormProps) {
                 </div>
               </Field>
 
-              <Field label="Original price (IDR)">
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                    Rp
-                  </span>
-                  <Input
-                    inputMode="numeric"
-                    value={formatIDR(values.original_price_idr ?? 0)}
-                    onChange={(e) => {
-                      const n = parseIDR(e.target.value);
-                      setField("original_price_idr", n > 0 ? n : null);
-                    }}
-                    placeholder="—"
-                    className="pl-10"
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Shown struck-through next to the current price. Leave empty if not on sale.
-                </p>
-              </Field>
-
               <Field label="Diskon (%)">
                 <Input
                   type="number"
@@ -950,7 +929,7 @@ export function ProductForm(props: ProductFormProps) {
                   step="0.1"
                   inputMode="decimal"
                   value={values.discount_percent ?? ""}
-                  disabled={!values.original_price_idr || values.original_price_idr <= 0}
+                  disabled={!values.price_idr || values.price_idr <= 0}
                   onChange={(e) => {
                     const raw = e.target.value;
                     if (raw === "") {
@@ -964,9 +943,10 @@ export function ProductForm(props: ProductFormProps) {
                     if (pct > 100) pct = 100;
                     pct = Math.round(pct * 10) / 10;
                     setField("discount_percent", pct);
-                    const orig = values.original_price_idr ?? 0;
+                    const orig = values.price_idr ?? 0;
                     if (orig > 0 && pct > 0) {
                       setField("sale_price_idr", Math.round(orig * (1 - pct / 100)));
+                      if (!values.is_on_sale) setField("is_on_sale", true);
                     } else {
                       setField("sale_price_idr", null);
                     }
@@ -974,29 +954,36 @@ export function ProductForm(props: ProductFormProps) {
                   placeholder="0"
                 />
                 <p className="text-xs text-muted-foreground">
-                  {values.original_price_idr && values.original_price_idr > 0
-                    ? "Masukkan persentase diskon. Harga jual akan dihitung otomatis dari Original price."
-                    : "Isi Original price (IDR) terlebih dahulu untuk mengaktifkan diskon."}
+                  Masukkan persentase diskon; harga setelah diskon dihitung otomatis.
                 </p>
-                {values.original_price_idr &&
-                values.original_price_idr > 0 &&
-                values.discount_percent &&
-                values.discount_percent > 0 ? (
-                  <p className="text-xs font-medium text-foreground">
-                    Harga setelah diskon: Rp{" "}
-                    {formatIDR(
-                      Math.round(
-                        values.original_price_idr *
-                          (1 - values.discount_percent / 100),
-                      ),
-                    )}
-                    {"  ·  "}Badge: -
-                    {Number.isInteger(values.discount_percent)
-                      ? values.discount_percent
-                      : values.discount_percent.toFixed(1)}
-                    %
-                  </p>
-                ) : null}
+              </Field>
+
+              <Field label="Harga setelah diskon (IDR)">
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                    Rp
+                  </span>
+                  <Input
+                    readOnly
+                    tabIndex={-1}
+                    value={
+                      values.price_idr && values.price_idr > 0
+                        ? formatIDR(
+                            values.discount_percent && values.discount_percent > 0
+                              ? Math.round(
+                                  values.price_idr * (1 - values.discount_percent / 100),
+                                )
+                              : values.price_idr,
+                          )
+                        : ""
+                    }
+                    placeholder="—"
+                    className="pl-10 bg-muted/40"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Dihitung otomatis dari Price dan Diskon (%).
+                </p>
               </Field>
 
               <div className="flex items-center gap-2 pt-1">

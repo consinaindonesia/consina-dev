@@ -876,8 +876,9 @@ export function ProductForm(props: ProductFormProps) {
                     type="number"
                     min={0}
                     inputMode="numeric"
-                    value={values.stock}
+                    value={mode === "new" && !stockTouched ? "" : values.stock}
                     onChange={(e) => {
+                      if (!stockTouched) setStockTouched(true);
                       const n = e.target.value === "" ? 0 : Math.max(0, parseInt(e.target.value, 10) || 0);
                       setField("stock", n);
                     }}

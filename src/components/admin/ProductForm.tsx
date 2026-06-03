@@ -20,7 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { translateText } from "@/lib/translate.functions";
 import { ProductImagesTab } from "@/components/admin/ProductImagesTab";
-import { ProductVariantsTab } from "@/components/admin/ProductVariantsTab";
+import { ProductVariantsTab, type StagedVariant } from "@/components/admin/ProductVariantsTab";
 import { StockEditor } from "@/components/admin/StockEditor";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -192,6 +192,9 @@ export function ProductForm(props: ProductFormProps) {
   // Category-defined attribute schema + values keyed by attribute slug.
   const [categoryAttrs, setCategoryAttrs] = useState<AttributeDef[]>([]);
   const [definedAttrValues, setDefinedAttrValues] = useState<Record<string, string>>({});
+
+  // Staged color variants (only used in `new` mode before first save)
+  const [stagedVariants, setStagedVariants] = useState<StagedVariant[]>([]);
 
   // Translations tab UI state
   const [translationView, setTranslationView] = useState<"both" | "id" | "en">("both");
@@ -513,6 +516,23 @@ export function ProductForm(props: ProductFormProps) {
         return;
       }
       void logActivity(profile?.id ?? null, "created", data.id);
+      // Persist any staged color variants linked to the new product
+      if (stagedVariants.length > 0) {
+        const valid = stagedVariants
+          .filter((v) => v.color_name.trim() && /^#[0-9a-f]{6}$/i.test(v.color_hex))
+          .map((v, i) => ({
+            product_id: data.id,
+            color_name: v.color_name.trim(),
+            color_hex: v.color_hex.toLowerCase(),
+            image_url: v.image_url,
+            stock: v.stock,
+            sort_order: i,
+          }));
+        if (valid.length > 0) {
+          const { error: vErr } = await supabase.from("product_variants").insert(valid);
+          if (vErr) toast.error("Saved product, but color variants failed: " + vErr.message);
+        }
+      }
       toast.success("Product created");
       setInitialSnapshot(JSON.stringify(values));
       try { localStorage.removeItem(draftKey); } catch { /* ignore */ }
@@ -520,6 +540,7 @@ export function ProductForm(props: ProductFormProps) {
         setValues(EMPTY);
         setInitialSnapshot(JSON.stringify(EMPTY));
         setErrors({});
+        setStagedVariants([]);
         setTab("basic");
       } else {
         navigate({ to: "/admin/products/$id/edit", params: { id: data.id } });
@@ -642,7 +663,7 @@ export function ProductForm(props: ProductFormProps) {
           <TabsTrigger value="images">
             Images
           </TabsTrigger>
-          <TabsTrigger value="variants" disabled={mode === "new"}>
+          <TabsTrigger value="variants">
             Color Variants
           </TabsTrigger>
           <TabsTrigger value="availability" disabled={mode === "new"}>
@@ -996,20 +1017,22 @@ export function ProductForm(props: ProductFormProps) {
 
         {/* COLOR VARIANTS */}
         <TabsContent value="variants" className="pb-32">
-          {mode === "new" ? (
-            <Card title="Color Variants">
-              <p className="text-sm text-muted-foreground">
-                Save the product first, then add color variants.
-              </p>
-            </Card>
-          ) : (
-            <Card title="Color Variants">
-              <p className="mb-3 text-xs text-muted-foreground">
-                Add the colors this product is available in. Each color shows on the public product page as a swatch and, if you upload an image, switches the main product photo when selected.
-              </p>
+          <Card title="Color Variants">
+            <p className="mb-3 text-xs text-muted-foreground">
+              Add the colors this product is available in. Type any custom color name (e.g., "Coral Pink", "Hitam Doff"). Each color shows on the public product page as a swatch and, if you upload an image, switches the main product photo when selected.
+              {mode === "new" && " Variants you add here will be saved when you save the product."}
+            </p>
+            {mode === "new" ? (
+              <ProductVariantsTab
+                productId={null}
+                sku={values.sku}
+                staged={stagedVariants}
+                onStagedChange={setStagedVariants}
+              />
+            ) : (
               <ProductVariantsTab productId={productId} sku={values.sku} />
-            </Card>
-          )}
+            )}
+          </Card>
         </TabsContent>
 
         {/* AVAILABILITY */}

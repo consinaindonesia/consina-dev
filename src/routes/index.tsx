@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { ArrowRight, ArrowUpRight, MapPin, Mountain, Leaf, Users, Mail, Phone, ChevronDown } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ArrowRight, ArrowUpRight, MapPin, Mountain, Leaf, Users, Mail, Phone, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { usePublicProducts, type PublicProduct, getSiteUrl } from "@/lib/public-products";
+import { usePublicCategories, type PublicCategory } from "@/hooks/use-public-categories";
 import { useLang } from "@/i18n/LangProvider";
 import { formatPrice, localizedField } from "@/i18n/format";
 import hero from "@/assets/hero-mountain.jpg";
@@ -243,9 +244,26 @@ function BrandStory() {
 }
 
 /* ---------- Categories ---------- */
+const CATEGORY_IMAGE_MAP: Record<string, string> = {
+  carriers: catCarriers,
+  "tas-carrier": catCarriers,
+  tents: catTents,
+  tenda: catTents,
+  apparel: catApparel,
+  pakaian: catApparel,
+  footwear: catFootwear,
+  "alas-kaki": catFootwear,
+  accessories: catAccessories,
+  aksesori: catAccessories,
+  daypack: catCarriers,
+};
+
 function Categories() {
   const { t } = useTranslation();
+  const lang = useLang();
   const { products } = usePublicProducts();
+  const { data: cats } = usePublicCategories();
+
   const counts = useMemo(() => {
     const map = new Map<string, number>();
     for (const p of products) {
@@ -254,41 +272,153 @@ function Categories() {
     }
     return map;
   }, [products]);
-  const localizedCategories = categories.map((c) => ({
-    ...c,
-    name: t(`categories.${c.slug}` as const),
-    desc: t(`home.categories.${c.slug}_desc` as const),
-    count: counts.get(c.slug) ?? 0,
-  }));
+
+  const items = useMemo(() => {
+    const list = cats ?? [];
+    return list.map((c) => ({
+      slug: c.slug,
+      name: localizedField(c, "name", lang).value,
+      desc:
+        (t(`home.categories.${c.slug}_desc` as never, { defaultValue: "" }) as string) || "",
+      img: CATEGORY_IMAGE_MAP[c.slug] ?? catAccessories,
+      count: counts.get(c.slug) ?? 0,
+    }));
+  }, [cats, counts, lang, t]);
+
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [snapCount, setSnapCount] = useState(1);
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [canPrev, setCanPrev] = useState(false);
+  const [canNext, setCanNext] = useState(false);
+
+  const recompute = useCallback(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const pages = Math.max(1, Math.ceil(el.scrollWidth / el.clientWidth));
+    setSnapCount(pages);
+    const idx = Math.round(el.scrollLeft / el.clientWidth);
+    setActiveIdx(Math.min(pages - 1, Math.max(0, idx)));
+    setCanPrev(el.scrollLeft > 4);
+    setCanNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+  }, []);
+
+  useEffect(() => {
+    recompute();
+    const el = scrollerRef.current;
+    if (!el) return;
+    const onScroll = () => recompute();
+    el.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", recompute);
+    return () => {
+      el.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", recompute);
+    };
+  }, [recompute, items.length]);
+
+  const scrollToPage = (i: number) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
+  };
+
+  const nudge = (dir: 1 | -1) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * el.clientWidth * 0.9, behavior: "smooth" });
+  };
+
   return (
-    <section className="bg-background py-8 md:py-12 lg:py-20">
+    <section className="bg-background py-8 md:py-12 lg:py-16">
       <div className="mx-auto max-w-[1280px] px-4 md:px-8">
         {/* Section heading */}
-        <div className="text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">
-            {t("home.categories.eyebrow")}
-          </p>
-          <h2 className="mt-2 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl">
-            {t("home.categories.title")}
-          </h2>
-          <p className="mt-3 text-base text-muted-foreground">
-            {t("home.categories.subtitle")}
-          </p>
+        <div className="flex items-end justify-between gap-4">
+          <div className="text-left">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">
+              {t("home.categories.eyebrow")}
+            </p>
+            <h2 className="mt-2 font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl">
+              {t("home.categories.title")}
+            </h2>
+            <p className="mt-2 max-w-xl text-sm text-muted-foreground md:text-base">
+              {t("home.categories.subtitle")}
+            </p>
+          </div>
+          <Link
+            to="/catalog"
+            className="hidden shrink-0 items-center gap-1 text-sm font-semibold uppercase tracking-wider text-primary transition hover:gap-2 md:inline-flex"
+          >
+            {t("cta.view_all", { defaultValue: "Lihat semua" })}
+            <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
 
-        {/* Cards grid */}
-        <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 md:mt-10">
-          {localizedCategories.map((cat) => (
-            <CategoryCard key={cat.slug} cat={cat} />
-          ))}
+        {/* Carousel */}
+        <div className="group relative mt-5 md:mt-6">
+          {/* Arrows (desktop) */}
+          <button
+            type="button"
+            aria-label="Previous categories"
+            onClick={() => nudge(-1)}
+            disabled={!canPrev}
+            className="absolute left-2 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/90 text-primary opacity-0 shadow transition group-hover:opacity-100 disabled:opacity-0 lg:flex"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            aria-label="Next categories"
+            onClick={() => nudge(1)}
+            disabled={!canNext}
+            className="absolute right-2 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/90 text-primary opacity-0 shadow transition group-hover:opacity-100 disabled:opacity-0 lg:flex"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+
+          <div
+            ref={scrollerRef}
+            className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] md:-mx-8 md:px-8 md:gap-5 [&::-webkit-scrollbar]:hidden"
+          >
+            {items.map((cat) => (
+              <div
+                key={cat.slug}
+                className="w-[74%] shrink-0 snap-start sm:w-[44%] md:w-[34%] lg:w-[28%] xl:w-[24%]"
+              >
+                <CategoryCard cat={cat} />
+              </div>
+            ))}
+          </div>
         </div>
+
+        {/* Dots */}
+        {snapCount > 1 && (
+          <div className="mt-4 flex items-center justify-center gap-2">
+            {Array.from({ length: snapCount }).map((_, i) => {
+              const active = i === activeIdx;
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => scrollToPage(i)}
+                  aria-label={`Go to slide ${i + 1}`}
+                  aria-current={active ? "true" : undefined}
+                  className={
+                    "rounded-full transition-all " +
+                    (active
+                      ? "h-2 w-5 bg-primary"
+                      : "h-2 w-2 bg-primary/25 hover:bg-primary/50")
+                  }
+                />
+              );
+            })}
+          </div>
+        )}
       </div>
     </section>
   );
 }
 
 type CategoryItem = {
-  slug: (typeof categories)[number]["slug"];
+  slug: string;
   img: string;
   name: string;
   desc: string;
@@ -299,31 +429,35 @@ function CategoryCard({ cat }: { cat: CategoryItem }) {
   const { t } = useTranslation();
   return (
     <Link
-      to="/c/$slug"
-      params={{ slug: cat.slug }}
-      className="group flex aspect-square flex-col overflow-hidden rounded-xl border border-[#d4b896] bg-background transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+      to={"/c/$slug" as never}
+      params={{ slug: cat.slug } as never}
+      className="group/card flex h-full flex-col overflow-hidden rounded-xl border border-[#d4b896] bg-background transition duration-300 hover:-translate-y-1 hover:shadow-lg"
     >
-      {/* Image area — top 60% */}
-      <div className="relative h-[60%] overflow-hidden">
+      <div className="relative aspect-[4/3] overflow-hidden">
         <img
           src={cat.img}
           alt={cat.name}
           loading="lazy"
-          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+          className="h-full w-full object-cover transition-transform duration-700 group-hover/card:scale-105"
         />
       </div>
-
-      {/* Text area — bottom 40% */}
-      <div className="flex h-[40%] flex-col justify-between p-4">
+      <div className="flex flex-1 flex-col justify-between p-4">
         <div>
-          <h3 className="font-[Archivo] text-lg font-bold tracking-tight text-primary">
+          <h3 className="font-[Archivo] text-base font-bold tracking-tight text-primary md:text-lg">
             {cat.name}
           </h3>
-          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-            {cat.desc}{cat.count ? ` · ${cat.count} ${t("labels.items")}` : ""}
-          </p>
+          {cat.desc && (
+            <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+              {cat.desc}
+            </p>
+          )}
+          {cat.count > 0 && (
+            <p className="mt-1 text-[11px] uppercase tracking-wider text-muted-foreground">
+              {cat.count} {t("labels.items", { defaultValue: "produk" })}
+            </p>
+          )}
         </div>
-        <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-[#1a3a2e] transition group-hover:gap-2">
+        <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-[#1a3a2e] transition group-hover/card:gap-2">
           {t("cta.explore")} <ArrowRight className="h-3.5 w-3.5" />
         </span>
       </div>

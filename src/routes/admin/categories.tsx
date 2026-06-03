@@ -160,6 +160,7 @@ function CategoriesPage() {
   const [saving, setSaving] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
 
   const refresh = useCallback(async () => {
     const [{ data: cats, error: e1 }, { data: prods, error: e2 }] = await Promise.all([
@@ -194,8 +195,10 @@ function CategoriesPage() {
   // Selection sync
   useEffect(() => {
     if (!selectedId) {
-      setForm(EMPTY_FORM);
-      setOriginal(EMPTY_FORM);
+      if (!isCreating) {
+        setForm(EMPTY_FORM);
+        setOriginal(EMPTY_FORM);
+      }
       return;
     }
     const cat = categories.find((c) => c.id === selectedId);
@@ -215,7 +218,8 @@ function CategoriesPage() {
     };
     setForm(f);
     setOriginal(f);
-  }, [selectedId, categories]);
+    setIsCreating(false);
+  }, [selectedId, categories, isCreating]);
 
   const dirty = useMemo(
     () => JSON.stringify({ ...form, slugManuallyEdited: 0 }) !== JSON.stringify({ ...original, slugManuallyEdited: 0 }),
@@ -367,6 +371,7 @@ function CategoriesPage() {
     };
     setForm(blank);
     setOriginal(blank);
+    setIsCreating(true);
   }
 
   // --- Save ---
@@ -455,6 +460,7 @@ function CategoriesPage() {
       }
       toast.success(form.id ? "Category saved" : "Category created");
       await refresh();
+      setIsCreating(false);
       setSelectedId(savedId);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Save failed");
@@ -590,7 +596,7 @@ function CategoriesPage() {
 
         {/* RIGHT PANE */}
         <section className="rounded-xl border border-border bg-card">
-          {!form.id && !dirty ? (
+          {!form.id && !isCreating ? (
             <div className="flex h-full min-h-[400px] flex-col items-center justify-center gap-3 p-10 text-center">
               <FolderOpen className="h-12 w-12 text-muted-foreground/30" />
               <p className="text-base font-medium text-foreground">No category selected</p>
@@ -816,8 +822,15 @@ function CategoriesPage() {
                 <Button
                   type="button"
                   variant="ghost"
-                  onClick={() => (form.id ? setForm(original) : setSelectedId(null))}
-                  disabled={!dirty}
+                  onClick={() => {
+                    if (form.id) {
+                      setForm(original);
+                    } else {
+                      setIsCreating(false);
+                      setForm(EMPTY_FORM);
+                      setOriginal(EMPTY_FORM);
+                    }
+                  }}
                 >
                   Cancel
                 </Button>

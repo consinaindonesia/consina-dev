@@ -942,32 +942,75 @@ export function ProductForm(props: ProductFormProps) {
                 </p>
               </Field>
 
-              <Field label="Sale price (IDR)">
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                    Rp
-                  </span>
-                  <Input
-                    inputMode="numeric"
-                    value={formatIDR(values.sale_price_idr ?? 0)}
-                    onChange={(e) => {
-                      const n = parseIDR(e.target.value);
-                      setField("sale_price_idr", n > 0 ? n : null);
-                    }}
-                    placeholder="—"
-                    className="pl-10"
-                  />
-                </div>
+              <Field label="Diskon (%)">
+                <Input
+                  type="number"
+                  min={0}
+                  max={100}
+                  step="0.1"
+                  inputMode="decimal"
+                  value={values.discount_percent ?? ""}
+                  disabled={!values.original_price_idr || values.original_price_idr <= 0}
+                  onChange={(e) => {
+                    const raw = e.target.value;
+                    if (raw === "") {
+                      setField("discount_percent", null);
+                      setField("sale_price_idr", null);
+                      return;
+                    }
+                    let pct = Number(raw);
+                    if (!Number.isFinite(pct)) return;
+                    if (pct < 0) pct = 0;
+                    if (pct > 100) pct = 100;
+                    pct = Math.round(pct * 10) / 10;
+                    setField("discount_percent", pct);
+                    const orig = values.original_price_idr ?? 0;
+                    if (orig > 0 && pct > 0) {
+                      setField("sale_price_idr", Math.round(orig * (1 - pct / 100)));
+                    } else {
+                      setField("sale_price_idr", null);
+                    }
+                  }}
+                  placeholder="0"
+                />
                 <p className="text-xs text-muted-foreground">
-                  Optional discounted price that overrides the regular price when set.
+                  {values.original_price_idr && values.original_price_idr > 0
+                    ? "Masukkan persentase diskon. Harga jual akan dihitung otomatis dari Original price."
+                    : "Isi Original price (IDR) terlebih dahulu untuk mengaktifkan diskon."}
                 </p>
+                {values.original_price_idr &&
+                values.original_price_idr > 0 &&
+                values.discount_percent &&
+                values.discount_percent > 0 ? (
+                  <p className="text-xs font-medium text-foreground">
+                    Harga setelah diskon: Rp{" "}
+                    {formatIDR(
+                      Math.round(
+                        values.original_price_idr *
+                          (1 - values.discount_percent / 100),
+                      ),
+                    )}
+                    {"  ·  "}Badge: -
+                    {Number.isInteger(values.discount_percent)
+                      ? values.discount_percent
+                      : values.discount_percent.toFixed(1)}
+                    %
+                  </p>
+                ) : null}
               </Field>
 
               <div className="flex items-center gap-2 pt-1">
                 <Checkbox
                   id="is_on_sale"
                   checked={values.is_on_sale}
-                  onCheckedChange={(c) => setField("is_on_sale", c === true)}
+                  onCheckedChange={(c) => {
+                    const on = c === true;
+                    setField("is_on_sale", on);
+                    if (!on) {
+                      setField("discount_percent", null);
+                      setField("sale_price_idr", null);
+                    }
+                  }}
                 />
                 <Label htmlFor="is_on_sale" className="cursor-pointer text-sm">
                   Mark as on sale (shows -% badge)

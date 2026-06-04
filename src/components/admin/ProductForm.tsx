@@ -1002,7 +1002,15 @@ export function ProductForm(props: ProductFormProps) {
                         const val = definedAttrValues[a.slug] ?? "";
                         const err = errors[`attr_${a.slug}`];
                         return (
-                          <div key={a.id} className="space-y-1">
+                          <div
+                            key={a.id}
+                            className={cn(
+                              "space-y-1",
+                              err &&
+                                "[&_input]:border-destructive [&_button[role=combobox]]:border-destructive",
+                            )}
+                            data-error-field={`attr_${a.slug}`}
+                          >
                             <Label htmlFor={id} className="text-sm">
                               {a.name_en}
                               {a.unit ? ` (${a.unit})` : ""}

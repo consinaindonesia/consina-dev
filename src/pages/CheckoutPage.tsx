@@ -624,6 +624,12 @@ export function CheckoutPage() {
                             Shipping to <strong>{matchedZone.region_name}</strong>{" "}
                             zone
                           </p>
+                          {biteshipError && (
+                            <p className="mt-1.5 flex items-center gap-1.5 text-xs text-amber-600">
+                              <Info className="h-3 w-3 shrink-0" />
+                              Live courier rates are temporarily unavailable. A flat rate has been applied.
+                            </p>
+                          )}
                           <RadioGroup
                             value={selectedMethodId}
                             onValueChange={setSelectedMethodId}

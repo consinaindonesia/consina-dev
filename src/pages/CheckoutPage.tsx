@@ -255,12 +255,16 @@ export function CheckoutPage() {
     [quotes, selectedMethodId],
   );
 
+  const selectedBiteshipRate = selectedBiteshipKey
+    ? biteshipRates.find(
+        (r) => `${r.courier_code}:${r.courier_service_code}` === selectedBiteshipKey,
+      )
+    : null;
+
   const shipping =
     shippingMethod === "delivery"
-      ? selectedBiteshipKey
-        ? biteshipRates.find(
-            (r) => `${r.courier_code}:${r.courier_service_code}` === selectedBiteshipKey,
-          )?.price ?? 0
+      ? selectedBiteshipRate
+        ? selectedBiteshipRate.price
         : selectedQuote?.cost_idr ?? 0
       : 0;
   const discount = appliedVoucher?.discount_idr ?? 0;

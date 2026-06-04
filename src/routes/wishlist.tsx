@@ -41,17 +41,35 @@ function WishlistPage() {
     }
     void supabase
       .from("products")
-      .select("id,slug,sku,name_id,name_en,price_idr,weight_grams,product_images(url,is_primary,sort_order)")
+      .select("id,slug,sku,name_id,name_en,price_idr,weight_grams,images,product_images(image_url,thumbnail_url,is_primary,sort_order)")
       .in("id", ids)
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) {
+          console.error("[wishlist] failed to load products", error);
+          setProducts([]);
+          return;
+        }
         setProducts(
           (data ?? []).map((p: any) => {
             const imgs = (p.product_images ?? []).slice().sort((a: any, b: any) =>
               (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0) || (a.sort_order ?? 0) - (b.sort_order ?? 0),
             );
-            return { ...p, thumb: imgs[0]?.url ?? null };
+            const thumb =
+              imgs[0]?.thumbnail_url ??
+              imgs[0]?.image_url ??
+              (Array.isArray(p.images) ? p.images[0] : null) ??
+              null;
+            return { ...p, thumb };
           }),
         );
+        // Log any saved ids that didn't resolve (e.g. deleted products)
+        const found = new Set((data ?? []).map((p: any) => p.id));
+        const missing = ids.filter((id) => !found.has(id));
+        if (missing.length > 0) {
+          console.warn("[wishlist] skipping unresolved product ids", missing);
+          // Prune so the badge count matches what's displayable.
+          missing.forEach((id) => void toggle(id));
+        }
       });
   }, [ids.join(",")]);
 

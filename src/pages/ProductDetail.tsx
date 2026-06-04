@@ -406,10 +406,26 @@ export function ProductDetailPage({ slug }: { slug: string }) {
         {/* Breadcrumb */}
         <nav className="mb-6 flex items-center gap-1.5 text-xs text-muted-foreground">
           <Link to="/" className="hover:text-foreground">{t("nav.home")}</Link>
+          {categoryAncestors.map((a) => (
+            <span key={a.id} className="flex items-center gap-1.5">
+              <span>/</span>
+              <Link
+                to={"/c/$slug" as never}
+                params={{ slug: a.slug } as never}
+                className="hover:text-foreground"
+              >
+                {localizedField(a, "name", lang).value}
+              </Link>
+            </span>
+          ))}
           <span>/</span>
           {category && (
             <>
-              <Link to="/catalog" className="hover:text-foreground">
+              <Link
+                to={"/c/$slug" as never}
+                params={{ slug: category.slug } as never}
+                className="hover:text-foreground"
+              >
                 {localizedField(category, "name", lang).value}
               </Link>
               <span>/</span>

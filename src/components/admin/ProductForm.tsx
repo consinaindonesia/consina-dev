@@ -1989,7 +1989,7 @@ function TranslationsTab({
       )}
       {bothEmpty && (
         <div className="rounded-md border border-destructive bg-destructive/10 px-4 py-2 text-sm text-destructive">
-          At least one product name is required.
+          Nama produk wajib diisi (minimal satu bahasa).
         </div>
       )}
       {error && <p className="text-sm text-destructive">{error}</p>}
@@ -2008,6 +2008,7 @@ function TranslationsTab({
             setField={setField}
             tint="rgba(239, 246, 244, 0.6)"
             aiFlags={aiFlags}
+            nameError={!!error}
           />
         )}
         {view === "both" && (
@@ -2020,6 +2021,7 @@ function TranslationsTab({
             setField={setField}
             tint="rgba(243, 244, 246, 0.6)"
             aiFlags={aiFlags}
+            nameError={!!error}
           />
         )}
       </div>

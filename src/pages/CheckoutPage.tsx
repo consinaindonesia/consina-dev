@@ -431,12 +431,23 @@ export function CheckoutPage() {
     );
   }
 
-  if (!inquiry) {
+  if (!isCart && !inquiry) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-16 text-center">
         <h1 className="text-2xl font-bold">Inquiry not found</h1>
         <p className="mt-2 text-muted-foreground">
           The inquiry reference is invalid or has expired.
+        </p>
+      </div>
+    );
+  }
+
+  if (isCart && cartLineItems.length === 0) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-16 text-center">
+        <h1 className="text-2xl font-bold">Keranjang kosong</h1>
+        <p className="mt-2 text-muted-foreground">
+          Tambahkan produk ke keranjang sebelum checkout.
         </p>
       </div>
     );
@@ -458,22 +469,18 @@ export function CheckoutPage() {
               Items
             </div>
             <ul className="divide-y divide-border">
-              {items.map((it) => {
-                const name = it.product
-                  ? lang === "id"
-                    ? it.product.name_id
-                    : it.product.name_en
-                  : "—";
+              {cartLineItems.map((it) => {
+                const name = lang === "id" ? it.name_id : it.name_en;
                 return (
                   <li key={it.id} className="flex items-center justify-between p-4">
                     <div>
                       <p className="text-sm font-medium">{name}</p>
                       <p className="text-xs text-muted-foreground">
-                        {it.product?.sku} · ×{it.quantity}
+                        {it.sku} · ×{it.quantity}
                       </p>
                     </div>
                     <p className="text-sm font-semibold">
-                      {formatPrice((it.product?.price_idr ?? 0) * it.quantity, lang)}
+                      {formatPrice(it.price_idr * it.quantity, lang)}
                     </p>
                   </li>
                 );

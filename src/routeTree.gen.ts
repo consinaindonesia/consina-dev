@@ -16,7 +16,9 @@ import { Route as FootwearRouteImport } from './routes/footwear'
 import { Route as CatalogRouteImport } from './routes/catalog'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as CarriersRouteImport } from './routes/carriers'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ApparelRouteImport } from './routes/apparel'
+import { Route as AkunRouteImport } from './routes/akun'
 import { Route as AccessoriesRouteImport } from './routes/accessories'
 import { Route as LangRouteImport } from './routes/$lang'
 import { Route as IndexRouteImport } from './routes/index'
@@ -111,9 +113,19 @@ const CarriersRoute = CarriersRouteImport.update({
   path: '/carriers',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApparelRoute = ApparelRouteImport.update({
   id: '/apparel',
   path: '/apparel',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AkunRoute = AkunRouteImport.update({
+  id: '/akun',
+  path: '/akun',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AccessoriesRoute = AccessoriesRouteImport.update({
@@ -418,7 +430,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$lang': typeof LangRouteWithChildren
   '/accessories': typeof AccessoriesRoute
+  '/akun': typeof AkunRoute
   '/apparel': typeof ApparelRoute
+  '/auth': typeof AuthRoute
   '/carriers': typeof CarriersRoute
   '/cart': typeof CartRoute
   '/catalog': typeof CatalogRoute
@@ -485,7 +499,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/accessories': typeof AccessoriesRoute
+  '/akun': typeof AkunRoute
   '/apparel': typeof ApparelRoute
+  '/auth': typeof AuthRoute
   '/carriers': typeof CarriersRoute
   '/cart': typeof CartRoute
   '/catalog': typeof CatalogRoute
@@ -552,7 +568,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/$lang': typeof LangRouteWithChildren
   '/accessories': typeof AccessoriesRoute
+  '/akun': typeof AkunRoute
   '/apparel': typeof ApparelRoute
+  '/auth': typeof AuthRoute
   '/carriers': typeof CarriersRoute
   '/cart': typeof CartRoute
   '/catalog': typeof CatalogRoute
@@ -622,7 +640,9 @@ export interface FileRouteTypes {
     | '/'
     | '/$lang'
     | '/accessories'
+    | '/akun'
     | '/apparel'
+    | '/auth'
     | '/carriers'
     | '/cart'
     | '/catalog'
@@ -689,7 +709,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/accessories'
+    | '/akun'
     | '/apparel'
+    | '/auth'
     | '/carriers'
     | '/cart'
     | '/catalog'
@@ -755,7 +777,9 @@ export interface FileRouteTypes {
     | '/'
     | '/$lang'
     | '/accessories'
+    | '/akun'
     | '/apparel'
+    | '/auth'
     | '/carriers'
     | '/cart'
     | '/catalog'
@@ -824,7 +848,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LangRoute: typeof LangRouteWithChildren
   AccessoriesRoute: typeof AccessoriesRoute
+  AkunRoute: typeof AkunRoute
   ApparelRoute: typeof ApparelRoute
+  AuthRoute: typeof AuthRoute
   CarriersRoute: typeof CarriersRoute
   CartRoute: typeof CartRoute
   CatalogRoute: typeof CatalogRoute
@@ -921,11 +947,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CarriersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/apparel': {
       id: '/apparel'
       path: '/apparel'
       fullPath: '/apparel'
       preLoaderRoute: typeof ApparelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/akun': {
+      id: '/akun'
+      path: '/akun'
+      fullPath: '/akun'
+      preLoaderRoute: typeof AkunRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/accessories': {
@@ -1456,7 +1496,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LangRoute: LangRouteWithChildren,
   AccessoriesRoute: AccessoriesRoute,
+  AkunRoute: AkunRoute,
   ApparelRoute: ApparelRoute,
+  AuthRoute: AuthRoute,
   CarriersRoute: CarriersRoute,
   CartRoute: CartRoute,
   CatalogRoute: CatalogRoute,
@@ -1505,3 +1547,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

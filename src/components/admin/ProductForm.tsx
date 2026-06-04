@@ -52,6 +52,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
+import { cn } from "@/lib/utils";
 
 const FOREST = "#1a3a2e";
 
@@ -558,38 +559,89 @@ export function ProductForm(props: ProductFormProps) {
   }
 
   function validate(): boolean {
-    const e: Record<string, string> = {};
-    if (!values.sku.trim()) e.sku = "SKU is required";
-    else if (!SKU_RE.test(values.sku)) e.sku = "Letters, numbers and hyphens only";
-    else if (skuCheck === "taken") e.sku = "SKU is already in use";
-    if (!values.category_id) e.category_id = "Category is required";
-    if (!values.price_idr || values.price_idr <= 0) e.price_idr = "Price must be greater than 0";
-    if (!values.name_en.trim() && !values.name_id.trim())
-      e.name = "At least one language name is required";
-    // Required category attributes
-    categoryAttrs.forEach((a) => {
-      if (!a.is_required) return;
-      const v = (definedAttrValues[a.slug] ?? "").trim();
-      if (!v) e[`attr_${a.slug}`] = `${a.name_en} is required`;
-    });
+    const e = computeErrors();
     setErrors(e);
     return Object.keys(e).length === 0;
   }
 
-  const requiredOk = useMemo(() => {
-    return (
-      values.sku.trim() &&
-      SKU_RE.test(values.sku) &&
-      skuCheck !== "taken" &&
-      values.category_id &&
-      values.price_idr > 0 &&
-      (values.name_en.trim() || values.name_id.trim())
-    );
-  }, [values, skuCheck]);
+  function computeErrors(): Record<string, string> {
+    const e: Record<string, string> = {};
+    if (!values.sku.trim()) e.sku = "SKU wajib diisi";
+    else if (!SKU_RE.test(values.sku)) e.sku = "Hanya huruf, angka, dan tanda hubung";
+    else if (skuCheck === "taken") e.sku = "SKU sudah digunakan";
+    if (!values.category_id) e.category_id = "Kategori wajib dipilih";
+    if (!values.price_idr || values.price_idr <= 0) e.price_idr = "Harga wajib diisi (lebih dari 0)";
+    if (!values.name_en.trim() && !values.name_id.trim())
+      e.name = "Nama produk wajib diisi (minimal satu bahasa)";
+    categoryAttrs.forEach((a) => {
+      if (!a.is_required) return;
+      const v = (definedAttrValues[a.slug] ?? "").trim();
+      if (!v) e[`attr_${a.slug}`] = `${a.name_en} wajib diisi`;
+    });
+    return e;
+  }
+
+  // Re-validate to clear errors as user corrects fields (never adds new ones).
+  useEffect(() => {
+    setErrors((prev) => {
+      if (Object.keys(prev).length === 0) return prev;
+      const next = computeErrors();
+      const filtered: Record<string, string> = {};
+      Object.keys(prev).forEach((k) => {
+        if (next[k]) filtered[k] = next[k];
+      });
+      if (Object.keys(filtered).length === Object.keys(prev).length &&
+          Object.keys(filtered).every((k) => filtered[k] === prev[k])) return prev;
+      return filtered;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [values, definedAttrValues, skuCheck, categoryAttrs]);
+
+  // Map error keys to tabs and provide friendly labels for the summary.
+  const TAB_LABELS: Record<Tab, string> = {
+    basic: "Basic Info",
+    translations: "Translations",
+    images: "Images",
+    variants: "Color Variants",
+    sizes: "Size Variants",
+    availability: "Where available",
+    seo: "SEO & URL",
+  };
+  function tabForErrorKey(k: string): Tab {
+    if (k === "name") return "translations";
+    return "basic";
+  }
+  const erroredTabs = useMemo(() => {
+    const set = new Set<Tab>();
+    Object.keys(errors).forEach((k) => set.add(tabForErrorKey(k)));
+    return set;
+  }, [errors]);
+
+  function focusFirstError(errMap: Record<string, string>) {
+    const firstKey = Object.keys(errMap)[0];
+    if (!firstKey) return;
+    const targetTab = tabForErrorKey(firstKey);
+    setTab(targetTab);
+    setTimeout(() => {
+      const el = document.querySelector<HTMLElement>(
+        `[data-error-field="${firstKey}"]`,
+      );
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        const focusable = el.querySelector<HTMLElement>(
+          "input, textarea, [role=combobox]",
+        );
+        focusable?.focus();
+      }
+    }, 80);
+  }
 
   async function save(opts: { andNew?: boolean } = {}) {
-    if (!validate()) {
-      toast.error("Please fix the errors before saving");
+    const e = computeErrors();
+    setErrors(e);
+    if (Object.keys(e).length > 0) {
+      toast.error("Lengkapi field wajib sebelum menyimpan");
+      focusFirstError(e);
       return;
     }
     setSaving(true);
@@ -788,17 +840,21 @@ export function ProductForm(props: ProductFormProps) {
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
         <TabsList>
-          <TabsTrigger value="basic">Basic Info</TabsTrigger>
-          <TabsTrigger value="translations">Translations</TabsTrigger>
-          <TabsTrigger value="images">
-            Images
+          <TabsTrigger value="basic">
+            <span className="inline-flex items-center gap-1.5">
+              Basic Info
+              {erroredTabs.has("basic") && <ErrorDot />}
+            </span>
           </TabsTrigger>
-          <TabsTrigger value="variants">
-            Color Variants
+          <TabsTrigger value="translations">
+            <span className="inline-flex items-center gap-1.5">
+              Translations
+              {erroredTabs.has("translations") && <ErrorDot />}
+            </span>
           </TabsTrigger>
-          <TabsTrigger value="sizes">
-            Size Variants
-          </TabsTrigger>
+          <TabsTrigger value="images">Images</TabsTrigger>
+          <TabsTrigger value="variants">Color Variants</TabsTrigger>
+          <TabsTrigger value="sizes">Size Variants</TabsTrigger>
           <TabsTrigger value="availability" disabled={mode === "new"}>
             Where available
           </TabsTrigger>
@@ -810,7 +866,7 @@ export function ProductForm(props: ProductFormProps) {
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             {/* LEFT: Identity */}
             <Card title="Product Identity">
-              <Field label="SKU" required error={errors.sku}>
+              <Field label="SKU" required error={errors.sku} errorKey="sku">
                 <div className="relative">
                   <Input
                     value={values.sku}
@@ -830,7 +886,7 @@ export function ProductForm(props: ProductFormProps) {
                 </p>
               </Field>
 
-              <Field label="Category" required error={errors.category_id}>
+              <Field label="Category" required error={errors.category_id} errorKey="category_id">
                 <Select
                   value={values.category_id}
                   onValueChange={(v) => setField("category_id", v)}
@@ -935,7 +991,15 @@ export function ProductForm(props: ProductFormProps) {
                         const val = definedAttrValues[a.slug] ?? "";
                         const err = errors[`attr_${a.slug}`];
                         return (
-                          <div key={a.id} className="space-y-1">
+                          <div
+                            key={a.id}
+                            className={cn(
+                              "space-y-1",
+                              err &&
+                                "[&_input]:border-destructive [&_button[role=combobox]]:border-destructive",
+                            )}
+                            data-error-field={`attr_${a.slug}`}
+                          >
                             <Label htmlFor={id} className="text-sm">
                               {a.name_en}
                               {a.unit ? ` (${a.unit})` : ""}
@@ -1036,7 +1100,7 @@ export function ProductForm(props: ProductFormProps) {
 
             {/* RIGHT: Pricing & Status */}
             <Card title="Pricing & Status">
-              <Field label="Price (IDR)" required error={errors.price_idr}>
+              <Field label="Price (IDR)" required error={errors.price_idr} errorKey="price_idr">
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
                     Rp
@@ -1435,27 +1499,37 @@ export function ProductForm(props: ProductFormProps) {
 
       {/* Sticky save bar */}
       <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-white px-4 py-3 shadow-lg lg:left-[240px]">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
-          <div className="text-xs text-muted-foreground">
-            {dirty ? "Unsaved changes" : "All changes saved"}
-          </div>
-          <div className="flex items-center gap-2">
-            <CancelLink dirty={dirty} />
-            <Button
-              variant="outline"
-              disabled={!requiredOk || saving}
-              onClick={() => void save({ andNew: true })}
-            >
-              Save & new
-            </Button>
-            <Button
-              disabled={!requiredOk || saving}
-              onClick={() => void save()}
-              style={{ backgroundColor: FOREST }}
-              className="text-white hover:opacity-90"
-            >
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
-            </Button>
+        <div className="mx-auto flex max-w-6xl flex-col gap-2">
+          {erroredTabs.size > 0 && (
+            <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+              Lengkapi field wajib di tab:{" "}
+              <span className="font-semibold">
+                {Array.from(erroredTabs).map((t) => TAB_LABELS[t]).join(", ")}
+              </span>
+            </div>
+          )}
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-xs text-muted-foreground">
+              {dirty ? "Unsaved changes" : "All changes saved"}
+            </div>
+            <div className="flex items-center gap-2">
+              <CancelLink dirty={dirty} />
+              <Button
+                variant="outline"
+                disabled={saving}
+                onClick={() => void save({ andNew: true })}
+              >
+                Save & new
+              </Button>
+              <Button
+                disabled={saving}
+                onClick={() => void save()}
+                style={{ backgroundColor: FOREST }}
+                className="text-white hover:opacity-90"
+              >
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -1667,21 +1741,39 @@ function Field({
   label,
   required,
   error,
+  errorKey,
   children,
 }: {
   label: string;
   required?: boolean;
   error?: string;
+  errorKey?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-1.5">
+    <div
+      className={cn(
+        "space-y-1.5",
+        error &&
+          "[&_input]:border-destructive [&_input]:focus-visible:ring-destructive [&_textarea]:border-destructive [&_button[role=combobox]]:border-destructive",
+      )}
+      data-error-field={errorKey}
+    >
       <Label>
         {label} {required && <span className="text-destructive">*</span>}
       </Label>
       {children}
       {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
+  );
+}
+
+function ErrorDot() {
+  return (
+    <span
+      aria-label="has errors"
+      className="inline-block h-1.5 w-1.5 rounded-full bg-destructive"
+    />
   );
 }
 
@@ -1726,12 +1818,14 @@ function LangColumn({
   setField,
   tint,
   aiFlags,
+  nameError,
 }: {
   lang: "id" | "en";
   values: ProductFormValues;
   setField: <K extends keyof ProductFormValues>(k: K, v: ProductFormValues[K]) => void;
   tint: string;
   aiFlags: Record<string, boolean>;
+  nameError?: boolean;
 }) {
   const isID = lang === "id";
   const nameKey = isID ? "name_id" : "name_en";
@@ -1750,7 +1844,7 @@ function LangColumn({
       </div>
 
       <div className="space-y-4">
-        <div className="space-y-1.5">
+        <div className="space-y-1.5" data-error-field="name">
           <div className="flex items-center gap-2">
             <Label>Product Name</Label>
             {aiFlags[nameKey] && <AiBadge />}
@@ -1758,6 +1852,11 @@ function LangColumn({
           <Input
             value={values[nameKey]}
             onChange={(e) => setField(nameKey, e.target.value)}
+            className={
+              nameError
+                ? "border-destructive focus-visible:ring-destructive"
+                : undefined
+            }
           />
         </div>
 
@@ -1879,7 +1978,7 @@ function TranslationsTab({
       )}
       {bothEmpty && (
         <div className="rounded-md border border-destructive bg-destructive/10 px-4 py-2 text-sm text-destructive">
-          At least one product name is required.
+          Nama produk wajib diisi (minimal satu bahasa).
         </div>
       )}
       {error && <p className="text-sm text-destructive">{error}</p>}
@@ -1898,6 +1997,7 @@ function TranslationsTab({
             setField={setField}
             tint="rgba(239, 246, 244, 0.6)"
             aiFlags={aiFlags}
+            nameError={!!error}
           />
         )}
         {view === "both" && (
@@ -1910,6 +2010,7 @@ function TranslationsTab({
             setField={setField}
             tint="rgba(243, 244, 246, 0.6)"
             aiFlags={aiFlags}
+            nameError={!!error}
           />
         )}
       </div>

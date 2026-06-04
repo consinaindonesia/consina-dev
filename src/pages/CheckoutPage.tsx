@@ -294,7 +294,12 @@ export function CheckoutPage() {
       .then((r) => {
         if (cancelled) return;
         setBiteshipRates(r.rates);
-        if (r.error) setBiteshipError(r.error);
+        if (r.error) {
+          setBiteshipError(r.error);
+          setSelectedBiteshipKey(""); // fall back to zone rate
+        } else {
+          setBiteshipError(null);
+        }
         if (r.rates[0]) {
           setSelectedBiteshipKey(
             `${r.rates[0].courier_code}:${r.rates[0].courier_service_code}`,
@@ -302,7 +307,10 @@ export function CheckoutPage() {
         }
       })
       .catch((err) => {
-        if (!cancelled) setBiteshipError((err as Error).message);
+        if (!cancelled) {
+          setBiteshipError((err as Error).message);
+          setSelectedBiteshipKey(""); // fall back to zone rate
+        }
       })
       .finally(() => {
         if (!cancelled) setBiteshipLoading(false);

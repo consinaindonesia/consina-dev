@@ -851,17 +851,21 @@ export function ProductForm(props: ProductFormProps) {
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
         <TabsList>
-          <TabsTrigger value="basic">Basic Info</TabsTrigger>
-          <TabsTrigger value="translations">Translations</TabsTrigger>
-          <TabsTrigger value="images">
-            Images
+          <TabsTrigger value="basic">
+            <span className="inline-flex items-center gap-1.5">
+              Basic Info
+              {erroredTabs.has("basic") && <ErrorDot />}
+            </span>
           </TabsTrigger>
-          <TabsTrigger value="variants">
-            Color Variants
+          <TabsTrigger value="translations">
+            <span className="inline-flex items-center gap-1.5">
+              Translations
+              {erroredTabs.has("translations") && <ErrorDot />}
+            </span>
           </TabsTrigger>
-          <TabsTrigger value="sizes">
-            Size Variants
-          </TabsTrigger>
+          <TabsTrigger value="images">Images</TabsTrigger>
+          <TabsTrigger value="variants">Color Variants</TabsTrigger>
+          <TabsTrigger value="sizes">Size Variants</TabsTrigger>
           <TabsTrigger value="availability" disabled={mode === "new"}>
             Where available
           </TabsTrigger>
@@ -873,7 +877,7 @@ export function ProductForm(props: ProductFormProps) {
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             {/* LEFT: Identity */}
             <Card title="Product Identity">
-              <Field label="SKU" required error={errors.sku}>
+              <Field label="SKU" required error={errors.sku} errorKey="sku">
                 <div className="relative">
                   <Input
                     value={values.sku}
@@ -893,7 +897,7 @@ export function ProductForm(props: ProductFormProps) {
                 </p>
               </Field>
 
-              <Field label="Category" required error={errors.category_id}>
+              <Field label="Category" required error={errors.category_id} errorKey="category_id">
                 <Select
                   value={values.category_id}
                   onValueChange={(v) => setField("category_id", v)}
@@ -1099,7 +1103,7 @@ export function ProductForm(props: ProductFormProps) {
 
             {/* RIGHT: Pricing & Status */}
             <Card title="Pricing & Status">
-              <Field label="Price (IDR)" required error={errors.price_idr}>
+              <Field label="Price (IDR)" required error={errors.price_idr} errorKey="price_idr">
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
                     Rp

@@ -30,6 +30,8 @@ import { Route as EnSplatRouteImport } from './routes/en/$'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as AkunProfileRouteImport } from './routes/akun.profile'
+import { Route as AkunOrdersRouteImport } from './routes/akun.orders'
+import { Route as AkunAddressesRouteImport } from './routes/akun.addresses'
 import { Route as AdminVouchersRouteImport } from './routes/admin/vouchers'
 import { Route as AdminStoresRouteImport } from './routes/admin/stores'
 import { Route as AdminSizeGuidesRouteImport } from './routes/admin/size-guides'
@@ -183,6 +185,16 @@ const CSlugRoute = CSlugRouteImport.update({
 const AkunProfileRoute = AkunProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => AkunRoute,
+} as any)
+const AkunOrdersRoute = AkunOrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
+  getParentRoute: () => AkunRoute,
+} as any)
+const AkunAddressesRoute = AkunAddressesRouteImport.update({
+  id: '/addresses',
+  path: '/addresses',
   getParentRoute: () => AkunRoute,
 } as any)
 const AdminVouchersRoute = AdminVouchersRouteImport.update({
@@ -474,6 +486,8 @@ export interface FileRoutesByFullPath {
   '/admin/size-guides': typeof AdminSizeGuidesRoute
   '/admin/stores': typeof AdminStoresRouteWithChildren
   '/admin/vouchers': typeof AdminVouchersRoute
+  '/akun/addresses': typeof AkunAddressesRoute
+  '/akun/orders': typeof AkunOrdersRoute
   '/akun/profile': typeof AkunProfileRoute
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -542,6 +556,8 @@ export interface FileRoutesByTo {
   '/admin/size-guides': typeof AdminSizeGuidesRoute
   '/admin/stores': typeof AdminStoresRouteWithChildren
   '/admin/vouchers': typeof AdminVouchersRoute
+  '/akun/addresses': typeof AkunAddressesRoute
+  '/akun/orders': typeof AkunOrdersRoute
   '/akun/profile': typeof AkunProfileRoute
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -615,6 +631,8 @@ export interface FileRoutesById {
   '/admin/size-guides': typeof AdminSizeGuidesRoute
   '/admin/stores': typeof AdminStoresRouteWithChildren
   '/admin/vouchers': typeof AdminVouchersRoute
+  '/akun/addresses': typeof AkunAddressesRoute
+  '/akun/orders': typeof AkunOrdersRoute
   '/akun/profile': typeof AkunProfileRoute
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -689,6 +707,8 @@ export interface FileRouteTypes {
     | '/admin/size-guides'
     | '/admin/stores'
     | '/admin/vouchers'
+    | '/akun/addresses'
+    | '/akun/orders'
     | '/akun/profile'
     | '/c/$slug'
     | '/email/unsubscribe'
@@ -757,6 +777,8 @@ export interface FileRouteTypes {
     | '/admin/size-guides'
     | '/admin/stores'
     | '/admin/vouchers'
+    | '/akun/addresses'
+    | '/akun/orders'
     | '/akun/profile'
     | '/c/$slug'
     | '/email/unsubscribe'
@@ -829,6 +851,8 @@ export interface FileRouteTypes {
     | '/admin/size-guides'
     | '/admin/stores'
     | '/admin/vouchers'
+    | '/akun/addresses'
+    | '/akun/orders'
     | '/akun/profile'
     | '/c/$slug'
     | '/email/unsubscribe'
@@ -1065,6 +1089,20 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/akun/profile'
       preLoaderRoute: typeof AkunProfileRouteImport
+      parentRoute: typeof AkunRoute
+    }
+    '/akun/orders': {
+      id: '/akun/orders'
+      path: '/orders'
+      fullPath: '/akun/orders'
+      preLoaderRoute: typeof AkunOrdersRouteImport
+      parentRoute: typeof AkunRoute
+    }
+    '/akun/addresses': {
+      id: '/akun/addresses'
+      path: '/addresses'
+      fullPath: '/akun/addresses'
+      preLoaderRoute: typeof AkunAddressesRouteImport
       parentRoute: typeof AkunRoute
     }
     '/admin/vouchers': {
@@ -1468,11 +1506,15 @@ const LangRouteChildren: LangRouteChildren = {
 const LangRouteWithChildren = LangRoute._addFileChildren(LangRouteChildren)
 
 interface AkunRouteChildren {
+  AkunAddressesRoute: typeof AkunAddressesRoute
+  AkunOrdersRoute: typeof AkunOrdersRoute
   AkunProfileRoute: typeof AkunProfileRoute
   AkunIndexRoute: typeof AkunIndexRoute
 }
 
 const AkunRouteChildren: AkunRouteChildren = {
+  AkunAddressesRoute: AkunAddressesRoute,
+  AkunOrdersRoute: AkunOrdersRoute,
   AkunProfileRoute: AkunProfileRoute,
   AkunIndexRoute: AkunIndexRoute,
 }
@@ -1595,3 +1637,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

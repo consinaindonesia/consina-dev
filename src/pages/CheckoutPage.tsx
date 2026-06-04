@@ -22,6 +22,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { getBiteshipRates, type BiteshipRate } from "@/lib/biteship.functions";
 import { validateVoucher, redeemVoucher } from "@/lib/voucher.functions";
 import { useCart, clearCart } from "@/lib/cart-store";
+import { useCustomerAuth } from "@/hooks/use-customer-auth";
 
 type PaymentMethod = "bank_transfer" | "midtrans" | "stripe";
 

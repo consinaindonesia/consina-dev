@@ -842,6 +842,40 @@ function StockBadge({ status }: { status: string }) {
   return <Badge variant="secondary">{status}</Badge>;
 }
 
+function RowActions({
+  row,
+  onToggleActive,
+  onDelete,
+}: {
+  row: ProductRow;
+  onToggleActive: (row: ProductRow, next: boolean) => void;
+  onDelete: (id: string) => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-8 w-8">
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem asChild>
+          <Link to="/admin/products/$id/edit" params={{ id: row.id }}>Edit</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/admin/products/$id/stock" params={{ id: row.id }}>Where available</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => toast.info("Duplicate coming soon")}>Duplicate</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onToggleActive(row, false)}>Archive</DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem className="text-destructive" onClick={() => onDelete(row.id)}>
+          Delete
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 function NameCell({ row }: { row: ProductRow }) {
   const hasId = !!row.name_id?.trim();
   const hasEn = !!row.name_en?.trim();

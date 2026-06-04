@@ -707,8 +707,10 @@ export type Database = {
           product_id: string | null
           product_name: string | null
           quantity: number
+          size_variant_id: string | null
           sku: string | null
           unit_price_idr: number
+          variant_id: string | null
         }
         Insert: {
           attributes?: Json | null
@@ -719,8 +721,10 @@ export type Database = {
           product_id?: string | null
           product_name?: string | null
           quantity?: number
+          size_variant_id?: string | null
           sku?: string | null
           unit_price_idr?: number
+          variant_id?: string | null
         }
         Update: {
           attributes?: Json | null
@@ -731,8 +735,10 @@ export type Database = {
           product_id?: string | null
           product_name?: string | null
           quantity?: number
+          size_variant_id?: string | null
           sku?: string | null
           unit_price_idr?: number
+          variant_id?: string | null
         }
         Relationships: [
           {
@@ -740,6 +746,20 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_size_variant_id_fkey"
+            columns: ["size_variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_size_variants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
             referencedColumns: ["id"]
           },
         ]
@@ -772,6 +792,7 @@ export type Database = {
           shipping_postal_code: string | null
           shipping_zone_id: string | null
           status: string
+          stock_decremented_at: string | null
           subtotal_idr: number
           total_idr: number
           tracking_carrier: string | null
@@ -807,6 +828,7 @@ export type Database = {
           shipping_postal_code?: string | null
           shipping_zone_id?: string | null
           status?: string
+          stock_decremented_at?: string | null
           subtotal_idr?: number
           total_idr?: number
           tracking_carrier?: string | null
@@ -842,6 +864,7 @@ export type Database = {
           shipping_postal_code?: string | null
           shipping_zone_id?: string | null
           status?: string
+          stock_decremented_at?: string | null
           subtotal_idr?: number
           total_idr?: number
           tracking_carrier?: string | null

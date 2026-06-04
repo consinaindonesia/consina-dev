@@ -359,6 +359,8 @@ export function ProductDetailPage({ slug }: { slug: string }) {
       thumbnail: top ? (top.thumbnail_url ?? top.image_url) : null,
       attributes: selectedAttrs,
       quantity,
+      variantId: selectedVariantId ?? null,
+      sizeVariantId: selectedSizeId ?? null,
     });
     toast.success(
       lang === "id" ? `Ditambahkan ke keranjang (${quantity})` : `Added to cart (${quantity})`,

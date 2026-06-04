@@ -697,6 +697,12 @@ export function CheckoutPage() {
                 <dt className="text-muted-foreground">Shipping</dt>
                 <dd>{shipping === 0 ? "Free" : formatPrice(shipping, lang)}</dd>
               </div>
+              {appliedVoucher && (
+                <div className="flex justify-between text-emerald-600">
+                  <dt>Diskon ({appliedVoucher.code})</dt>
+                  <dd>− {formatPrice(discount, lang)}</dd>
+                </div>
+              )}
               <div className="mt-2 flex justify-between border-t border-border pt-3 text-base font-bold">
                 <dt>Total</dt>
                 <dd className="text-right">
@@ -709,11 +715,47 @@ export function CheckoutPage() {
                 </dd>
               </div>
             </dl>
+            <div className="mt-4 border-t border-border pt-4">
+              <Label className="text-xs">Kode voucher</Label>
+              <div className="mt-1 flex gap-2">
+                <Input
+                  value={voucherInput}
+                  onChange={(e) => setVoucherInput(e.target.value.toUpperCase())}
+                  maxLength={64}
+                  disabled={!!appliedVoucher}
+                />
+                {appliedVoucher ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setAppliedVoucher(null);
+                      setVoucherInput("");
+                      setVoucherError(null);
+                    }}
+                  >
+                    Hapus
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={applyVoucherCode}
+                    disabled={voucherApplying || !voucherInput.trim()}
+                  >
+                    {voucherApplying ? <Loader2 className="h-4 w-4 animate-spin" /> : "Terapkan"}
+                  </Button>
+                )}
+              </div>
+              {voucherError && (
+                <p className="mt-1 text-xs text-destructive">{voucherError}</p>
+              )}
+            </div>
             <Button
               size="lg"
               className="mt-5 w-full"
               onClick={handleConfirm}
-              disabled={submitting || items.length === 0}
+              disabled={submitting || cartLineItems.length === 0}
             >
               {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Confirm order

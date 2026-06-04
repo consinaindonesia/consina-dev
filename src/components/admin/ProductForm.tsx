@@ -637,14 +637,17 @@ export function ProductForm(props: ProductFormProps) {
   }
 
   async function save(opts: { andNew?: boolean } = {}) {
+    console.log("[ProductForm.save] click", { mode, andNew: !!opts.andNew });
     const e = computeErrors();
     setErrors(e);
     if (Object.keys(e).length > 0) {
+      console.warn("[ProductForm.save] validation failed", e);
       toast.error("Lengkapi field wajib sebelum menyimpan");
       focusFirstError(e);
       return;
     }
     setSaving(true);
+    try {
 
     const attrsObj: Record<string, string> = {};
     values.attributes.forEach((a) => {
@@ -685,9 +688,12 @@ export function ProductForm(props: ProductFormProps) {
         .insert(payload)
         .select("id")
         .single();
-      setSaving(false);
+      console.log("[ProductForm.save] insert result", { data, error });
       if (error || !data) {
-        toast.error(error?.message ?? "Save failed");
+        const msg = error?.message
+          ? `Gagal menyimpan: ${error.message}`
+          : "Gagal menyimpan: tidak ada baris yang dikembalikan (kemungkinan kebijakan RLS memblokir INSERT/SELECT).";
+        toast.error(msg);
         return;
       }
       void logActivity(profile?.id ?? null, "created", data.id);
@@ -731,9 +737,9 @@ export function ProductForm(props: ProductFormProps) {
         .from("products")
         .update(payload)
         .eq("id", productId);
-      setSaving(false);
+      console.log("[ProductForm.save] update result", { error });
       if (error) {
-        toast.error(error.message);
+        toast.error(`Gagal menyimpan: ${error.message}`);
         return;
       }
       void logActivity(profile?.id ?? null, "updated", productId);
@@ -762,6 +768,13 @@ export function ProductForm(props: ProductFormProps) {
       if (opts.andNew) {
         navigate({ to: "/admin/products/new" });
       }
+    }
+    } catch (err) {
+      console.error("[ProductForm.save] unexpected error", err);
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(`Gagal menyimpan: ${msg}`);
+    } finally {
+      setSaving(false);
     }
   }
 

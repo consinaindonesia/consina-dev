@@ -414,7 +414,9 @@ export function CsvImportWizard({
                       <tr key={r.rowIndex} className={bad ? "bg-red-50" : ""}>
                         <td className="px-2 py-1.5 text-muted-foreground">{r.rowIndex}</td>
                         <td className="px-2 py-1.5 font-mono">{r.raw.sku}</td>
-                        <td className="px-2 py-1.5">{r.raw.category_slug}</td>
+                        <td className="px-2 py-1.5 truncate max-w-[180px]" title={r.raw.category_path || r.raw.category_slug}>
+                          {r.raw.category_path || r.raw.category_slug}
+                        </td>
                         <td className="px-2 py-1.5 truncate max-w-[180px]">{r.raw.name_en || r.raw.name_id}</td>
                         <td className="px-2 py-1.5">{r.raw.price_idr}</td>
                         <td className="px-2 py-1.5">

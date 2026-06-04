@@ -55,7 +55,7 @@ import { useAdminAuth } from "@/hooks/use-admin-auth";
 
 const FOREST = "#1a3a2e";
 
-type Category = { id: string; name_en: string; sort_order: number };
+type Category = { id: string; name_en: string; sort_order: number; parent_category_id?: string | null };
 
 type AttributeDef = {
   id: string;
@@ -203,6 +203,9 @@ export function ProductForm(props: ProductFormProps) {
   const [tab, setTab] = useState<Tab>(initialTab ?? "basic");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [categories, setCategories] = useState<Category[]>([]);
+  // Extra (non-primary) category ids for many-to-many membership.
+  const [extraCategoryIds, setExtraCategoryIds] = useState<string[]>([]);
+  const [initialExtraCategoryIds, setInitialExtraCategoryIds] = useState<string[]>([]);
   const [skuCheck, setSkuCheck] = useState<"idle" | "checking" | "ok" | "taken">("idle");
   // Category-defined attribute schema + values keyed by attribute slug.
   const [categoryAttrs, setCategoryAttrs] = useState<AttributeDef[]>([]);
@@ -246,7 +249,7 @@ export function ProductForm(props: ProductFormProps) {
   useEffect(() => {
     void supabase
       .from("categories")
-      .select("id, name_en, sort_order")
+      .select("id, name_en, sort_order, parent_category_id")
       .order("sort_order")
       .then(({ data }) => setCategories((data ?? []) as Category[]));
   }, []);

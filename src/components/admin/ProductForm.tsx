@@ -52,6 +52,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
+import { cn } from "@/lib/utils";
 
 const FOREST = "#1a3a2e";
 
@@ -558,22 +559,81 @@ export function ProductForm(props: ProductFormProps) {
   }
 
   function validate(): boolean {
+    const e = computeErrors();
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  }
+
+  function computeErrors(): Record<string, string> {
     const e: Record<string, string> = {};
-    if (!values.sku.trim()) e.sku = "SKU is required";
-    else if (!SKU_RE.test(values.sku)) e.sku = "Letters, numbers and hyphens only";
-    else if (skuCheck === "taken") e.sku = "SKU is already in use";
-    if (!values.category_id) e.category_id = "Category is required";
-    if (!values.price_idr || values.price_idr <= 0) e.price_idr = "Price must be greater than 0";
+    if (!values.sku.trim()) e.sku = "SKU wajib diisi";
+    else if (!SKU_RE.test(values.sku)) e.sku = "Hanya huruf, angka, dan tanda hubung";
+    else if (skuCheck === "taken") e.sku = "SKU sudah digunakan";
+    if (!values.category_id) e.category_id = "Kategori wajib dipilih";
+    if (!values.price_idr || values.price_idr <= 0) e.price_idr = "Harga wajib diisi (lebih dari 0)";
     if (!values.name_en.trim() && !values.name_id.trim())
-      e.name = "At least one language name is required";
-    // Required category attributes
+      e.name = "Nama produk wajib diisi (minimal satu bahasa)";
     categoryAttrs.forEach((a) => {
       if (!a.is_required) return;
       const v = (definedAttrValues[a.slug] ?? "").trim();
-      if (!v) e[`attr_${a.slug}`] = `${a.name_en} is required`;
+      if (!v) e[`attr_${a.slug}`] = `${a.name_en} wajib diisi`;
     });
-    setErrors(e);
-    return Object.keys(e).length === 0;
+    return e;
+  }
+
+  // Re-validate to clear errors as user corrects fields (never adds new ones).
+  useEffect(() => {
+    setErrors((prev) => {
+      if (Object.keys(prev).length === 0) return prev;
+      const next = computeErrors();
+      const filtered: Record<string, string> = {};
+      Object.keys(prev).forEach((k) => {
+        if (next[k]) filtered[k] = next[k];
+      });
+      if (Object.keys(filtered).length === Object.keys(prev).length &&
+          Object.keys(filtered).every((k) => filtered[k] === prev[k])) return prev;
+      return filtered;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [values, definedAttrValues, skuCheck, categoryAttrs]);
+
+  // Map error keys to tabs and provide friendly labels for the summary.
+  const TAB_LABELS: Record<Tab, string> = {
+    basic: "Basic Info",
+    translations: "Translations",
+    images: "Images",
+    variants: "Color Variants",
+    sizes: "Size Variants",
+    availability: "Where available",
+    seo: "SEO & URL",
+  };
+  function tabForErrorKey(k: string): Tab {
+    if (k === "name") return "translations";
+    return "basic";
+  }
+  const erroredTabs = useMemo(() => {
+    const set = new Set<Tab>();
+    Object.keys(errors).forEach((k) => set.add(tabForErrorKey(k)));
+    return set;
+  }, [errors]);
+
+  function focusFirstError(errMap: Record<string, string>) {
+    const firstKey = Object.keys(errMap)[0];
+    if (!firstKey) return;
+    const targetTab = tabForErrorKey(firstKey);
+    setTab(targetTab);
+    setTimeout(() => {
+      const el = document.querySelector<HTMLElement>(
+        `[data-error-field="${firstKey}"]`,
+      );
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        const focusable = el.querySelector<HTMLElement>(
+          "input, textarea, [role=combobox]",
+        );
+        focusable?.focus();
+      }
+    }, 80);
   }
 
   const requiredOk = useMemo(() => {
@@ -588,8 +648,11 @@ export function ProductForm(props: ProductFormProps) {
   }, [values, skuCheck]);
 
   async function save(opts: { andNew?: boolean } = {}) {
-    if (!validate()) {
-      toast.error("Please fix the errors before saving");
+    const e = computeErrors();
+    setErrors(e);
+    if (Object.keys(e).length > 0) {
+      toast.error("Lengkapi field wajib sebelum menyimpan");
+      focusFirstError(e);
       return;
     }
     setSaving(true);

@@ -130,6 +130,11 @@ export const Route = createFileRoute("/api/public/hooks/midtrans")({
             if (paidAt) patch.paid_at = paidAt;
             if (refundedAt) patch.refunded_at = refundedAt;
             await supabase.from("orders").update(patch).eq("id", orderId);
+
+            // Idempotent stock decrement on first transition to paid.
+            if (newPaymentStatus === "paid") {
+              await decrementStockForOrder(supabase, orderId);
+            }
           }
         }
 
@@ -138,3 +143,89 @@ export const Route = createFileRoute("/api/public/hooks/midtrans")({
     },
   },
 });
+
+/**
+ * Decrement stock for each order line. Idempotent: only the first call that
+ * successfully claims orders.stock_decremented_at performs the decrement.
+ * Decrements the size variant if present, else the color variant (if it
+ * tracks stock), else the base product. Clamps at 0 — never goes negative.
+ */
+async function decrementStockForOrder(
+  supabase: ReturnType<typeof createClient>,
+  orderId: string,
+) {
+  // Claim the decrement slot atomically.
+  const { data: claimed, error: claimErr } = await supabase
+    .from("orders")
+    .update({ stock_decremented_at: new Date().toISOString() })
+    .eq("id", orderId)
+    .is("stock_decremented_at", null)
+    .select("id")
+    .maybeSingle();
+  if (claimErr || !claimed) return; // already decremented or update failed
+
+  const { data: lines } = await supabase
+    .from("order_items")
+    .select("product_id, variant_id, size_variant_id, quantity")
+    .eq("order_id", orderId);
+  if (!lines) return;
+
+  for (const line of lines) {
+    const qty = Math.max(0, Number(line.quantity ?? 0));
+    if (!qty) continue;
+
+    try {
+      if (line.size_variant_id) {
+        const { data: sv } = await supabase
+          .from("product_size_variants")
+          .select("stock")
+          .eq("id", line.size_variant_id)
+          .maybeSingle();
+        if (sv) {
+          const next = Math.max(0, (sv.stock ?? 0) - qty);
+          await supabase
+            .from("product_size_variants")
+            .update({ stock: next })
+            .eq("id", line.size_variant_id);
+        }
+      } else if (line.variant_id) {
+        const { data: cv } = await supabase
+          .from("product_variants")
+          .select("stock")
+          .eq("id", line.variant_id)
+          .maybeSingle();
+        if (cv && cv.stock != null) {
+          const next = Math.max(0, cv.stock - qty);
+          await supabase
+            .from("product_variants")
+            .update({ stock: next })
+            .eq("id", line.variant_id);
+        } else if (line.product_id) {
+          await decrementProductBaseStock(supabase, line.product_id, qty);
+        }
+      } else if (line.product_id) {
+        await decrementProductBaseStock(supabase, line.product_id, qty);
+      }
+    } catch (err) {
+      console.error("stock decrement failed for line", line, err);
+    }
+  }
+}
+
+async function decrementProductBaseStock(
+  supabase: ReturnType<typeof createClient>,
+  productId: string,
+  qty: number,
+) {
+  const { data: p } = await supabase
+    .from("products")
+    .select("stock")
+    .eq("id", productId)
+    .maybeSingle();
+  if (!p || p.stock == null) return;
+  const next = Math.max(0, p.stock - qty);
+  await supabase
+    .from("products")
+    .update({ stock: next })
+    .eq("id", productId);
+}

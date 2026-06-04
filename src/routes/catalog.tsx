@@ -1,13 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowUpRight, Loader2 } from "lucide-react";
+import { ArrowUpRight, Loader2, ShoppingBag } from "lucide-react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { usePublicProducts, type PublicProduct } from "@/lib/public-products";
 import { useLang } from "@/i18n/LangProvider";
 import { localizedField } from "@/i18n/format";
 import { PriceDisplay } from "@/components/site/PriceDisplay";
+import { addToCart } from "@/lib/cart-store";
 
 export const Route = createFileRoute("/catalog")({
   head: () => ({
@@ -116,9 +118,28 @@ function CatalogPage() {
 function ProductCard({ p, lang }: { p: PublicProduct; lang: "id" | "en" }) {
   const name = localizedField(p, "name", lang).value;
   const prefix = lang === "id" ? "produk" : "products";
+  const requiresChoice = p.variants.length > 0 || p.size_variants.length > 0;
+  const detailHref = `/${lang}/${prefix}/${p.slug ?? p.sku}`;
+  function handleAdd(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart({
+      productId: p.id,
+      slug: p.slug ?? p.sku,
+      sku: p.sku,
+      name_id: p.name_id,
+      name_en: p.name_en,
+      price_idr: p.price_idr,
+      weight_grams: p.weight_grams,
+      thumbnail: p.thumbnail_url ?? p.image_url,
+      attributes: {},
+      quantity: 1,
+    });
+    toast.success(lang === "id" ? "Ditambahkan ke keranjang" : "Added to cart");
+  }
   return (
     <Link
-      to={`/${lang}/${prefix}/${p.slug ?? p.sku}` as never}
+      to={detailHref as never}
       className="group block"
     >
       <div className="relative aspect-square overflow-hidden rounded-sm bg-muted">
@@ -133,6 +154,17 @@ function ProductCard({ p, lang }: { p: PublicProduct; lang: "id" | "en" }) {
           <div className="h-full w-full bg-muted" />
         )}
         <ArrowUpRight className="absolute right-3 top-3 h-4 w-4 text-primary-foreground opacity-0 transition group-hover:opacity-100" />
+        {!requiresChoice && (
+          <button
+            type="button"
+            onClick={handleAdd}
+            aria-label={lang === "id" ? "Tambah ke Keranjang" : "Add to cart"}
+            className="absolute bottom-3 right-3 inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground opacity-0 shadow transition group-hover:opacity-100 hover:bg-primary/90"
+          >
+            <ShoppingBag className="h-3.5 w-3.5" />
+            {lang === "id" ? "Tambah" : "Add"}
+          </button>
+        )}
       </div>
       <div className="mt-4">
         <h3 className="line-clamp-2 font-[Archivo] text-sm font-bold leading-snug text-primary">

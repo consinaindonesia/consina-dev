@@ -183,7 +183,7 @@ function ProductsPage() {
       let q = supabase
         .from("products")
         .select(
-          "id, name_en, name_id, sku, price_idr, stock_status, is_active, updated_at, category_id, categories(name_en), product_images(image_url, is_primary, sort_order)",
+          "id, name_en, name_id, sku, price_idr, stock_status, is_active, updated_at, category_id, categories!products_category_id_fkey(name_en), product_images(image_url, is_primary, sort_order)",
           { count: "exact" },
         )
         .order("updated_at", { ascending: false });

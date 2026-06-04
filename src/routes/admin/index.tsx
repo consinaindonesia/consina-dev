@@ -198,7 +198,7 @@ function AdminHome() {
         .limit(5),
       supabase
         .from("products")
-        .select("id, name_en, updated_at, image_url:product_images(image_url), categories(name_en)")
+        .select("id, name_en, updated_at, image_url:product_images(image_url), categories!products_category_id_fkey(name_en)")
         .order("updated_at", { ascending: false })
         .limit(5),
     ]);

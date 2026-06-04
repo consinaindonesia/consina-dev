@@ -603,8 +603,10 @@ function ProductsPage() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[1000px] text-sm">
+          <>
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full min-w-[900px] text-sm">
               <thead className="border-b border-border bg-muted/30">
                 <tr className="text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                   <th className="w-10 px-3 py-3">
@@ -622,7 +624,7 @@ function ProductsPage() {
                   <th className="px-3 py-3">Stock</th>
                   <th className="px-3 py-3">Status</th>
                   <th className="px-3 py-3">Updated</th>
-                  <th className="w-10 px-2 py-3"></th>
+                  <th className="sticky right-0 z-10 w-12 bg-muted/30 px-2 py-3 shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.1)]"></th>
                 </tr>
               </thead>
               <tbody>
@@ -630,8 +632,8 @@ function ProductsPage() {
                   return (
                     <tr
                       key={r.id}
-                      className="cursor-pointer border-b border-border/60 transition-colors hover:bg-muted/40"
-                      onClick={() => navigate({ to: "/admin/products" })}
+                      className="group cursor-pointer border-b border-border/60 transition-colors hover:bg-muted/40"
+                      onClick={() => navigate({ to: "/admin/products/$id/edit", params: { id: r.id } })}
                     >
                       <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
                         <Checkbox
@@ -666,26 +668,11 @@ function ProductsPage() {
                         <Switch checked={r.is_active} onCheckedChange={(c) => toggleActive(r, c)} />
                       </td>
                       <td className="px-3 py-3 text-xs text-muted-foreground">{timeAgo(r.updated_at)}</td>
-                      <td className="px-2 py-3" onClick={(e) => e.stopPropagation()}>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => toast.info("Edit coming soon")}>Edit</DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <Link to="/admin/products/$id/stock" params={{ id: r.id }}>Where available</Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => toast.info("Duplicate coming soon")}>Duplicate</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => toggleActive(r, false)}>Archive</DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-destructive" onClick={() => deleteProduct(r.id)}>
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                      <td
+                        className="sticky right-0 z-10 bg-card px-2 py-3 shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.1)] group-hover:bg-muted/40"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <RowActions row={r} onToggleActive={toggleActive} onDelete={deleteProduct} />
                       </td>
                     </tr>
                   );
@@ -693,6 +680,53 @@ function ProductsPage() {
               </tbody>
             </table>
           </div>
+
+          {/* Mobile cards */}
+          <ul className="md:hidden divide-y divide-border">
+            {rows.map((r) => (
+              <li key={r.id} className="p-3">
+                <div className="flex items-start gap-3">
+                  <div onClick={(e) => e.stopPropagation()} className="pt-1">
+                    <Checkbox
+                      checked={selected.has(r.id)}
+                      onCheckedChange={(c) => toggleSelect(r.id, !!c)}
+                      aria-label={`Select ${r.name_en}`}
+                    />
+                  </div>
+                  <div className="h-12 w-12 shrink-0 overflow-hidden rounded bg-muted">
+                    {r.image_url ? (
+                      <img src={r.image_url} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                        <Package size={16} />
+                      </div>
+                    )}
+                  </div>
+                  <Link
+                    to="/admin/products/$id/edit"
+                    params={{ id: r.id }}
+                    className="min-w-0 flex-1"
+                  >
+                    <NameCell row={r} />
+                    <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                      <span className="font-mono">{r.sku}</span>
+                      {r.category_name && <span>{r.category_name}</span>}
+                      <span className="font-medium text-foreground">{formatIDR(r.price_idr)}</span>
+                    </div>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <StockBadge status={r.stock_status} />
+                      <span className="text-[11px] text-muted-foreground">{timeAgo(r.updated_at)}</span>
+                    </div>
+                  </Link>
+                  <div className="flex flex-col items-end gap-2" onClick={(e) => e.stopPropagation()}>
+                    <Switch checked={r.is_active} onCheckedChange={(c) => toggleActive(r, c)} />
+                    <RowActions row={r} onToggleActive={toggleActive} onDelete={deleteProduct} />
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+          </>
         )}
 
         {/* Pagination */}
@@ -806,6 +840,40 @@ function StockBadge({ status }: { status: string }) {
   if (status === "low_stock") return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Low</Badge>;
   if (status === "out_of_stock") return <Badge className="bg-red-100 text-red-700 hover:bg-red-100">Out</Badge>;
   return <Badge variant="secondary">{status}</Badge>;
+}
+
+function RowActions({
+  row,
+  onToggleActive,
+  onDelete,
+}: {
+  row: ProductRow;
+  onToggleActive: (row: ProductRow, next: boolean) => void;
+  onDelete: (id: string) => void;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-8 w-8">
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem asChild>
+          <Link to="/admin/products/$id/edit" params={{ id: row.id }}>Edit</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/admin/products/$id/stock" params={{ id: row.id }}>Where available</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => toast.info("Duplicate coming soon")}>Duplicate</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onToggleActive(row, false)}>Archive</DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem className="text-destructive" onClick={() => onDelete(row.id)}>
+          Delete
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 }
 
 function NameCell({ row }: { row: ProductRow }) {

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, notFound, useNavigate } from "@tanstack/react-router";
-import { Loader2, MapPin, Check, Minus, Plus, BellRing } from "lucide-react";
+import { Loader2, MapPin, Minus, Plus, BellRing } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Nav } from "@/components/site/Nav";
@@ -19,7 +19,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/i18n/LangProvider";
 import { formatPrice, localizedField, hasTranslation } from "@/i18n/format";
 import { MissingTranslationNotice } from "@/components/site/MissingTranslationNotice";
-import { addToInquiry } from "@/lib/inquiry-store";
 import { addToCart } from "@/lib/cart-store";
 import { WishlistButton } from "@/components/site/WishlistButton";
 import { FindInStore } from "@/components/site/FindInStore";
@@ -108,7 +107,6 @@ export function ProductDetailPage({ slug }: { slug: string }) {
   const [activeImage, setActiveImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [selectedAttrs, setSelectedAttrs] = useState<Record<string, string>>({});
-  const [added, setAdded] = useState(false);
   const [notifyEmail, setNotifyEmail] = useState("");
   const [notifySubmitting, setNotifySubmitting] = useState(false);
   const [notifySaved, setNotifySaved] = useState(false);
@@ -322,29 +320,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
 
   const fallbackLang = product && !hasTranslation(product, ["name", "description"], lang);
 
-  function handleAddToInquiry() {
-    if (!product) return;
-    const top = images[0];
-    addToInquiry({
-      productId: product.id,
-      slug: product.sku,
-      sku: product.sku,
-      name_id: product.name_id,
-      name_en: product.name_en,
-      price_idr: product.price_idr,
-      thumbnail: top ? (top.thumbnail_url ?? top.image_url) : null,
-      attributes: selectedAttrs,
-      quantity,
-    });
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
-    toast.success(t("inquiry.toast_added", { count: quantity }), {
-      action: {
-        label: t("inquiry.view_inquiry"),
-        onClick: () => navigate({ to: (lang === "id" ? "/id/permintaan" : "/en/inquiry") as never }),
-      },
-    });
-  }
+  // Inquiry button removed — cart + wishlist + store finder remain
 
   function handleAddToCart() {
     if (!product) return;
@@ -728,20 +704,6 @@ export function ProductDetailPage({ slug }: { slug: string }) {
                     {lang === "id" ? "Tambah ke Keranjang" : "Add to Cart"}
                   </Button>
                   <WishlistButton productId={product.id} variant="button" className="h-12 w-full text-base" />
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    onClick={handleAddToInquiry}
-                    className="h-12 w-full text-base font-semibold"
-                  >
-                    {added ? (
-                      <span className="inline-flex items-center gap-2">
-                        <Check className="h-4 w-4" /> {t("product.added")}
-                      </span>
-                    ) : (
-                      t("cta.add_to_inquiry")
-                    )}
-                  </Button>
                 </>
               )}
               {isOut && (
@@ -791,9 +753,6 @@ export function ProductDetailPage({ slug }: { slug: string }) {
                   {t("product.find_in_store")}
                 </Link>
               </Button>
-              <p className="pt-1 text-xs leading-relaxed text-muted-foreground">
-                {t("product.inquiry_explainer")}
-              </p>
             </div>
           </div>
         </div>

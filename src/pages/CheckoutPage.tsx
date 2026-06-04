@@ -107,6 +107,15 @@ export function CheckoutPage() {
   const [guestEmail, setGuestEmail] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
 
+  // Logged-in customer (optional)
+  const { user, profile } = useCustomerAuth();
+  useEffect(() => {
+    if (!isCart) return;
+    if (profile?.email && !guestEmail) setGuestEmail(profile.email);
+    if (profile?.full_name && !guestName) setGuestName(profile.full_name);
+    if (profile?.phone && !guestPhone) setGuestPhone(profile.phone);
+  }, [profile, isCart]);
+
   // Biteship live rates
   const [biteshipRates, setBiteshipRates] = useState<BiteshipRate[]>([]);
   const [biteshipLoading, setBiteshipLoading] = useState(false);

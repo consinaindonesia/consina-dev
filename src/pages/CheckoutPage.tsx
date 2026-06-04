@@ -193,6 +193,9 @@ export function CheckoutPage() {
         price_idr: c.price_idr,
         weight_grams: c.weight_grams ?? 500,
         quantity: c.quantity,
+        attributes: c.attributes ?? null,
+        variantId: c.variantId ?? null,
+        sizeVariantId: c.sizeVariantId ?? null,
       }));
     }
     return items
@@ -206,6 +209,9 @@ export function CheckoutPage() {
         price_idr: it.product!.price_idr,
         weight_grams: it.product!.weight_grams ?? 500,
         quantity: it.quantity,
+        attributes: null as Record<string, string> | null,
+        variantId: null as string | null,
+        sizeVariantId: null as string | null,
       }));
   }, [isCart, cart.items, items]);
 

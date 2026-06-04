@@ -4,7 +4,6 @@ import { Menu, X, Search, MapPin, ChevronDown, Heart, User } from "lucide-react"
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { LangSuggestionBanner } from "./LangSuggestionBanner";
-import { InquiryDrawer } from "./InquiryDrawer";
 import { CartDrawer } from "./CartDrawer";
 import { useCustomerAuth } from "@/hooks/use-customer-auth";
 import { useWishlist } from "@/lib/wishlist-store";
@@ -138,7 +137,6 @@ export function Nav() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <InquiryDrawer />
           <CartDrawer />
           <Link
             to="/wishlist"

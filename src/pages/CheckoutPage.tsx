@@ -629,16 +629,57 @@ export function CheckoutPage() {
 
           <div className="rounded-lg border border-border p-4">
             <h2 className="text-sm font-semibold">Customer</h2>
-            <p className="mt-2 text-sm">{inquiry.customer_name}</p>
-            <p className="text-xs text-muted-foreground">
-              {inquiry.customer_email} · {inquiry.customer_phone}
-            </p>
+            {isCart ? (
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <div className="sm:col-span-2">
+                  <Label className="text-xs">Nama lengkap *</Label>
+                  <Input
+                    value={guestName}
+                    onChange={(e) => setGuestName(e.target.value)}
+                    maxLength={120}
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Email *</Label>
+                  <Input
+                    type="email"
+                    value={guestEmail}
+                    onChange={(e) => setGuestEmail(e.target.value)}
+                    maxLength={255}
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">No. telepon *</Label>
+                  <Input
+                    value={guestPhone}
+                    onChange={(e) => setGuestPhone(e.target.value)}
+                    maxLength={32}
+                  />
+                </div>
+              </div>
+            ) : (
+              <>
+                <p className="mt-2 text-sm">{inquiry!.customer_name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {inquiry!.customer_email} · {inquiry!.customer_phone}
+                </p>
+              </>
+            )}
             <div className="mt-3">
               <Label className="text-xs">Billing address (optional)</Label>
               <Input
                 value={customerAddress}
                 onChange={(e) => setCustomerAddress(e.target.value)}
                 maxLength={255}
+              />
+            </div>
+            <div className="mt-3">
+              <Label className="text-xs">Catatan pesanan (opsional)</Label>
+              <Textarea
+                value={orderNotes}
+                onChange={(e) => setOrderNotes(e.target.value)}
+                rows={2}
+                maxLength={500}
               />
             </div>
           </div>

@@ -107,7 +107,6 @@ export function ProductDetailPage({ slug }: { slug: string }) {
   const [activeImage, setActiveImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [selectedAttrs, setSelectedAttrs] = useState<Record<string, string>>({});
-  const [added, setAdded] = useState(false);
   const [notifyEmail, setNotifyEmail] = useState("");
   const [notifySubmitting, setNotifySubmitting] = useState(false);
   const [notifySaved, setNotifySaved] = useState(false);

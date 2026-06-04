@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, notFound, useNavigate } from "@tanstack/react-router";
-import { Loader2, MapPin, Check, Minus, Plus, BellRing } from "lucide-react";
+import { Loader2, MapPin, Minus, Plus, BellRing } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Nav } from "@/components/site/Nav";
@@ -19,7 +19,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/i18n/LangProvider";
 import { formatPrice, localizedField, hasTranslation } from "@/i18n/format";
 import { MissingTranslationNotice } from "@/components/site/MissingTranslationNotice";
-import { addToInquiry } from "@/lib/inquiry-store";
 import { addToCart } from "@/lib/cart-store";
 import { WishlistButton } from "@/components/site/WishlistButton";
 import { FindInStore } from "@/components/site/FindInStore";

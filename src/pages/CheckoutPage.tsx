@@ -373,6 +373,7 @@ export function CheckoutPage() {
         .from("orders")
         .insert({
           inquiry_id: isCart ? null : inquiry!.id,
+          customer_user_id: user?.id ?? null,
           customer_name: isCart ? guestName.trim() : inquiry!.customer_name,
           customer_email: isCart ? guestEmail.trim() : inquiry!.customer_email,
           customer_phone: isCart

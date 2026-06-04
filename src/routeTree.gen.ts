@@ -26,6 +26,7 @@ import { Route as LangIndexRouteImport } from './routes/$lang.index'
 import { Route as EnSplatRouteImport } from './routes/en/$'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
+import { Route as AdminVouchersRouteImport } from './routes/admin/vouchers'
 import { Route as AdminStoresRouteImport } from './routes/admin/stores'
 import { Route as AdminSizeGuidesRouteImport } from './routes/admin/size-guides'
 import { Route as AdminShippingRouteImport } from './routes/admin/shipping'
@@ -158,6 +159,11 @@ const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
 const CSlugRoute = CSlugRouteImport.update({
   id: '/c/$slug',
   path: '/c/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminVouchersRoute = AdminVouchersRouteImport.update({
+  id: '/admin/vouchers',
+  path: '/admin/vouchers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminStoresRoute = AdminStoresRouteImport.update({
@@ -441,6 +447,7 @@ export interface FileRoutesByFullPath {
   '/admin/shipping': typeof AdminShippingRoute
   '/admin/size-guides': typeof AdminSizeGuidesRoute
   '/admin/stores': typeof AdminStoresRouteWithChildren
+  '/admin/vouchers': typeof AdminVouchersRoute
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/en/$': typeof EnSplatRoute
@@ -505,6 +512,7 @@ export interface FileRoutesByTo {
   '/admin/shipping': typeof AdminShippingRoute
   '/admin/size-guides': typeof AdminSizeGuidesRoute
   '/admin/stores': typeof AdminStoresRouteWithChildren
+  '/admin/vouchers': typeof AdminVouchersRoute
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/en/$': typeof EnSplatRoute
@@ -573,6 +581,7 @@ export interface FileRoutesById {
   '/admin/shipping': typeof AdminShippingRoute
   '/admin/size-guides': typeof AdminSizeGuidesRoute
   '/admin/stores': typeof AdminStoresRouteWithChildren
+  '/admin/vouchers': typeof AdminVouchersRoute
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/en/$': typeof EnSplatRoute
@@ -642,6 +651,7 @@ export interface FileRouteTypes {
     | '/admin/shipping'
     | '/admin/size-guides'
     | '/admin/stores'
+    | '/admin/vouchers'
     | '/c/$slug'
     | '/email/unsubscribe'
     | '/en/$'
@@ -706,6 +716,7 @@ export interface FileRouteTypes {
     | '/admin/shipping'
     | '/admin/size-guides'
     | '/admin/stores'
+    | '/admin/vouchers'
     | '/c/$slug'
     | '/email/unsubscribe'
     | '/en/$'
@@ -773,6 +784,7 @@ export interface FileRouteTypes {
     | '/admin/shipping'
     | '/admin/size-guides'
     | '/admin/stores'
+    | '/admin/vouchers'
     | '/c/$slug'
     | '/email/unsubscribe'
     | '/en/$'
@@ -836,6 +848,7 @@ export interface RootRouteChildren {
   AdminShippingRoute: typeof AdminShippingRoute
   AdminSizeGuidesRoute: typeof AdminSizeGuidesRoute
   AdminStoresRoute: typeof AdminStoresRouteWithChildren
+  AdminVouchersRoute: typeof AdminVouchersRoute
   CSlugRoute: typeof CSlugRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   EnSplatRoute: typeof EnSplatRoute
@@ -976,6 +989,13 @@ declare module '@tanstack/react-router' {
       path: '/c/$slug'
       fullPath: '/c/$slug'
       preLoaderRoute: typeof CSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/vouchers': {
+      id: '/admin/vouchers'
+      path: '/admin/vouchers'
+      fullPath: '/admin/vouchers'
+      preLoaderRoute: typeof AdminVouchersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/stores': {
@@ -1460,6 +1480,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminShippingRoute: AdminShippingRoute,
   AdminSizeGuidesRoute: AdminSizeGuidesRoute,
   AdminStoresRoute: AdminStoresRouteWithChildren,
+  AdminVouchersRoute: AdminVouchersRoute,
   CSlugRoute: CSlugRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   EnSplatRoute: EnSplatRoute,

@@ -585,28 +585,55 @@ export function CheckoutPage() {
                         <div>
                           <Label className="text-xs">City</Label>
                           <Input
+                            id="co-city"
                             value={shippingCity}
-                            onChange={(e) => setShippingCity(e.target.value)}
+                            onChange={(e) => {
+                              setShippingCity(e.target.value);
+                              clearError("city");
+                            }}
                             placeholder="Jakarta"
+                            className={errors.city ? errorInputClass : undefined}
+                            aria-invalid={!!errors.city}
                           />
+                          {errors.city && (
+                            <p className="mt-1 text-xs text-destructive">{errors.city}</p>
+                          )}
                         </div>
                         <div>
                           <Label className="text-xs">Postal code</Label>
                           <Input
+                            id="co-postal"
                             value={shippingPostal}
-                            onChange={(e) => setShippingPostal(e.target.value)}
+                            onChange={(e) => {
+                              setShippingPostal(e.target.value);
+                              clearError("postal");
+                            }}
                             placeholder="12345"
+                            className={errors.postal ? errorInputClass : undefined}
+                            aria-invalid={!!errors.postal}
                           />
+                          {errors.postal && (
+                            <p className="mt-1 text-xs text-destructive">{errors.postal}</p>
+                          )}
                         </div>
                       </div>
                       <div>
                         <Label className="text-xs">Street address</Label>
                         <Textarea
+                          id="co-address"
                           value={shippingAddress}
-                          onChange={(e) => setShippingAddress(e.target.value)}
+                          onChange={(e) => {
+                            setShippingAddress(e.target.value);
+                            clearError("address");
+                          }}
                           rows={2}
                           placeholder="Street, building, unit"
+                          className={errors.address ? errorInputClass : undefined}
+                          aria-invalid={!!errors.address}
                         />
+                        {errors.address && (
+                          <p className="mt-1 text-xs text-destructive">{errors.address}</p>
+                        )}
                       </div>
 
                       {(biteshipLoading || biteshipRates.length > 0) && (

@@ -18,6 +18,10 @@ import {
   type ShippingMethod as ShipMethod,
   type ShippingZone,
 } from "@/lib/shipping";
+import { useServerFn } from "@tanstack/react-start";
+import { getBiteshipRates, type BiteshipRate } from "@/lib/biteship.functions";
+import { validateVoucher, redeemVoucher } from "@/lib/voucher.functions";
+import { useCart, clearCart } from "@/lib/cart-store";
 
 type PaymentMethod = "bank_transfer" | "midtrans" | "stripe";
 
@@ -75,6 +79,8 @@ export function CheckoutPage() {
   const navigate = useNavigate();
   const search = useSearch();
   const inquiryId = search.inquiry || "";
+  const isCart = search.cart === "1";
+  const cart = useCart();
 
   const [loading, setLoading] = useState(true);
   const [inquiry, setInquiry] = useState<InquiryRow | null>(null);
@@ -84,6 +90,7 @@ export function CheckoutPage() {
   const [shippingCity, setShippingCity] = useState("");
   const [shippingPostal, setShippingPostal] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
+  const [orderNotes, setOrderNotes] = useState("");
   const isIndonesian = useMemo(detectIsIndonesian, []);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
     isIndonesian ? "midtrans" : "stripe",
@@ -93,6 +100,29 @@ export function CheckoutPage() {
   const [zones, setZones] = useState<ShippingZone[]>([]);
   const [methods, setMethods] = useState<ShipMethod[]>([]);
   const [selectedMethodId, setSelectedMethodId] = useState<string>("");
+
+  // Guest contact (cart mode)
+  const [guestName, setGuestName] = useState("");
+  const [guestEmail, setGuestEmail] = useState("");
+  const [guestPhone, setGuestPhone] = useState("");
+
+  // Biteship live rates
+  const [biteshipRates, setBiteshipRates] = useState<BiteshipRate[]>([]);
+  const [biteshipLoading, setBiteshipLoading] = useState(false);
+  const [biteshipError, setBiteshipError] = useState<string | null>(null);
+  const [selectedBiteshipKey, setSelectedBiteshipKey] = useState<string>("");
+  const fetchBiteship = useServerFn(getBiteshipRates);
+
+  // Voucher
+  const [voucherInput, setVoucherInput] = useState("");
+  const [voucherApplying, setVoucherApplying] = useState(false);
+  const [appliedVoucher, setAppliedVoucher] = useState<{
+    code: string;
+    discount_idr: number;
+  } | null>(null);
+  const [voucherError, setVoucherError] = useState<string | null>(null);
+  const callValidateVoucher = useServerFn(validateVoucher);
+  const callRedeemVoucher = useServerFn(redeemVoucher);
 
   useEffect(() => {
     if (isIndonesian) return;
@@ -108,6 +138,11 @@ export function CheckoutPage() {
   useEffect(() => {
     let cancelled = false;
     async function load() {
+      if (isCart) {
+        // Cart mode — items come from localStorage cart; no inquiry record.
+        setLoading(false);
+        return;
+      }
       if (!inquiryId) {
         setLoading(false);
         return;
@@ -131,7 +166,7 @@ export function CheckoutPage() {
     return () => {
       cancelled = true;
     };
-  }, [inquiryId]);
+  }, [inquiryId, isCart]);
 
   useEffect(() => {
     let cancelled = false;
@@ -146,22 +181,47 @@ export function CheckoutPage() {
     };
   }, []);
 
+  // Unified item shape (works for both inquiry-loaded and cart items).
+  const cartLineItems = useMemo(() => {
+    if (isCart) {
+      return cart.items.map((c) => ({
+        id: c.key,
+        productId: c.productId,
+        sku: c.sku,
+        name_id: c.name_id,
+        name_en: c.name_en,
+        price_idr: c.price_idr,
+        weight_grams: c.weight_grams ?? 500,
+        quantity: c.quantity,
+      }));
+    }
+    return items
+      .filter((it) => it.product)
+      .map((it) => ({
+        id: it.id,
+        productId: it.product!.id,
+        sku: it.product!.sku,
+        name_id: it.product!.name_id,
+        name_en: it.product!.name_en,
+        price_idr: it.product!.price_idr,
+        weight_grams: it.product!.weight_grams ?? 500,
+        quantity: it.quantity,
+      }));
+  }, [isCart, cart.items, items]);
+
   const subtotal = useMemo(
     () =>
-      items.reduce(
-        (s, it) => s + (it.product?.price_idr ?? 0) * it.quantity,
-        0,
-      ),
-    [items],
+      cartLineItems.reduce((s, it) => s + it.price_idr * it.quantity, 0),
+    [cartLineItems],
   );
 
   const totalWeightGrams = useMemo(
     () =>
-      items.reduce(
-        (s, it) => s + (it.product?.weight_grams ?? 500) * it.quantity,
+      cartLineItems.reduce(
+        (s, it) => s + (it.weight_grams || 500) * it.quantity,
         0,
       ),
-    [items],
+    [cartLineItems],
   );
 
   const matchedZone = useMemo(
@@ -180,11 +240,93 @@ export function CheckoutPage() {
   );
 
   const shipping =
-    shippingMethod === "delivery" ? selectedQuote?.cost_idr ?? 0 : 0;
-  const total = subtotal + shipping;
+    shippingMethod === "delivery"
+      ? selectedBiteshipKey
+        ? biteshipRates.find(
+            (r) => `${r.courier_code}:${r.courier_service_code}` === selectedBiteshipKey,
+          )?.price ?? 0
+        : selectedQuote?.cost_idr ?? 0
+      : 0;
+  const discount = appliedVoucher?.discount_idr ?? 0;
+  const total = Math.max(0, subtotal + shipping - discount);
+
+  // Auto-fetch Biteship rates when city/postal entered.
+  useEffect(() => {
+    if (shippingMethod !== "delivery") return;
+    if (cartLineItems.length === 0) return;
+    if (!shippingPostal.trim() && !shippingCity.trim()) return;
+    let cancelled = false;
+    setBiteshipLoading(true);
+    setBiteshipError(null);
+    const itemsPayload = cartLineItems.map((it) => ({
+      name: lang === "id" ? it.name_id : it.name_en,
+      quantity: it.quantity,
+      weight: it.weight_grams || 500,
+      value: it.price_idr,
+    }));
+    fetchBiteship({
+      data: {
+        destination_postal_code: shippingPostal.trim() || undefined,
+        destination_city: shippingCity.trim() || undefined,
+        items: itemsPayload,
+      },
+    })
+      .then((r) => {
+        if (cancelled) return;
+        setBiteshipRates(r.rates);
+        if (r.error) setBiteshipError(r.error);
+        if (r.rates[0]) {
+          setSelectedBiteshipKey(
+            `${r.rates[0].courier_code}:${r.rates[0].courier_service_code}`,
+          );
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) setBiteshipError((err as Error).message);
+      })
+      .finally(() => {
+        if (!cancelled) setBiteshipLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shippingMethod, shippingPostal, shippingCity, subtotal, totalWeightGrams]);
+
+  async function applyVoucherCode() {
+    if (!voucherInput.trim()) return;
+    setVoucherApplying(true);
+    setVoucherError(null);
+    try {
+      const res = await callValidateVoucher({
+        data: { code: voucherInput.trim(), subtotal_idr: subtotal },
+      });
+      if (!res.ok) {
+        setVoucherError(res.error ?? "Invalid voucher");
+        setAppliedVoucher(null);
+      } else {
+        setAppliedVoucher({ code: res.code!, discount_idr: res.discount_idr! });
+        toast.success(`Voucher ${res.code} diterapkan`);
+      }
+    } catch (err) {
+      setVoucherError((err as Error).message);
+    } finally {
+      setVoucherApplying(false);
+    }
+  }
 
   async function handleConfirm() {
-    if (!inquiry) return;
+    if (!isCart && !inquiry) return;
+    if (cartLineItems.length === 0) {
+      toast.error("Keranjang kosong");
+      return;
+    }
+    if (isCart) {
+      if (!guestName.trim() || !guestEmail.trim() || !guestPhone.trim()) {
+        toast.error("Mohon isi nama, email, dan nomor telepon");
+        return;
+      }
+    }
     if (shippingMethod === "delivery") {
       if (shippingAddress.trim().length < 10) {
         toast.error("Please enter a delivery address");
@@ -194,20 +336,32 @@ export function CheckoutPage() {
         toast.error("Please enter a city");
         return;
       }
-      if (!selectedQuote) {
+      if (!selectedBiteshipKey && !selectedQuote) {
         toast.error("Please choose a shipping method");
         return;
       }
     }
     setSubmitting(true);
     try {
+      const selectedBiteship = biteshipRates.find(
+        (r) => `${r.courier_code}:${r.courier_service_code}` === selectedBiteshipKey,
+      );
+      const shippingMethodName =
+        shippingMethod === "delivery"
+          ? selectedBiteship
+            ? `${selectedBiteship.courier_name} — ${selectedBiteship.courier_service_name}`
+            : selectedQuote?.method.name ?? null
+          : null;
+
       const { data: order, error: orderErr } = await supabase
         .from("orders")
         .insert({
-          inquiry_id: inquiry.id,
-          customer_name: inquiry.customer_name,
-          customer_email: inquiry.customer_email,
-          customer_phone: inquiry.customer_phone ?? "",
+          inquiry_id: isCart ? null : inquiry!.id,
+          customer_name: isCart ? guestName.trim() : inquiry!.customer_name,
+          customer_email: isCart ? guestEmail.trim() : inquiry!.customer_email,
+          customer_phone: isCart
+            ? guestPhone.trim()
+            : (inquiry!.customer_phone ?? ""),
           customer_address: customerAddress || null,
           shipping_method: shippingMethod,
           shipping_address: shippingMethod === "delivery" ? shippingAddress : null,
@@ -215,38 +369,49 @@ export function CheckoutPage() {
           shipping_postal_code:
             shippingMethod === "delivery" ? shippingPostal || null : null,
           shipping_method_id:
-            shippingMethod === "delivery" ? selectedQuote?.method.id ?? null : null,
+            shippingMethod === "delivery" && !selectedBiteship
+              ? selectedQuote?.method.id ?? null
+              : null,
           shipping_method_name:
-            shippingMethod === "delivery" ? selectedQuote?.method.name ?? null : null,
+            shippingMethod === "delivery" ? shippingMethodName : null,
           shipping_zone_id:
-            shippingMethod === "delivery" ? selectedQuote?.zone.id ?? null : null,
+            shippingMethod === "delivery" && !selectedBiteship
+              ? selectedQuote?.zone.id ?? null
+              : null,
           subtotal_idr: subtotal,
           shipping_idr: shipping,
+          voucher_code: appliedVoucher?.code ?? null,
+          voucher_discount_idr: discount,
           total_idr: total,
           payment_method: paymentMethod,
           payment_provider: paymentMethod,
           payment_status: "pending",
           status: "new",
+          notes: orderNotes || null,
         })
         .select("id")
         .single();
       if (orderErr || !order) throw orderErr ?? new Error("Order failed");
 
-      const rows = items
-        .filter((it) => it.product)
-        .map((it) => ({
-          order_id: order.id,
-          product_id: it.product!.id,
-          product_name: lang === "id" ? it.product!.name_id : it.product!.name_en,
-          sku: it.product!.sku,
-          quantity: it.quantity,
-          unit_price_idr: it.product!.price_idr,
-          line_total_idr: it.product!.price_idr * it.quantity,
-        }));
+      const rows = cartLineItems.map((it) => ({
+        order_id: order.id,
+        product_id: it.productId,
+        product_name: lang === "id" ? it.name_id : it.name_en,
+        sku: it.sku,
+        quantity: it.quantity,
+        unit_price_idr: it.price_idr,
+        line_total_idr: it.price_idr * it.quantity,
+      }));
       if (rows.length) {
         const { error: itErr } = await supabase.from("order_items").insert(rows);
         if (itErr) throw itErr;
       }
+
+      if (appliedVoucher) {
+        // Best-effort; ignore failure
+        void callRedeemVoucher({ data: { code: appliedVoucher.code } });
+      }
+      if (isCart) clearCart();
 
       const path = lang === "id" ? `/id/order/${order.id}` : `/en/order/${order.id}`;
       navigate({ to: path as never });
@@ -266,12 +431,23 @@ export function CheckoutPage() {
     );
   }
 
-  if (!inquiry) {
+  if (!isCart && !inquiry) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-16 text-center">
         <h1 className="text-2xl font-bold">Inquiry not found</h1>
         <p className="mt-2 text-muted-foreground">
           The inquiry reference is invalid or has expired.
+        </p>
+      </div>
+    );
+  }
+
+  if (isCart && cartLineItems.length === 0) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-16 text-center">
+        <h1 className="text-2xl font-bold">Keranjang kosong</h1>
+        <p className="mt-2 text-muted-foreground">
+          Tambahkan produk ke keranjang sebelum checkout.
         </p>
       </div>
     );
@@ -293,22 +469,18 @@ export function CheckoutPage() {
               Items
             </div>
             <ul className="divide-y divide-border">
-              {items.map((it) => {
-                const name = it.product
-                  ? lang === "id"
-                    ? it.product.name_id
-                    : it.product.name_en
-                  : "—";
+              {cartLineItems.map((it) => {
+                const name = lang === "id" ? it.name_id : it.name_en;
                 return (
                   <li key={it.id} className="flex items-center justify-between p-4">
                     <div>
                       <p className="text-sm font-medium">{name}</p>
                       <p className="text-xs text-muted-foreground">
-                        {it.product?.sku} · ×{it.quantity}
+                        {it.sku} · ×{it.quantity}
                       </p>
                     </div>
                     <p className="text-sm font-semibold">
-                      {formatPrice((it.product?.price_idr ?? 0) * it.quantity, lang)}
+                      {formatPrice(it.price_idr * it.quantity, lang)}
                     </p>
                   </li>
                 );
@@ -370,7 +542,54 @@ export function CheckoutPage() {
                         />
                       </div>
 
-                      {matchedZone && (
+                      {(biteshipLoading || biteshipRates.length > 0 || biteshipError) && (
+                        <div className="rounded-md border border-border p-3">
+                          <p className="text-xs font-medium">Pilih kurir (live ongkir)</p>
+                          {biteshipLoading && (
+                            <p className="mt-2 text-xs text-muted-foreground">
+                              <Loader2 className="mr-1 inline h-3 w-3 animate-spin" />
+                              Menghitung ongkir…
+                            </p>
+                          )}
+                          {biteshipError && !biteshipLoading && (
+                            <p className="mt-2 text-xs text-destructive">{biteshipError}</p>
+                          )}
+                          {biteshipRates.length > 0 && (
+                            <RadioGroup
+                              value={selectedBiteshipKey}
+                              onValueChange={setSelectedBiteshipKey}
+                              className="mt-2 space-y-2"
+                            >
+                              {biteshipRates.map((r) => {
+                                const k = `${r.courier_code}:${r.courier_service_code}`;
+                                return (
+                                  <label
+                                    key={k}
+                                    className="flex items-center justify-between gap-3 rounded-md border border-border p-2 cursor-pointer"
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <RadioGroupItem value={k} id={k} />
+                                      <div>
+                                        <div className="text-sm font-medium">
+                                          {r.courier_name} — {r.courier_service_name}
+                                        </div>
+                                        <div className="text-xs text-muted-foreground">
+                                          {r.duration || r.shipment_duration_range}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div className="text-sm font-semibold">
+                                      {formatPrice(r.price, lang)}
+                                    </div>
+                                  </label>
+                                );
+                              })}
+                            </RadioGroup>
+                          )}
+                        </div>
+                      )}
+
+                      {biteshipRates.length === 0 && matchedZone && (
                         <div className="rounded-md border border-border p-3">
                           <p className="text-xs text-muted-foreground">
                             Shipping to <strong>{matchedZone.region_name}</strong>{" "}
@@ -457,16 +676,57 @@ export function CheckoutPage() {
 
           <div className="rounded-lg border border-border p-4">
             <h2 className="text-sm font-semibold">Customer</h2>
-            <p className="mt-2 text-sm">{inquiry.customer_name}</p>
-            <p className="text-xs text-muted-foreground">
-              {inquiry.customer_email} · {inquiry.customer_phone}
-            </p>
+            {isCart ? (
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <div className="sm:col-span-2">
+                  <Label className="text-xs">Nama lengkap *</Label>
+                  <Input
+                    value={guestName}
+                    onChange={(e) => setGuestName(e.target.value)}
+                    maxLength={120}
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Email *</Label>
+                  <Input
+                    type="email"
+                    value={guestEmail}
+                    onChange={(e) => setGuestEmail(e.target.value)}
+                    maxLength={255}
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">No. telepon *</Label>
+                  <Input
+                    value={guestPhone}
+                    onChange={(e) => setGuestPhone(e.target.value)}
+                    maxLength={32}
+                  />
+                </div>
+              </div>
+            ) : (
+              <>
+                <p className="mt-2 text-sm">{inquiry!.customer_name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {inquiry!.customer_email} · {inquiry!.customer_phone}
+                </p>
+              </>
+            )}
             <div className="mt-3">
               <Label className="text-xs">Billing address (optional)</Label>
               <Input
                 value={customerAddress}
                 onChange={(e) => setCustomerAddress(e.target.value)}
                 maxLength={255}
+              />
+            </div>
+            <div className="mt-3">
+              <Label className="text-xs">Catatan pesanan (opsional)</Label>
+              <Textarea
+                value={orderNotes}
+                onChange={(e) => setOrderNotes(e.target.value)}
+                rows={2}
+                maxLength={500}
               />
             </div>
           </div>
@@ -484,6 +744,12 @@ export function CheckoutPage() {
                 <dt className="text-muted-foreground">Shipping</dt>
                 <dd>{shipping === 0 ? "Free" : formatPrice(shipping, lang)}</dd>
               </div>
+              {appliedVoucher && (
+                <div className="flex justify-between text-emerald-600">
+                  <dt>Diskon ({appliedVoucher.code})</dt>
+                  <dd>− {formatPrice(discount, lang)}</dd>
+                </div>
+              )}
               <div className="mt-2 flex justify-between border-t border-border pt-3 text-base font-bold">
                 <dt>Total</dt>
                 <dd className="text-right">
@@ -496,11 +762,47 @@ export function CheckoutPage() {
                 </dd>
               </div>
             </dl>
+            <div className="mt-4 border-t border-border pt-4">
+              <Label className="text-xs">Kode voucher</Label>
+              <div className="mt-1 flex gap-2">
+                <Input
+                  value={voucherInput}
+                  onChange={(e) => setVoucherInput(e.target.value.toUpperCase())}
+                  maxLength={64}
+                  disabled={!!appliedVoucher}
+                />
+                {appliedVoucher ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setAppliedVoucher(null);
+                      setVoucherInput("");
+                      setVoucherError(null);
+                    }}
+                  >
+                    Hapus
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={applyVoucherCode}
+                    disabled={voucherApplying || !voucherInput.trim()}
+                  >
+                    {voucherApplying ? <Loader2 className="h-4 w-4 animate-spin" /> : "Terapkan"}
+                  </Button>
+                )}
+              </div>
+              {voucherError && (
+                <p className="mt-1 text-xs text-destructive">{voucherError}</p>
+              )}
+            </div>
             <Button
               size="lg"
               className="mt-5 w-full"
               onClick={handleConfirm}
-              disabled={submitting || items.length === 0}
+              disabled={submitting || cartLineItems.length === 0}
             >
               {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Confirm order

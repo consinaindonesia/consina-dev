@@ -20,6 +20,7 @@ import { useLang } from "@/i18n/LangProvider";
 import { formatPrice, localizedField, hasTranslation } from "@/i18n/format";
 import { MissingTranslationNotice } from "@/components/site/MissingTranslationNotice";
 import { addToInquiry } from "@/lib/inquiry-store";
+import { addToCart } from "@/lib/cart-store";
 import { FindInStore } from "@/components/site/FindInStore";
 import { PriceDisplay } from "@/components/site/PriceDisplay";
 import { SizeGuideDialog, type SizeGuide } from "@/components/site/SizeGuideDialog";
@@ -342,6 +343,32 @@ export function ProductDetailPage({ slug }: { slug: string }) {
         onClick: () => navigate({ to: (lang === "id" ? "/id/permintaan" : "/en/inquiry") as never }),
       },
     });
+  }
+
+  function handleAddToCart() {
+    if (!product) return;
+    const top = images[0];
+    addToCart({
+      productId: product.id,
+      slug: product.sku,
+      sku: product.sku,
+      name_id: product.name_id,
+      name_en: product.name_en,
+      price_idr: product.price_idr,
+      weight_grams: product.weight_grams,
+      thumbnail: top ? (top.thumbnail_url ?? top.image_url) : null,
+      attributes: selectedAttrs,
+      quantity,
+    });
+    toast.success(
+      lang === "id" ? `Ditambahkan ke keranjang (${quantity})` : `Added to cart (${quantity})`,
+      {
+        action: {
+          label: lang === "id" ? "Lihat keranjang" : "View cart",
+          onClick: () => navigate({ to: "/cart" as never }),
+        },
+      },
+    );
   }
 
   if (missing) throw notFound();
@@ -689,19 +716,29 @@ export function ProductDetailPage({ slug }: { slug: string }) {
             {/* Buttons */}
             <div className="mt-6 space-y-2">
               {!isOut && (
-                <Button
-                size="lg"
-                onClick={handleAddToInquiry}
-                className="h-12 w-full bg-primary text-base font-semibold text-primary-foreground hover:bg-primary/90"
-                >
-                {added ? (
-                  <span className="inline-flex items-center gap-2">
-                    <Check className="h-4 w-4" /> {t("product.added")}
-                  </span>
-                ) : (
-                  t("cta.add_to_inquiry")
-                )}
-                </Button>
+                <>
+                  <Button
+                    size="lg"
+                    onClick={handleAddToCart}
+                    className="h-12 w-full bg-primary text-base font-semibold text-primary-foreground hover:bg-primary/90"
+                  >
+                    {lang === "id" ? "Tambah ke Keranjang" : "Add to Cart"}
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    onClick={handleAddToInquiry}
+                    className="h-12 w-full text-base font-semibold"
+                  >
+                    {added ? (
+                      <span className="inline-flex items-center gap-2">
+                        <Check className="h-4 w-4" /> {t("product.added")}
+                      </span>
+                    ) : (
+                      t("cta.add_to_inquiry")
+                    )}
+                  </Button>
+                </>
               )}
               {isOut && (
                 <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">

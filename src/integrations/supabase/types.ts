@@ -777,6 +777,8 @@ export type Database = {
           tracking_carrier: string | null
           tracking_number: string | null
           updated_at: string
+          voucher_code: string | null
+          voucher_discount_idr: number
         }
         Insert: {
           created_at?: string
@@ -810,6 +812,8 @@ export type Database = {
           tracking_carrier?: string | null
           tracking_number?: string | null
           updated_at?: string
+          voucher_code?: string | null
+          voucher_discount_idr?: number
         }
         Update: {
           created_at?: string
@@ -843,6 +847,8 @@ export type Database = {
           tracking_carrier?: string | null
           tracking_number?: string | null
           updated_at?: string
+          voucher_code?: string | null
+          voucher_discount_idr?: number
         }
         Relationships: []
       }
@@ -1462,6 +1468,51 @@ export type Database = {
           id?: string
           metadata?: Json | null
           reason?: string
+        }
+        Relationships: []
+      }
+      voucher_codes: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          discount_type: string
+          discount_value: number
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          min_spend_idr: number
+          updated_at: string
+          usage_limit: number | null
+          used_count: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          discount_type: string
+          discount_value: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          min_spend_idr?: number
+          updated_at?: string
+          usage_limit?: number | null
+          used_count?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          min_spend_idr?: number
+          updated_at?: string
+          usage_limit?: number | null
+          used_count?: number
         }
         Relationships: []
       }

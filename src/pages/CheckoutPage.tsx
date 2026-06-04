@@ -931,6 +931,11 @@ export function CheckoutPage() {
               {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Confirm order
             </Button>
+            {Object.keys(errors).length > 0 && (
+              <p className="mt-2 text-xs text-destructive">
+                Lengkapi field yang wajib diisi
+              </p>
+            )}
             <p className="mt-3 text-xs text-muted-foreground">
               You'll see bank transfer instructions on the next page.
             </p>

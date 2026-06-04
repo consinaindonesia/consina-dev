@@ -228,6 +228,12 @@ export function Nav() {
                 {l.label}
               </Link>
             ))}
+            <Link to="/wishlist" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-muted">
+              Wishlist{wishCount > 0 ? ` (${wishCount})` : ""}
+            </Link>
+            <Link to={user ? "/akun" : "/auth"} onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-muted">
+              {user ? "Akun Saya" : "Masuk / Daftar"}
+            </Link>
             <div className="mt-2 px-3">
               <LanguageSwitcher />
             </div>

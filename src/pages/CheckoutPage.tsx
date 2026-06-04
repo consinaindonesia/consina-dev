@@ -180,22 +180,47 @@ export function CheckoutPage() {
     };
   }, []);
 
+  // Unified item shape (works for both inquiry-loaded and cart items).
+  const cartLineItems = useMemo(() => {
+    if (isCart) {
+      return cart.items.map((c) => ({
+        id: c.key,
+        productId: c.productId,
+        sku: c.sku,
+        name_id: c.name_id,
+        name_en: c.name_en,
+        price_idr: c.price_idr,
+        weight_grams: c.weight_grams ?? 500,
+        quantity: c.quantity,
+      }));
+    }
+    return items
+      .filter((it) => it.product)
+      .map((it) => ({
+        id: it.id,
+        productId: it.product!.id,
+        sku: it.product!.sku,
+        name_id: it.product!.name_id,
+        name_en: it.product!.name_en,
+        price_idr: it.product!.price_idr,
+        weight_grams: it.product!.weight_grams ?? 500,
+        quantity: it.quantity,
+      }));
+  }, [isCart, cart.items, items]);
+
   const subtotal = useMemo(
     () =>
-      items.reduce(
-        (s, it) => s + (it.product?.price_idr ?? 0) * it.quantity,
-        0,
-      ),
-    [items],
+      cartLineItems.reduce((s, it) => s + it.price_idr * it.quantity, 0),
+    [cartLineItems],
   );
 
   const totalWeightGrams = useMemo(
     () =>
-      items.reduce(
-        (s, it) => s + (it.product?.weight_grams ?? 500) * it.quantity,
+      cartLineItems.reduce(
+        (s, it) => s + (it.weight_grams || 500) * it.quantity,
         0,
       ),
-    [items],
+    [cartLineItems],
   );
 
   const matchedZone = useMemo(
@@ -214,8 +239,80 @@ export function CheckoutPage() {
   );
 
   const shipping =
-    shippingMethod === "delivery" ? selectedQuote?.cost_idr ?? 0 : 0;
-  const total = subtotal + shipping;
+    shippingMethod === "delivery"
+      ? selectedBiteshipKey
+        ? biteshipRates.find(
+            (r) => `${r.courier_code}:${r.courier_service_code}` === selectedBiteshipKey,
+          )?.price ?? 0
+        : selectedQuote?.cost_idr ?? 0
+      : 0;
+  const discount = appliedVoucher?.discount_idr ?? 0;
+  const total = Math.max(0, subtotal + shipping - discount);
+
+  // Auto-fetch Biteship rates when city/postal entered.
+  useEffect(() => {
+    if (shippingMethod !== "delivery") return;
+    if (cartLineItems.length === 0) return;
+    if (!shippingPostal.trim() && !shippingCity.trim()) return;
+    let cancelled = false;
+    setBiteshipLoading(true);
+    setBiteshipError(null);
+    const itemsPayload = cartLineItems.map((it) => ({
+      name: lang === "id" ? it.name_id : it.name_en,
+      quantity: it.quantity,
+      weight: it.weight_grams || 500,
+      value: it.price_idr,
+    }));
+    fetchBiteship({
+      data: {
+        destination_postal_code: shippingPostal.trim() || undefined,
+        destination_city: shippingCity.trim() || undefined,
+        items: itemsPayload,
+      },
+    })
+      .then((r) => {
+        if (cancelled) return;
+        setBiteshipRates(r.rates);
+        if (r.error) setBiteshipError(r.error);
+        if (r.rates[0]) {
+          setSelectedBiteshipKey(
+            `${r.rates[0].courier_code}:${r.rates[0].courier_service_code}`,
+          );
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) setBiteshipError((err as Error).message);
+      })
+      .finally(() => {
+        if (!cancelled) setBiteshipLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shippingMethod, shippingPostal, shippingCity, subtotal, totalWeightGrams]);
+
+  async function applyVoucherCode() {
+    if (!voucherInput.trim()) return;
+    setVoucherApplying(true);
+    setVoucherError(null);
+    try {
+      const res = await callValidateVoucher({
+        data: { code: voucherInput.trim(), subtotal_idr: subtotal },
+      });
+      if (!res.ok) {
+        setVoucherError(res.error ?? "Invalid voucher");
+        setAppliedVoucher(null);
+      } else {
+        setAppliedVoucher({ code: res.code!, discount_idr: res.discount_idr! });
+        toast.success(`Voucher ${res.code} diterapkan`);
+      }
+    } catch (err) {
+      setVoucherError((err as Error).message);
+    } finally {
+      setVoucherApplying(false);
+    }
+  }
 
   async function handleConfirm() {
     if (!inquiry) return;

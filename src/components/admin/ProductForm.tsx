@@ -395,6 +395,27 @@ export function ProductForm(props: ProductFormProps) {
     };
   }, [mode, productId, navigate]);
 
+  // Load existing additional (non-primary) categories when editing.
+  useEffect(() => {
+    if (mode !== "edit") return;
+    let cancelled = false;
+    void supabase
+      .from("product_categories")
+      .select("category_id, is_primary")
+      .eq("product_id", productId)
+      .then(({ data }) => {
+        if (cancelled) return;
+        const extras = ((data ?? []) as Array<{ category_id: string; is_primary: boolean }>)
+          .filter((r) => !r.is_primary)
+          .map((r) => r.category_id);
+        setExtraCategoryIds(extras);
+        setInitialExtraCategoryIds(extras);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [mode, productId]);
+
   // Debounced SKU uniqueness check
   const skuTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {

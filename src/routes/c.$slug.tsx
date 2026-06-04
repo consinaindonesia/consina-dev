@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useLang } from "@/i18n/LangProvider";
 import { PriceDisplay } from "@/components/site/PriceDisplay";
 import { addToCart } from "@/lib/cart-store";
+import { WishlistButton } from "@/components/site/WishlistButton";
 
 export const Route = createFileRoute("/c/$slug")({
   component: CategoryPage,
@@ -371,6 +372,7 @@ function CategoryPage() {
                           ) : (
                             <div className="h-full w-full bg-muted" />
                           )}
+                          <WishlistButton productId={p.id} className="absolute left-3 top-3" />
                           {!requiresChoice && (
                             <button
                               type="button"

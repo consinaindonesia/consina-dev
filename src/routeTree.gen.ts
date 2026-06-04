@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WishlistRouteImport } from './routes/wishlist'
 import { Route as TentsRouteImport } from './routes/tents'
 import { Route as StoresRouteImport } from './routes/stores'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
@@ -16,16 +17,22 @@ import { Route as FootwearRouteImport } from './routes/footwear'
 import { Route as CatalogRouteImport } from './routes/catalog'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as CarriersRouteImport } from './routes/carriers'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ApparelRouteImport } from './routes/apparel'
+import { Route as AkunRouteImport } from './routes/akun'
 import { Route as AccessoriesRouteImport } from './routes/accessories'
 import { Route as LangRouteImport } from './routes/$lang'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EnIndexRouteImport } from './routes/en/index'
+import { Route as AkunIndexRouteImport } from './routes/akun.index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as LangIndexRouteImport } from './routes/$lang.index'
 import { Route as EnSplatRouteImport } from './routes/en/$'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
+import { Route as AkunProfileRouteImport } from './routes/akun.profile'
+import { Route as AkunOrdersRouteImport } from './routes/akun.orders'
+import { Route as AkunAddressesRouteImport } from './routes/akun.addresses'
 import { Route as AdminVouchersRouteImport } from './routes/admin/vouchers'
 import { Route as AdminStoresRouteImport } from './routes/admin/stores'
 import { Route as AdminSizeGuidesRouteImport } from './routes/admin/size-guides'
@@ -76,6 +83,11 @@ import { Route as AdminProductsIdEditRouteImport } from './routes/admin/products
 import { Route as AdminCustomersEmailExportRouteImport } from './routes/admin/customers.$email.export'
 import { Route as AdminCustomersEmailDeleteRouteImport } from './routes/admin/customers.$email.delete'
 
+const WishlistRoute = WishlistRouteImport.update({
+  id: '/wishlist',
+  path: '/wishlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TentsRoute = TentsRouteImport.update({
   id: '/tents',
   path: '/tents',
@@ -111,9 +123,19 @@ const CarriersRoute = CarriersRouteImport.update({
   path: '/carriers',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApparelRoute = ApparelRouteImport.update({
   id: '/apparel',
   path: '/apparel',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AkunRoute = AkunRouteImport.update({
+  id: '/akun',
+  path: '/akun',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AccessoriesRoute = AccessoriesRouteImport.update({
@@ -135,6 +157,11 @@ const EnIndexRoute = EnIndexRouteImport.update({
   id: '/en/',
   path: '/en/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AkunIndexRoute = AkunIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AkunRoute,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/admin/',
@@ -160,6 +187,21 @@ const CSlugRoute = CSlugRouteImport.update({
   id: '/c/$slug',
   path: '/c/$slug',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AkunProfileRoute = AkunProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AkunRoute,
+} as any)
+const AkunOrdersRoute = AkunOrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
+  getParentRoute: () => AkunRoute,
+} as any)
+const AkunAddressesRoute = AkunAddressesRouteImport.update({
+  id: '/addresses',
+  path: '/addresses',
+  getParentRoute: () => AkunRoute,
 } as any)
 const AdminVouchersRoute = AdminVouchersRouteImport.update({
   id: '/admin/vouchers',
@@ -418,7 +460,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$lang': typeof LangRouteWithChildren
   '/accessories': typeof AccessoriesRoute
+  '/akun': typeof AkunRouteWithChildren
   '/apparel': typeof ApparelRoute
+  '/auth': typeof AuthRoute
   '/carriers': typeof CarriersRoute
   '/cart': typeof CartRoute
   '/catalog': typeof CatalogRoute
@@ -426,6 +470,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
+  '/wishlist': typeof WishlistRoute
   '/$lang/checkout': typeof LangCheckoutRoute
   '/$lang/inquiry': typeof LangInquiryRouteWithChildren
   '/$lang/permintaan': typeof LangPermintaanRouteWithChildren
@@ -448,11 +493,15 @@ export interface FileRoutesByFullPath {
   '/admin/size-guides': typeof AdminSizeGuidesRoute
   '/admin/stores': typeof AdminStoresRouteWithChildren
   '/admin/vouchers': typeof AdminVouchersRoute
+  '/akun/addresses': typeof AkunAddressesRoute
+  '/akun/orders': typeof AkunOrdersRoute
+  '/akun/profile': typeof AkunProfileRoute
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/en/$': typeof EnSplatRoute
   '/$lang/': typeof LangIndexRoute
   '/admin/': typeof AdminIndexRoute
+  '/akun/': typeof AkunIndexRoute
   '/en/': typeof EnIndexRoute
   '/$lang/inquiry/sent': typeof LangInquirySentRoute
   '/$lang/order/$id': typeof LangOrderIdRoute
@@ -486,6 +535,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/accessories': typeof AccessoriesRoute
   '/apparel': typeof ApparelRoute
+  '/auth': typeof AuthRoute
   '/carriers': typeof CarriersRoute
   '/cart': typeof CartRoute
   '/catalog': typeof CatalogRoute
@@ -493,6 +543,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
+  '/wishlist': typeof WishlistRoute
   '/$lang/checkout': typeof LangCheckoutRoute
   '/$lang/privacy': typeof LangPrivacyRoute
   '/$lang/stores': typeof LangStoresRoute
@@ -513,11 +564,15 @@ export interface FileRoutesByTo {
   '/admin/size-guides': typeof AdminSizeGuidesRoute
   '/admin/stores': typeof AdminStoresRouteWithChildren
   '/admin/vouchers': typeof AdminVouchersRoute
+  '/akun/addresses': typeof AkunAddressesRoute
+  '/akun/orders': typeof AkunOrdersRoute
+  '/akun/profile': typeof AkunProfileRoute
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/en/$': typeof EnSplatRoute
   '/$lang': typeof LangIndexRoute
   '/admin': typeof AdminIndexRoute
+  '/akun': typeof AkunIndexRoute
   '/en': typeof EnIndexRoute
   '/$lang/inquiry/sent': typeof LangInquirySentRoute
   '/$lang/order/$id': typeof LangOrderIdRoute
@@ -552,7 +607,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/$lang': typeof LangRouteWithChildren
   '/accessories': typeof AccessoriesRoute
+  '/akun': typeof AkunRouteWithChildren
   '/apparel': typeof ApparelRoute
+  '/auth': typeof AuthRoute
   '/carriers': typeof CarriersRoute
   '/cart': typeof CartRoute
   '/catalog': typeof CatalogRoute
@@ -560,6 +617,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
+  '/wishlist': typeof WishlistRoute
   '/$lang/checkout': typeof LangCheckoutRoute
   '/$lang/inquiry': typeof LangInquiryRouteWithChildren
   '/$lang/permintaan': typeof LangPermintaanRouteWithChildren
@@ -582,11 +640,15 @@ export interface FileRoutesById {
   '/admin/size-guides': typeof AdminSizeGuidesRoute
   '/admin/stores': typeof AdminStoresRouteWithChildren
   '/admin/vouchers': typeof AdminVouchersRoute
+  '/akun/addresses': typeof AkunAddressesRoute
+  '/akun/orders': typeof AkunOrdersRoute
+  '/akun/profile': typeof AkunProfileRoute
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/en/$': typeof EnSplatRoute
   '/$lang/': typeof LangIndexRoute
   '/admin/': typeof AdminIndexRoute
+  '/akun/': typeof AkunIndexRoute
   '/en/': typeof EnIndexRoute
   '/$lang/inquiry/sent': typeof LangInquirySentRoute
   '/$lang/order/$id': typeof LangOrderIdRoute
@@ -622,7 +684,9 @@ export interface FileRouteTypes {
     | '/'
     | '/$lang'
     | '/accessories'
+    | '/akun'
     | '/apparel'
+    | '/auth'
     | '/carriers'
     | '/cart'
     | '/catalog'
@@ -630,6 +694,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/stores'
     | '/tents'
+    | '/wishlist'
     | '/$lang/checkout'
     | '/$lang/inquiry'
     | '/$lang/permintaan'
@@ -652,11 +717,15 @@ export interface FileRouteTypes {
     | '/admin/size-guides'
     | '/admin/stores'
     | '/admin/vouchers'
+    | '/akun/addresses'
+    | '/akun/orders'
+    | '/akun/profile'
     | '/c/$slug'
     | '/email/unsubscribe'
     | '/en/$'
     | '/$lang/'
     | '/admin/'
+    | '/akun/'
     | '/en/'
     | '/$lang/inquiry/sent'
     | '/$lang/order/$id'
@@ -690,6 +759,7 @@ export interface FileRouteTypes {
     | '/'
     | '/accessories'
     | '/apparel'
+    | '/auth'
     | '/carriers'
     | '/cart'
     | '/catalog'
@@ -697,6 +767,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/stores'
     | '/tents'
+    | '/wishlist'
     | '/$lang/checkout'
     | '/$lang/privacy'
     | '/$lang/stores'
@@ -717,11 +788,15 @@ export interface FileRouteTypes {
     | '/admin/size-guides'
     | '/admin/stores'
     | '/admin/vouchers'
+    | '/akun/addresses'
+    | '/akun/orders'
+    | '/akun/profile'
     | '/c/$slug'
     | '/email/unsubscribe'
     | '/en/$'
     | '/$lang'
     | '/admin'
+    | '/akun'
     | '/en'
     | '/$lang/inquiry/sent'
     | '/$lang/order/$id'
@@ -755,7 +830,9 @@ export interface FileRouteTypes {
     | '/'
     | '/$lang'
     | '/accessories'
+    | '/akun'
     | '/apparel'
+    | '/auth'
     | '/carriers'
     | '/cart'
     | '/catalog'
@@ -763,6 +840,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/stores'
     | '/tents'
+    | '/wishlist'
     | '/$lang/checkout'
     | '/$lang/inquiry'
     | '/$lang/permintaan'
@@ -785,11 +863,15 @@ export interface FileRouteTypes {
     | '/admin/size-guides'
     | '/admin/stores'
     | '/admin/vouchers'
+    | '/akun/addresses'
+    | '/akun/orders'
+    | '/akun/profile'
     | '/c/$slug'
     | '/email/unsubscribe'
     | '/en/$'
     | '/$lang/'
     | '/admin/'
+    | '/akun/'
     | '/en/'
     | '/$lang/inquiry/sent'
     | '/$lang/order/$id'
@@ -824,7 +906,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LangRoute: typeof LangRouteWithChildren
   AccessoriesRoute: typeof AccessoriesRoute
+  AkunRoute: typeof AkunRouteWithChildren
   ApparelRoute: typeof ApparelRoute
+  AuthRoute: typeof AuthRoute
   CarriersRoute: typeof CarriersRoute
   CartRoute: typeof CartRoute
   CatalogRoute: typeof CatalogRoute
@@ -832,6 +916,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StoresRoute: typeof StoresRoute
   TentsRoute: typeof TentsRoute
+  WishlistRoute: typeof WishlistRoute
   AdminAccountRoute: typeof AdminAccountRoute
   AdminActivityRoute: typeof AdminActivityRoute
   AdminAttributesRoute: typeof AdminAttributesRoute
@@ -872,6 +957,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/wishlist': {
+      id: '/wishlist'
+      path: '/wishlist'
+      fullPath: '/wishlist'
+      preLoaderRoute: typeof WishlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tents': {
       id: '/tents'
       path: '/tents'
@@ -921,11 +1013,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CarriersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/apparel': {
       id: '/apparel'
       path: '/apparel'
       fullPath: '/apparel'
       preLoaderRoute: typeof ApparelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/akun': {
+      id: '/akun'
+      path: '/akun'
+      fullPath: '/akun'
+      preLoaderRoute: typeof AkunRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/accessories': {
@@ -955,6 +1061,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/en/'
       preLoaderRoute: typeof EnIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/akun/': {
+      id: '/akun/'
+      path: '/'
+      fullPath: '/akun/'
+      preLoaderRoute: typeof AkunIndexRouteImport
+      parentRoute: typeof AkunRoute
     }
     '/admin/': {
       id: '/admin/'
@@ -990,6 +1103,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/c/$slug'
       preLoaderRoute: typeof CSlugRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/akun/profile': {
+      id: '/akun/profile'
+      path: '/profile'
+      fullPath: '/akun/profile'
+      preLoaderRoute: typeof AkunProfileRouteImport
+      parentRoute: typeof AkunRoute
+    }
+    '/akun/orders': {
+      id: '/akun/orders'
+      path: '/orders'
+      fullPath: '/akun/orders'
+      preLoaderRoute: typeof AkunOrdersRouteImport
+      parentRoute: typeof AkunRoute
+    }
+    '/akun/addresses': {
+      id: '/akun/addresses'
+      path: '/addresses'
+      fullPath: '/akun/addresses'
+      preLoaderRoute: typeof AkunAddressesRouteImport
+      parentRoute: typeof AkunRoute
     }
     '/admin/vouchers': {
       id: '/admin/vouchers'
@@ -1391,6 +1525,22 @@ const LangRouteChildren: LangRouteChildren = {
 
 const LangRouteWithChildren = LangRoute._addFileChildren(LangRouteChildren)
 
+interface AkunRouteChildren {
+  AkunAddressesRoute: typeof AkunAddressesRoute
+  AkunOrdersRoute: typeof AkunOrdersRoute
+  AkunProfileRoute: typeof AkunProfileRoute
+  AkunIndexRoute: typeof AkunIndexRoute
+}
+
+const AkunRouteChildren: AkunRouteChildren = {
+  AkunAddressesRoute: AkunAddressesRoute,
+  AkunOrdersRoute: AkunOrdersRoute,
+  AkunProfileRoute: AkunProfileRoute,
+  AkunIndexRoute: AkunIndexRoute,
+}
+
+const AkunRouteWithChildren = AkunRoute._addFileChildren(AkunRouteChildren)
+
 interface AdminCustomersEmailRouteChildren {
   AdminCustomersEmailDeleteRoute: typeof AdminCustomersEmailDeleteRoute
   AdminCustomersEmailExportRoute: typeof AdminCustomersEmailExportRoute
@@ -1456,7 +1606,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LangRoute: LangRouteWithChildren,
   AccessoriesRoute: AccessoriesRoute,
+  AkunRoute: AkunRouteWithChildren,
   ApparelRoute: ApparelRoute,
+  AuthRoute: AuthRoute,
   CarriersRoute: CarriersRoute,
   CartRoute: CartRoute,
   CatalogRoute: CatalogRoute,
@@ -1464,6 +1616,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StoresRoute: StoresRoute,
   TentsRoute: TentsRoute,
+  WishlistRoute: WishlistRoute,
   AdminAccountRoute: AdminAccountRoute,
   AdminActivityRoute: AdminActivityRoute,
   AdminAttributesRoute: AdminAttributesRoute,

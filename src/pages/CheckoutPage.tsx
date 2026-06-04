@@ -22,6 +22,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { getBiteshipRates, type BiteshipRate } from "@/lib/biteship.functions";
 import { validateVoucher, redeemVoucher } from "@/lib/voucher.functions";
 import { useCart, clearCart } from "@/lib/cart-store";
+import { useCustomerAuth } from "@/hooks/use-customer-auth";
 
 type PaymentMethod = "bank_transfer" | "midtrans" | "stripe";
 
@@ -105,6 +106,15 @@ export function CheckoutPage() {
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
+
+  // Logged-in customer (optional)
+  const { user, profile } = useCustomerAuth();
+  useEffect(() => {
+    if (!isCart) return;
+    if (profile?.email && !guestEmail) setGuestEmail(profile.email);
+    if (profile?.full_name && !guestName) setGuestName(profile.full_name);
+    if (profile?.phone && !guestPhone) setGuestPhone(profile.phone);
+  }, [profile, isCart]);
 
   // Biteship live rates
   const [biteshipRates, setBiteshipRates] = useState<BiteshipRate[]>([]);
@@ -363,6 +373,7 @@ export function CheckoutPage() {
         .from("orders")
         .insert({
           inquiry_id: isCart ? null : inquiry!.id,
+          customer_user_id: user?.id ?? null,
           customer_name: isCart ? guestName.trim() : inquiry!.customer_name,
           customer_email: isCart ? guestEmail.trim() : inquiry!.customer_email,
           customer_phone: isCart

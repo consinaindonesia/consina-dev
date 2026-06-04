@@ -10,6 +10,7 @@ import { useLang } from "@/i18n/LangProvider";
 import { localizedField } from "@/i18n/format";
 import { PriceDisplay } from "@/components/site/PriceDisplay";
 import { addToCart } from "@/lib/cart-store";
+import { WishlistButton } from "@/components/site/WishlistButton";
 
 export const Route = createFileRoute("/catalog")({
   head: () => ({
@@ -154,6 +155,7 @@ function ProductCard({ p, lang }: { p: PublicProduct; lang: "id" | "en" }) {
           <div className="h-full w-full bg-muted" />
         )}
         <ArrowUpRight className="absolute right-3 top-3 h-4 w-4 text-primary-foreground opacity-0 transition group-hover:opacity-100" />
+        <WishlistButton productId={p.id} className="absolute left-3 top-3" />
         {!requiresChoice && (
           <button
             type="button"

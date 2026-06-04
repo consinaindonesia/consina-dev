@@ -1,11 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Menu, X, Search, MapPin, ChevronDown } from "lucide-react";
+import { Menu, X, Search, MapPin, ChevronDown, Heart, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { LangSuggestionBanner } from "./LangSuggestionBanner";
 import { InquiryDrawer } from "./InquiryDrawer";
 import { CartDrawer } from "./CartDrawer";
+import { useCustomerAuth } from "@/hooks/use-customer-auth";
+import { useWishlist } from "@/lib/wishlist-store";
 import { usePublicCategories, type PublicCategory } from "@/hooks/use-public-categories";
 import { useLang } from "@/i18n/LangProvider";
 import { localizedField } from "@/i18n/format";
@@ -17,6 +19,8 @@ export function Nav() {
   const [shopOpen, setShopOpen] = useState(false);
   const [mobileShopOpen, setMobileShopOpen] = useState(false);
   const { data: categories, isLoading: catsLoading } = usePublicCategories();
+  const { user } = useCustomerAuth();
+  const { count: wishCount } = useWishlist(user?.id ?? null);
 
   const catLabel = (c: PublicCategory) => localizedField(c, "name", lang).value;
 
@@ -136,6 +140,25 @@ export function Nav() {
         <div className="flex items-center gap-2">
           <InquiryDrawer />
           <CartDrawer />
+          <Link
+            to="/wishlist"
+            className="relative hidden h-9 w-9 items-center justify-center rounded-full text-foreground/70 transition hover:bg-muted hover:text-primary md:flex"
+            aria-label="Wishlist"
+          >
+            <Heart className="h-4 w-4" />
+            {wishCount > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                {wishCount}
+              </span>
+            )}
+          </Link>
+          <Link
+            to={user ? "/akun" : "/auth"}
+            className="hidden h-9 w-9 items-center justify-center rounded-full text-foreground/70 transition hover:bg-muted hover:text-primary md:flex"
+            aria-label={user ? "Akun saya" : "Masuk"}
+          >
+            <User className="h-4 w-4" />
+          </Link>
           <LanguageSwitcher className="hidden md:inline-flex" />
           <button className="hidden h-9 w-9 items-center justify-center rounded-full text-foreground/70 transition hover:bg-muted hover:text-primary md:flex" aria-label={t("nav.search")}>
             <Search className="h-4 w-4" />
@@ -205,6 +228,12 @@ export function Nav() {
                 {l.label}
               </Link>
             ))}
+            <Link to="/wishlist" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-muted">
+              Wishlist{wishCount > 0 ? ` (${wishCount})` : ""}
+            </Link>
+            <Link to={user ? "/akun" : "/auth"} onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-muted">
+              {user ? "Akun Saya" : "Masuk / Daftar"}
+            </Link>
             <div className="mt-2 px-3">
               <LanguageSwitcher />
             </div>

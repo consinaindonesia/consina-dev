@@ -392,6 +392,78 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_addresses: {
+        Row: {
+          address: string
+          city: string
+          created_at: string
+          id: string
+          is_default: boolean
+          label: string | null
+          phone: string
+          postal_code: string | null
+          recipient_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address: string
+          city: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          label?: string | null
+          phone: string
+          postal_code?: string | null
+          recipient_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string
+          city?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          label?: string | null
+          phone?: string
+          postal_code?: string | null
+          recipient_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      customer_profiles: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          preferred_language: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          preferred_language?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          preferred_language?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
@@ -771,6 +843,7 @@ export type Database = {
           customer_email: string
           customer_name: string
           customer_phone: string
+          customer_user_id: string | null
           id: string
           inquiry_id: string | null
           midtrans_transaction_status: string | null
@@ -807,6 +880,7 @@ export type Database = {
           customer_email: string
           customer_name: string
           customer_phone: string
+          customer_user_id?: string | null
           id?: string
           inquiry_id?: string | null
           midtrans_transaction_status?: string | null
@@ -843,6 +917,7 @@ export type Database = {
           customer_email?: string
           customer_name?: string
           customer_phone?: string
+          customer_user_id?: string | null
           id?: string
           inquiry_id?: string | null
           midtrans_transaction_status?: string | null
@@ -1538,6 +1613,35 @@ export type Database = {
           used_count?: number
         }
         Relationships: []
+      }
+      wishlists: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wishlists_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

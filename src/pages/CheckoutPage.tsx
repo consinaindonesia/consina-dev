@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Info } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -255,12 +255,16 @@ export function CheckoutPage() {
     [quotes, selectedMethodId],
   );
 
+  const selectedBiteshipRate = selectedBiteshipKey
+    ? biteshipRates.find(
+        (r) => `${r.courier_code}:${r.courier_service_code}` === selectedBiteshipKey,
+      )
+    : null;
+
   const shipping =
     shippingMethod === "delivery"
-      ? selectedBiteshipKey
-        ? biteshipRates.find(
-            (r) => `${r.courier_code}:${r.courier_service_code}` === selectedBiteshipKey,
-          )?.price ?? 0
+      ? selectedBiteshipRate
+        ? selectedBiteshipRate.price
         : selectedQuote?.cost_idr ?? 0
       : 0;
   const discount = appliedVoucher?.discount_idr ?? 0;
@@ -290,7 +294,12 @@ export function CheckoutPage() {
       .then((r) => {
         if (cancelled) return;
         setBiteshipRates(r.rates);
-        if (r.error) setBiteshipError(r.error);
+        if (r.error) {
+          setBiteshipError(r.error);
+          setSelectedBiteshipKey(""); // fall back to zone rate
+        } else {
+          setBiteshipError(null);
+        }
         if (r.rates[0]) {
           setSelectedBiteshipKey(
             `${r.rates[0].courier_code}:${r.rates[0].courier_service_code}`,
@@ -298,7 +307,10 @@ export function CheckoutPage() {
         }
       })
       .catch((err) => {
-        if (!cancelled) setBiteshipError((err as Error).message);
+        if (!cancelled) {
+          setBiteshipError((err as Error).message);
+          setSelectedBiteshipKey(""); // fall back to zone rate
+        }
       })
       .finally(() => {
         if (!cancelled) setBiteshipLoading(false);
@@ -562,7 +574,7 @@ export function CheckoutPage() {
                         />
                       </div>
 
-                      {(biteshipLoading || biteshipRates.length > 0 || biteshipError) && (
+                      {(biteshipLoading || biteshipRates.length > 0) && (
                         <div className="rounded-md border border-border p-3">
                           <p className="text-xs font-medium">Pilih kurir (live ongkir)</p>
                           {biteshipLoading && (
@@ -570,9 +582,6 @@ export function CheckoutPage() {
                               <Loader2 className="mr-1 inline h-3 w-3 animate-spin" />
                               Menghitung ongkir…
                             </p>
-                          )}
-                          {biteshipError && !biteshipLoading && (
-                            <p className="mt-2 text-xs text-destructive">{biteshipError}</p>
                           )}
                           {biteshipRates.length > 0 && (
                             <RadioGroup
@@ -615,6 +624,12 @@ export function CheckoutPage() {
                             Shipping to <strong>{matchedZone.region_name}</strong>{" "}
                             zone
                           </p>
+                          {biteshipError && (
+                            <p className="mt-1.5 flex items-center gap-1.5 text-xs text-amber-600">
+                              <Info className="h-3 w-3 shrink-0" />
+                              Live courier rates are temporarily unavailable. A flat rate has been applied.
+                            </p>
+                          )}
                           <RadioGroup
                             value={selectedMethodId}
                             onValueChange={setSelectedMethodId}

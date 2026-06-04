@@ -14,6 +14,7 @@ import { Route as StoresRouteImport } from './routes/stores'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as FootwearRouteImport } from './routes/footwear'
 import { Route as CatalogRouteImport } from './routes/catalog'
+import { Route as CartRouteImport } from './routes/cart'
 import { Route as CarriersRouteImport } from './routes/carriers'
 import { Route as ApparelRouteImport } from './routes/apparel'
 import { Route as AccessoriesRouteImport } from './routes/accessories'
@@ -97,6 +98,11 @@ const FootwearRoute = FootwearRouteImport.update({
 const CatalogRoute = CatalogRouteImport.update({
   id: '/catalog',
   path: '/catalog',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CartRoute = CartRouteImport.update({
+  id: '/cart',
+  path: '/cart',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CarriersRoute = CarriersRouteImport.update({
@@ -408,6 +414,7 @@ export interface FileRoutesByFullPath {
   '/accessories': typeof AccessoriesRoute
   '/apparel': typeof ApparelRoute
   '/carriers': typeof CarriersRoute
+  '/cart': typeof CartRoute
   '/catalog': typeof CatalogRoute
   '/footwear': typeof FootwearRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -473,6 +480,7 @@ export interface FileRoutesByTo {
   '/accessories': typeof AccessoriesRoute
   '/apparel': typeof ApparelRoute
   '/carriers': typeof CarriersRoute
+  '/cart': typeof CartRoute
   '/catalog': typeof CatalogRoute
   '/footwear': typeof FootwearRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -538,6 +546,7 @@ export interface FileRoutesById {
   '/accessories': typeof AccessoriesRoute
   '/apparel': typeof ApparelRoute
   '/carriers': typeof CarriersRoute
+  '/cart': typeof CartRoute
   '/catalog': typeof CatalogRoute
   '/footwear': typeof FootwearRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -606,6 +615,7 @@ export interface FileRouteTypes {
     | '/accessories'
     | '/apparel'
     | '/carriers'
+    | '/cart'
     | '/catalog'
     | '/footwear'
     | '/sitemap.xml'
@@ -671,6 +681,7 @@ export interface FileRouteTypes {
     | '/accessories'
     | '/apparel'
     | '/carriers'
+    | '/cart'
     | '/catalog'
     | '/footwear'
     | '/sitemap.xml'
@@ -735,6 +746,7 @@ export interface FileRouteTypes {
     | '/accessories'
     | '/apparel'
     | '/carriers'
+    | '/cart'
     | '/catalog'
     | '/footwear'
     | '/sitemap.xml'
@@ -802,6 +814,7 @@ export interface RootRouteChildren {
   AccessoriesRoute: typeof AccessoriesRoute
   ApparelRoute: typeof ApparelRoute
   CarriersRoute: typeof CarriersRoute
+  CartRoute: typeof CartRoute
   CatalogRoute: typeof CatalogRoute
   FootwearRoute: typeof FootwearRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -879,6 +892,13 @@ declare module '@tanstack/react-router' {
       path: '/catalog'
       fullPath: '/catalog'
       preLoaderRoute: typeof CatalogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cart': {
+      id: '/cart'
+      path: '/cart'
+      fullPath: '/cart'
+      preLoaderRoute: typeof CartRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/carriers': {
@@ -1418,6 +1438,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccessoriesRoute: AccessoriesRoute,
   ApparelRoute: ApparelRoute,
   CarriersRoute: CarriersRoute,
+  CartRoute: CartRoute,
   CatalogRoute: CatalogRoute,
   FootwearRoute: FootwearRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,

@@ -211,6 +211,7 @@ export function CsvImportWizard({
       const errs: string[] = [];
       const sku = (r.raw.sku ?? "").trim();
       const cat = (r.raw.category_slug ?? "").trim();
+      const path = (r.raw.category_path ?? "").trim();
       const nameId = (r.raw.name_id ?? "").trim();
       const nameEn = (r.raw.name_en ?? "").trim();
       const priceRaw = (r.raw.price_idr ?? "").trim();
@@ -218,9 +219,17 @@ export function CsvImportWizard({
       const stock = (r.raw.stock_status ?? "in_stock").trim();
 
       if (!sku) errs.push("Missing sku");
-      if (!cat) errs.push("Missing category_slug");
+      if (!cat && !path) errs.push("Need category_slug or category_path");
       if (cat && validCategorySlugs.size > 0 && !validCategorySlugs.has(cat))
         errs.push(`Unknown category: ${cat}`);
+      if (path) {
+        const paths = path.split("|").map((p) => p.trim()).filter(Boolean);
+        if (paths.length === 0) errs.push("Empty category_path");
+        for (const p of paths) {
+          const segs = p.split(">").map((s) => s.trim()).filter(Boolean);
+          if (segs.length === 0) errs.push(`Invalid path: ${p}`);
+        }
+      }
       if (!nameId && !nameEn) errs.push("Need at least name_id or name_en");
       if (!priceRaw || Number.isNaN(price) || price < 0)
         errs.push("Invalid price_idr");
@@ -266,7 +275,8 @@ export function CsvImportWizard({
       for (let i = 0; i < valid.length; i += BATCH) {
         const slice = valid.slice(i, i + BATCH).map((r) => ({
           sku: r.raw.sku.trim(),
-          category_slug: r.raw.category_slug.trim(),
+          category_slug: (r.raw.category_slug ?? "").trim(),
+          category_path: (r.raw.category_path ?? "").trim(),
           name_id: (r.raw.name_id ?? "").trim(),
           name_en: (r.raw.name_en ?? "").trim(),
           short_description_id: (r.raw.short_description_id ?? "").trim(),

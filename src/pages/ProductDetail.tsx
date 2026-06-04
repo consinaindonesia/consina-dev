@@ -753,9 +753,6 @@ export function ProductDetailPage({ slug }: { slug: string }) {
                   {t("product.find_in_store")}
                 </Link>
               </Button>
-              <p className="pt-1 text-xs leading-relaxed text-muted-foreground">
-                {t("product.inquiry_explainer")}
-              </p>
             </div>
           </div>
         </div>

@@ -704,20 +704,6 @@ export function ProductDetailPage({ slug }: { slug: string }) {
                     {lang === "id" ? "Tambah ke Keranjang" : "Add to Cart"}
                   </Button>
                   <WishlistButton productId={product.id} variant="button" className="h-12 w-full text-base" />
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    onClick={handleAddToInquiry}
-                    className="h-12 w-full text-base font-semibold"
-                  >
-                    {added ? (
-                      <span className="inline-flex items-center gap-2">
-                        <Check className="h-4 w-4" /> {t("product.added")}
-                      </span>
-                    ) : (
-                      t("cta.add_to_inquiry")
-                    )}
-                  </Button>
                 </>
               )}
               {isOut && (

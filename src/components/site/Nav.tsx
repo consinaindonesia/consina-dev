@@ -1,11 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Menu, X, Search, MapPin, ChevronDown } from "lucide-react";
+import { Menu, X, Search, MapPin, ChevronDown, Heart, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { LangSuggestionBanner } from "./LangSuggestionBanner";
 import { InquiryDrawer } from "./InquiryDrawer";
 import { CartDrawer } from "./CartDrawer";
+import { useCustomerAuth } from "@/hooks/use-customer-auth";
+import { useWishlist } from "@/lib/wishlist-store";
 import { usePublicCategories, type PublicCategory } from "@/hooks/use-public-categories";
 import { useLang } from "@/i18n/LangProvider";
 import { localizedField } from "@/i18n/format";
@@ -17,6 +19,8 @@ export function Nav() {
   const [shopOpen, setShopOpen] = useState(false);
   const [mobileShopOpen, setMobileShopOpen] = useState(false);
   const { data: categories, isLoading: catsLoading } = usePublicCategories();
+  const { user } = useCustomerAuth();
+  const { count: wishCount } = useWishlist(user?.id ?? null);
 
   const catLabel = (c: PublicCategory) => localizedField(c, "name", lang).value;
 

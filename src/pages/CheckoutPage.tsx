@@ -90,6 +90,7 @@ export function CheckoutPage() {
   const [shippingCity, setShippingCity] = useState("");
   const [shippingPostal, setShippingPostal] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
+  const [orderNotes, setOrderNotes] = useState("");
   const isIndonesian = useMemo(detectIsIndonesian, []);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
     isIndonesian ? "midtrans" : "stripe",

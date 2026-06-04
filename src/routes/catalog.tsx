@@ -10,6 +10,7 @@ import { useLang } from "@/i18n/LangProvider";
 import { localizedField } from "@/i18n/format";
 import { PriceDisplay } from "@/components/site/PriceDisplay";
 import { addToCart } from "@/lib/cart-store";
+import { WishlistButton } from "@/components/site/WishlistButton";
 
 export const Route = createFileRoute("/catalog")({
   head: () => ({

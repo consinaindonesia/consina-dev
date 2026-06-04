@@ -1,12 +1,14 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Filter, X } from "lucide-react";
+import { Loader2, Filter, X, ShoppingBag } from "lucide-react";
+import { toast } from "sonner";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useLang } from "@/i18n/LangProvider";
 import { PriceDisplay } from "@/components/site/PriceDisplay";
+import { addToCart } from "@/lib/cart-store";
 
 export const Route = createFileRoute("/c/$slug")({
   component: CategoryPage,
@@ -39,6 +41,7 @@ type ProductRow = {
   name_en: string;
   name_id: string;
   price_idr: number;
+  weight_grams: number | null;
   original_price_idr: number | null;
   sale_price_idr: number | null;
   is_on_sale: boolean;
@@ -51,6 +54,7 @@ type ProductRow = {
     original_price_idr: number | null;
     stock: number | null;
   }>;
+  has_size_variants: boolean;
 };
 
 
@@ -123,7 +127,7 @@ function CategoryPage() {
       const { data: prods } = await supabase
         .from("products")
         .select(
-          "id,sku,slug,name_en,name_id,price_idr,original_price_idr,sale_price_idr,is_on_sale,attributes,images,product_images(thumbnail_url,image_url,is_primary,sort_order),product_variants(color_hex,color_name,sort_order)",
+          "id,sku,slug,name_en,name_id,price_idr,weight_grams,original_price_idr,sale_price_idr,is_on_sale,attributes,images,product_images(thumbnail_url,image_url,is_primary,sort_order),product_variants(color_hex,color_name,sort_order),product_size_variants(id)",
         )
         .eq("category_id", cat.id)
         .eq("is_active", true)
@@ -154,6 +158,7 @@ function CategoryPage() {
           name_en: p.name_en,
           name_id: p.name_id,
           price_idr: p.price_idr,
+          weight_grams: (p as { weight_grams?: number | null }).weight_grams ?? null,
           original_price_idr: (p as { original_price_idr?: number | null }).original_price_idr ?? null,
           sale_price_idr: (p as { sale_price_idr?: number | null }).sale_price_idr ?? null,
           is_on_sale: !!(p as { is_on_sale?: boolean }).is_on_sale,
@@ -162,6 +167,9 @@ function CategoryPage() {
           images: flat,
           variants: variantsRaw,
           size_variants: [],
+          has_size_variants:
+            Array.isArray((p as { product_size_variants?: unknown[] }).product_size_variants) &&
+            ((p as { product_size_variants?: unknown[] }).product_size_variants?.length ?? 0) > 0,
         };
       });
       setProducts(normalized);

@@ -67,6 +67,8 @@ function WishlistPage() {
         const missing = ids.filter((id) => !found.has(id));
         if (missing.length > 0) {
           console.warn("[wishlist] skipping unresolved product ids", missing);
+          // Prune so the badge count matches what's displayable.
+          missing.forEach((id) => void toggle(id));
         }
       });
   }, [ids.join(",")]);

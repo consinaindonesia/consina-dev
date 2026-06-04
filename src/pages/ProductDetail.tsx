@@ -21,6 +21,7 @@ import { formatPrice, localizedField, hasTranslation } from "@/i18n/format";
 import { MissingTranslationNotice } from "@/components/site/MissingTranslationNotice";
 import { addToInquiry } from "@/lib/inquiry-store";
 import { addToCart } from "@/lib/cart-store";
+import { WishlistButton } from "@/components/site/WishlistButton";
 import { FindInStore } from "@/components/site/FindInStore";
 import { PriceDisplay } from "@/components/site/PriceDisplay";
 import { SizeGuideDialog, type SizeGuide } from "@/components/site/SizeGuideDialog";

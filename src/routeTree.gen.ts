@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WishlistRouteImport } from './routes/wishlist'
 import { Route as TentsRouteImport } from './routes/tents'
 import { Route as StoresRouteImport } from './routes/stores'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
@@ -82,6 +83,11 @@ import { Route as AdminProductsIdEditRouteImport } from './routes/admin/products
 import { Route as AdminCustomersEmailExportRouteImport } from './routes/admin/customers.$email.export'
 import { Route as AdminCustomersEmailDeleteRouteImport } from './routes/admin/customers.$email.delete'
 
+const WishlistRoute = WishlistRouteImport.update({
+  id: '/wishlist',
+  path: '/wishlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TentsRoute = TentsRouteImport.update({
   id: '/tents',
   path: '/tents',
@@ -464,6 +470,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
+  '/wishlist': typeof WishlistRoute
   '/$lang/checkout': typeof LangCheckoutRoute
   '/$lang/inquiry': typeof LangInquiryRouteWithChildren
   '/$lang/permintaan': typeof LangPermintaanRouteWithChildren
@@ -536,6 +543,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
+  '/wishlist': typeof WishlistRoute
   '/$lang/checkout': typeof LangCheckoutRoute
   '/$lang/privacy': typeof LangPrivacyRoute
   '/$lang/stores': typeof LangStoresRoute
@@ -609,6 +617,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
+  '/wishlist': typeof WishlistRoute
   '/$lang/checkout': typeof LangCheckoutRoute
   '/$lang/inquiry': typeof LangInquiryRouteWithChildren
   '/$lang/permintaan': typeof LangPermintaanRouteWithChildren
@@ -685,6 +694,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/stores'
     | '/tents'
+    | '/wishlist'
     | '/$lang/checkout'
     | '/$lang/inquiry'
     | '/$lang/permintaan'
@@ -757,6 +767,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/stores'
     | '/tents'
+    | '/wishlist'
     | '/$lang/checkout'
     | '/$lang/privacy'
     | '/$lang/stores'
@@ -829,6 +840,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/stores'
     | '/tents'
+    | '/wishlist'
     | '/$lang/checkout'
     | '/$lang/inquiry'
     | '/$lang/permintaan'
@@ -904,6 +916,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StoresRoute: typeof StoresRoute
   TentsRoute: typeof TentsRoute
+  WishlistRoute: typeof WishlistRoute
   AdminAccountRoute: typeof AdminAccountRoute
   AdminActivityRoute: typeof AdminActivityRoute
   AdminAttributesRoute: typeof AdminAttributesRoute
@@ -944,6 +957,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/wishlist': {
+      id: '/wishlist'
+      path: '/wishlist'
+      fullPath: '/wishlist'
+      preLoaderRoute: typeof WishlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tents': {
       id: '/tents'
       path: '/tents'
@@ -1596,6 +1616,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StoresRoute: StoresRoute,
   TentsRoute: TentsRoute,
+  WishlistRoute: WishlistRoute,
   AdminAccountRoute: AdminAccountRoute,
   AdminActivityRoute: AdminActivityRoute,
   AdminAttributesRoute: AdminAttributesRoute,

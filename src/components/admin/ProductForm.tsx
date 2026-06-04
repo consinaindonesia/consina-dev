@@ -55,7 +55,7 @@ import { useAdminAuth } from "@/hooks/use-admin-auth";
 
 const FOREST = "#1a3a2e";
 
-type Category = { id: string; name_en: string; sort_order: number };
+type Category = { id: string; name_en: string; sort_order: number; parent_category_id?: string | null };
 
 type AttributeDef = {
   id: string;
@@ -186,6 +186,55 @@ async function logActivity(
   }
 }
 
+// Sync product_categories rows: ensures the primary row exists and rewrites
+// the set of non-primary "additional" memberships to match `extraIds`.
+async function syncProductCategories(
+  productId: string,
+  primaryId: string | null,
+  extraIds: string[],
+) {
+  // Remove any extras that are no longer selected and any stale primary rows.
+  const desiredIds = new Set<string>(extraIds);
+  if (primaryId) desiredIds.add(primaryId);
+
+  const { data: current } = await supabase
+    .from("product_categories")
+    .select("category_id, is_primary")
+    .eq("product_id", productId);
+
+  const currentRows = (current ?? []) as Array<{ category_id: string; is_primary: boolean }>;
+  const toDelete = currentRows
+    .filter((r) => !desiredIds.has(r.category_id))
+    .map((r) => r.category_id);
+  if (toDelete.length > 0) {
+    await supabase
+      .from("product_categories")
+      .delete()
+      .eq("product_id", productId)
+      .in("category_id", toDelete);
+  }
+
+  // Upsert primary (always is_primary=true), then extras (is_primary=false).
+  if (primaryId) {
+    await supabase
+      .from("product_categories")
+      .upsert(
+        { product_id: productId, category_id: primaryId, is_primary: true },
+        { onConflict: "product_id,category_id" },
+      );
+  }
+  if (extraIds.length > 0) {
+    const rows = extraIds
+      .filter((id) => id !== primaryId)
+      .map((id) => ({ product_id: productId, category_id: id, is_primary: false }));
+    if (rows.length > 0) {
+      await supabase
+        .from("product_categories")
+        .upsert(rows, { onConflict: "product_id,category_id" });
+    }
+  }
+}
+
 type Tab = "basic" | "translations" | "images" | "variants" | "sizes" | "availability" | "seo";
 type ProductFormProps =
   | { mode: "new"; productId?: undefined; initialTab?: Tab }
@@ -203,6 +252,9 @@ export function ProductForm(props: ProductFormProps) {
   const [tab, setTab] = useState<Tab>(initialTab ?? "basic");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [categories, setCategories] = useState<Category[]>([]);
+  // Extra (non-primary) category ids for many-to-many membership.
+  const [extraCategoryIds, setExtraCategoryIds] = useState<string[]>([]);
+  const [initialExtraCategoryIds, setInitialExtraCategoryIds] = useState<string[]>([]);
   const [skuCheck, setSkuCheck] = useState<"idle" | "checking" | "ok" | "taken">("idle");
   // Category-defined attribute schema + values keyed by attribute slug.
   const [categoryAttrs, setCategoryAttrs] = useState<AttributeDef[]>([]);
@@ -240,13 +292,16 @@ export function ProductForm(props: ProductFormProps) {
   const [draftAvailable, setDraftAvailable] = useState<ProductFormValues | null>(null);
   const [draftDismissed, setDraftDismissed] = useState(false);
 
-  const dirty = JSON.stringify(values) !== initialSnapshot;
+  const dirty =
+    JSON.stringify(values) !== initialSnapshot ||
+    JSON.stringify([...extraCategoryIds].sort()) !==
+      JSON.stringify([...initialExtraCategoryIds].sort());
 
   // Load categories
   useEffect(() => {
     void supabase
       .from("categories")
-      .select("id, name_en, sort_order")
+      .select("id, name_en, sort_order, parent_category_id")
       .order("sort_order")
       .then(({ data }) => setCategories((data ?? []) as Category[]));
   }, []);
@@ -391,6 +446,27 @@ export function ProductForm(props: ProductFormProps) {
       cancelled = true;
     };
   }, [mode, productId, navigate]);
+
+  // Load existing additional (non-primary) categories when editing.
+  useEffect(() => {
+    if (mode !== "edit") return;
+    let cancelled = false;
+    void supabase
+      .from("product_categories")
+      .select("category_id, is_primary")
+      .eq("product_id", productId)
+      .then(({ data }) => {
+        if (cancelled) return;
+        const extras = ((data ?? []) as Array<{ category_id: string; is_primary: boolean }>)
+          .filter((r) => !r.is_primary)
+          .map((r) => r.category_id);
+        setExtraCategoryIds(extras);
+        setInitialExtraCategoryIds(extras);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [mode, productId]);
 
   // Debounced SKU uniqueness check
   const skuTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -581,6 +657,7 @@ export function ProductForm(props: ProductFormProps) {
         }
       }
       await persistSizeData(data.id, sizeData);
+      await syncProductCategories(data.id, values.category_id || null, extraCategoryIds);
       toast.success("Product created");
       setInitialSnapshot(JSON.stringify(values));
       try { localStorage.removeItem(draftKey); } catch { /* ignore */ }
@@ -609,6 +686,8 @@ export function ProductForm(props: ProductFormProps) {
       }
       void logActivity(profile?.id ?? null, "updated", productId);
       await persistSizeData(productId, sizeData);
+      await syncProductCategories(productId, values.category_id || null, extraCategoryIds);
+      setInitialExtraCategoryIds(extraCategoryIds);
       toast.success("Product saved");
       if (
         prevStock === "out_of_stock" &&
@@ -767,6 +846,62 @@ export function ProductForm(props: ProductFormProps) {
                     ))}
                   </SelectContent>
                 </Select>
+              </Field>
+
+              <Field label="Additional categories">
+                <div className="space-y-2">
+                  <div className="flex flex-wrap gap-1.5">
+                    {extraCategoryIds.length === 0 && (
+                      <span className="text-xs text-muted-foreground">
+                        Cross-list this product under other categories (e.g. Activities › Hiking).
+                      </span>
+                    )}
+                    {extraCategoryIds.map((id) => {
+                      const c = categories.find((x) => x.id === id);
+                      if (!c) return null;
+                      return (
+                        <span
+                          key={id}
+                          className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs"
+                        >
+                          {c.name_en}
+                          <button
+                            type="button"
+                            aria-label={`Remove ${c.name_en}`}
+                            onClick={() =>
+                              setExtraCategoryIds((prev) => prev.filter((x) => x !== id))
+                            }
+                            className="text-muted-foreground hover:text-foreground"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      );
+                    })}
+                  </div>
+                  <Select
+                    value=""
+                    onValueChange={(v) => {
+                      if (!v || v === values.category_id) return;
+                      setExtraCategoryIds((prev) => (prev.includes(v) ? prev : [...prev, v]));
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Add a category…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories
+                        .filter(
+                          (c) => c.id !== values.category_id && !extraCategoryIds.includes(c.id),
+                        )
+                        .map((c) => (
+                          <SelectItem key={c.id} value={c.id}>
+                            {c.name_en}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </Field>
 
               <Field label="Capacity">

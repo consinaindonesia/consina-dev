@@ -144,3 +144,70 @@ export function getSiteUrl(): string {
   if (typeof window !== "undefined" && window.location?.origin) return window.location.origin;
   return "";
 }
+
+// --- Category hierarchy helpers ---------------------------------------------
+
+export type CategoryNode = {
+  id: string;
+  slug: string;
+  name_id: string;
+  name_en: string;
+  parent_category_id: string | null;
+};
+
+// Loads every active category once, then derives ancestors and descendants
+// from the in-memory tree. Kept simple (single SELECT) — site only has a
+// few hundred categories at most.
+async function fetchAllCategories(): Promise<CategoryNode[]> {
+  const { data } = await supabase
+    .from("categories")
+    .select("id,slug,name_id,name_en,parent_category_id")
+    .eq("is_active", true);
+  return (data ?? []) as CategoryNode[];
+}
+
+export async function fetchCategoryWithAncestors(
+  slug: string,
+): Promise<{ category: CategoryNode | null; ancestors: CategoryNode[] }> {
+  const all = await fetchAllCategories();
+  const byId = new Map(all.map((c) => [c.id, c]));
+  const cat = all.find((c) => c.slug === slug) ?? null;
+  if (!cat) return { category: null, ancestors: [] };
+  const ancestors: CategoryNode[] = [];
+  let cur = cat.parent_category_id ? byId.get(cat.parent_category_id) : undefined;
+  const seen = new Set<string>();
+  while (cur && !seen.has(cur.id)) {
+    seen.add(cur.id);
+    ancestors.unshift(cur);
+    cur = cur.parent_category_id ? byId.get(cur.parent_category_id) : undefined;
+  }
+  return { category: cat, ancestors };
+}
+
+export function collectDescendantIds(
+  rootId: string,
+  all: CategoryNode[],
+): string[] {
+  const childrenOf = new Map<string, string[]>();
+  for (const c of all) {
+    if (!c.parent_category_id) continue;
+    const arr = childrenOf.get(c.parent_category_id) ?? [];
+    arr.push(c.id);
+    childrenOf.set(c.parent_category_id, arr);
+  }
+  const out: string[] = [rootId];
+  const stack = [rootId];
+  while (stack.length) {
+    const id = stack.pop()!;
+    for (const child of childrenOf.get(id) ?? []) {
+      out.push(child);
+      stack.push(child);
+    }
+  }
+  return out;
+}
+
+export async function fetchCategoryDescendantIds(rootId: string): Promise<string[]> {
+  const all = await fetchAllCategories();
+  return collectDescendantIds(rootId, all);
+}

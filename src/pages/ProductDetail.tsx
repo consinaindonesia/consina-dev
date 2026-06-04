@@ -23,6 +23,7 @@ import { addToInquiry } from "@/lib/inquiry-store";
 import { FindInStore } from "@/components/site/FindInStore";
 import { PriceDisplay } from "@/components/site/PriceDisplay";
 import { SizeGuideDialog, type SizeGuide } from "@/components/site/SizeGuideDialog";
+import { type CategoryNode } from "@/lib/public-products";
 
 type Product = {
   id: string;
@@ -90,6 +91,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
   const [product, setProduct] = useState<Product | null>(null);
   const [images, setImages] = useState<ProductImage[]>([]);
   const [category, setCategory] = useState<Category | null>(null);
+  const [categoryAncestors, setCategoryAncestors] = useState<CategoryNode[]>([]);
   const [attrDefs, setAttrDefs] = useState<AttributeDef[]>([]);
   const [variants, setVariants] = useState<ColorVariant[]>([]);
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
@@ -248,6 +250,25 @@ export function ProductDetailPage({ slug }: { slug: string }) {
         ]);
         if (cancelled) return;
         setCategory((cat as Category) ?? null);
+        // Walk ancestor chain via one extra cheap select of all active cats.
+        const { data: allCats } = await supabase
+          .from("categories")
+          .select("id,slug,name_id,name_en,parent_category_id")
+          .eq("is_active", true);
+        if (!cancelled) {
+          const nodes = (allCats ?? []) as CategoryNode[];
+          const byId = new Map(nodes.map((c) => [c.id, c]));
+          const anc: CategoryNode[] = [];
+          let pid = byId.get(prod.category_id)?.parent_category_id ?? null;
+          const seen = new Set<string>();
+          while (pid && byId.has(pid) && !seen.has(pid)) {
+            seen.add(pid);
+            const p = byId.get(pid)!;
+            anc.unshift(p);
+            pid = p.parent_category_id;
+          }
+          setCategoryAncestors(anc);
+        }
         const defs: AttributeDef[] = ((catAttrs ?? []) as unknown as Array<{ attribute: AttributeDef | null }>)
           .map((r) => r.attribute)
           .filter((a): a is AttributeDef => !!a)
@@ -385,10 +406,26 @@ export function ProductDetailPage({ slug }: { slug: string }) {
         {/* Breadcrumb */}
         <nav className="mb-6 flex items-center gap-1.5 text-xs text-muted-foreground">
           <Link to="/" className="hover:text-foreground">{t("nav.home")}</Link>
+          {categoryAncestors.map((a) => (
+            <span key={a.id} className="flex items-center gap-1.5">
+              <span>/</span>
+              <Link
+                to={"/c/$slug" as never}
+                params={{ slug: a.slug } as never}
+                className="hover:text-foreground"
+              >
+                {localizedField(a, "name", lang).value}
+              </Link>
+            </span>
+          ))}
           <span>/</span>
           {category && (
             <>
-              <Link to="/catalog" className="hover:text-foreground">
+              <Link
+                to={"/c/$slug" as never}
+                params={{ slug: category.slug } as never}
+                className="hover:text-foreground"
+              >
                 {localizedField(category, "name", lang).value}
               </Link>
               <span>/</span>

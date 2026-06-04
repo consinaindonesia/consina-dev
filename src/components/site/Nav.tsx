@@ -19,6 +19,43 @@ export function Nav() {
 
   const catLabel = (c: PublicCategory) => localizedField(c, "name", lang).value;
 
+  // Recursive child renderer — supports arbitrary nesting depth.
+  const renderDesktopChildren = (children: PublicCategory[], depth: number) => (
+    <div className={depth === 1 ? "ml-2 border-l border-border" : "ml-3 border-l border-border/60"}>
+      {children.map((sub) => (
+        <div key={sub.id}>
+          <Link
+            to={"/c/$slug" as never}
+            params={{ slug: sub.slug } as never}
+            className="block px-4 py-2 text-xs font-medium text-foreground/75 transition-colors hover:bg-muted hover:text-primary"
+          >
+            {catLabel(sub)}
+          </Link>
+          {sub.children.length > 0 && renderDesktopChildren(sub.children, depth + 1)}
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderMobileChildren = (children: PublicCategory[], depth: number) => (
+    <>
+      {children.map((sub) => (
+        <div key={sub.id} className="flex flex-col">
+          <Link
+            to={"/c/$slug" as never}
+            params={{ slug: sub.slug } as never}
+            onClick={() => setOpen(false)}
+            className="rounded-md px-3 py-1.5 text-xs font-medium text-foreground/70 hover:bg-muted hover:text-primary"
+            style={{ marginLeft: depth * 12 }}
+          >
+            {catLabel(sub)}
+          </Link>
+          {sub.children.length > 0 && renderMobileChildren(sub.children, depth + 1)}
+        </div>
+      ))}
+    </>
+  );
+
   const mainLinks = [
     { to: "/catalog", label: t("nav.catalog") },
     { to: "/stores", label: t("nav.stores") },
@@ -76,20 +113,7 @@ export function Nav() {
                       >
                         {catLabel(cat)}
                       </Link>
-                      {cat.children.length > 0 && (
-                        <div className="ml-2 border-l border-border">
-                          {cat.children.map((sub) => (
-                            <Link
-                              key={sub.id}
-                              to={"/c/$slug" as never}
-                              params={{ slug: sub.slug } as never}
-                              className="block px-4 py-2 text-xs font-medium text-foreground/75 transition-colors hover:bg-muted hover:text-primary"
-                            >
-                              {catLabel(sub)}
-                            </Link>
-                          ))}
-                        </div>
-                      )}
+                      {cat.children.length > 0 && renderDesktopChildren(cat.children, 1)}
                     </div>
                   ))
                 )}
@@ -163,17 +187,7 @@ export function Nav() {
                     >
                       {catLabel(cat)}
                     </Link>
-                    {cat.children.map((sub) => (
-                      <Link
-                        key={sub.id}
-                        to={"/c/$slug" as never}
-                        params={{ slug: sub.slug } as never}
-                        onClick={() => setOpen(false)}
-                        className="ml-3 rounded-md px-3 py-1.5 text-xs font-medium text-foreground/70 hover:bg-muted hover:text-primary"
-                      >
-                        {catLabel(sub)}
-                      </Link>
-                    ))}
+                    {cat.children.length > 0 && renderMobileChildren(cat.children, 1)}
                   </div>
                 ))}
               </div>

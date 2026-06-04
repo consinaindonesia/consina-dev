@@ -193,6 +193,9 @@ export function CheckoutPage() {
         price_idr: c.price_idr,
         weight_grams: c.weight_grams ?? 500,
         quantity: c.quantity,
+        attributes: c.attributes ?? null,
+        variantId: c.variantId ?? null,
+        sizeVariantId: c.sizeVariantId ?? null,
       }));
     }
     return items
@@ -206,6 +209,9 @@ export function CheckoutPage() {
         price_idr: it.product!.price_idr,
         weight_grams: it.product!.weight_grams ?? 500,
         quantity: it.quantity,
+        attributes: null as Record<string, string> | null,
+        variantId: null as string | null,
+        sizeVariantId: null as string | null,
       }));
   }, [isCart, cart.items, items]);
 
@@ -401,6 +407,9 @@ export function CheckoutPage() {
         quantity: it.quantity,
         unit_price_idr: it.price_idr,
         line_total_idr: it.price_idr * it.quantity,
+        attributes: it.attributes ?? null,
+        variant_id: it.variantId ?? null,
+        size_variant_id: it.sizeVariantId ?? null,
       }));
       if (rows.length) {
         const { error: itErr } = await supabase.from("order_items").insert(rows);

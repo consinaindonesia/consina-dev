@@ -42,6 +42,8 @@ type Order = {
   subtotal_idr: number;
   shipping_idr: number;
   total_idr: number;
+  voucher_code: string | null;
+  voucher_discount_idr: number | null;
   payment_method: string;
   payment_provider?: string | null;
   payment_status: string;
@@ -316,6 +318,16 @@ function OrderDetailPage() {
                       Rp {order.shipping_idr.toLocaleString("id-ID")}
                     </td>
                   </tr>
+                  {order.voucher_code ? (
+                    <tr>
+                      <td className="px-4 py-2 text-muted-foreground">
+                        Voucher <span className="font-mono">{order.voucher_code}</span>
+                      </td>
+                      <td className="px-4 py-2 text-right text-green-700">
+                        −Rp {(order.voucher_discount_idr ?? 0).toLocaleString("id-ID")}
+                      </td>
+                    </tr>
+                  ) : null}
                   <tr className="font-bold">
                     <td className="px-4 py-3">Total</td>
                     <td className="px-4 py-3 text-right">

@@ -36,6 +36,8 @@ type OrderRow = {
   payment_method: string;
   status: string;
   created_at: string;
+  voucher_code: string | null;
+  voucher_discount_idr: number | null;
 };
 
 const STATUS_TABS: { key: PaymentStatus; label: string }[] = [
@@ -72,7 +74,7 @@ function OrdersPage() {
       let q = supabase
         .from("orders")
         .select(
-          "id, customer_name, customer_email, total_idr, payment_status, payment_method, status, created_at",
+          "id, customer_name, customer_email, total_idr, payment_status, payment_method, status, created_at, voucher_code, voucher_discount_idr",
         )
         .order("created_at", { ascending: false })
         .limit(200);
@@ -146,6 +148,7 @@ function OrdersPage() {
                     <th className="px-4 py-3 text-left font-medium">Ref</th>
                     <th className="px-4 py-3 text-left font-medium">Customer</th>
                     <th className="px-4 py-3 text-left font-medium">Total</th>
+                    <th className="px-4 py-3 text-left font-medium">Voucher</th>
                     <th className="px-4 py-3 text-left font-medium">Payment</th>
                     <th className="px-4 py-3 text-left font-medium">Status</th>
                     <th className="px-4 py-3 text-left font-medium">Created</th>
@@ -166,6 +169,20 @@ function OrdersPage() {
                       </td>
                       <td className="px-4 py-3 font-semibold">
                         Rp {o.total_idr.toLocaleString("id-ID")}
+                      </td>
+                      <td className="px-4 py-3 text-xs">
+                        {o.voucher_code ? (
+                          <>
+                            <span className="font-mono">{o.voucher_code}</span>
+                            {o.voucher_discount_idr ? (
+                              <span className="ml-1 text-muted-foreground">
+                                (−Rp {o.voucher_discount_idr.toLocaleString("id-ID")})
+                              </span>
+                            ) : null}
+                          </>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <Badge

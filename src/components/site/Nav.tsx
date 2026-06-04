@@ -140,6 +140,25 @@ export function Nav() {
         <div className="flex items-center gap-2">
           <InquiryDrawer />
           <CartDrawer />
+          <Link
+            to="/wishlist"
+            className="relative hidden h-9 w-9 items-center justify-center rounded-full text-foreground/70 transition hover:bg-muted hover:text-primary md:flex"
+            aria-label="Wishlist"
+          >
+            <Heart className="h-4 w-4" />
+            {wishCount > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                {wishCount}
+              </span>
+            )}
+          </Link>
+          <Link
+            to={user ? "/akun" : "/auth"}
+            className="hidden h-9 w-9 items-center justify-center rounded-full text-foreground/70 transition hover:bg-muted hover:text-primary md:flex"
+            aria-label={user ? "Akun saya" : "Masuk"}
+          >
+            <User className="h-4 w-4" />
+          </Link>
           <LanguageSwitcher className="hidden md:inline-flex" />
           <button className="hidden h-9 w-9 items-center justify-center rounded-full text-foreground/70 transition hover:bg-muted hover:text-primary md:flex" aria-label={t("nav.search")}>
             <Search className="h-4 w-4" />

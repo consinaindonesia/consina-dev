@@ -321,29 +321,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
 
   const fallbackLang = product && !hasTranslation(product, ["name", "description"], lang);
 
-  function handleAddToInquiry() {
-    if (!product) return;
-    const top = images[0];
-    addToInquiry({
-      productId: product.id,
-      slug: product.sku,
-      sku: product.sku,
-      name_id: product.name_id,
-      name_en: product.name_en,
-      price_idr: product.price_idr,
-      thumbnail: top ? (top.thumbnail_url ?? top.image_url) : null,
-      attributes: selectedAttrs,
-      quantity,
-    });
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
-    toast.success(t("inquiry.toast_added", { count: quantity }), {
-      action: {
-        label: t("inquiry.view_inquiry"),
-        onClick: () => navigate({ to: (lang === "id" ? "/id/permintaan" : "/en/inquiry") as never }),
-      },
-    });
-  }
+  // Inquiry button removed — cart + wishlist + store finder remain
 
   function handleAddToCart() {
     if (!product) return;

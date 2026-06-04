@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useLang } from "@/i18n/LangProvider";
 import { formatPrice, localizedField } from "@/i18n/format";
+import { collectDescendantIds, type CategoryNode } from "@/lib/public-products";
 
 type Category = {
   id: string;
@@ -44,6 +45,7 @@ export function CategoryPage({ slug }: { slug: string }) {
   const { t } = useTranslation();
   const lang = useLang();
   const [category, setCategory] = useState<Category | null>(null);
+  const [ancestors, setAncestors] = useState<CategoryNode[]>([]);
   const [attrDefs, setAttrDefs] = useState<AttributeDef[]>([]);
   const [products, setProducts] = useState<ProductRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -90,6 +92,26 @@ export function CategoryPage({ slug }: { slug: string }) {
       }
       setCategory(cat as Category);
 
+      // 1b. Load full category tree (small table) to compute ancestors + descendants.
+      const { data: allCats } = await supabase
+        .from("categories")
+        .select("id,slug,name_id,name_en,parent_category_id")
+        .eq("is_active", true);
+      const nodes = (allCats ?? []) as CategoryNode[];
+      const byId = new Map(nodes.map((c) => [c.id, c]));
+      const anc: CategoryNode[] = [];
+      let parentId = (byId.get(cat.id) ?? null)?.parent_category_id ?? null;
+      const seen = new Set<string>();
+      while (parentId && byId.has(parentId) && !seen.has(parentId)) {
+        seen.add(parentId);
+        const p = byId.get(parentId)!;
+        anc.unshift(p);
+        parentId = p.parent_category_id;
+      }
+      if (cancelled) return;
+      setAncestors(anc);
+      const descendantIds = collectDescendantIds(cat.id, nodes);
+
       // 2. Load attribute schema for this category.
       const { data: catAttrs } = await supabase
         .from("category_attributes")
@@ -105,15 +127,48 @@ export function CategoryPage({ slug }: { slug: string }) {
       if (cancelled) return;
       setAttrDefs(defs);
 
-      // 3. Load products with primary image.
-      const { data: prods } = await supabase
-        .from("products")
-        .select(
-          "id,sku,name_en,name_id,price_idr,attributes,product_images(thumbnail_url,image_url,is_primary,sort_order)",
-        )
-        .eq("category_id", cat.id)
-        .eq("is_active", true)
-        .order("name_en");
+      // 3. Load products: include products in this category OR any descendant
+      //    category, via both the primary FK and the new product_categories join.
+      const [{ data: prodsByFk }, { data: linked }] = await Promise.all([
+        supabase
+          .from("products")
+          .select(
+            "id,sku,name_en,name_id,price_idr,attributes,product_images(thumbnail_url,image_url,is_primary,sort_order)",
+          )
+          .in("category_id", descendantIds)
+          .eq("is_active", true)
+          .order("name_en"),
+        supabase
+          .from("product_categories")
+          .select(
+            "product_id, products!inner(id,sku,name_en,name_id,price_idr,attributes,is_active,product_images(thumbnail_url,image_url,is_primary,sort_order))",
+          )
+          .in("category_id", descendantIds),
+      ]);
+      type LinkedRow = {
+        products: {
+          id: string;
+          sku: string;
+          name_en: string;
+          name_id: string;
+          price_idr: number;
+          attributes: Record<string, string> | null;
+          is_active: boolean;
+          product_images: Array<{
+            thumbnail_url: string | null;
+            image_url: string;
+            is_primary: boolean;
+            sort_order: number;
+          }> | null;
+        } | null;
+      };
+      const dedup = new Map<string, NonNullable<typeof prodsByFk>[number]>();
+      (prodsByFk ?? []).forEach((p) => dedup.set(p.id, p));
+      ((linked ?? []) as unknown as LinkedRow[]).forEach((r) => {
+        const p = r.products;
+        if (p && p.is_active) dedup.set(p.id, p as never);
+      });
+      const prods = Array.from(dedup.values());
       if (cancelled) return;
       const normalized: ProductRow[] = (prods ?? []).map((p) => {
         const imgs = (p.product_images ?? []) as Array<{
@@ -205,6 +260,25 @@ export function CategoryPage({ slug }: { slug: string }) {
         <div className="mx-auto max-w-[1280px] px-4 py-12 md:px-8 md:py-16">
           {category ? (
             <>
+              {ancestors.length > 0 && (
+                <nav className="mb-3 text-xs text-muted-foreground" aria-label="Breadcrumb">
+                  <Link to="/" className="hover:text-foreground">Home</Link>
+                  {ancestors.map((a) => (
+                    <span key={a.id}>
+                      <span className="mx-1.5">/</span>
+                      <Link
+                        to={"/c/$slug" as never}
+                        params={{ slug: a.slug } as never}
+                        className="hover:text-foreground"
+                      >
+                        {localizedField(a, "name", lang).value}
+                      </Link>
+                    </span>
+                  ))}
+                  <span className="mx-1.5">/</span>
+                  <span className="text-foreground">{localizedField(category, "name", lang).value}</span>
+                </nav>
+              )}
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">
                 {t("category_detail.eyebrow")}
               </p>

@@ -1,0 +1,52 @@
+DO $$
+DECLARE
+    tbl record;
+    has_priv boolean;
+BEGIN
+    FOR tbl IN
+        SELECT c.relname AS table_name
+          FROM pg_class c
+          JOIN pg_namespace n ON n.oid = c.relnamespace
+         WHERE c.relkind = 'r'
+           AND n.nspname = 'public'
+    LOOP
+        SELECT EXISTS (
+            SELECT 1 FROM information_schema.role_table_grants
+             WHERE grantee = 'authenticated' AND table_schema = 'public' AND table_name = tbl.table_name
+               AND privilege_type IN ('SELECT', 'INSERT', 'UPDATE', 'DELETE')
+        ) INTO has_priv;
+        IF NOT has_priv THEN
+            EXECUTE format('GRANT SELECT, INSERT, UPDATE, DELETE ON public.%I TO authenticated', tbl.table_name);
+        END IF;
+
+        SELECT EXISTS (
+            SELECT 1 FROM information_schema.role_table_grants
+             WHERE grantee = 'service_role' AND table_schema = 'public' AND table_name = tbl.table_name
+               AND privilege_type IN ('SELECT', 'INSERT', 'UPDATE', 'DELETE')
+        ) INTO has_priv;
+        IF NOT has_priv THEN
+            EXECUTE format('GRANT ALL ON public.%I TO service_role', tbl.table_name);
+        END IF;
+    END LOOP;
+END;
+$$;
+
+-- Grant anon SELECT on public-readable catalog tables (their RLS already restricts to public/active rows)
+GRANT SELECT ON public.products TO anon;
+GRANT SELECT ON public.categories TO anon;
+GRANT SELECT ON public.product_images TO anon;
+GRANT SELECT ON public.product_variants TO anon;
+GRANT SELECT ON public.product_size_variants TO anon;
+GRANT SELECT ON public.product_categories TO anon;
+GRANT SELECT ON public.product_option_types TO anon;
+GRANT SELECT ON public.product_option_values TO anon;
+GRANT SELECT ON public.attributes TO anon;
+GRANT SELECT ON public.category_attributes TO anon;
+GRANT SELECT ON public.category_slug_redirects TO anon;
+GRANT SELECT ON public.size_guides TO anon;
+GRANT SELECT ON public.category_size_guides TO anon;
+GRANT SELECT ON public.brand_glossary TO anon;
+GRANT SELECT ON public.shipping_zones TO anon;
+GRANT SELECT ON public.shipping_methods TO anon;
+GRANT SELECT ON public.stores TO anon;
+GRANT SELECT ON public.store_stock TO anon;

@@ -574,7 +574,7 @@ export function CheckoutPage() {
                         />
                       </div>
 
-                      {(biteshipLoading || biteshipRates.length > 0 || biteshipError) && (
+                      {(biteshipLoading || biteshipRates.length > 0) && (
                         <div className="rounded-md border border-border p-3">
                           <p className="text-xs font-medium">Pilih kurir (live ongkir)</p>
                           {biteshipLoading && (
@@ -582,9 +582,6 @@ export function CheckoutPage() {
                               <Loader2 className="mr-1 inline h-3 w-3 animate-spin" />
                               Menghitung ongkir…
                             </p>
-                          )}
-                          {biteshipError && !biteshipLoading && (
-                            <p className="mt-2 text-xs text-destructive">{biteshipError}</p>
                           )}
                           {biteshipRates.length > 0 && (
                             <RadioGroup

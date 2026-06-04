@@ -636,17 +636,6 @@ export function ProductForm(props: ProductFormProps) {
     }, 80);
   }
 
-  const requiredOk = useMemo(() => {
-    return (
-      values.sku.trim() &&
-      SKU_RE.test(values.sku) &&
-      skuCheck !== "taken" &&
-      values.category_id &&
-      values.price_idr > 0 &&
-      (values.name_en.trim() || values.name_id.trim())
-    );
-  }, [values, skuCheck]);
-
   async function save(opts: { andNew?: boolean } = {}) {
     const e = computeErrors();
     setErrors(e);

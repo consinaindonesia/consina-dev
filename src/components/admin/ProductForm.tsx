@@ -1502,27 +1502,37 @@ export function ProductForm(props: ProductFormProps) {
 
       {/* Sticky save bar */}
       <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-white px-4 py-3 shadow-lg lg:left-[240px]">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
-          <div className="text-xs text-muted-foreground">
-            {dirty ? "Unsaved changes" : "All changes saved"}
-          </div>
-          <div className="flex items-center gap-2">
-            <CancelLink dirty={dirty} />
-            <Button
-              variant="outline"
-              disabled={!requiredOk || saving}
-              onClick={() => void save({ andNew: true })}
-            >
-              Save & new
-            </Button>
-            <Button
-              disabled={!requiredOk || saving}
-              onClick={() => void save()}
-              style={{ backgroundColor: FOREST }}
-              className="text-white hover:opacity-90"
-            >
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
-            </Button>
+        <div className="mx-auto flex max-w-6xl flex-col gap-2">
+          {erroredTabs.size > 0 && (
+            <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+              Lengkapi field wajib di tab:{" "}
+              <span className="font-semibold">
+                {Array.from(erroredTabs).map((t) => TAB_LABELS[t]).join(", ")}
+              </span>
+            </div>
+          )}
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-xs text-muted-foreground">
+              {dirty ? "Unsaved changes" : "All changes saved"}
+            </div>
+            <div className="flex items-center gap-2">
+              <CancelLink dirty={dirty} />
+              <Button
+                variant="outline"
+                disabled={saving}
+                onClick={() => void save({ andNew: true })}
+              >
+                Save & new
+              </Button>
+              <Button
+                disabled={saving}
+                onClick={() => void save()}
+                style={{ backgroundColor: FOREST }}
+                className="text-white hover:opacity-90"
+              >
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+              </Button>
+            </div>
           </div>
         </div>
       </div>

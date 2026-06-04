@@ -18,6 +18,10 @@ import {
   type ShippingMethod as ShipMethod,
   type ShippingZone,
 } from "@/lib/shipping";
+import { useServerFn } from "@tanstack/react-start";
+import { getBiteshipRates, type BiteshipRate } from "@/lib/biteship.functions";
+import { validateVoucher, redeemVoucher } from "@/lib/voucher.functions";
+import { useCart, clearCart } from "@/lib/cart-store";
 
 type PaymentMethod = "bank_transfer" | "midtrans" | "stripe";
 
@@ -75,6 +79,8 @@ export function CheckoutPage() {
   const navigate = useNavigate();
   const search = useSearch();
   const inquiryId = search.inquiry || "";
+  const isCart = search.cart === "1";
+  const cart = useCart();
 
   const [loading, setLoading] = useState(true);
   const [inquiry, setInquiry] = useState<InquiryRow | null>(null);
@@ -94,6 +100,29 @@ export function CheckoutPage() {
   const [methods, setMethods] = useState<ShipMethod[]>([]);
   const [selectedMethodId, setSelectedMethodId] = useState<string>("");
 
+  // Guest contact (cart mode)
+  const [guestName, setGuestName] = useState("");
+  const [guestEmail, setGuestEmail] = useState("");
+  const [guestPhone, setGuestPhone] = useState("");
+
+  // Biteship live rates
+  const [biteshipRates, setBiteshipRates] = useState<BiteshipRate[]>([]);
+  const [biteshipLoading, setBiteshipLoading] = useState(false);
+  const [biteshipError, setBiteshipError] = useState<string | null>(null);
+  const [selectedBiteshipKey, setSelectedBiteshipKey] = useState<string>("");
+  const fetchBiteship = useServerFn(getBiteshipRates);
+
+  // Voucher
+  const [voucherInput, setVoucherInput] = useState("");
+  const [voucherApplying, setVoucherApplying] = useState(false);
+  const [appliedVoucher, setAppliedVoucher] = useState<{
+    code: string;
+    discount_idr: number;
+  } | null>(null);
+  const [voucherError, setVoucherError] = useState<string | null>(null);
+  const callValidateVoucher = useServerFn(validateVoucher);
+  const callRedeemVoucher = useServerFn(redeemVoucher);
+
   useEffect(() => {
     if (isIndonesian) return;
     let cancelled = false;
@@ -108,6 +137,11 @@ export function CheckoutPage() {
   useEffect(() => {
     let cancelled = false;
     async function load() {
+      if (isCart) {
+        // Cart mode — items come from localStorage cart; no inquiry record.
+        setLoading(false);
+        return;
+      }
       if (!inquiryId) {
         setLoading(false);
         return;
@@ -131,7 +165,7 @@ export function CheckoutPage() {
     return () => {
       cancelled = true;
     };
-  }, [inquiryId]);
+  }, [inquiryId, isCart]);
 
   useEffect(() => {
     let cancelled = false;

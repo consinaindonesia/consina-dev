@@ -150,8 +150,11 @@ export const Route = createFileRoute("/api/public/hooks/midtrans")({
  * Decrements the size variant if present, else the color variant (if it
  * tracks stock), else the base product. Clamps at 0 — never goes negative.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AdminClient = any;
+
 async function decrementStockForOrder(
-  supabase: ReturnType<typeof createClient>,
+  supabase: AdminClient,
   orderId: string,
 ) {
   // Claim the decrement slot atomically.
@@ -213,7 +216,7 @@ async function decrementStockForOrder(
 }
 
 async function decrementProductBaseStock(
-  supabase: ReturnType<typeof createClient>,
+  supabase: AdminClient,
   productId: string,
   qty: number,
 ) {

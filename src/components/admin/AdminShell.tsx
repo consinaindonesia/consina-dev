@@ -23,6 +23,7 @@ import {
   ShoppingBag,
   Truck,
   Ruler,
+  Ticket,
 } from "lucide-react";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -43,6 +44,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Size guides", to: "/admin/size-guides", icon: Ruler },
   { label: "Inquiries", to: "/admin/inquiries", icon: MessageSquare, badge: "inquiries" },
   { label: "Orders", to: "/admin/orders", icon: ShoppingBag },
+  { label: "Vouchers", to: "/admin/vouchers", icon: Ticket, adminOnly: true },
   { label: "Customers", to: "/admin/customers", icon: UserIcon },
   { label: "Restock alerts", to: "/admin/restocks", icon: BellRing },
   { label: "Stores", to: "/admin/stores", icon: MapPin },

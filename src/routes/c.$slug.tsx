@@ -339,10 +339,28 @@ function CategoryPage() {
                     const img = p.product_images[0];
                     const prefix = lang === "id" ? "produk" : "products";
                     const detailHref = `/${lang}/${prefix}/${p.slug ?? p.sku}`;
+                    const requiresChoice = p.variants.length > 0 || p.has_size_variants;
+                    const handleAdd = (e: React.MouseEvent) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      addToCart({
+                        productId: p.id,
+                        slug: p.slug ?? p.sku,
+                        sku: p.sku,
+                        name_id: p.name_id,
+                        name_en: p.name_en,
+                        price_idr: p.price_idr,
+                        weight_grams: p.weight_grams,
+                        thumbnail: img ? (img.thumbnail_url ?? img.image_url) : null,
+                        attributes: {},
+                        quantity: 1,
+                      });
+                      toast.success(lang === "id" ? "Ditambahkan ke keranjang" : "Added to cart");
+                    };
                     return (
                       <li key={p.id} className="group overflow-hidden rounded-xl border border-border bg-card transition hover:shadow-md">
                         <Link to={detailHref as never} className="block cursor-pointer">
-                        <div className="aspect-square overflow-hidden bg-muted">
+                        <div className="relative aspect-square overflow-hidden bg-muted">
                           {img ? (
                             <img
                               src={img.thumbnail_url ?? img.image_url}
@@ -352,6 +370,17 @@ function CategoryPage() {
                             />
                           ) : (
                             <div className="h-full w-full bg-muted" />
+                          )}
+                          {!requiresChoice && (
+                            <button
+                              type="button"
+                              onClick={handleAdd}
+                              aria-label={lang === "id" ? "Tambah ke Keranjang" : "Add to cart"}
+                              className="absolute bottom-3 right-3 inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground opacity-0 shadow transition group-hover:opacity-100 hover:bg-primary/90"
+                            >
+                              <ShoppingBag className="h-3.5 w-3.5" />
+                              {lang === "id" ? "Tambah" : "Add"}
+                            </button>
                           )}
                         </div>
                         <div className="p-4">

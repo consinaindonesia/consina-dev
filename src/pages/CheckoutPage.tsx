@@ -401,6 +401,9 @@ export function CheckoutPage() {
         quantity: it.quantity,
         unit_price_idr: it.price_idr,
         line_total_idr: it.price_idr * it.quantity,
+        attributes: it.attributes ?? null,
+        variant_id: it.variantId ?? null,
+        size_variant_id: it.sizeVariantId ?? null,
       }));
       if (rows.length) {
         const { error: itErr } = await supabase.from("order_items").insert(rows);

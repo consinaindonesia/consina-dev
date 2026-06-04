@@ -778,27 +778,54 @@ export function CheckoutPage() {
                 <div className="sm:col-span-2">
                   <Label className="text-xs">Nama lengkap *</Label>
                   <Input
+                    id="co-name"
                     value={guestName}
-                    onChange={(e) => setGuestName(e.target.value)}
+                    onChange={(e) => {
+                      setGuestName(e.target.value);
+                      clearError("name");
+                    }}
                     maxLength={120}
+                    className={errors.name ? errorInputClass : undefined}
+                    aria-invalid={!!errors.name}
                   />
+                  {errors.name && (
+                    <p className="mt-1 text-xs text-destructive">{errors.name}</p>
+                  )}
                 </div>
                 <div>
                   <Label className="text-xs">Email *</Label>
                   <Input
+                    id="co-email"
                     type="email"
                     value={guestEmail}
-                    onChange={(e) => setGuestEmail(e.target.value)}
+                    onChange={(e) => {
+                      setGuestEmail(e.target.value);
+                      clearError("email");
+                    }}
                     maxLength={255}
+                    className={errors.email ? errorInputClass : undefined}
+                    aria-invalid={!!errors.email}
                   />
+                  {errors.email && (
+                    <p className="mt-1 text-xs text-destructive">{errors.email}</p>
+                  )}
                 </div>
                 <div>
                   <Label className="text-xs">No. telepon *</Label>
                   <Input
+                    id="co-phone"
                     value={guestPhone}
-                    onChange={(e) => setGuestPhone(e.target.value)}
+                    onChange={(e) => {
+                      setGuestPhone(e.target.value);
+                      clearError("phone");
+                    }}
                     maxLength={32}
+                    className={errors.phone ? errorInputClass : undefined}
+                    aria-invalid={!!errors.phone}
                   />
+                  {errors.phone && (
+                    <p className="mt-1 text-xs text-destructive">{errors.phone}</p>
+                  )}
                 </div>
               </div>
             ) : (

@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { LangSuggestionBanner } from "./LangSuggestionBanner";
 import { InquiryDrawer } from "./InquiryDrawer";
+import { CartDrawer } from "./CartDrawer";
 import { usePublicCategories, type PublicCategory } from "@/hooks/use-public-categories";
 import { useLang } from "@/i18n/LangProvider";
 import { localizedField } from "@/i18n/format";
@@ -134,6 +135,7 @@ export function Nav() {
 
         <div className="flex items-center gap-2">
           <InquiryDrawer />
+          <CartDrawer />
           <LanguageSwitcher className="hidden md:inline-flex" />
           <button className="hidden h-9 w-9 items-center justify-center rounded-full text-foreground/70 transition hover:bg-muted hover:text-primary md:flex" aria-label={t("nav.search")}>
             <Search className="h-4 w-4" />

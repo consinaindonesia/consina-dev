@@ -654,6 +654,7 @@ export function ProductForm(props: ProductFormProps) {
         }
       }
       await persistSizeData(data.id, sizeData);
+      await syncProductCategories(data.id, values.category_id || null, extraCategoryIds);
       toast.success("Product created");
       setInitialSnapshot(JSON.stringify(values));
       try { localStorage.removeItem(draftKey); } catch { /* ignore */ }
@@ -682,6 +683,8 @@ export function ProductForm(props: ProductFormProps) {
       }
       void logActivity(profile?.id ?? null, "updated", productId);
       await persistSizeData(productId, sizeData);
+      await syncProductCategories(productId, values.category_id || null, extraCategoryIds);
+      setInitialExtraCategoryIds(extraCategoryIds);
       toast.success("Product saved");
       if (
         prevStock === "out_of_stock" &&

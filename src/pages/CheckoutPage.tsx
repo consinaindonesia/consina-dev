@@ -134,6 +134,18 @@ export function CheckoutPage() {
   const callValidateVoucher = useServerFn(validateVoucher);
   const callRedeemVoucher = useServerFn(redeemVoucher);
 
+  // Inline form validation errors keyed by field id.
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const clearError = (field: string) =>
+    setErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+
+  const errorInputClass = "border-destructive focus-visible:ring-destructive";
+
   useEffect(() => {
     if (isIndonesian) return;
     let cancelled = false;
@@ -349,26 +361,49 @@ export function CheckoutPage() {
       toast.error("Keranjang kosong");
       return;
     }
+
+    const newErrors: Record<string, string> = {};
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRe = /^[+\d][\d\s\-()]{6,}$/;
+
     if (isCart) {
-      if (!guestName.trim() || !guestEmail.trim() || !guestPhone.trim()) {
-        toast.error("Mohon isi nama, email, dan nomor telepon");
-        return;
-      }
+      if (!guestName.trim()) newErrors.name = "Nama lengkap wajib diisi";
+      if (!guestEmail.trim()) newErrors.email = "Email wajib diisi";
+      else if (!emailRe.test(guestEmail.trim()))
+        newErrors.email = "Format email tidak valid";
+      if (!guestPhone.trim()) newErrors.phone = "No. telepon wajib diisi";
+      else if (!phoneRe.test(guestPhone.trim()))
+        newErrors.phone = "Format no. telepon tidak valid";
     }
     if (shippingMethod === "delivery") {
-      if (shippingAddress.trim().length < 10) {
-        toast.error("Please enter a delivery address");
-        return;
-      }
-      if (!shippingCity.trim()) {
-        toast.error("Please enter a city");
-        return;
-      }
-      if (!selectedBiteshipKey && !selectedQuote) {
-        toast.error("Please choose a shipping method");
-        return;
-      }
+      if (!shippingCity.trim()) newErrors.city = "Kota wajib diisi";
+      if (!shippingPostal.trim()) newErrors.postal = "Kode pos wajib diisi";
+      if (!shippingAddress.trim())
+        newErrors.address = "Alamat wajib diisi";
+      else if (shippingAddress.trim().length < 10)
+        newErrors.address = "Alamat terlalu pendek (minimal 10 karakter)";
     }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      const order = ["name", "email", "phone", "city", "postal", "address"];
+      const first = order.find((k) => newErrors[k]);
+      if (first && typeof document !== "undefined") {
+        const el = document.getElementById(`co-${first}`);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+          setTimeout(() => (el as HTMLInputElement).focus?.(), 250);
+        }
+      }
+      toast.error("Lengkapi field yang wajib diisi");
+      return;
+    }
+
+    if (shippingMethod === "delivery" && !selectedBiteshipKey && !selectedQuote) {
+      toast.error("Pilih metode pengiriman");
+      return;
+    }
+    setErrors({});
     setSubmitting(true);
     try {
       const selectedBiteship = biteshipRates.find(
@@ -550,28 +585,55 @@ export function CheckoutPage() {
                         <div>
                           <Label className="text-xs">City</Label>
                           <Input
+                            id="co-city"
                             value={shippingCity}
-                            onChange={(e) => setShippingCity(e.target.value)}
+                            onChange={(e) => {
+                              setShippingCity(e.target.value);
+                              clearError("city");
+                            }}
                             placeholder="Jakarta"
+                            className={errors.city ? errorInputClass : undefined}
+                            aria-invalid={!!errors.city}
                           />
+                          {errors.city && (
+                            <p className="mt-1 text-xs text-destructive">{errors.city}</p>
+                          )}
                         </div>
                         <div>
                           <Label className="text-xs">Postal code</Label>
                           <Input
+                            id="co-postal"
                             value={shippingPostal}
-                            onChange={(e) => setShippingPostal(e.target.value)}
+                            onChange={(e) => {
+                              setShippingPostal(e.target.value);
+                              clearError("postal");
+                            }}
                             placeholder="12345"
+                            className={errors.postal ? errorInputClass : undefined}
+                            aria-invalid={!!errors.postal}
                           />
+                          {errors.postal && (
+                            <p className="mt-1 text-xs text-destructive">{errors.postal}</p>
+                          )}
                         </div>
                       </div>
                       <div>
                         <Label className="text-xs">Street address</Label>
                         <Textarea
+                          id="co-address"
                           value={shippingAddress}
-                          onChange={(e) => setShippingAddress(e.target.value)}
+                          onChange={(e) => {
+                            setShippingAddress(e.target.value);
+                            clearError("address");
+                          }}
                           rows={2}
                           placeholder="Street, building, unit"
+                          className={errors.address ? errorInputClass : undefined}
+                          aria-invalid={!!errors.address}
                         />
+                        {errors.address && (
+                          <p className="mt-1 text-xs text-destructive">{errors.address}</p>
+                        )}
                       </div>
 
                       {(biteshipLoading || biteshipRates.length > 0) && (
@@ -716,27 +778,54 @@ export function CheckoutPage() {
                 <div className="sm:col-span-2">
                   <Label className="text-xs">Nama lengkap *</Label>
                   <Input
+                    id="co-name"
                     value={guestName}
-                    onChange={(e) => setGuestName(e.target.value)}
+                    onChange={(e) => {
+                      setGuestName(e.target.value);
+                      clearError("name");
+                    }}
                     maxLength={120}
+                    className={errors.name ? errorInputClass : undefined}
+                    aria-invalid={!!errors.name}
                   />
+                  {errors.name && (
+                    <p className="mt-1 text-xs text-destructive">{errors.name}</p>
+                  )}
                 </div>
                 <div>
                   <Label className="text-xs">Email *</Label>
                   <Input
+                    id="co-email"
                     type="email"
                     value={guestEmail}
-                    onChange={(e) => setGuestEmail(e.target.value)}
+                    onChange={(e) => {
+                      setGuestEmail(e.target.value);
+                      clearError("email");
+                    }}
                     maxLength={255}
+                    className={errors.email ? errorInputClass : undefined}
+                    aria-invalid={!!errors.email}
                   />
+                  {errors.email && (
+                    <p className="mt-1 text-xs text-destructive">{errors.email}</p>
+                  )}
                 </div>
                 <div>
                   <Label className="text-xs">No. telepon *</Label>
                   <Input
+                    id="co-phone"
                     value={guestPhone}
-                    onChange={(e) => setGuestPhone(e.target.value)}
+                    onChange={(e) => {
+                      setGuestPhone(e.target.value);
+                      clearError("phone");
+                    }}
                     maxLength={32}
+                    className={errors.phone ? errorInputClass : undefined}
+                    aria-invalid={!!errors.phone}
                   />
+                  {errors.phone && (
+                    <p className="mt-1 text-xs text-destructive">{errors.phone}</p>
+                  )}
                 </div>
               </div>
             ) : (
@@ -842,6 +931,11 @@ export function CheckoutPage() {
               {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Confirm order
             </Button>
+            {Object.keys(errors).length > 0 && (
+              <p className="mt-2 text-xs text-destructive">
+                Lengkapi field yang wajib diisi
+              </p>
+            )}
             <p className="mt-3 text-xs text-muted-foreground">
               You'll see bank transfer instructions on the next page.
             </p>

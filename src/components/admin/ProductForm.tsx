@@ -292,7 +292,10 @@ export function ProductForm(props: ProductFormProps) {
   const [draftAvailable, setDraftAvailable] = useState<ProductFormValues | null>(null);
   const [draftDismissed, setDraftDismissed] = useState(false);
 
-  const dirty = JSON.stringify(values) !== initialSnapshot;
+  const dirty =
+    JSON.stringify(values) !== initialSnapshot ||
+    JSON.stringify([...extraCategoryIds].sort()) !==
+      JSON.stringify([...initialExtraCategoryIds].sort());
 
   // Load categories
   useEffect(() => {
@@ -843,6 +846,62 @@ export function ProductForm(props: ProductFormProps) {
                     ))}
                   </SelectContent>
                 </Select>
+              </Field>
+
+              <Field label="Additional categories">
+                <div className="space-y-2">
+                  <div className="flex flex-wrap gap-1.5">
+                    {extraCategoryIds.length === 0 && (
+                      <span className="text-xs text-muted-foreground">
+                        Cross-list this product under other categories (e.g. Activities › Hiking).
+                      </span>
+                    )}
+                    {extraCategoryIds.map((id) => {
+                      const c = categories.find((x) => x.id === id);
+                      if (!c) return null;
+                      return (
+                        <span
+                          key={id}
+                          className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs"
+                        >
+                          {c.name_en}
+                          <button
+                            type="button"
+                            aria-label={`Remove ${c.name_en}`}
+                            onClick={() =>
+                              setExtraCategoryIds((prev) => prev.filter((x) => x !== id))
+                            }
+                            className="text-muted-foreground hover:text-foreground"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      );
+                    })}
+                  </div>
+                  <Select
+                    value=""
+                    onValueChange={(v) => {
+                      if (!v || v === values.category_id) return;
+                      setExtraCategoryIds((prev) => (prev.includes(v) ? prev : [...prev, v]));
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Add a category…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories
+                        .filter(
+                          (c) => c.id !== values.category_id && !extraCategoryIds.includes(c.id),
+                        )
+                        .map((c) => (
+                          <SelectItem key={c.id} value={c.id}>
+                            {c.name_en}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </Field>
 
               <Field label="Capacity">

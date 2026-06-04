@@ -542,7 +542,54 @@ export function CheckoutPage() {
                         />
                       </div>
 
-                      {matchedZone && (
+                      {(biteshipLoading || biteshipRates.length > 0 || biteshipError) && (
+                        <div className="rounded-md border border-border p-3">
+                          <p className="text-xs font-medium">Pilih kurir (live ongkir)</p>
+                          {biteshipLoading && (
+                            <p className="mt-2 text-xs text-muted-foreground">
+                              <Loader2 className="mr-1 inline h-3 w-3 animate-spin" />
+                              Menghitung ongkir…
+                            </p>
+                          )}
+                          {biteshipError && !biteshipLoading && (
+                            <p className="mt-2 text-xs text-destructive">{biteshipError}</p>
+                          )}
+                          {biteshipRates.length > 0 && (
+                            <RadioGroup
+                              value={selectedBiteshipKey}
+                              onValueChange={setSelectedBiteshipKey}
+                              className="mt-2 space-y-2"
+                            >
+                              {biteshipRates.map((r) => {
+                                const k = `${r.courier_code}:${r.courier_service_code}`;
+                                return (
+                                  <label
+                                    key={k}
+                                    className="flex items-center justify-between gap-3 rounded-md border border-border p-2 cursor-pointer"
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <RadioGroupItem value={k} id={k} />
+                                      <div>
+                                        <div className="text-sm font-medium">
+                                          {r.courier_name} — {r.courier_service_name}
+                                        </div>
+                                        <div className="text-xs text-muted-foreground">
+                                          {r.duration || r.shipment_duration_range}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div className="text-sm font-semibold">
+                                      {formatPrice(r.price, lang)}
+                                    </div>
+                                  </label>
+                                );
+                              })}
+                            </RadioGroup>
+                          )}
+                        </div>
+                      )}
+
+                      {biteshipRates.length === 0 && matchedZone && (
                         <div className="rounded-md border border-border p-3">
                           <p className="text-xs text-muted-foreground">
                             Shipping to <strong>{matchedZone.region_name}</strong>{" "}

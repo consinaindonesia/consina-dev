@@ -20,6 +20,7 @@ import { useLang } from "@/i18n/LangProvider";
 import { formatPrice, localizedField, hasTranslation } from "@/i18n/format";
 import { MissingTranslationNotice } from "@/components/site/MissingTranslationNotice";
 import { addToInquiry } from "@/lib/inquiry-store";
+import { addToCart } from "@/lib/cart-store";
 import { FindInStore } from "@/components/site/FindInStore";
 import { PriceDisplay } from "@/components/site/PriceDisplay";
 import { SizeGuideDialog, type SizeGuide } from "@/components/site/SizeGuideDialog";
@@ -342,6 +343,32 @@ export function ProductDetailPage({ slug }: { slug: string }) {
         onClick: () => navigate({ to: (lang === "id" ? "/id/permintaan" : "/en/inquiry") as never }),
       },
     });
+  }
+
+  function handleAddToCart() {
+    if (!product) return;
+    const top = images[0];
+    addToCart({
+      productId: product.id,
+      slug: product.sku,
+      sku: product.sku,
+      name_id: product.name_id,
+      name_en: product.name_en,
+      price_idr: product.price_idr,
+      weight_grams: product.weight_grams,
+      thumbnail: top ? (top.thumbnail_url ?? top.image_url) : null,
+      attributes: selectedAttrs,
+      quantity,
+    });
+    toast.success(
+      lang === "id" ? `Ditambahkan ke keranjang (${quantity})` : `Added to cart (${quantity})`,
+      {
+        action: {
+          label: lang === "id" ? "Lihat keranjang" : "View cart",
+          onClick: () => navigate({ to: "/cart" as never }),
+        },
+      },
+    );
   }
 
   if (missing) throw notFound();

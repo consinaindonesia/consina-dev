@@ -1734,21 +1734,39 @@ function Field({
   label,
   required,
   error,
+  errorKey,
   children,
 }: {
   label: string;
   required?: boolean;
   error?: string;
+  errorKey?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-1.5">
+    <div
+      className={cn(
+        "space-y-1.5",
+        error &&
+          "[&_input]:border-destructive [&_input]:focus-visible:ring-destructive [&_textarea]:border-destructive [&_button[role=combobox]]:border-destructive",
+      )}
+      data-error-field={errorKey}
+    >
       <Label>
         {label} {required && <span className="text-destructive">*</span>}
       </Label>
       {children}
       {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
+  );
+}
+
+function ErrorDot() {
+  return (
+    <span
+      aria-label="has errors"
+      className="inline-block h-1.5 w-1.5 rounded-full bg-destructive"
+    />
   );
 }
 

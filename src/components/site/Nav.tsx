@@ -140,7 +140,7 @@ export function Nav() {
           <CartDrawer />
           <Link
             to="/wishlist"
-            className="relative hidden h-9 w-9 items-center justify-center rounded-full text-foreground/70 transition hover:bg-muted hover:text-primary md:flex"
+            className="relative flex h-9 w-9 items-center justify-center rounded-full text-foreground/70 transition hover:bg-muted hover:text-primary"
             aria-label="Wishlist"
           >
             <Heart className="h-4 w-4" />

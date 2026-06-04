@@ -632,7 +632,7 @@ function ProductsPage() {
                   return (
                     <tr
                       key={r.id}
-                      className="cursor-pointer border-b border-border/60 transition-colors hover:bg-muted/40"
+                      className="group cursor-pointer border-b border-border/60 transition-colors hover:bg-muted/40"
                       onClick={() => navigate({ to: "/admin/products/$id/edit", params: { id: r.id } })}
                     >
                       <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>

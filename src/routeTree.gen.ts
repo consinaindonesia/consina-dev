@@ -23,11 +23,13 @@ import { Route as AccessoriesRouteImport } from './routes/accessories'
 import { Route as LangRouteImport } from './routes/$lang'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EnIndexRouteImport } from './routes/en/index'
+import { Route as AkunIndexRouteImport } from './routes/akun.index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as LangIndexRouteImport } from './routes/$lang.index'
 import { Route as EnSplatRouteImport } from './routes/en/$'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
+import { Route as AkunProfileRouteImport } from './routes/akun.profile'
 import { Route as AdminVouchersRouteImport } from './routes/admin/vouchers'
 import { Route as AdminStoresRouteImport } from './routes/admin/stores'
 import { Route as AdminSizeGuidesRouteImport } from './routes/admin/size-guides'
@@ -148,6 +150,11 @@ const EnIndexRoute = EnIndexRouteImport.update({
   path: '/en/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AkunIndexRoute = AkunIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AkunRoute,
+} as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/admin/',
   path: '/admin/',
@@ -172,6 +179,11 @@ const CSlugRoute = CSlugRouteImport.update({
   id: '/c/$slug',
   path: '/c/$slug',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AkunProfileRoute = AkunProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AkunRoute,
 } as any)
 const AdminVouchersRoute = AdminVouchersRouteImport.update({
   id: '/admin/vouchers',
@@ -430,7 +442,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$lang': typeof LangRouteWithChildren
   '/accessories': typeof AccessoriesRoute
-  '/akun': typeof AkunRoute
+  '/akun': typeof AkunRouteWithChildren
   '/apparel': typeof ApparelRoute
   '/auth': typeof AuthRoute
   '/carriers': typeof CarriersRoute
@@ -462,11 +474,13 @@ export interface FileRoutesByFullPath {
   '/admin/size-guides': typeof AdminSizeGuidesRoute
   '/admin/stores': typeof AdminStoresRouteWithChildren
   '/admin/vouchers': typeof AdminVouchersRoute
+  '/akun/profile': typeof AkunProfileRoute
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/en/$': typeof EnSplatRoute
   '/$lang/': typeof LangIndexRoute
   '/admin/': typeof AdminIndexRoute
+  '/akun/': typeof AkunIndexRoute
   '/en/': typeof EnIndexRoute
   '/$lang/inquiry/sent': typeof LangInquirySentRoute
   '/$lang/order/$id': typeof LangOrderIdRoute
@@ -499,7 +513,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/accessories': typeof AccessoriesRoute
-  '/akun': typeof AkunRoute
   '/apparel': typeof ApparelRoute
   '/auth': typeof AuthRoute
   '/carriers': typeof CarriersRoute
@@ -529,11 +542,13 @@ export interface FileRoutesByTo {
   '/admin/size-guides': typeof AdminSizeGuidesRoute
   '/admin/stores': typeof AdminStoresRouteWithChildren
   '/admin/vouchers': typeof AdminVouchersRoute
+  '/akun/profile': typeof AkunProfileRoute
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/en/$': typeof EnSplatRoute
   '/$lang': typeof LangIndexRoute
   '/admin': typeof AdminIndexRoute
+  '/akun': typeof AkunIndexRoute
   '/en': typeof EnIndexRoute
   '/$lang/inquiry/sent': typeof LangInquirySentRoute
   '/$lang/order/$id': typeof LangOrderIdRoute
@@ -568,7 +583,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/$lang': typeof LangRouteWithChildren
   '/accessories': typeof AccessoriesRoute
-  '/akun': typeof AkunRoute
+  '/akun': typeof AkunRouteWithChildren
   '/apparel': typeof ApparelRoute
   '/auth': typeof AuthRoute
   '/carriers': typeof CarriersRoute
@@ -600,11 +615,13 @@ export interface FileRoutesById {
   '/admin/size-guides': typeof AdminSizeGuidesRoute
   '/admin/stores': typeof AdminStoresRouteWithChildren
   '/admin/vouchers': typeof AdminVouchersRoute
+  '/akun/profile': typeof AkunProfileRoute
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/en/$': typeof EnSplatRoute
   '/$lang/': typeof LangIndexRoute
   '/admin/': typeof AdminIndexRoute
+  '/akun/': typeof AkunIndexRoute
   '/en/': typeof EnIndexRoute
   '/$lang/inquiry/sent': typeof LangInquirySentRoute
   '/$lang/order/$id': typeof LangOrderIdRoute
@@ -672,11 +689,13 @@ export interface FileRouteTypes {
     | '/admin/size-guides'
     | '/admin/stores'
     | '/admin/vouchers'
+    | '/akun/profile'
     | '/c/$slug'
     | '/email/unsubscribe'
     | '/en/$'
     | '/$lang/'
     | '/admin/'
+    | '/akun/'
     | '/en/'
     | '/$lang/inquiry/sent'
     | '/$lang/order/$id'
@@ -709,7 +728,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/accessories'
-    | '/akun'
     | '/apparel'
     | '/auth'
     | '/carriers'
@@ -739,11 +757,13 @@ export interface FileRouteTypes {
     | '/admin/size-guides'
     | '/admin/stores'
     | '/admin/vouchers'
+    | '/akun/profile'
     | '/c/$slug'
     | '/email/unsubscribe'
     | '/en/$'
     | '/$lang'
     | '/admin'
+    | '/akun'
     | '/en'
     | '/$lang/inquiry/sent'
     | '/$lang/order/$id'
@@ -809,11 +829,13 @@ export interface FileRouteTypes {
     | '/admin/size-guides'
     | '/admin/stores'
     | '/admin/vouchers'
+    | '/akun/profile'
     | '/c/$slug'
     | '/email/unsubscribe'
     | '/en/$'
     | '/$lang/'
     | '/admin/'
+    | '/akun/'
     | '/en/'
     | '/$lang/inquiry/sent'
     | '/$lang/order/$id'
@@ -848,7 +870,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LangRoute: typeof LangRouteWithChildren
   AccessoriesRoute: typeof AccessoriesRoute
-  AkunRoute: typeof AkunRoute
+  AkunRoute: typeof AkunRouteWithChildren
   ApparelRoute: typeof ApparelRoute
   AuthRoute: typeof AuthRoute
   CarriersRoute: typeof CarriersRoute
@@ -996,6 +1018,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EnIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/akun/': {
+      id: '/akun/'
+      path: '/'
+      fullPath: '/akun/'
+      preLoaderRoute: typeof AkunIndexRouteImport
+      parentRoute: typeof AkunRoute
+    }
     '/admin/': {
       id: '/admin/'
       path: '/admin'
@@ -1030,6 +1059,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/c/$slug'
       preLoaderRoute: typeof CSlugRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/akun/profile': {
+      id: '/akun/profile'
+      path: '/profile'
+      fullPath: '/akun/profile'
+      preLoaderRoute: typeof AkunProfileRouteImport
+      parentRoute: typeof AkunRoute
     }
     '/admin/vouchers': {
       id: '/admin/vouchers'
@@ -1431,6 +1467,18 @@ const LangRouteChildren: LangRouteChildren = {
 
 const LangRouteWithChildren = LangRoute._addFileChildren(LangRouteChildren)
 
+interface AkunRouteChildren {
+  AkunProfileRoute: typeof AkunProfileRoute
+  AkunIndexRoute: typeof AkunIndexRoute
+}
+
+const AkunRouteChildren: AkunRouteChildren = {
+  AkunProfileRoute: AkunProfileRoute,
+  AkunIndexRoute: AkunIndexRoute,
+}
+
+const AkunRouteWithChildren = AkunRoute._addFileChildren(AkunRouteChildren)
+
 interface AdminCustomersEmailRouteChildren {
   AdminCustomersEmailDeleteRoute: typeof AdminCustomersEmailDeleteRoute
   AdminCustomersEmailExportRoute: typeof AdminCustomersEmailExportRoute
@@ -1496,7 +1544,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LangRoute: LangRouteWithChildren,
   AccessoriesRoute: AccessoriesRoute,
-  AkunRoute: AkunRoute,
+  AkunRoute: AkunRouteWithChildren,
   ApparelRoute: ApparelRoute,
   AuthRoute: AuthRoute,
   CarriersRoute: CarriersRoute,
@@ -1547,3 +1595,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

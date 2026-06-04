@@ -186,6 +186,55 @@ async function logActivity(
   }
 }
 
+// Sync product_categories rows: ensures the primary row exists and rewrites
+// the set of non-primary "additional" memberships to match `extraIds`.
+async function syncProductCategories(
+  productId: string,
+  primaryId: string | null,
+  extraIds: string[],
+) {
+  // Remove any extras that are no longer selected and any stale primary rows.
+  const desiredIds = new Set<string>(extraIds);
+  if (primaryId) desiredIds.add(primaryId);
+
+  const { data: current } = await supabase
+    .from("product_categories")
+    .select("category_id, is_primary")
+    .eq("product_id", productId);
+
+  const currentRows = (current ?? []) as Array<{ category_id: string; is_primary: boolean }>;
+  const toDelete = currentRows
+    .filter((r) => !desiredIds.has(r.category_id))
+    .map((r) => r.category_id);
+  if (toDelete.length > 0) {
+    await supabase
+      .from("product_categories")
+      .delete()
+      .eq("product_id", productId)
+      .in("category_id", toDelete);
+  }
+
+  // Upsert primary (always is_primary=true), then extras (is_primary=false).
+  if (primaryId) {
+    await supabase
+      .from("product_categories")
+      .upsert(
+        { product_id: productId, category_id: primaryId, is_primary: true },
+        { onConflict: "product_id,category_id" },
+      );
+  }
+  if (extraIds.length > 0) {
+    const rows = extraIds
+      .filter((id) => id !== primaryId)
+      .map((id) => ({ product_id: productId, category_id: id, is_primary: false }));
+    if (rows.length > 0) {
+      await supabase
+        .from("product_categories")
+        .upsert(rows, { onConflict: "product_id,category_id" });
+    }
+  }
+}
+
 type Tab = "basic" | "translations" | "images" | "variants" | "sizes" | "availability" | "seo";
 type ProductFormProps =
   | { mode: "new"; productId?: undefined; initialTab?: Tab }

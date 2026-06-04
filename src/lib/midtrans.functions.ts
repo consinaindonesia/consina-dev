@@ -3,13 +3,67 @@ import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+function serverKey(): string {
+  return (process.env.MIDTRANS_SERVER_KEY ?? "").trim();
+}
+
+function clientKey(): string {
+  return (process.env.MIDTRANS_CLIENT_KEY ?? "").trim();
+}
+
+/**
+ * Resolve sandbox vs production. Priority:
+ *   1. Explicit MIDTRANS_ENV override ("production" | "live" | "sandbox" | "test")
+ *   2. Server key prefix: "SB-" => sandbox, otherwise production
+ * Default is sandbox when no key is set.
+ */
 function isProduction(): boolean {
-  // Explicit override wins; otherwise default to sandbox unless the server
-  // key is unambiguously a production key (Midtrans prod keys are NOT
-  // prefixed with "SB-"; sandbox keys MAY be prefixed with "SB-" but some
-  // dashboards also issue sandbox keys without the prefix). Default safe.
-  const env = (process.env.MIDTRANS_ENV ?? "sandbox").toLowerCase();
-  return env === "production" || env === "live";
+  const override = (process.env.MIDTRANS_ENV ?? "").toLowerCase().trim();
+  if (override === "production" || override === "live") return true;
+  if (override === "sandbox" || override === "test") return false;
+  const k = serverKey();
+  if (!k) return false;
+  return !k.startsWith("SB-");
+}
+
+/**
+ * Validate that both keys are present and belong to the same Midtrans
+ * environment. Throws with a clear message otherwise so the "Pay now"
+ * button surfaces a real error instead of Midtrans's generic
+ * "Access denied due to unauthorized transaction".
+ */
+function assertMidtransKeys(): void {
+  const sk = serverKey();
+  const ck = clientKey();
+  if (!sk) throw new Error("MIDTRANS_SERVER_KEY is not set");
+  if (!ck) throw new Error("MIDTRANS_CLIENT_KEY is not set");
+  const skSandbox = sk.startsWith("SB-");
+  const ckSandbox = ck.startsWith("SB-");
+  // Both Midtrans key types use "Mid-client-..." / "Mid-server-..." infixes;
+  // surface an obvious swap.
+  if (/server/i.test(ck) || /client/i.test(sk)) {
+    throw new Error(
+      "Midtrans keys appear swapped: server key must be the Server Key and client key must be the Client Key",
+    );
+  }
+  if (skSandbox !== ckSandbox) {
+    throw new Error(
+      `Midtrans key environment mismatch: server key is ${
+        skSandbox ? "sandbox" : "production"
+      } but client key is ${ckSandbox ? "sandbox" : "production"}. Use matching keys from the same Midtrans environment.`,
+    );
+  }
+  const override = (process.env.MIDTRANS_ENV ?? "").toLowerCase().trim();
+  if ((override === "production" || override === "live") && skSandbox) {
+    throw new Error(
+      "MIDTRANS_ENV=production but the configured keys are sandbox (SB-). Use production keys from a verified account or unset MIDTRANS_ENV.",
+    );
+  }
+  if ((override === "sandbox" || override === "test") && !skSandbox) {
+    throw new Error(
+      "MIDTRANS_ENV=sandbox but the configured keys are production. Use sandbox keys (SB-...) or unset MIDTRANS_ENV.",
+    );
+  }
 }
 
 function snapBaseUrl(): string {
@@ -25,8 +79,7 @@ function apiBaseUrl(): string {
 }
 
 function basicAuthHeader(): string {
-  const key = process.env.MIDTRANS_SERVER_KEY ?? "";
-  return "Basic " + Buffer.from(key + ":").toString("base64");
+  return "Basic " + Buffer.from(serverKey() + ":").toString("base64");
 }
 
 function adminClient() {
@@ -47,9 +100,10 @@ export const createMidtransSnap = createServerFn({ method: "POST" })
     z.object({ orderId: z.string().uuid() }).parse(input),
   )
   .handler(async ({ data }) => {
-    if (!process.env.MIDTRANS_SERVER_KEY) {
-      throw new Error("Midtrans is not configured");
-    }
+    assertMidtransKeys();
+    console.log(
+      `[midtrans] creating snap (env=${isProduction() ? "production" : "sandbox"}, server_key_prefix=${serverKey().slice(0, 11)})`,
+    );
     const supabase = adminClient();
     const { data: order, error } = await supabase
       .from("orders")
@@ -132,8 +186,13 @@ export const createMidtransSnap = createServerFn({ method: "POST" })
  */
 export const getMidtransConfig = createServerFn({ method: "GET" }).handler(
   async () => {
+    try {
+      assertMidtransKeys();
+    } catch (err) {
+      console.error("[midtrans] config invalid:", (err as Error).message);
+    }
     return {
-      clientKey: process.env.MIDTRANS_CLIENT_KEY ?? "",
+      clientKey: clientKey(),
       isProduction: isProduction(),
     };
   });

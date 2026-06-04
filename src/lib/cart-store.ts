@@ -17,6 +17,10 @@ export type CartItem = {
   attributes: Record<string, string>;
   quantity: number;
   addedAt: number;
+  /** Optional color variant id (product_variants.id) */
+  variantId?: string | null;
+  /** Optional size variant id (product_size_variants.id) */
+  sizeVariantId?: string | null;
 };
 
 function read(): CartItem[] {

@@ -186,8 +186,13 @@ export const createMidtransSnap = createServerFn({ method: "POST" })
  */
 export const getMidtransConfig = createServerFn({ method: "GET" }).handler(
   async () => {
+    try {
+      assertMidtransKeys();
+    } catch (err) {
+      console.error("[midtrans] config invalid:", (err as Error).message);
+    }
     return {
-      clientKey: process.env.MIDTRANS_CLIENT_KEY ?? "",
+      clientKey: clientKey(),
       isProduction: isProduction(),
     };
   });

@@ -315,7 +315,17 @@ export function CheckoutPage() {
   }
 
   async function handleConfirm() {
-    if (!inquiry) return;
+    if (!isCart && !inquiry) return;
+    if (cartLineItems.length === 0) {
+      toast.error("Keranjang kosong");
+      return;
+    }
+    if (isCart) {
+      if (!guestName.trim() || !guestEmail.trim() || !guestPhone.trim()) {
+        toast.error("Mohon isi nama, email, dan nomor telepon");
+        return;
+      }
+    }
     if (shippingMethod === "delivery") {
       if (shippingAddress.trim().length < 10) {
         toast.error("Please enter a delivery address");
@@ -325,20 +335,32 @@ export function CheckoutPage() {
         toast.error("Please enter a city");
         return;
       }
-      if (!selectedQuote) {
+      if (!selectedBiteshipKey && !selectedQuote) {
         toast.error("Please choose a shipping method");
         return;
       }
     }
     setSubmitting(true);
     try {
+      const selectedBiteship = biteshipRates.find(
+        (r) => `${r.courier_code}:${r.courier_service_code}` === selectedBiteshipKey,
+      );
+      const shippingMethodName =
+        shippingMethod === "delivery"
+          ? selectedBiteship
+            ? `${selectedBiteship.courier_name} — ${selectedBiteship.courier_service_name}`
+            : selectedQuote?.method.name ?? null
+          : null;
+
       const { data: order, error: orderErr } = await supabase
         .from("orders")
         .insert({
-          inquiry_id: inquiry.id,
-          customer_name: inquiry.customer_name,
-          customer_email: inquiry.customer_email,
-          customer_phone: inquiry.customer_phone ?? "",
+          inquiry_id: isCart ? null : inquiry!.id,
+          customer_name: isCart ? guestName.trim() : inquiry!.customer_name,
+          customer_email: isCart ? guestEmail.trim() : inquiry!.customer_email,
+          customer_phone: isCart
+            ? guestPhone.trim()
+            : (inquiry!.customer_phone ?? ""),
           customer_address: customerAddress || null,
           shipping_method: shippingMethod,
           shipping_address: shippingMethod === "delivery" ? shippingAddress : null,
@@ -346,38 +368,49 @@ export function CheckoutPage() {
           shipping_postal_code:
             shippingMethod === "delivery" ? shippingPostal || null : null,
           shipping_method_id:
-            shippingMethod === "delivery" ? selectedQuote?.method.id ?? null : null,
+            shippingMethod === "delivery" && !selectedBiteship
+              ? selectedQuote?.method.id ?? null
+              : null,
           shipping_method_name:
-            shippingMethod === "delivery" ? selectedQuote?.method.name ?? null : null,
+            shippingMethod === "delivery" ? shippingMethodName : null,
           shipping_zone_id:
-            shippingMethod === "delivery" ? selectedQuote?.zone.id ?? null : null,
+            shippingMethod === "delivery" && !selectedBiteship
+              ? selectedQuote?.zone.id ?? null
+              : null,
           subtotal_idr: subtotal,
           shipping_idr: shipping,
+          voucher_code: appliedVoucher?.code ?? null,
+          voucher_discount_idr: discount,
           total_idr: total,
           payment_method: paymentMethod,
           payment_provider: paymentMethod,
           payment_status: "pending",
           status: "new",
+          notes: orderNotes || null,
         })
         .select("id")
         .single();
       if (orderErr || !order) throw orderErr ?? new Error("Order failed");
 
-      const rows = items
-        .filter((it) => it.product)
-        .map((it) => ({
-          order_id: order.id,
-          product_id: it.product!.id,
-          product_name: lang === "id" ? it.product!.name_id : it.product!.name_en,
-          sku: it.product!.sku,
-          quantity: it.quantity,
-          unit_price_idr: it.product!.price_idr,
-          line_total_idr: it.product!.price_idr * it.quantity,
-        }));
+      const rows = cartLineItems.map((it) => ({
+        order_id: order.id,
+        product_id: it.productId,
+        product_name: lang === "id" ? it.name_id : it.name_en,
+        sku: it.sku,
+        quantity: it.quantity,
+        unit_price_idr: it.price_idr,
+        line_total_idr: it.price_idr * it.quantity,
+      }));
       if (rows.length) {
         const { error: itErr } = await supabase.from("order_items").insert(rows);
         if (itErr) throw itErr;
       }
+
+      if (appliedVoucher) {
+        // Best-effort; ignore failure
+        void callRedeemVoucher({ data: { code: appliedVoucher.code } });
+      }
+      if (isCart) clearCart();
 
       const path = lang === "id" ? `/id/order/${order.id}` : `/en/order/${order.id}`;
       navigate({ to: path as never });

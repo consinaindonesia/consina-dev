@@ -1829,12 +1829,14 @@ function LangColumn({
   setField,
   tint,
   aiFlags,
+  nameError,
 }: {
   lang: "id" | "en";
   values: ProductFormValues;
   setField: <K extends keyof ProductFormValues>(k: K, v: ProductFormValues[K]) => void;
   tint: string;
   aiFlags: Record<string, boolean>;
+  nameError?: boolean;
 }) {
   const isID = lang === "id";
   const nameKey = isID ? "name_id" : "name_en";
@@ -1853,7 +1855,7 @@ function LangColumn({
       </div>
 
       <div className="space-y-4">
-        <div className="space-y-1.5">
+        <div className="space-y-1.5" data-error-field="name">
           <div className="flex items-center gap-2">
             <Label>Product Name</Label>
             {aiFlags[nameKey] && <AiBadge />}
@@ -1861,6 +1863,11 @@ function LangColumn({
           <Input
             value={values[nameKey]}
             onChange={(e) => setField(nameKey, e.target.value)}
+            className={
+              nameError
+                ? "border-destructive focus-visible:ring-destructive"
+                : undefined
+            }
           />
         </div>
 

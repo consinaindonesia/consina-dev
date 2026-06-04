@@ -21,6 +21,7 @@ import { importProductsCsv } from "@/lib/csv-import.functions";
 export const CSV_COLUMNS = [
   "sku",
   "category_slug",
+  "category_path",
   "name_id",
   "name_en",
   "short_description_id",
@@ -37,6 +38,7 @@ const EXAMPLE_ROWS: Record<string, string>[] = [
   {
     sku: "CNS-CAR-001",
     category_slug: "carriers",
+    category_path: "",
     name_id: "Tas Carrier Rinjani 60L",
     name_en: "Rinjani 60L Carrier",
     short_description_id: "Tas carrier 60 liter untuk pendakian panjang.",
@@ -50,7 +52,8 @@ const EXAMPLE_ROWS: Record<string, string>[] = [
   },
   {
     sku: "CNS-TNT-014",
-    category_slug: "tents",
+    category_slug: "",
+    category_path: "Apparel > Jaket > Softshell | Activities > Hiking",
     name_id: "Tenda Magnum 3 Orang",
     name_en: "Magnum 3-Person Tent",
     short_description_id: "Tenda dome ringan untuk 3 orang.",
@@ -65,6 +68,7 @@ const EXAMPLE_ROWS: Record<string, string>[] = [
   {
     sku: "CNS-FTW-027",
     category_slug: "footwear",
+    category_path: "Activities > Running",
     name_id: "Sepatu Trail Salak",
     name_en: "Salak Trail Shoes",
     short_description_id: "Sepatu trail running dengan grip kuat.",

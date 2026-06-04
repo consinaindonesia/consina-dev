@@ -727,6 +727,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
                   >
                     {lang === "id" ? "Tambah ke Keranjang" : "Add to Cart"}
                   </Button>
+                  <WishlistButton productId={product.id} variant="button" className="h-12 w-full text-base" />
                   <Button
                     size="lg"
                     variant="outline"

@@ -7,7 +7,6 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { Analytics } from "@vercel/analytics/react";
 
 import appCss from "../styles.css?url";
 import "@/i18n";
@@ -99,6 +98,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: appCss,
       },
     ],
+    scripts: [{ src: "/_vercel/insights/script.js", defer: true }],
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -114,7 +114,6 @@ function RootShell({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
-        <Analytics />
         <Scripts />
       </body>
     </html>

@@ -26,9 +26,34 @@ The app uses TanStack Start's SSR pipeline, not a plain SPA build. The Vercel co
 
 | Setting | Value | Why |
 |---|---|---|
-| `framework` | `other` | Disables Vercel's Vite SPA preset |
-| `outputDirectory` | `dist/client` | Static assets served from the client build |
-| `functions.includeFiles` | `dist/server/**` | Bundles the SSR entry into the Lambda |
-| `rewrites` | `/(.*) → /api/server` | Routes non-static requests through the SSR handler |
+| `outputDirectory` | `dist/client` | Aset statis disajikan dari hasil build client |
+| `functions.includeFiles` | `dist/server/**` | Bundle SSR disertakan ke dalam Lambda |
+| `rewrites` | `/(.*) → /api/server` | Semua request non-statis diarahkan ke SSR handler |
 
-`api/server.mjs` is the Vercel serverless entry point. It imports `dist/server/server.js` (the TanStack Start SSR bundle) and delegates all requests to it. Static files in `dist/client/` are served directly from the CDN before the rewrite is applied.
+`api/server.mjs` adalah entry point serverless Vercel. File ini mengimpor `dist/server/server.js` (bundle SSR TanStack Start) dan mendelegasikan semua request ke sana. File statis di `dist/client/` disajikan langsung dari CDN sebelum rewrite diterapkan.
+
+## Catatan Perubahan
+
+### Perbaikan Deployment Vercel (2026-06-07)
+
+**`vercel.json`**
+- Hapus field `framework: "other"` — nilai tersebut tidak valid di schema Vercel. Menghapus field ini menghasilkan efek yang sama: tidak ada preset yang diterapkan.
+
+**`api/server.mjs` — tiga perbaikan berurutan**
+
+1. **Path import salah** — `dist/server/index.js` diubah menjadi `dist/server/server.js` agar sesuai dengan output build yang sebenarnya.
+
+2. **`ERR_INVALID_URL`** — Vercel mengirim request dengan URL relatif (`/`). Library `srvx` (digunakan oleh h3-v2/TanStack Start) memanggil `new URL('/')` yang tidak valid karena membutuhkan URL absolut. Solusi: rekonstruksi URL menggunakan header `host`.
+
+3. **`req.headers.get is not a function`** — Runtime Node.js Vercel mengirim `headers` sebagai plain object (`IncomingMessage`), bukan instance `Headers`. Solusi: normalisasi ke `new Headers()` sebelum memanggilnya.
+
+4. **Handler signature salah** — `export default function(req)` mengembalikan `Response` yang diabaikan oleh Vercel. Runtime Node.js memanggil handler dengan `(req, res)` — respons harus ditulis melalui `res`, bukan dikembalikan. Solusi: ubah ke format `(req, res)` dengan konversi manual antara `IncomingMessage` / `ServerResponse` dan Web API.
+
+**`src/routes/__root.tsx`**
+- Vercel Analytics dimuat via `<script defer src="/_vercel/insights/script.js">` di konfigurasi `head`, bukan melalui package npm `@vercel/analytics`. Package tersebut tidak ada di `bun.lock` sehingga tidak pernah diinstall oleh Vercel, menyebabkan error build Rollup.
+
+**`public/favicon.png` & `public/favicon.ico`**
+- Favicon diunduh dari `consina.com` (16×16 PNG). Ditambahkan juga sebagai `.ico` dan dihubungkan via `<link rel="icon">` di `head` root.
+
+**Environment Variables (konfigurasi di Vercel Dashboard)**
+- Tambahkan `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_URL`, dan `SUPABASE_PUBLISHABLE_KEY` di Settings → Environment Variables pada project Vercel. Tanpa ini, Supabase client melempar error saat SSR merender halaman pertama kali.

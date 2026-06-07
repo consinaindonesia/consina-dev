@@ -3,15 +3,23 @@
 import server from "../dist/server/server.js";
 
 export default async function handler(req) {
-  // Vercel passes a Request with a relative URL (e.g. "/"); srvx requires
-  // an absolute URL or new URL() throws ERR_INVALID_URL.
-  const host = req.headers.get("host") ?? "localhost";
+  // Vercel's Node.js runtime passes a plain-object headers (IncomingMessage),
+  // not a Headers instance. Normalise so .get() is always available.
+  const headers =
+    req.headers && typeof req.headers.get === "function"
+      ? req.headers
+      : new Headers(req.headers ?? {});
+
+  // Vercel passes a relative URL ("/"); srvx requires an absolute URL.
+  const host = headers.get("host") ?? "localhost";
   const url = new URL(req.url, `https://${host}`);
-  const absoluteReq = new Request(url, {
-    method: req.method,
-    headers: req.headers,
-    body: req.body,
-    duplex: "half",
-  });
-  return server.fetch(absoluteReq);
+
+  return server.fetch(
+    new Request(url, {
+      method: req.method,
+      headers,
+      body: req.body,
+      duplex: "half",
+    }),
+  );
 }

@@ -324,16 +324,15 @@ function CTAButton({
 }
 
 /* ---------- Brand Story ---------- */
-function BrandStory() {
-  const { t } = useTranslation();
+function BrandStory({ settings }: { settings: BrandStorySettings }) {
+  const lang = useLang();
+  const s = settings;
   const [expanded, setExpanded] = useState(false);
   const textWrapRef = useRef<HTMLDivElement>(null);
+  const styleProps = styleToProps(s.style);
 
-  const paragraphs = [
-    t("home.story.p1"),
-    t("home.story.p2"),
-    t("home.story.p3"),
-  ].filter(Boolean);
+  const body = (lang === "en" ? s.bodyEn : s.bodyId) || s.bodyEn || s.bodyId || "";
+  const paragraphs = body.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
 
   const first = paragraphs[0] ?? "";
   const rest = paragraphs.slice(1);
@@ -346,13 +345,16 @@ function BrandStory() {
   };
 
   return (
-    <section className="mx-auto max-w-[1280px] px-4 py-8 md:px-8 md:py-12 lg:py-20">
+    <section
+      className={`mx-auto max-w-[1280px] px-4 md:px-8 ${styleProps.className}`}
+      style={styleProps.inlineStyle}
+    >
       <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
         {/* LEFT COLUMN — Image */}
         <div className="order-1">
           <div className="overflow-hidden rounded-2xl">
             <img
-              src={storyHiker}
+              src={s.image && s.image.trim() ? s.image : storyHiker}
               alt="Hiker on an Indonesian mountain trail"
               width={1024}
               height={1280}
@@ -364,11 +366,13 @@ function BrandStory() {
 
         {/* RIGHT COLUMN — Text */}
         <div className="order-2" ref={textWrapRef}>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">
-            {t("home.story.eyebrow")}
-          </p>
+          {pickLocalized(s.eyebrow, lang) && (
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">
+              {pickLocalized(s.eyebrow, lang)}
+            </p>
+          )}
           <h2 className="mt-4 font-[Archivo] text-4xl font-black leading-[1.05] tracking-tight text-primary md:text-5xl">
-            {t("home.story.title")}
+            {pickLocalized(s.heading, lang)}
           </h2>
 
           <div className="relative mt-6 md:mt-8">
@@ -376,7 +380,7 @@ function BrandStory() {
             <div className="max-w-prose">
               {/* Always-visible first paragraph */}
               <p className="text-base leading-[1.75] text-foreground/80 md:text-lg">
-                {first}
+                {paragraphs[0] ?? ""}
               </p>
 
               {/* Collapsible remaining paragraphs */}
@@ -386,7 +390,7 @@ function BrandStory() {
               >
                 <div className="min-h-0 overflow-hidden">
                   <div className="mt-5 space-y-5 text-base leading-[1.75] text-foreground/80 md:text-lg">
-                    {rest.map((p, i) => (
+                    {paragraphs.slice(1).map((p, i) => (
                       <p key={i}>{p}</p>
                     ))}
                   </div>
@@ -424,12 +428,15 @@ function BrandStory() {
             </button>
           </div>
 
-          <Link
-            to="/"
-            className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-secondary"
-          >
-            {t("cta.learn_more")} <span className="text-base">→</span>
-          </Link>
+          {s.cta && pickLocalized({ id: s.cta.labelId, en: s.cta.labelEn }, lang) && (
+            <a
+              href={s.cta.href || "/"}
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-secondary"
+            >
+              {pickLocalized({ id: s.cta.labelId, en: s.cta.labelEn }, lang)}{" "}
+              <span className="text-base">→</span>
+            </a>
+          )}
         </div>
       </div>
     </section>

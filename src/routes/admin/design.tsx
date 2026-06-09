@@ -37,6 +37,8 @@ import {
   DEFAULT_HOME_SECTIONS,
   SECTION_REGISTRY,
   SECTION_TYPE_LIST,
+  getDefaultSettings,
+  mergeSettings,
   type PageSectionRow,
   type SectionTypeId,
 } from "@/lib/section-registry";
@@ -92,7 +94,7 @@ function DesignEditor() {
         section_type: type,
         position: i,
         enabled: true,
-        settings: SECTION_REGISTRY[type].defaultSettings as never,
+        settings: getDefaultSettings(type) as never,
       }));
       const { data: inserted } = await supabase
         .from("page_sections")
@@ -190,7 +192,7 @@ function DesignEditor() {
         section_type: type,
         position: pos,
         enabled: true,
-        settings: SECTION_REGISTRY[type].defaultSettings as never,
+        settings: getDefaultSettings(type) as never,
       })
       .select("id,page,section_type,position,enabled,settings")
       .single();

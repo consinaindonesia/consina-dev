@@ -1,10 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, getRouteApi } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, ArrowUpRight, MapPin, Mountain, Leaf, Users, Mail, Phone, ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
+import { loadHomeSections, type SerializedSectionRow } from "@/lib/page-sections.functions";
 import { usePublicProducts, type PublicProduct, getSiteUrl } from "@/lib/public-products";
 import { usePublicCategories, type PublicCategory } from "@/hooks/use-public-categories";
 import { useLang } from "@/i18n/LangProvider";
@@ -108,6 +109,14 @@ const faqLd = {
 };
 
 export const Route = createFileRoute("/")({
+  loader: async (): Promise<{ sections: SerializedSectionRow[] }> => {
+    try {
+      const sections = await loadHomeSections();
+      return { sections };
+    } catch {
+      return { sections: [] };
+    }
+  },
   head: () => ({
     meta: [
       { title: "Consina — The Outdoor Lifestyle | Indonesian Outdoor Gear Since 1999" },

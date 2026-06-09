@@ -675,14 +675,22 @@ function CategoryCard({ cat }: { cat: CategoryItem }) {
 }
 
 /* ---------- Featured Products ---------- */
-function FeaturedProducts() {
+function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) {
   const { t } = useTranslation();
   const lang = useLang();
   const { products } = usePublicProducts();
+  const s = settings;
+  const styleProps = styleToProps(s.style);
+  const count = Math.max(1, Math.min(24, s.count ?? 8));
   const featured: PublicProduct[] = useMemo(() => {
+    if (s.source === "manual" && s.productIds && s.productIds.length > 0) {
+      const byId = new Map(products.map((p) => [p.id, p]));
+      const list = s.productIds.map((id) => byId.get(id)).filter((p): p is PublicProduct => Boolean(p));
+      return list.slice(0, count);
+    }
     const f = products.filter((p) => p.is_featured);
-    return f.length ? f : products.slice(0, 8);
-  }, [products]);
+    return (f.length ? f : products).slice(0, count);
+  }, [products, s.source, s.productIds, count]);
   const prefix = lang === "id" ? "produk" : "products";
 
   const scrollerRef = useRef<HTMLDivElement>(null);
@@ -728,14 +736,17 @@ function FeaturedProducts() {
   };
 
   return (
-    <section className="mx-auto max-w-[1280px] px-4 py-8 md:px-8 md:py-12 lg:py-20">
+    <section
+      className={`mx-auto max-w-[1280px] px-4 md:px-8 ${styleProps.className}`}
+      style={styleProps.inlineStyle}
+    >
       {/* Section heading */}
       <div className="text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">
-          {t("home.featured.eyebrow")}
+          {pickLocalized(s.subtitle, lang, t("home.featured.eyebrow"))}
         </p>
         <h2 className="mt-2 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl">
-          {t("home.featured.title")}
+          {pickLocalized(s.title, lang, t("home.featured.title"))}
         </h2>
       </div>
 

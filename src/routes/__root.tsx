@@ -83,12 +83,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     }
   },
   head: ({ loaderData }) => {
-    const themeHead = loaderData ?? {
-      theme: DEFAULT_THEME,
-      fontHref: googleFontHref(DEFAULT_THEME),
-      fontPreloads: [],
-    };
-    const { theme, fontHref, fontPreloads } = themeHead;
+    const theme = loaderData?.theme ?? DEFAULT_THEME;
+    const fontHref = loaderData?.fontHref ?? "";
+    const fontPreloads = loaderData?.fontPreloads ?? [];
     const fontPreloadLinks = fontPreloads.map((href) => ({
       rel: "preload" as const,
       href,

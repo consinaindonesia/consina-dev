@@ -10,6 +10,7 @@ import { useWishlist } from "@/lib/wishlist-store";
 import { usePublicCategories, type PublicCategory } from "@/hooks/use-public-categories";
 import { useLang } from "@/i18n/LangProvider";
 import { localizedField } from "@/i18n/format";
+import { useSiteSettings } from "@/hooks/use-site-settings";
 
 export function Nav() {
   const { t } = useTranslation();
@@ -20,6 +21,8 @@ export function Nav() {
   const { data: categories, isLoading: catsLoading } = usePublicCategories();
   const { user } = useCustomerAuth();
   const { count: wishCount } = useWishlist(user?.id ?? null);
+  const site = useSiteSettings();
+  const header = site.header;
 
   const catLabel = (c: PublicCategory) => localizedField(c, "name", lang).value;
 
@@ -72,11 +75,13 @@ export function Nav() {
       <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-4 md:px-8">
         <Link to="/" className="flex items-center gap-2">
           <span className="font-[Archivo] text-2xl font-black tracking-tight text-primary">
-            CONSINA
+            {header.logoText || "CONSINA"}
           </span>
-          <span className="hidden text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground md:inline">
-            {t("nav.since")}
-          </span>
+          {header.showSinceTag && (
+            <span className="hidden text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground md:inline">
+              {t("nav.since")}
+            </span>
+          )}
         </Link>
 
         {/* Desktop nav */}
@@ -138,7 +143,7 @@ export function Nav() {
 
         <div className="flex items-center gap-2">
           <CartDrawer />
-          <Link
+          {header.showWishlist && <Link
             to="/wishlist"
             className="relative flex h-9 w-9 items-center justify-center rounded-full text-foreground/70 transition hover:bg-muted hover:text-primary"
             aria-label="Wishlist"
@@ -149,25 +154,25 @@ export function Nav() {
                 {wishCount}
               </span>
             )}
-          </Link>
-          <Link
+          </Link>}
+          {header.showAccount && <Link
             to={user ? "/akun" : "/auth"}
             className="hidden h-9 w-9 items-center justify-center rounded-full text-foreground/70 transition hover:bg-muted hover:text-primary md:flex"
             aria-label={user ? "Akun saya" : "Masuk"}
           >
             <User className="h-4 w-4" />
-          </Link>
+          </Link>}
           <LanguageSwitcher className="hidden md:inline-flex" />
-          <button className="hidden h-9 w-9 items-center justify-center rounded-full text-foreground/70 transition hover:bg-muted hover:text-primary md:flex" aria-label={t("nav.search")}>
+          {header.showSearch && <button className="hidden h-9 w-9 items-center justify-center rounded-full text-foreground/70 transition hover:bg-muted hover:text-primary md:flex" aria-label={t("nav.search")}>
             <Search className="h-4 w-4" />
-          </button>
-          <Link
+          </button>}
+          {header.showFindStore && <Link
             to="/stores"
             className="hidden items-center gap-1.5 rounded-full border border-primary/20 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary transition hover:bg-primary hover:text-primary-foreground md:inline-flex"
           >
             <MapPin className="h-3.5 w-3.5" />
             {t("nav.find_store")}
-          </Link>
+          </Link>}
           <button
             className="flex h-9 w-9 items-center justify-center rounded-full text-foreground lg:hidden"
             onClick={() => setOpen(!open)}

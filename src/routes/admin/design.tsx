@@ -767,3 +767,125 @@ function FontRow({
 
 // Switch is imported for future per-section settings; keep tree-shake friendly
 void Switch;
+
+function HeaderPanel({
+  theme,
+  saving,
+  onChange,
+  onReset,
+}: {
+  theme: ThemeSettings;
+  saving: boolean;
+  onChange: (t: ThemeSettings) => void;
+  onReset: () => void;
+}) {
+  const h = theme.header;
+  const set = (key: keyof typeof h, value: string | boolean) =>
+    onChange({ ...theme, header: { ...h, [key]: value } });
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          Header
+        </h2>
+        {saving && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
+      </div>
+      <div>
+        <Label className="text-xs">Logo text</Label>
+        <Input value={h.logoText} onChange={(e) => set("logoText", e.target.value)} />
+      </div>
+      {([
+        ["showSinceTag", "Show 'Since 1999' tag"],
+        ["showSearch", "Show search icon"],
+        ["showFindStore", "Show Find a Store button"],
+        ["showWishlist", "Show wishlist icon"],
+        ["showAccount", "Show account icon"],
+      ] as const).map(([k, label]) => (
+        <label key={k} className="flex items-center justify-between gap-3 rounded-md border border-border bg-card px-3 py-2 text-sm">
+          <span>{label}</span>
+          <Switch checked={h[k] as boolean} onCheckedChange={(v) => set(k, !!v)} />
+        </label>
+      ))}
+      <Button variant="outline" size="sm" onClick={onReset} className="w-full">
+        <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Reset header
+      </Button>
+    </div>
+  );
+}
+
+function FooterPanel({
+  theme,
+  saving,
+  onChange,
+  onReset,
+}: {
+  theme: ThemeSettings;
+  saving: boolean;
+  onChange: (t: ThemeSettings) => void;
+  onReset: () => void;
+}) {
+  const f = theme.footer;
+  const setField = (next: Partial<typeof f>) =>
+    onChange({ ...theme, footer: { ...f, ...next } });
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          Footer
+        </h2>
+        {saving && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <Label className="text-xs">Tagline (ID)</Label>
+          <Input value={f.tagline.id} onChange={(e) => setField({ tagline: { ...f.tagline, id: e.target.value } })} />
+        </div>
+        <div>
+          <Label className="text-xs">Tagline (EN)</Label>
+          <Input value={f.tagline.en} onChange={(e) => setField({ tagline: { ...f.tagline, en: e.target.value } })} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <Label className="text-xs">Blurb (ID)</Label>
+          <Textarea rows={3} value={f.blurb.id} onChange={(e) => setField({ blurb: { ...f.blurb, id: e.target.value } })} />
+        </div>
+        <div>
+          <Label className="text-xs">Blurb (EN)</Label>
+          <Textarea rows={3} value={f.blurb.en} onChange={(e) => setField({ blurb: { ...f.blurb, en: e.target.value } })} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <Label className="text-xs">Background color</Label>
+          <Input placeholder="(default)" value={f.bgColor} onChange={(e) => setField({ bgColor: e.target.value })} />
+        </div>
+        <div>
+          <Label className="text-xs">Text color</Label>
+          <Input placeholder="(default)" value={f.textColor} onChange={(e) => setField({ textColor: e.target.value })} />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-xs uppercase tracking-wide text-muted-foreground">Social links</Label>
+        {(["instagram", "facebook", "youtube"] as const).map((key) => (
+          <div key={key}>
+            <Label className="text-xs capitalize">{key}</Label>
+            <Input
+              placeholder="https://… (empty to hide)"
+              value={f.socials[key]}
+              onChange={(e) => setField({ socials: { ...f.socials, [key]: e.target.value } })}
+            />
+          </div>
+        ))}
+      </div>
+
+      <Button variant="outline" size="sm" onClick={onReset} className="w-full">
+        <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Reset footer
+      </Button>
+    </div>
+  );
+}

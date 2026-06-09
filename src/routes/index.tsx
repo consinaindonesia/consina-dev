@@ -26,6 +26,13 @@ import {
   type CTAConfig,
   type PageSectionRow,
   type SectionTypeId,
+  type FaqCustomSettings,
+  type NewsletterSettings,
+  type ImageBannerSettings,
+  type GallerySettings,
+  type TestimonialsSettings,
+  type SpacerSettings,
+  type AnnouncementBarSettings,
 } from "@/lib/section-registry";
 import hero from "@/assets/hero-mountain.jpg";
 import catCarriers from "@/assets/cat-carriers.jpg";
@@ -164,6 +171,13 @@ const SECTION_COMPONENTS: Record<SectionTypeId, SectionCmp> = {
   faq: FAQSection as SectionCmp,
   contact: ContactSection as SectionCmp,
   stats: StatsSection as SectionCmp,
+  faq_custom: FaqCustomSection as SectionCmp,
+  newsletter: NewsletterSection as SectionCmp,
+  image_banner: ImageBannerSection as SectionCmp,
+  gallery: GallerySection as SectionCmp,
+  testimonials: TestimonialsSection as SectionCmp,
+  spacer: SpacerSection as SectionCmp,
+  announcement_bar: AnnouncementBarSection as SectionCmp,
 };
 
 function ComposedSections() {

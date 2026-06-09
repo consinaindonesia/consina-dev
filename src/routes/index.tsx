@@ -1212,3 +1212,298 @@ function Field({
     </div>
   );
 }
+
+/* ---------- FAQ (custom) ---------- */
+function FaqCustomSection({ settings }: { settings: FaqCustomSettings }) {
+  const lang = useLang();
+  const s = settings;
+  const styleProps = styleToProps(s.style);
+  const items = s.items ?? [];
+  const [open, setOpen] = useState<number | null>(0);
+  return (
+    <section className={styleProps.className} style={styleProps.inlineStyle}>
+      <div className="mx-auto max-w-3xl px-4 md:px-8">
+        <div className="text-center">
+          {pickLocalized(s.eyebrow, lang) && (
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">{pickLocalized(s.eyebrow, lang)}</p>
+          )}
+          <h2 className="mt-2 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl">
+            {pickLocalized(s.title, lang)}
+          </h2>
+          {pickLocalized(s.subtitle, lang) && (
+            <p className="mt-3 text-base text-muted-foreground">{pickLocalized(s.subtitle, lang)}</p>
+          )}
+        </div>
+        <ul className="mt-8 md:mt-10 divide-y divide-border border-y border-border">
+          {items.map((f, i) => {
+            const q = pickLocalized({ id: f.questionId, en: f.questionEn }, lang);
+            const a = pickLocalized({ id: f.answerId, en: f.answerEn }, lang);
+            const isOpen = open === i;
+            return (
+              <li key={i}>
+                <button
+                  type="button"
+                  aria-expanded={isOpen}
+                  onClick={() => setOpen(isOpen ? null : i)}
+                  className="flex w-full items-center justify-between gap-4 py-5 text-left"
+                >
+                  <h3 className="font-[Archivo] text-base font-bold text-primary md:text-lg">{q}</h3>
+                  <ChevronDown className={`h-5 w-5 shrink-0 text-primary transition-transform ${isOpen ? "rotate-180" : ""}`} />
+                </button>
+                {isOpen && a && (
+                  <p className="pb-5 pr-10 text-sm leading-relaxed text-muted-foreground md:text-base">{a}</p>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- Newsletter ---------- */
+function NewsletterSection({ settings }: { settings: NewsletterSettings }) {
+  const lang = useLang();
+  const s = settings;
+  const styleProps = styleToProps(s.style);
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "ok" | "err">("idle");
+  const [errMsg, setErrMsg] = useState<string | null>(null);
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const mail = email.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) {
+      setStatus("err");
+      setErrMsg("Invalid email");
+      return;
+    }
+    setStatus("loading");
+    const { error } = await supabase
+      .from("newsletter_subscribers")
+      .insert({ email: mail, source: "homepage", locale: lang });
+    if (error && !/duplicate/i.test(error.message)) {
+      setStatus("err");
+      setErrMsg(error.message);
+      return;
+    }
+    setStatus("ok");
+    setEmail("");
+  };
+  return (
+    <section
+      className={styleProps.className}
+      style={{ ...styleProps.inlineStyle, backgroundColor: s.style?.bgColor ?? styleProps.inlineStyle.backgroundColor ?? "#f5efe6" }}
+    >
+      <div className="mx-auto max-w-2xl px-4 text-center md:px-8">
+        {pickLocalized(s.eyebrow, lang) && (
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">{pickLocalized(s.eyebrow, lang)}</p>
+        )}
+        <h2 className="mt-2 font-[Archivo] text-3xl font-black tracking-tight text-primary md:text-4xl">
+          {pickLocalized(s.heading, lang)}
+        </h2>
+        {pickLocalized(s.body, lang) && (
+          <p className="mt-3 text-base text-muted-foreground">{pickLocalized(s.body, lang)}</p>
+        )}
+        <form onSubmit={onSubmit} className="mx-auto mt-6 flex max-w-md flex-col gap-2 sm:flex-row">
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder={pickLocalized(s.placeholder, lang, "Email")}
+            className="h-11 flex-1 rounded-full border border-border bg-background px-4 text-sm outline-none focus:border-primary"
+          />
+          <button
+            type="submit"
+            disabled={status === "loading"}
+            className="h-11 rounded-full bg-primary px-6 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-secondary disabled:opacity-60"
+          >
+            {pickLocalized(s.buttonLabel, lang, "Subscribe")}
+          </button>
+        </form>
+        {status === "ok" && (
+          <p className="mt-3 text-sm font-medium text-green-700">{pickLocalized(s.successMessage, lang, "Thanks!")}</p>
+        )}
+        {status === "err" && errMsg && <p className="mt-3 text-sm text-red-700">{errMsg}</p>}
+      </div>
+    </section>
+  );
+}
+
+/* ---------- Image Banner ---------- */
+function ImageBannerSection({ settings }: { settings: ImageBannerSettings }) {
+  const lang = useLang();
+  const s = settings;
+  const styleProps = styleToProps(s.style);
+  const align = s.alignment ?? "center";
+  const overlay = Math.max(0, Math.min(100, s.overlay ?? 35));
+  const heightClass = s.height === "S" ? "min-h-[260px]" : s.height === "L" ? "min-h-[560px]" : "min-h-[400px]";
+  const alignClass =
+    align === "left"
+      ? "items-start text-left"
+      : align === "right"
+        ? "items-end text-right"
+        : "items-center text-center";
+  return (
+    <section className={styleProps.className} style={styleProps.inlineStyle}>
+      <div className="mx-auto max-w-[1280px] px-4 md:px-8">
+        <div className={`relative overflow-hidden rounded-2xl ${heightClass}`}>
+          {s.image && (
+            <img src={s.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
+          )}
+          <div
+            className="absolute inset-0"
+            style={{ backgroundColor: `rgba(0,0,0,${(overlay / 100).toFixed(2)})` }}
+          />
+          <div className={`relative flex h-full flex-col justify-center gap-4 p-8 md:p-14 ${alignClass} ${heightClass}`}>
+            {pickLocalized(s.eyebrow, lang) && (
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">{pickLocalized(s.eyebrow, lang)}</p>
+            )}
+            <h2 className="font-[Archivo] text-3xl font-black leading-tight tracking-tight text-white md:text-5xl">
+              {pickLocalized(s.heading, lang)}
+            </h2>
+            {pickLocalized(s.body, lang) && (
+              <p className="max-w-xl text-base text-white/90">{pickLocalized(s.body, lang)}</p>
+            )}
+            <div className={align === "center" ? "mx-auto" : ""}>
+              <CTAButton cta={s.cta} lang={lang} defaultStyle="primary" iconRight />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- Gallery ---------- */
+function GallerySection({ settings }: { settings: GallerySettings }) {
+  const lang = useLang();
+  const s = settings;
+  const styleProps = styleToProps(s.style);
+  const images = s.images ?? [];
+  const cols = s.columns ?? 3;
+  const gridClass =
+    cols === 2 ? "sm:grid-cols-2" : cols === 4 ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-2 lg:grid-cols-3";
+  return (
+    <section className={styleProps.className} style={styleProps.inlineStyle}>
+      <div className="mx-auto max-w-[1280px] px-4 md:px-8">
+        {pickLocalized(s.title, lang) && (
+          <h2 className="font-[Archivo] text-3xl font-black tracking-tight text-primary md:text-4xl">
+            {pickLocalized(s.title, lang)}
+          </h2>
+        )}
+        {pickLocalized(s.subtitle, lang) && (
+          <p className="mt-2 text-base text-muted-foreground">{pickLocalized(s.subtitle, lang)}</p>
+        )}
+        <div className={`mt-6 grid grid-cols-1 gap-3 md:gap-4 ${gridClass}`}>
+          {images.map((img, i) => {
+            const tile = (
+              <div className="aspect-square overflow-hidden rounded-xl bg-muted">
+                <img src={img.src} alt={img.alt ?? ""} loading="lazy" className="h-full w-full object-cover transition hover:scale-[1.03]" />
+              </div>
+            );
+            return img.href ? (
+              <a key={i} href={img.href}>{tile}</a>
+            ) : (
+              <div key={i}>{tile}</div>
+            );
+          })}
+          {images.length === 0 && (
+            <p className="col-span-full py-10 text-center text-sm text-muted-foreground">
+              Add images in the Design editor.
+            </p>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- Testimonials ---------- */
+function TestimonialsSection({ settings }: { settings: TestimonialsSettings }) {
+  const lang = useLang();
+  const s = settings;
+  const styleProps = styleToProps(s.style);
+  const items = s.items ?? [];
+  return (
+    <section className={styleProps.className} style={styleProps.inlineStyle}>
+      <div className="mx-auto max-w-[1280px] px-4 md:px-8">
+        <div className="text-center">
+          {pickLocalized(s.eyebrow, lang) && (
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">{pickLocalized(s.eyebrow, lang)}</p>
+          )}
+          {pickLocalized(s.title, lang) && (
+            <h2 className="mt-2 font-[Archivo] text-3xl font-black tracking-tight text-primary md:text-4xl">
+              {pickLocalized(s.title, lang)}
+            </h2>
+          )}
+        </div>
+        <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {items.map((it, i) => {
+            const quote = pickLocalized({ id: it.quoteId, en: it.quoteEn }, lang);
+            const rating = Math.max(0, Math.min(5, it.rating ?? 0));
+            return (
+              <figure key={i} className="rounded-xl border border-border bg-background p-6">
+                {rating > 0 && (
+                  <div className="mb-3 text-accent">{"★".repeat(rating)}{"☆".repeat(5 - rating)}</div>
+                )}
+                <blockquote className="text-base leading-relaxed text-foreground">“{quote}”</blockquote>
+                <figcaption className="mt-4 flex items-center gap-3">
+                  {it.avatar && <img src={it.avatar} alt="" className="h-9 w-9 rounded-full object-cover" />}
+                  <div>
+                    <div className="text-sm font-semibold text-primary">{it.author}</div>
+                    {it.role && <div className="text-xs text-muted-foreground">{it.role}</div>}
+                  </div>
+                </figcaption>
+              </figure>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- Spacer ---------- */
+function SpacerSection({ settings }: { settings: SpacerSettings }) {
+  const s = settings;
+  const h = Math.max(0, Math.min(400, s.height ?? 48));
+  return (
+    <div
+      style={{ height: h, backgroundColor: s.style?.bgColor }}
+      className="w-full"
+    >
+      {s.showDivider && (
+        <div className="mx-auto h-full max-w-[1280px] px-4 md:px-8">
+          <div className="h-full border-t border-border" style={{ marginTop: h / 2 }} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ---------- Announcement Bar ---------- */
+function AnnouncementBarSection({ settings }: { settings: AnnouncementBarSettings }) {
+  const lang = useLang();
+  const s = settings;
+  const msg = pickLocalized(s.message, lang);
+  if (!msg) return <></>;
+  const linkLabel = pickLocalized(s.linkLabel, lang);
+  return (
+    <div
+      className="w-full px-4 py-2 text-center text-xs font-medium md:text-sm"
+      style={{
+        backgroundColor: s.bgColor ?? s.style?.bgColor ?? "#1a3a2e",
+        color: s.textColor ?? s.style?.textColor ?? "#ffffff",
+      }}
+    >
+      <span>{msg}</span>
+      {linkLabel && s.href && (
+        <a href={s.href} className="ml-2 underline underline-offset-2 hover:opacity-80">
+          {linkLabel}
+        </a>
+      )}
+    </div>
+  );
+}

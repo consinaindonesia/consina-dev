@@ -24,6 +24,7 @@ import {
   Truck,
   Ruler,
   Ticket,
+  Palette,
 } from "lucide-react";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,6 +39,7 @@ type NavItem = {
 
 const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", to: "/admin", icon: LayoutGrid },
+  { label: "Design", to: "/admin/design", icon: Palette },
   { label: "Products", to: "/admin/products", icon: Package },
   { label: "Categories", to: "/admin/categories", icon: Folder },
   { label: "Attributes", to: "/admin/attributes", icon: Tag },

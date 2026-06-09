@@ -45,6 +45,7 @@ import { Route as AdminLanguagesRouteImport } from './routes/admin/languages'
 import { Route as AdminInquiriesRouteImport } from './routes/admin/inquiries'
 import { Route as AdminGlossaryRouteImport } from './routes/admin/glossary'
 import { Route as AdminForgotPasswordRouteImport } from './routes/admin/forgot-password'
+import { Route as AdminDesignRouteImport } from './routes/admin/design'
 import { Route as AdminCustomersRouteImport } from './routes/admin/customers'
 import { Route as AdminCategoriesRouteImport } from './routes/admin/categories'
 import { Route as AdminAttributesRouteImport } from './routes/admin/attributes'
@@ -261,6 +262,11 @@ const AdminGlossaryRoute = AdminGlossaryRouteImport.update({
 const AdminForgotPasswordRoute = AdminForgotPasswordRouteImport.update({
   id: '/admin/forgot-password',
   path: '/admin/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminDesignRoute = AdminDesignRouteImport.update({
+  id: '/admin/design',
+  path: '/admin/design',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminCustomersRoute = AdminCustomersRouteImport.update({
@@ -481,6 +487,7 @@ export interface FileRoutesByFullPath {
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/customers': typeof AdminCustomersRouteWithChildren
+  '/admin/design': typeof AdminDesignRoute
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
   '/admin/glossary': typeof AdminGlossaryRoute
   '/admin/inquiries': typeof AdminInquiriesRouteWithChildren
@@ -552,6 +559,7 @@ export interface FileRoutesByTo {
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/customers': typeof AdminCustomersRouteWithChildren
+  '/admin/design': typeof AdminDesignRoute
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
   '/admin/glossary': typeof AdminGlossaryRoute
   '/admin/inquiries': typeof AdminInquiriesRouteWithChildren
@@ -628,6 +636,7 @@ export interface FileRoutesById {
   '/admin/attributes': typeof AdminAttributesRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/customers': typeof AdminCustomersRouteWithChildren
+  '/admin/design': typeof AdminDesignRoute
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
   '/admin/glossary': typeof AdminGlossaryRoute
   '/admin/inquiries': typeof AdminInquiriesRouteWithChildren
@@ -705,6 +714,7 @@ export interface FileRouteTypes {
     | '/admin/attributes'
     | '/admin/categories'
     | '/admin/customers'
+    | '/admin/design'
     | '/admin/forgot-password'
     | '/admin/glossary'
     | '/admin/inquiries'
@@ -776,6 +786,7 @@ export interface FileRouteTypes {
     | '/admin/attributes'
     | '/admin/categories'
     | '/admin/customers'
+    | '/admin/design'
     | '/admin/forgot-password'
     | '/admin/glossary'
     | '/admin/inquiries'
@@ -851,6 +862,7 @@ export interface FileRouteTypes {
     | '/admin/attributes'
     | '/admin/categories'
     | '/admin/customers'
+    | '/admin/design'
     | '/admin/forgot-password'
     | '/admin/glossary'
     | '/admin/inquiries'
@@ -922,6 +934,7 @@ export interface RootRouteChildren {
   AdminAttributesRoute: typeof AdminAttributesRoute
   AdminCategoriesRoute: typeof AdminCategoriesRoute
   AdminCustomersRoute: typeof AdminCustomersRouteWithChildren
+  AdminDesignRoute: typeof AdminDesignRoute
   AdminForgotPasswordRoute: typeof AdminForgotPasswordRoute
   AdminGlossaryRoute: typeof AdminGlossaryRoute
   AdminInquiriesRoute: typeof AdminInquiriesRouteWithChildren
@@ -1207,6 +1220,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/forgot-password'
       fullPath: '/admin/forgot-password'
       preLoaderRoute: typeof AdminForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/design': {
+      id: '/admin/design'
+      path: '/admin/design'
+      fullPath: '/admin/design'
+      preLoaderRoute: typeof AdminDesignRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/customers': {
@@ -1622,6 +1642,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminAttributesRoute: AdminAttributesRoute,
   AdminCategoriesRoute: AdminCategoriesRoute,
   AdminCustomersRoute: AdminCustomersRouteWithChildren,
+  AdminDesignRoute: AdminDesignRoute,
   AdminForgotPasswordRoute: AdminForgotPasswordRoute,
   AdminGlossaryRoute: AdminGlossaryRoute,
   AdminInquiriesRoute: AdminInquiriesRouteWithChildren,

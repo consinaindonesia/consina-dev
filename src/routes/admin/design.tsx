@@ -92,7 +92,7 @@ function DesignEditor() {
         section_type: type,
         position: i,
         enabled: true,
-        settings: SECTION_REGISTRY[type].defaultSettings,
+        settings: SECTION_REGISTRY[type].defaultSettings as never,
       }));
       const { data: inserted } = await supabase
         .from("page_sections")
@@ -155,7 +155,7 @@ function DesignEditor() {
         section_type: row.section_type,
         position: insertPos,
         enabled: row.enabled,
-        settings: row.settings ?? {},
+        settings: (row.settings ?? {}) as never,
       })
       .select("id,page,section_type,position,enabled,settings")
       .single();
@@ -190,7 +190,7 @@ function DesignEditor() {
         section_type: type,
         position: pos,
         enabled: true,
-        settings: SECTION_REGISTRY[type].defaultSettings,
+        settings: SECTION_REGISTRY[type].defaultSettings as never,
       })
       .select("id,page,section_type,position,enabled,settings")
       .single();
@@ -217,7 +217,7 @@ function DesignEditor() {
     setTheme(next);
     const { error } = await supabase
       .from("theme_settings")
-      .upsert({ id: "global", settings: next as unknown as Record<string, unknown> });
+      .upsert({ id: "global", settings: next as never });
     setSavingTheme(false);
     if (error) toast.error("Failed to save theme");
   };

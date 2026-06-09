@@ -1,4 +1,4 @@
-import { createFileRoute, Link, getRouteApi } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, ArrowUpRight, MapPin, Mountain, Leaf, Users, Mail, Phone, ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
 import { useTranslation } from "react-i18next";

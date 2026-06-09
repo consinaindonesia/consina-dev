@@ -13,6 +13,17 @@ import { PriceDisplay } from "@/components/site/PriceDisplay";
 import {
   DEFAULT_HOME_SECTIONS,
   SECTION_REGISTRY,
+  mergeSettings,
+  pickLocalized,
+  styleToProps,
+  type AnySectionSettings,
+  type BrandStorySettings,
+  type CategoriesSettings,
+  type CommunitySettings,
+  type FeaturedProductsSettings,
+  type HeroSettings,
+  type StatsSettings,
+  type CTAConfig,
   type PageSectionRow,
   type SectionTypeId,
 } from "@/lib/section-registry";
@@ -139,16 +150,20 @@ export function HomePage() {
   );
 }
 
-// Map registry IDs to the actual section components defined below.
-const SECTION_COMPONENTS: Record<SectionTypeId, () => React.JSX.Element> = {
-  hero: Hero,
-  brand_story: BrandStory,
-  categories: Categories,
-  featured_products: FeaturedProducts,
-  community: Community,
-  store_locator: StoreLocator,
-  faq: FAQSection,
-  contact: ContactSection,
+// Map registry IDs to the actual section components defined below. Each
+// accepts a `settings` prop typed via SectionSettingsMap; defaults are merged
+// in by `mergeSettings` before render.
+type SectionCmp = (props: { settings: AnySectionSettings }) => React.JSX.Element;
+const SECTION_COMPONENTS: Record<SectionTypeId, SectionCmp> = {
+  hero: Hero as SectionCmp,
+  brand_story: BrandStory as SectionCmp,
+  categories: Categories as SectionCmp,
+  featured_products: FeaturedProducts as SectionCmp,
+  community: Community as SectionCmp,
+  store_locator: StoreLocator as SectionCmp,
+  faq: FAQSection as SectionCmp,
+  contact: ContactSection as SectionCmp,
+  stats: StatsSection as SectionCmp,
 };
 
 function ComposedSections() {
@@ -187,10 +202,11 @@ function ComposedSections() {
 
   return (
     <>
-      {order.map(({ key, type }) => {
+      {order.map(({ key, type, settings }) => {
         const Comp = SECTION_COMPONENTS[type];
         if (!Comp) return null;
-        return <Comp key={key} />;
+        const merged = mergeSettings(type, settings);
+        return <Comp key={key} settings={merged} />;
       })}
     </>
   );

@@ -94,6 +94,34 @@ export type StatsSettings = {
 
 export type GenericSettings = { style?: SectionStyle };
 
+export type StoreItem = { city: string; address: string; phone: string };
+export type StoreLocatorSettings = {
+  style?: SectionStyle;
+  eyebrow?: Localized;
+  title?: Localized;
+  subtitle?: Localized;
+  cta?: CTAConfig;
+  stores?: StoreItem[];
+};
+
+export type FaqSettings = {
+  style?: SectionStyle;
+  eyebrow?: Localized;
+  title?: Localized;
+  subtitle?: Localized;
+  items?: FaqItem[];
+};
+
+export type ContactSettings = {
+  style?: SectionStyle;
+  eyebrow?: Localized;
+  title?: Localized;
+  subtitle?: Localized;
+  email?: string;
+  phone?: string;
+  address?: string;
+};
+
 export type FaqItem = { questionId?: string; questionEn?: string; answerId?: string; answerEn?: string };
 export type FaqCustomSettings = {
   style?: SectionStyle;
@@ -170,9 +198,9 @@ export type SectionSettingsMap = {
   categories: CategoriesSettings;
   featured_products: FeaturedProductsSettings;
   community: CommunitySettings;
-  store_locator: GenericSettings;
-  faq: GenericSettings;
-  contact: GenericSettings;
+  store_locator: StoreLocatorSettings;
+  faq: FaqSettings;
+  contact: ContactSettings;
   stats: StatsSettings;
   faq_custom: FaqCustomSettings;
   newsletter: NewsletterSettings;
@@ -392,9 +420,41 @@ export const DEFAULT_SECTION_SETTINGS: { [K in SectionTypeId]: SectionSettingsMa
   categories: DEFAULT_CATEGORIES,
   featured_products: DEFAULT_FEATURED_PRODUCTS,
   community: DEFAULT_COMMUNITY,
-  store_locator: { style: { padding: "M" } },
-  faq: { style: { padding: "M" } },
-  contact: { style: { padding: "M" } },
+  store_locator: {
+    style: { padding: "M" },
+    eyebrow: { id: "Toko", en: "Stores" },
+    title: { id: "Temukan toko Consina terdekat", en: "Find a Consina store near you" },
+    subtitle: {
+      id: "Lebih dari 80 toko di seluruh Indonesia — datang, coba langsung, dan temui tim kami.",
+      en: "More than 80 stores across Indonesia — come visit, try gear in person, and meet our team.",
+    },
+    cta: { labelId: "Lihat semua toko", labelEn: "View all stores", href: "/stores", style: "primary" },
+    stores: [
+      { city: "Jakarta", address: "Pasar Baru Flagship", phone: "+62 21 345 6789" },
+      { city: "Bandung", address: "Jl. Sumatera No. 17", phone: "+62 22 723 1144" },
+      { city: "Yogyakarta", address: "Jl. Mangkubumi 22", phone: "+62 274 555 020" },
+      { city: "Bali", address: "Denpasar — Jl. Teuku Umar", phone: "+62 361 224 998" },
+    ],
+  },
+  faq: {
+    style: { padding: "M" },
+    eyebrow: { id: "FAQ", en: "FAQ" },
+    title: { id: "Pertanyaan yang Sering Diajukan", en: "Frequently Asked Questions" },
+    subtitle: { id: "Tidak menemukan jawaban? Hubungi kami.", en: "Can't find the answer? Reach out to us." },
+    items: [],
+  },
+  contact: {
+    style: { padding: "M" },
+    eyebrow: { id: "Hubungi Kami", en: "Contact" },
+    title: { id: "Mari bicara.", en: "Let's talk." },
+    subtitle: {
+      id: "Pertanyaan tentang produk, kerja sama, atau peluang karir? Tim kami siap membantu.",
+      en: "Questions about products, partnerships, or careers? Our team is here to help.",
+    },
+    email: "hello@consina.com",
+    phone: "+62 21 345 6789",
+    address: "Jakarta, Indonesia",
+  },
   stats: DEFAULT_STATS,
   faq_custom: DEFAULT_FAQ_CUSTOM,
   newsletter: DEFAULT_NEWSLETTER,

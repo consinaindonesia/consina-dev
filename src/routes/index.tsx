@@ -541,9 +541,52 @@ function FeaturedProducts() {
   const { products } = usePublicProducts();
   const featured: PublicProduct[] = useMemo(() => {
     const f = products.filter((p) => p.is_featured);
-    return (f.length ? f : products).slice(0, 4);
+    return f.length ? f : products.slice(0, 8);
   }, [products]);
   const prefix = lang === "id" ? "produk" : "products";
+
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [snapCount, setSnapCount] = useState(1);
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [canPrev, setCanPrev] = useState(false);
+  const [canNext, setCanNext] = useState(false);
+
+  const recompute = useCallback(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const pages = Math.max(1, Math.ceil(el.scrollWidth / el.clientWidth));
+    setSnapCount(pages);
+    const idx = Math.round(el.scrollLeft / el.clientWidth);
+    setActiveIdx(Math.min(pages - 1, Math.max(0, idx)));
+    setCanPrev(el.scrollLeft > 4);
+    setCanNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+  }, []);
+
+  useEffect(() => {
+    recompute();
+    const el = scrollerRef.current;
+    if (!el) return;
+    const onScroll = () => recompute();
+    el.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", recompute);
+    return () => {
+      el.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", recompute);
+    };
+  }, [recompute, featured.length]);
+
+  const scrollToPage = (i: number) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
+  };
+
+  const nudge = (dir: 1 | -1) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * el.clientWidth * 0.9, behavior: "smooth" });
+  };
+
   return (
     <section className="mx-auto max-w-[1280px] px-4 py-8 md:px-8 md:py-12 lg:py-20">
       {/* Section heading */}
@@ -556,42 +599,94 @@ function FeaturedProducts() {
         </h2>
       </div>
 
-      {/* Product grid */}
-      <div className="mt-8 md:mt-10 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-        {featured.map((p) => {
-          const name = localizedField(p, "name", lang).value;
-          const desc = localizedField(p, "short_description", lang).value;
-          return (
-            <div key={p.id} className="group">
-              <Link
-                to={`/${lang}/${prefix}/${p.slug ?? p.sku}` as never}
-                aria-label={name}
-                className="block relative aspect-square w-full max-w-[1080px] overflow-hidden rounded-xl bg-muted cursor-pointer"
+      {/* Carousel */}
+      <div className="group relative mt-8 md:mt-10">
+        {/* Arrows (desktop) */}
+        <button
+          type="button"
+          aria-label="Previous products"
+          onClick={() => nudge(-1)}
+          disabled={!canPrev}
+          className="absolute left-2 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/90 text-primary opacity-0 shadow transition group-hover:opacity-100 disabled:opacity-0 lg:flex"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+        <button
+          type="button"
+          aria-label="Next products"
+          onClick={() => nudge(1)}
+          disabled={!canNext}
+          className="absolute right-2 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background/90 text-primary opacity-0 shadow transition group-hover:opacity-100 disabled:opacity-0 lg:flex"
+        >
+          <ChevronRight className="h-5 w-5" />
+        </button>
+
+        <div
+          ref={scrollerRef}
+          className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] md:-mx-8 md:px-8 md:gap-5 [&::-webkit-scrollbar]:hidden"
+        >
+          {featured.map((p) => {
+            const name = localizedField(p, "name", lang).value;
+            const desc = localizedField(p, "short_description", lang).value;
+            return (
+              <div
+                key={p.id}
+                className="group w-[74%] shrink-0 snap-start sm:w-[44%] md:w-[34%] lg:w-[28%] xl:w-[24%]"
               >
-                {p.image_url ? (
-                  <img
-                    src={p.image_url}
-                    alt={name}
-                    loading="lazy"
-                    className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
-                  />
-                ) : null}
-              </Link>
-              <div className="mt-4">
-                <h3 className="font-[Archivo] text-base font-bold leading-snug text-primary">{name}</h3>
-                {desc ? <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{desc}</p> : null}
-                <PriceDisplay product={p} lang={lang} size="sm" className="mt-2" />
                 <Link
                   to={`/${lang}/${prefix}/${p.slug ?? p.sku}` as never}
-                  className="mt-3 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-[#1a3a2e] transition group-hover:gap-2"
+                  aria-label={name}
+                  className="block relative aspect-square w-full max-w-[1080px] overflow-hidden rounded-xl bg-muted cursor-pointer"
                 >
-                  {t("cta.view_details")} <ArrowRight className="h-3.5 w-3.5" />
+                  {p.image_url ? (
+                    <img
+                      src={p.image_url}
+                      alt={name}
+                      loading="lazy"
+                      className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                    />
+                  ) : null}
                 </Link>
+                <div className="mt-4">
+                  <h3 className="font-[Archivo] text-base font-bold leading-snug text-primary">{name}</h3>
+                  {desc ? <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{desc}</p> : null}
+                  <PriceDisplay product={p} lang={lang} size="sm" className="mt-2" />
+                  <Link
+                    to={`/${lang}/${prefix}/${p.slug ?? p.sku}` as never}
+                    className="mt-3 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-[#1a3a2e] transition group-hover:gap-2"
+                  >
+                    {t("cta.view_details")} <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
+
+      {/* Dots */}
+      {snapCount > 1 && (
+        <div className="mt-4 flex items-center justify-center gap-2">
+          {Array.from({ length: snapCount }).map((_, i) => {
+            const active = i === activeIdx;
+            return (
+              <button
+                key={i}
+                type="button"
+                onClick={() => scrollToPage(i)}
+                aria-label={`Go to slide ${i + 1}`}
+                aria-current={active ? "true" : undefined}
+                className={
+                  "rounded-full transition-all " +
+                  (active
+                    ? "h-2 w-5 bg-primary"
+                    : "h-2 w-2 bg-primary/25 hover:bg-primary/50")
+                }
+              />
+            );
+          })}
+        </div>
+      )}
     </section>
   );
 }

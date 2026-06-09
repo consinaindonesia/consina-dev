@@ -455,11 +455,13 @@ const CATEGORY_IMAGE_MAP: Record<string, string> = {
   daypack: catCarriers,
 };
 
-function Categories() {
+function Categories({ settings }: { settings: CategoriesSettings }) {
   const { t } = useTranslation();
   const lang = useLang();
   const { products } = usePublicProducts();
   const { data: cats } = usePublicCategories();
+  const s = settings;
+  const styleProps = styleToProps(s.style);
 
   const counts = useMemo(() => {
     const map = new Map<string, number>();
@@ -472,7 +474,14 @@ function Categories() {
 
   const items = useMemo(() => {
     const list = cats ?? [];
-    return list.map((c) => ({
+    let ordered = list;
+    if (s.categorySlugs && s.categorySlugs.length > 0) {
+      const bySlug = new Map(list.map((c) => [c.slug, c]));
+      ordered = s.categorySlugs
+        .map((slug) => bySlug.get(slug))
+        .filter((c): c is PublicCategory => Boolean(c));
+    }
+    return ordered.map((c) => ({
       slug: c.slug,
       name: localizedField(c, "name", lang).value,
       desc:
@@ -480,7 +489,7 @@ function Categories() {
       img: CATEGORY_IMAGE_MAP[c.slug] ?? catAccessories,
       count: counts.get(c.slug) ?? 0,
     }));
-  }, [cats, counts, lang, t]);
+  }, [cats, counts, lang, t, s.categorySlugs]);
 
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [snapCount, setSnapCount] = useState(1);
@@ -525,7 +534,10 @@ function Categories() {
   };
 
   return (
-    <section className="bg-background py-8 md:py-12 lg:py-16">
+    <section
+      className={`${styleProps.className}`}
+      style={{ backgroundColor: s.style?.bgColor ?? "var(--background)", ...(s.style?.textColor ? { color: s.style.textColor } : {}) }}
+    >
       <div className="mx-auto max-w-[1280px] px-4 md:px-8">
         {/* Section heading */}
         <div className="flex items-end justify-between gap-4">
@@ -534,10 +546,10 @@ function Categories() {
               {t("home.categories.eyebrow")}
             </p>
             <h2 className="mt-2 font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl">
-              {t("home.categories.title")}
+              {pickLocalized(s.title, lang, t("home.categories.title"))}
             </h2>
             <p className="mt-2 max-w-xl text-sm text-muted-foreground md:text-base">
-              {t("home.categories.subtitle")}
+              {pickLocalized(s.subtitle, lang, t("home.categories.subtitle"))}
             </p>
           </div>
           <Link

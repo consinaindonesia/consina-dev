@@ -79,6 +79,21 @@ function DesignEditor() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [savingTheme, setSavingTheme] = useState(false);
+  const [tab, setTab] = useState<"sections" | "header" | "footer" | "theme">("sections");
+  const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
+  const [previewKey, setPreviewKey] = useState(0);
+  const previewRef = useRef<HTMLIFrameElement | null>(null);
+
+  const bumpPreview = () => {
+    // Soft refresh: postMessage triggers useSiteSettings reload + React Query refetches via reload.
+    try {
+      previewRef.current?.contentWindow?.postMessage({ type: "lovable-theme-refresh" }, "*");
+    } catch {
+      // ignore cross-origin
+    }
+    // Hard reload as fallback (page_sections changes need a re-fetch on mount).
+    setPreviewKey((k) => k + 1);
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),

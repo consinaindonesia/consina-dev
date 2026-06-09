@@ -83,11 +83,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:description", content: "Consina: Indonesian outdoor gear since 1999. Backpack carriers, tents, apparel, footwear and accessories — inspired by experience." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:site", content: "@consina" },
       { name: "twitter:title", content: "Consina — The Outdoor Lifestyle" },
       { name: "twitter:description", content: "Consina: Indonesian outdoor gear since 1999. Backpack carriers, tents, apparel, footwear and accessories — inspired by experience." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/500dfa42-7c06-4b80-8092-96fba2a266c5" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/500dfa42-7c06-4b80-8092-96fba2a266c5" },
     ],
     links: [
       { rel: "icon", href: "/favicon.png", type: "image/png" },

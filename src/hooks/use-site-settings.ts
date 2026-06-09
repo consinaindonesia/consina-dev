@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { getRouteApi } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { DEFAULT_THEME, mergeTheme, type ThemeSettings } from "@/lib/theme-defaults";
 
@@ -7,8 +8,20 @@ import { DEFAULT_THEME, mergeTheme, type ThemeSettings } from "@/lib/theme-defau
  * the storefront never renders blank if the row is missing.
  * Refreshes when the parent admin preview posts {type:"lovable-theme-refresh"}.
  */
-export function useSiteSettings(initialTheme: ThemeSettings = DEFAULT_THEME): ThemeSettings {
-  const [theme, setTheme] = useState<ThemeSettings>(initialTheme);
+const rootRouteApi = getRouteApi("__root__");
+
+function useInitialThemeFromRoot(): ThemeSettings {
+  try {
+    const data = rootRouteApi.useLoaderData() as { theme?: ThemeSettings } | undefined;
+    return data?.theme ?? DEFAULT_THEME;
+  } catch {
+    return DEFAULT_THEME;
+  }
+}
+
+export function useSiteSettings(initialTheme?: ThemeSettings): ThemeSettings {
+  const rootTheme = useInitialThemeFromRoot();
+  const [theme, setTheme] = useState<ThemeSettings>(initialTheme ?? rootTheme);
 
   useEffect(() => {
     let cancelled = false;

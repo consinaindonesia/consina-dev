@@ -1,0 +1,653 @@
+import { useState } from "react";
+import { toast } from "sonner";
+import { Upload, Trash2, Plus, ChevronDown, ChevronUp } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import { supabase } from "@/integrations/supabase/client";
+import { usePublicCategories } from "@/hooks/use-public-categories";
+import { usePublicProducts } from "@/lib/public-products";
+import type {
+  SectionTypeId,
+  Localized,
+  CTAConfig,
+  SectionStyle,
+  StatItem,
+  HeroSettings,
+  FeaturedProductsSettings,
+  CategoriesSettings,
+  BrandStorySettings,
+  CommunitySettings,
+  StatsSettings,
+} from "@/lib/section-registry";
+
+type AnyObj = Record<string, unknown>;
+
+export function SectionSettingsEditor({
+  type,
+  value,
+  onChange,
+}: {
+  type: SectionTypeId;
+  value: AnyObj;
+  onChange: (next: AnyObj) => void;
+}) {
+  const set = (key: string, v: unknown) => onChange({ ...value, [key]: v });
+
+  return (
+    <div className="space-y-5">
+      <StyleEditor
+        value={(value.style as SectionStyle) ?? {}}
+        onChange={(style) => set("style", style)}
+      />
+
+      {type === "hero" && (
+        <HeroEditor value={value as HeroSettings} onChange={onChange as (v: HeroSettings) => void} />
+      )}
+      {type === "featured_products" && (
+        <FeaturedEditor
+          value={value as FeaturedProductsSettings}
+          onChange={onChange as (v: FeaturedProductsSettings) => void}
+        />
+      )}
+      {type === "categories" && (
+        <CategoriesEditor
+          value={value as CategoriesSettings}
+          onChange={onChange as (v: CategoriesSettings) => void}
+        />
+      )}
+      {type === "brand_story" && (
+        <BrandStoryEditor
+          value={value as BrandStorySettings}
+          onChange={onChange as (v: BrandStorySettings) => void}
+        />
+      )}
+      {type === "community" && (
+        <CommunityEditor
+          value={value as CommunitySettings}
+          onChange={onChange as (v: CommunitySettings) => void}
+        />
+      )}
+      {type === "stats" && (
+        <StatsEditor value={value as StatsSettings} onChange={onChange as (v: StatsSettings) => void} />
+      )}
+      {(type === "store_locator" || type === "faq" || type === "contact") && (
+        <p className="text-xs text-muted-foreground">
+          This section uses its built-in content. Adjust the style above or
+          toggle visibility from the section list.
+        </p>
+      )}
+    </div>
+  );
+}
+
+/* -------------------- Style -------------------- */
+function StyleEditor({
+  value,
+  onChange,
+}: {
+  value: SectionStyle;
+  onChange: (v: SectionStyle) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const padding = value.padding ?? "M";
+  return (
+    <div className="rounded-md border border-border bg-background">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center justify-between px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+      >
+        Section style
+        {open ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+      </button>
+      {open && (
+        <div className="grid gap-3 border-t border-border p-3 sm:grid-cols-3">
+          <ColorField
+            label="Background"
+            value={value.bgColor ?? ""}
+            onChange={(v) => onChange({ ...value, bgColor: v || undefined })}
+          />
+          <ColorField
+            label="Text"
+            value={value.textColor ?? ""}
+            onChange={(v) => onChange({ ...value, textColor: v || undefined })}
+          />
+          <div>
+            <Label className="text-xs">Padding</Label>
+            <div className="mt-1 flex gap-1">
+              {(["S", "M", "L"] as const).map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => onChange({ ...value, padding: p })}
+                  className={`flex-1 rounded border px-2 py-1 text-xs font-semibold ${
+                    padding === p
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-input bg-background hover:bg-muted"
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ColorField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  // Try to coerce to a hex for the color picker; fall back to white.
+  const hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(value) ? value : "#ffffff";
+  return (
+    <div>
+      <Label className="text-xs">{label}</Label>
+      <div className="mt-1 flex items-center gap-2">
+        <input
+          type="color"
+          value={hex}
+          onChange={(e) => onChange(e.target.value)}
+          className="h-8 w-10 cursor-pointer rounded border border-input bg-transparent"
+        />
+        <Input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="default"
+          className="h-8 flex-1 text-xs"
+        />
+      </div>
+    </div>
+  );
+}
+
+/* -------------------- Localized + CTA + Image -------------------- */
+function LocalizedField({
+  label,
+  value,
+  onChange,
+  multiline,
+  placeholder,
+}: {
+  label: string;
+  value: Localized | undefined;
+  onChange: (v: Localized) => void;
+  multiline?: boolean;
+  placeholder?: string;
+}) {
+  const v = value ?? {};
+  const Comp = multiline ? Textarea : Input;
+  return (
+    <div>
+      <Label className="text-xs">{label}</Label>
+      <div className="mt-1 grid gap-2 sm:grid-cols-2">
+        <div>
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">ID</span>
+          <Comp
+            value={v.id ?? ""}
+            onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+              onChange({ ...v, id: e.target.value })
+            }
+            placeholder={placeholder}
+          />
+        </div>
+        <div>
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">EN</span>
+          <Comp
+            value={v.en ?? ""}
+            onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+              onChange({ ...v, en: e.target.value })
+            }
+            placeholder={placeholder}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CTAEditor({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: CTAConfig | undefined;
+  onChange: (v: CTAConfig | undefined) => void;
+}) {
+  const v = value ?? {};
+  return (
+    <div className="rounded border border-input p-3">
+      <div className="mb-2 flex items-center justify-between">
+        <Label className="text-xs font-semibold">{label}</Label>
+        {value && (
+          <button
+            type="button"
+            onClick={() => onChange(undefined)}
+            className="text-xs text-muted-foreground hover:text-destructive"
+          >
+            Remove
+          </button>
+        )}
+      </div>
+      <div className="grid gap-2 sm:grid-cols-2">
+        <div>
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Label ID</span>
+          <Input value={v.labelId ?? ""} onChange={(e) => onChange({ ...v, labelId: e.target.value })} />
+        </div>
+        <div>
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Label EN</span>
+          <Input value={v.labelEn ?? ""} onChange={(e) => onChange({ ...v, labelEn: e.target.value })} />
+        </div>
+        <div className="sm:col-span-2">
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Link</span>
+          <Input value={v.href ?? ""} onChange={(e) => onChange({ ...v, href: e.target.value })} placeholder="/catalog or https://…" />
+        </div>
+        <div>
+          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Style</span>
+          <select
+            value={v.style ?? "primary"}
+            onChange={(e) => onChange({ ...v, style: e.target.value as CTAConfig["style"] })}
+            className="mt-0.5 h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+          >
+            <option value="primary">Primary</option>
+            <option value="secondary">Secondary</option>
+            <option value="outline">Outline</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function ImagePicker({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string | undefined;
+  onChange: (v: string) => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+
+  const handleFile = async (file: File) => {
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `site/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error } = await supabase.storage
+        .from("category-images")
+        .upload(path, file, { cacheControl: "3600", upsert: false });
+      if (error) throw error;
+      const { data } = supabase.storage.from("category-images").getPublicUrl(path);
+      onChange(data.publicUrl);
+      toast.success("Image uploaded");
+    } catch (e) {
+      toast.error("Upload failed: " + (e as Error).message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div>
+      <Label className="text-xs">{label}</Label>
+      <div className="mt-1 space-y-2">
+        {value ? (
+          <div className="relative">
+            <img src={value} alt="" className="h-32 w-full rounded border border-input object-cover" />
+            <button
+              type="button"
+              onClick={() => onChange("")}
+              className="absolute right-1 top-1 rounded bg-background/90 p-1 text-muted-foreground hover:text-destructive"
+              aria-label="Remove image"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        ) : (
+          <div className="flex h-32 items-center justify-center rounded border border-dashed border-input text-xs text-muted-foreground">
+            Using default image
+          </div>
+        )}
+        <div className="flex gap-2">
+          <Input
+            value={value ?? ""}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="Paste image URL or upload"
+            className="h-9 flex-1 text-xs"
+          />
+          <label className="inline-flex h-9 cursor-pointer items-center gap-1 rounded-md border border-input bg-background px-3 text-xs hover:bg-muted">
+            <Upload className="h-3.5 w-3.5" />
+            {uploading ? "…" : "Upload"}
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              disabled={uploading}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) void handleFile(f);
+                e.target.value = "";
+              }}
+            />
+          </label>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------- Section-specific editors -------------------- */
+
+function HeroEditor({ value, onChange }: { value: HeroSettings; onChange: (v: HeroSettings) => void }) {
+  const overlay = value.overlay ?? 40;
+  return (
+    <div className="space-y-4">
+      <ImagePicker
+        label="Background image"
+        value={value.image}
+        onChange={(v) => onChange({ ...value, image: v })}
+      />
+      <div>
+        <Label className="text-xs">Overlay darkness — {overlay}%</Label>
+        <Slider
+          value={[overlay]}
+          min={0}
+          max={100}
+          step={5}
+          onValueChange={(vals) => onChange({ ...value, overlay: vals[0] ?? 0 })}
+          className="mt-2"
+        />
+      </div>
+      <LocalizedField label="Eyebrow" value={value.eyebrow} onChange={(v) => onChange({ ...value, eyebrow: v })} />
+      <LocalizedField
+        label="Heading (use {em}…{/em} for highlight, newline for line break)"
+        value={value.heading}
+        onChange={(v) => onChange({ ...value, heading: v })}
+        multiline
+      />
+      <LocalizedField label="Subtitle" value={value.subtitle} onChange={(v) => onChange({ ...value, subtitle: v })} multiline />
+      <CTAEditor label="Primary CTA" value={value.ctaPrimary} onChange={(v) => onChange({ ...value, ctaPrimary: v })} />
+      <CTAEditor label="Secondary CTA" value={value.ctaSecondary} onChange={(v) => onChange({ ...value, ctaSecondary: v })} />
+      <StatsItemsEditor
+        label="Hero stats"
+        items={value.stats ?? []}
+        onChange={(items) => onChange({ ...value, stats: items })}
+      />
+    </div>
+  );
+}
+
+function StatsItemsEditor({
+  label,
+  items,
+  onChange,
+}: {
+  label: string;
+  items: StatItem[];
+  onChange: (items: StatItem[]) => void;
+}) {
+  const update = (i: number, patch: Partial<StatItem>) =>
+    onChange(items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
+  return (
+    <div className="rounded border border-input p-3">
+      <div className="mb-2 flex items-center justify-between">
+        <Label className="text-xs font-semibold">{label}</Label>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => onChange([...items, { value: "0", labelId: "", labelEn: "" }])}
+        >
+          <Plus className="mr-1 h-3 w-3" /> Add
+        </Button>
+      </div>
+      <div className="space-y-2">
+        {items.map((it, i) => (
+          <div key={i} className="grid grid-cols-[80px_1fr_1fr_auto] items-center gap-2">
+            <Input value={it.value} onChange={(e) => update(i, { value: e.target.value })} placeholder="25+" />
+            <Input value={it.labelId ?? ""} onChange={(e) => update(i, { labelId: e.target.value })} placeholder="Label ID" />
+            <Input value={it.labelEn ?? ""} onChange={(e) => update(i, { labelEn: e.target.value })} placeholder="Label EN" />
+            <button
+              type="button"
+              onClick={() => onChange(items.filter((_, idx) => idx !== i))}
+              className="rounded p-1.5 text-muted-foreground hover:text-destructive"
+              aria-label="Remove"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FeaturedEditor({
+  value,
+  onChange,
+}: {
+  value: FeaturedProductsSettings;
+  onChange: (v: FeaturedProductsSettings) => void;
+}) {
+  const { products } = usePublicProducts();
+  const source = value.source ?? "featured";
+  const selected = value.productIds ?? [];
+  const toggle = (id: string) => {
+    const next = selected.includes(id) ? selected.filter((x) => x !== id) : [...selected, id];
+    onChange({ ...value, productIds: next });
+  };
+  return (
+    <div className="space-y-4">
+      <LocalizedField label="Title" value={value.title} onChange={(v) => onChange({ ...value, title: v })} />
+      <LocalizedField label="Subtitle / eyebrow" value={value.subtitle} onChange={(v) => onChange({ ...value, subtitle: v })} />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <Label className="text-xs">Source</Label>
+          <select
+            value={source}
+            onChange={(e) => onChange({ ...value, source: e.target.value as "featured" | "manual" })}
+            className="mt-1 h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+          >
+            <option value="featured">Featured flag</option>
+            <option value="manual">Manual selection</option>
+          </select>
+        </div>
+        <div>
+          <Label className="text-xs">Card count</Label>
+          <Input
+            type="number"
+            min={1}
+            max={24}
+            value={value.count ?? 8}
+            onChange={(e) => onChange({ ...value, count: Number(e.target.value) || 8 })}
+          />
+        </div>
+      </div>
+      {source === "manual" && (
+        <div>
+          <Label className="text-xs">Products ({selected.length} selected)</Label>
+          <div className="mt-1 max-h-64 overflow-y-auto rounded border border-input">
+            {products.map((p) => {
+              const checked = selected.includes(p.id);
+              return (
+                <label
+                  key={p.id}
+                  className="flex cursor-pointer items-center gap-2 border-b border-border px-2 py-1.5 text-xs last:border-b-0 hover:bg-muted"
+                >
+                  <input type="checkbox" checked={checked} onChange={() => toggle(p.id)} />
+                  <span className="truncate">{p.name_en || p.name_id || p.sku}</span>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CategoriesEditor({
+  value,
+  onChange,
+}: {
+  value: CategoriesSettings;
+  onChange: (v: CategoriesSettings) => void;
+}) {
+  const { data: cats } = usePublicCategories();
+  const list = cats ?? [];
+  const slugs = value.categorySlugs ?? [];
+  const orderedSlugs = slugs.length ? slugs : list.map((c) => c.slug);
+
+  const toggle = (slug: string) => {
+    const cur = slugs.length ? slugs : list.map((c) => c.slug);
+    const next = cur.includes(slug) ? cur.filter((x) => x !== slug) : [...cur, slug];
+    onChange({ ...value, categorySlugs: next });
+  };
+  const move = (slug: string, dir: -1 | 1) => {
+    const cur = [...orderedSlugs];
+    const idx = cur.indexOf(slug);
+    const j = idx + dir;
+    if (idx < 0 || j < 0 || j >= cur.length) return;
+    [cur[idx], cur[j]] = [cur[j], cur[idx]];
+    onChange({ ...value, categorySlugs: cur });
+  };
+
+  return (
+    <div className="space-y-4">
+      <LocalizedField label="Title" value={value.title} onChange={(v) => onChange({ ...value, title: v })} />
+      <LocalizedField label="Subtitle" value={value.subtitle} onChange={(v) => onChange({ ...value, subtitle: v })} />
+      <div>
+        <Label className="text-xs">Categories & order</Label>
+        <ul className="mt-1 divide-y divide-border rounded border border-input">
+          {orderedSlugs.map((slug) => {
+            const c = list.find((x) => x.slug === slug);
+            const included = !slugs.length || slugs.includes(slug);
+            return (
+              <li key={slug} className="flex items-center gap-2 px-2 py-1.5 text-xs">
+                <input type="checkbox" checked={included} onChange={() => toggle(slug)} />
+                <span className="flex-1 truncate">{c?.name_en || slug}</span>
+                <button type="button" onClick={() => move(slug, -1)} className="rounded p-1 hover:bg-muted" aria-label="Move up">
+                  <ChevronUp className="h-3 w-3" />
+                </button>
+                <button type="button" onClick={() => move(slug, 1)} className="rounded p-1 hover:bg-muted" aria-label="Move down">
+                  <ChevronDown className="h-3 w-3" />
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+        <p className="mt-1 text-[10px] text-muted-foreground">
+          Uncheck to hide a category. Use ↑↓ to reorder.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function BrandStoryEditor({
+  value,
+  onChange,
+}: {
+  value: BrandStorySettings;
+  onChange: (v: BrandStorySettings) => void;
+}) {
+  return (
+    <div className="space-y-4">
+      <ImagePicker label="Image" value={value.image} onChange={(v) => onChange({ ...value, image: v })} />
+      <LocalizedField label="Eyebrow" value={value.eyebrow} onChange={(v) => onChange({ ...value, eyebrow: v })} />
+      <LocalizedField label="Heading" value={value.heading} onChange={(v) => onChange({ ...value, heading: v })} />
+      <div>
+        <Label className="text-xs">Body (ID)</Label>
+        <Textarea
+          rows={6}
+          value={value.bodyId ?? ""}
+          onChange={(e) => onChange({ ...value, bodyId: e.target.value })}
+        />
+      </div>
+      <div>
+        <Label className="text-xs">Body (EN)</Label>
+        <Textarea
+          rows={6}
+          value={value.bodyEn ?? ""}
+          onChange={(e) => onChange({ ...value, bodyEn: e.target.value })}
+        />
+      </div>
+      <CTAEditor label="CTA" value={value.cta} onChange={(v) => onChange({ ...value, cta: v })} />
+    </div>
+  );
+}
+
+function CommunityEditor({
+  value,
+  onChange,
+}: {
+  value: CommunitySettings;
+  onChange: (v: CommunitySettings) => void;
+}) {
+  return (
+    <div className="space-y-4">
+      <ImagePicker label="Image" value={value.image} onChange={(v) => onChange({ ...value, image: v })} />
+      <div>
+        <Label className="text-xs">Image side</Label>
+        <div className="mt-1 flex gap-1">
+          {(["left", "right"] as const).map((side) => (
+            <button
+              key={side}
+              type="button"
+              onClick={() => onChange({ ...value, imageSide: side })}
+              className={`flex-1 rounded border px-2 py-1 text-xs font-semibold capitalize ${
+                (value.imageSide ?? "right") === side
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-input bg-background hover:bg-muted"
+              }`}
+            >
+              {side}
+            </button>
+          ))}
+        </div>
+      </div>
+      <LocalizedField label="Eyebrow" value={value.eyebrow} onChange={(v) => onChange({ ...value, eyebrow: v })} />
+      <LocalizedField label="Heading" value={value.heading} onChange={(v) => onChange({ ...value, heading: v })} />
+      <div>
+        <Label className="text-xs">Body (ID)</Label>
+        <Textarea
+          rows={5}
+          value={value.bodyId ?? ""}
+          onChange={(e) => onChange({ ...value, bodyId: e.target.value })}
+        />
+      </div>
+      <div>
+        <Label className="text-xs">Body (EN)</Label>
+        <Textarea
+          rows={5}
+          value={value.bodyEn ?? ""}
+          onChange={(e) => onChange({ ...value, bodyEn: e.target.value })}
+        />
+      </div>
+      <CTAEditor label="CTA" value={value.cta} onChange={(v) => onChange({ ...value, cta: v })} />
+    </div>
+  );
+}
+
+function StatsEditor({ value, onChange }: { value: StatsSettings; onChange: (v: StatsSettings) => void }) {
+  return (
+    <StatsItemsEditor
+      label="Stats"
+      items={value.items ?? []}
+      onChange={(items) => onChange({ ...value, items })}
+    />
+  );
+}

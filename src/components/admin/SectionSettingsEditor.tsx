@@ -21,6 +21,16 @@ import type {
   BrandStorySettings,
   CommunitySettings,
   StatsSettings,
+  FaqCustomSettings,
+  FaqItem,
+  NewsletterSettings,
+  ImageBannerSettings,
+  GallerySettings,
+  GalleryImage,
+  TestimonialsSettings,
+  TestimonialItem,
+  SpacerSettings,
+  AnnouncementBarSettings,
 } from "@/lib/section-registry";
 
 type AnyObj = Record<string, unknown>;
@@ -72,6 +82,27 @@ export function SectionSettingsEditor({
       )}
       {type === "stats" && (
         <StatsEditor value={value as StatsSettings} onChange={onChange as (v: StatsSettings) => void} />
+      )}
+      {type === "faq_custom" && (
+        <FaqCustomEditor value={value as FaqCustomSettings} onChange={onChange as (v: FaqCustomSettings) => void} />
+      )}
+      {type === "newsletter" && (
+        <NewsletterEditor value={value as NewsletterSettings} onChange={onChange as (v: NewsletterSettings) => void} />
+      )}
+      {type === "image_banner" && (
+        <ImageBannerEditor value={value as ImageBannerSettings} onChange={onChange as (v: ImageBannerSettings) => void} />
+      )}
+      {type === "gallery" && (
+        <GalleryEditor value={value as GallerySettings} onChange={onChange as (v: GallerySettings) => void} />
+      )}
+      {type === "testimonials" && (
+        <TestimonialsEditor value={value as TestimonialsSettings} onChange={onChange as (v: TestimonialsSettings) => void} />
+      )}
+      {type === "spacer" && (
+        <SpacerEditor value={value as SpacerSettings} onChange={onChange as (v: SpacerSettings) => void} />
+      )}
+      {type === "announcement_bar" && (
+        <AnnouncementBarEditor value={value as AnnouncementBarSettings} onChange={onChange as (v: AnnouncementBarSettings) => void} />
       )}
       {(type === "store_locator" || type === "faq" || type === "contact") && (
         <p className="text-xs text-muted-foreground">
@@ -649,5 +680,254 @@ function StatsEditor({ value, onChange }: { value: StatsSettings; onChange: (v: 
       items={value.items ?? []}
       onChange={(items) => onChange({ ...value, items })}
     />
+  );
+}
+
+/* -------------------- FAQ (custom) -------------------- */
+function FaqCustomEditor({ value, onChange }: { value: FaqCustomSettings; onChange: (v: FaqCustomSettings) => void }) {
+  const items = value.items ?? [];
+  const update = (i: number, patch: Partial<FaqItem>) =>
+    onChange({ ...value, items: items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)) });
+  const move = (i: number, dir: -1 | 1) => {
+    const next = [...items];
+    const j = i + dir;
+    if (j < 0 || j >= next.length) return;
+    [next[i], next[j]] = [next[j], next[i]];
+    onChange({ ...value, items: next });
+  };
+  return (
+    <div className="space-y-4">
+      <LocalizedField label="Eyebrow" value={value.eyebrow} onChange={(v) => onChange({ ...value, eyebrow: v })} />
+      <LocalizedField label="Title" value={value.title} onChange={(v) => onChange({ ...value, title: v })} />
+      <LocalizedField label="Subtitle" value={value.subtitle} onChange={(v) => onChange({ ...value, subtitle: v })} />
+      <div className="rounded border border-input p-3">
+        <div className="mb-2 flex items-center justify-between">
+          <Label className="text-xs font-semibold">Questions & answers</Label>
+          <Button size="sm" variant="outline" onClick={() => onChange({ ...value, items: [...items, {}] })}>
+            <Plus className="mr-1 h-3 w-3" /> Add
+          </Button>
+        </div>
+        <div className="space-y-3">
+          {items.map((it, i) => (
+            <div key={i} className="rounded border border-border bg-background p-2">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Q&A #{i + 1}</span>
+                <div className="flex items-center gap-1">
+                  <button type="button" onClick={() => move(i, -1)} className="rounded p-1 hover:bg-muted" aria-label="Up"><ChevronUp className="h-3 w-3" /></button>
+                  <button type="button" onClick={() => move(i, 1)} className="rounded p-1 hover:bg-muted" aria-label="Down"><ChevronDown className="h-3 w-3" /></button>
+                  <button type="button" onClick={() => onChange({ ...value, items: items.filter((_, idx) => idx !== i) })} className="rounded p-1 text-muted-foreground hover:text-destructive" aria-label="Remove"><Trash2 className="h-3 w-3" /></button>
+                </div>
+              </div>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Input value={it.questionId ?? ""} onChange={(e) => update(i, { questionId: e.target.value })} placeholder="Pertanyaan (ID)" />
+                <Input value={it.questionEn ?? ""} onChange={(e) => update(i, { questionEn: e.target.value })} placeholder="Question (EN)" />
+                <Textarea value={it.answerId ?? ""} onChange={(e) => update(i, { answerId: e.target.value })} placeholder="Jawaban (ID)" />
+                <Textarea value={it.answerEn ?? ""} onChange={(e) => update(i, { answerEn: e.target.value })} placeholder="Answer (EN)" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------- Newsletter -------------------- */
+function NewsletterEditor({ value, onChange }: { value: NewsletterSettings; onChange: (v: NewsletterSettings) => void }) {
+  return (
+    <div className="space-y-4">
+      <LocalizedField label="Eyebrow" value={value.eyebrow} onChange={(v) => onChange({ ...value, eyebrow: v })} />
+      <LocalizedField label="Heading" value={value.heading} onChange={(v) => onChange({ ...value, heading: v })} />
+      <LocalizedField label="Body" value={value.body} onChange={(v) => onChange({ ...value, body: v })} multiline />
+      <LocalizedField label="Email placeholder" value={value.placeholder} onChange={(v) => onChange({ ...value, placeholder: v })} />
+      <LocalizedField label="Button label" value={value.buttonLabel} onChange={(v) => onChange({ ...value, buttonLabel: v })} />
+      <LocalizedField label="Success message" value={value.successMessage} onChange={(v) => onChange({ ...value, successMessage: v })} />
+      <p className="text-[11px] text-muted-foreground">Subscribers are saved to the newsletter_subscribers table.</p>
+    </div>
+  );
+}
+
+/* -------------------- Image Banner -------------------- */
+function ImageBannerEditor({ value, onChange }: { value: ImageBannerSettings; onChange: (v: ImageBannerSettings) => void }) {
+  const overlay = value.overlay ?? 35;
+  const alignment = value.alignment ?? "center";
+  const height = value.height ?? "M";
+  return (
+    <div className="space-y-4">
+      <ImagePicker label="Background image" value={value.image} onChange={(v) => onChange({ ...value, image: v })} />
+      <div>
+        <Label className="text-xs">Overlay darkness — {overlay}%</Label>
+        <Slider value={[overlay]} min={0} max={100} step={5} onValueChange={(vals) => onChange({ ...value, overlay: vals[0] ?? 0 })} className="mt-2" />
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <Label className="text-xs">Alignment</Label>
+          <div className="mt-1 flex gap-1">
+            {(["left", "center", "right"] as const).map((a) => (
+              <button key={a} type="button" onClick={() => onChange({ ...value, alignment: a })}
+                className={`flex-1 rounded border px-2 py-1 text-xs capitalize ${alignment === a ? "border-primary bg-primary text-primary-foreground" : "border-input bg-background hover:bg-muted"}`}>{a}</button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <Label className="text-xs">Height</Label>
+          <div className="mt-1 flex gap-1">
+            {(["S", "M", "L"] as const).map((h) => (
+              <button key={h} type="button" onClick={() => onChange({ ...value, height: h })}
+                className={`flex-1 rounded border px-2 py-1 text-xs ${height === h ? "border-primary bg-primary text-primary-foreground" : "border-input bg-background hover:bg-muted"}`}>{h}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+      <LocalizedField label="Eyebrow" value={value.eyebrow} onChange={(v) => onChange({ ...value, eyebrow: v })} />
+      <LocalizedField label="Heading" value={value.heading} onChange={(v) => onChange({ ...value, heading: v })} />
+      <LocalizedField label="Body" value={value.body} onChange={(v) => onChange({ ...value, body: v })} multiline />
+      <CTAEditor label="CTA" value={value.cta} onChange={(v) => onChange({ ...value, cta: v })} />
+    </div>
+  );
+}
+
+/* -------------------- Gallery -------------------- */
+function GalleryEditor({ value, onChange }: { value: GallerySettings; onChange: (v: GallerySettings) => void }) {
+  const images = value.images ?? [];
+  const cols = value.columns ?? 3;
+  const update = (i: number, patch: Partial<GalleryImage>) =>
+    onChange({ ...value, images: images.map((im, idx) => (idx === i ? { ...im, ...patch } : im)) });
+  const move = (i: number, dir: -1 | 1) => {
+    const next = [...images];
+    const j = i + dir;
+    if (j < 0 || j >= next.length) return;
+    [next[i], next[j]] = [next[j], next[i]];
+    onChange({ ...value, images: next });
+  };
+  return (
+    <div className="space-y-4">
+      <LocalizedField label="Title" value={value.title} onChange={(v) => onChange({ ...value, title: v })} />
+      <LocalizedField label="Subtitle" value={value.subtitle} onChange={(v) => onChange({ ...value, subtitle: v })} />
+      <div>
+        <Label className="text-xs">Columns</Label>
+        <div className="mt-1 flex gap-1">
+          {([2, 3, 4] as const).map((c) => (
+            <button key={c} type="button" onClick={() => onChange({ ...value, columns: c })}
+              className={`flex-1 rounded border px-2 py-1 text-xs ${cols === c ? "border-primary bg-primary text-primary-foreground" : "border-input bg-background hover:bg-muted"}`}>{c}</button>
+          ))}
+        </div>
+      </div>
+      <div className="rounded border border-input p-3">
+        <div className="mb-2 flex items-center justify-between">
+          <Label className="text-xs font-semibold">Images</Label>
+          <Button size="sm" variant="outline" onClick={() => onChange({ ...value, images: [...images, { src: "" }] })}>
+            <Plus className="mr-1 h-3 w-3" /> Add image
+          </Button>
+        </div>
+        <div className="space-y-3">
+          {images.map((im, i) => (
+            <div key={i} className="rounded border border-border bg-background p-2">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Image #{i + 1}</span>
+                <div className="flex items-center gap-1">
+                  <button type="button" onClick={() => move(i, -1)} className="rounded p-1 hover:bg-muted" aria-label="Up"><ChevronUp className="h-3 w-3" /></button>
+                  <button type="button" onClick={() => move(i, 1)} className="rounded p-1 hover:bg-muted" aria-label="Down"><ChevronDown className="h-3 w-3" /></button>
+                  <button type="button" onClick={() => onChange({ ...value, images: images.filter((_, idx) => idx !== i) })} className="rounded p-1 text-muted-foreground hover:text-destructive" aria-label="Remove"><Trash2 className="h-3 w-3" /></button>
+                </div>
+              </div>
+              <ImagePicker label="Image" value={im.src} onChange={(v) => update(i, { src: v })} />
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                <Input value={im.alt ?? ""} onChange={(e) => update(i, { alt: e.target.value })} placeholder="Alt text" />
+                <Input value={im.href ?? ""} onChange={(e) => update(i, { href: e.target.value })} placeholder="Link (optional)" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------- Testimonials -------------------- */
+function TestimonialsEditor({ value, onChange }: { value: TestimonialsSettings; onChange: (v: TestimonialsSettings) => void }) {
+  const items = value.items ?? [];
+  const update = (i: number, patch: Partial<TestimonialItem>) =>
+    onChange({ ...value, items: items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)) });
+  const move = (i: number, dir: -1 | 1) => {
+    const next = [...items];
+    const j = i + dir;
+    if (j < 0 || j >= next.length) return;
+    [next[i], next[j]] = [next[j], next[i]];
+    onChange({ ...value, items: next });
+  };
+  return (
+    <div className="space-y-4">
+      <LocalizedField label="Eyebrow" value={value.eyebrow} onChange={(v) => onChange({ ...value, eyebrow: v })} />
+      <LocalizedField label="Title" value={value.title} onChange={(v) => onChange({ ...value, title: v })} />
+      <div className="rounded border border-input p-3">
+        <div className="mb-2 flex items-center justify-between">
+          <Label className="text-xs font-semibold">Testimonials</Label>
+          <Button size="sm" variant="outline" onClick={() => onChange({ ...value, items: [...items, { rating: 5 }] })}>
+            <Plus className="mr-1 h-3 w-3" /> Add
+          </Button>
+        </div>
+        <div className="space-y-3">
+          {items.map((it, i) => (
+            <div key={i} className="rounded border border-border bg-background p-2">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">#{i + 1}</span>
+                <div className="flex items-center gap-1">
+                  <button type="button" onClick={() => move(i, -1)} className="rounded p-1 hover:bg-muted" aria-label="Up"><ChevronUp className="h-3 w-3" /></button>
+                  <button type="button" onClick={() => move(i, 1)} className="rounded p-1 hover:bg-muted" aria-label="Down"><ChevronDown className="h-3 w-3" /></button>
+                  <button type="button" onClick={() => onChange({ ...value, items: items.filter((_, idx) => idx !== i) })} className="rounded p-1 text-muted-foreground hover:text-destructive" aria-label="Remove"><Trash2 className="h-3 w-3" /></button>
+                </div>
+              </div>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Textarea value={it.quoteId ?? ""} onChange={(e) => update(i, { quoteId: e.target.value })} placeholder="Quote (ID)" />
+                <Textarea value={it.quoteEn ?? ""} onChange={(e) => update(i, { quoteEn: e.target.value })} placeholder="Quote (EN)" />
+                <Input value={it.author ?? ""} onChange={(e) => update(i, { author: e.target.value })} placeholder="Author" />
+                <Input value={it.role ?? ""} onChange={(e) => update(i, { role: e.target.value })} placeholder="Role / location" />
+                <Input type="number" min={0} max={5} value={it.rating ?? 5} onChange={(e) => update(i, { rating: Number(e.target.value) || 0 })} placeholder="Rating (0-5)" />
+              </div>
+              <div className="mt-2">
+                <ImagePicker label="Avatar (optional)" value={it.avatar} onChange={(v) => update(i, { avatar: v })} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------- Spacer -------------------- */
+function SpacerEditor({ value, onChange }: { value: SpacerSettings; onChange: (v: SpacerSettings) => void }) {
+  const h = value.height ?? 48;
+  return (
+    <div className="space-y-4">
+      <div>
+        <Label className="text-xs">Height — {h}px</Label>
+        <Slider value={[h]} min={8} max={400} step={4} onValueChange={(vals) => onChange({ ...value, height: vals[0] ?? 48 })} className="mt-2" />
+      </div>
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" checked={!!value.showDivider} onChange={(e) => onChange({ ...value, showDivider: e.target.checked })} />
+        Show divider line
+      </label>
+    </div>
+  );
+}
+
+/* -------------------- Announcement Bar -------------------- */
+function AnnouncementBarEditor({ value, onChange }: { value: AnnouncementBarSettings; onChange: (v: AnnouncementBarSettings) => void }) {
+  return (
+    <div className="space-y-4">
+      <LocalizedField label="Message" value={value.message} onChange={(v) => onChange({ ...value, message: v })} />
+      <LocalizedField label="Link label (optional)" value={value.linkLabel} onChange={(v) => onChange({ ...value, linkLabel: v })} />
+      <div>
+        <Label className="text-xs">Link URL</Label>
+        <Input value={value.href ?? ""} onChange={(e) => onChange({ ...value, href: e.target.value })} placeholder="/promo or https://…" />
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <ColorField label="Background" value={value.bgColor ?? ""} onChange={(v) => onChange({ ...value, bgColor: v || undefined })} />
+        <ColorField label="Text" value={value.textColor ?? ""} onChange={(v) => onChange({ ...value, textColor: v || undefined })} />
+      </div>
+      <p className="text-[11px] text-muted-foreground">Tip: place this section at the top of the page list.</p>
+    </div>
   );
 }

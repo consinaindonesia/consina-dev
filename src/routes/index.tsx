@@ -217,61 +217,109 @@ function ComposedSections() {
 }
 
 /* ---------- Hero ---------- */
-function Hero() {
-  const { t } = useTranslation();
+function Hero({ settings }: { settings: HeroSettings }) {
+  const lang = useLang();
+  const s = settings;
+  const heroImg = s.image && s.image.trim() ? s.image : hero;
+  const overlayPct = Math.max(0, Math.min(100, s.overlay ?? 40));
+  const heading = pickLocalized(s.heading, lang);
+  const eyebrow = pickLocalized(s.eyebrow, lang);
+  const subtitle = pickLocalized(s.subtitle, lang);
+  // Heading supports {em}…{/em} for highlighted span and \n for line break.
+  const headingParts = heading.split(/\{em\}|\{\/em\}/);
   return (
-    <section className="relative isolate overflow-hidden">
+    <section
+      className="relative isolate overflow-hidden"
+      style={s.style?.bgColor ? { backgroundColor: s.style.bgColor } : undefined}
+    >
       <div className="absolute inset-0 -z-10">
         <img
-          src={hero}
-          alt="Indonesian volcanic mountain at dawn"
+          src={heroImg}
+          alt="Hero background"
           width={1920}
           height={1080}
           className="h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/40 via-primary/30 to-background" />
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `linear-gradient(to bottom, rgba(26,58,46,${(overlayPct / 100).toFixed(2)}), rgba(26,58,46,${((overlayPct * 0.75) / 100).toFixed(2)}), var(--background))`,
+          }}
+        />
       </div>
-      <div className="mx-auto flex min-h-[88vh] max-w-[1280px] flex-col justify-end px-4 pb-8 pt-32 md:px-8 md:pb-12 lg:pb-16">
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">
-          {t("home.hero.tagline")}
-        </p>
+      <div
+        className="mx-auto flex min-h-[88vh] max-w-[1280px] flex-col justify-end px-4 pb-8 pt-32 md:px-8 md:pb-12 lg:pb-16"
+        style={s.style?.textColor ? { color: s.style.textColor } : undefined}
+      >
+        {eyebrow && (
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">{eyebrow}</p>
+        )}
         <h1 className="mt-5 max-w-4xl font-[Archivo] text-5xl font-black leading-[0.95] tracking-tight text-primary-foreground md:text-7xl lg:text-[88px]">
-          {t("home.hero.title_1")} <em className="not-italic text-accent">{t("home.hero.title_em")}</em>
-          <br />
-          {t("home.hero.title_2")}
+          {headingParts.map((part, i) =>
+            i % 2 === 1 ? (
+              <em key={i} className="not-italic text-accent">{part}</em>
+            ) : (
+              <span key={i}>{part.split("\n").map((ln, j) => (
+                <span key={j}>{j > 0 && <br />}{ln}</span>
+              ))}</span>
+            ),
+          )}
         </h1>
-        <p className="mt-6 max-w-xl text-base leading-relaxed text-primary-foreground/85 md:text-lg">
-          {t("home.hero.subtitle")}
-        </p>
+        {subtitle && (
+          <p className="mt-6 max-w-xl text-base leading-relaxed text-primary-foreground/85 md:text-lg">
+            {subtitle}
+          </p>
+        )}
         <div className="mt-10 flex flex-wrap items-center gap-4">
-          <Link
-            to="/catalog"
-            className="group inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold uppercase tracking-wider text-accent-foreground transition hover:bg-accent/90"
-          >
-            {t("cta.explore_collection")}
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </Link>
-          <Link
-            to="/stores"
-            className="inline-flex items-center gap-2 rounded-full border border-primary-foreground/30 px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-primary-foreground/10"
-          >
-            {t("cta.find_store")}
-          </Link>
+          <CTAButton cta={s.ctaPrimary} lang={lang} defaultStyle="primary" iconRight />
+          <CTAButton cta={s.ctaSecondary} lang={lang} defaultStyle="outline" />
         </div>
-        <div className="mt-16 grid max-w-2xl grid-cols-3 gap-6 border-t border-primary-foreground/20 pt-6 text-[#1a3a2e]">
-          {[
-            ["25+", t("home.hero.stat_years")],
-            ["150+", t("home.hero.stat_stores")],
-            ["100%", t("home.hero.stat_local")],
-          ].map(([n, l]) => (
-            <div key={l}>
-              <div className="font-[Archivo] text-2xl font-bold text-[#1a3a2e] md:text-3xl">{n}</div>
-              <div className="mt-1 text-[11px] uppercase tracking-widest text-[#1a3a2e]">{l}</div>
-            </div>
-          ))}
-        </div>
+        {s.stats && s.stats.length > 0 && (
+          <div className="mt-16 grid max-w-2xl grid-cols-3 gap-6 border-t border-primary-foreground/20 pt-6 text-[#1a3a2e]">
+            {s.stats.map((st, i) => (
+              <div key={i}>
+                <div className="font-[Archivo] text-2xl font-bold text-[#1a3a2e] md:text-3xl">{st.value}</div>
+                <div className="mt-1 text-[11px] uppercase tracking-widest text-[#1a3a2e]">
+                  {pickLocalized({ id: st.labelId, en: st.labelEn }, lang)}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
+  );
+}
+
+/* ---------- CTA helper ---------- */
+function CTAButton({
+  cta,
+  lang,
+  defaultStyle = "primary",
+  iconRight,
+}: {
+  cta?: CTAConfig;
+  lang: string;
+  defaultStyle?: "primary" | "secondary" | "outline";
+  iconRight?: boolean;
+}) {
+  if (!cta) return null;
+  const label = pickLocalized({ id: cta.labelId, en: cta.labelEn }, lang);
+  if (!label) return null;
+  const href = cta.href || "/";
+  const style = cta.style ?? defaultStyle;
+  const base = "group inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold uppercase tracking-wider transition";
+  const cls =
+    style === "primary"
+      ? `${base} bg-accent text-accent-foreground hover:bg-accent/90`
+      : style === "secondary"
+        ? `${base} bg-[#d4b896] text-[#1a3a2e] hover:bg-[#c9a84c]`
+        : `${base} border border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10`;
+  return (
+    <a href={href} className={cls}>
+      {label}
+      {iconRight && <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />}
+    </a>
   );
 }
 

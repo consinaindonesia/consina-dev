@@ -14,8 +14,8 @@ import { CookieBanner } from "@/components/CookieBanner";
 import { useRouterState } from "@tanstack/react-router";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeStyle } from "@/components/site/ThemeStyle";
-import { loadThemeSettings } from "@/lib/theme-load.functions";
-import { googleFontHref, themeToCss, DEFAULT_THEME, type ThemeSettings } from "@/lib/theme-defaults";
+import { loadThemeSettings, type ThemeHeadPayload } from "@/lib/theme-load.functions";
+import { googleFontHref, themeToCss, DEFAULT_THEME } from "@/lib/theme-defaults";
 
 function NotFoundComponent() {
   return (
@@ -75,17 +75,24 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  loader: async (): Promise<{ theme: ThemeSettings }> => {
+  loader: async (): Promise<ThemeHeadPayload> => {
     try {
-      const theme = await loadThemeSettings();
-      return { theme };
+      return await loadThemeSettings();
     } catch {
-      return { theme: DEFAULT_THEME };
+      return { theme: DEFAULT_THEME, fontHref: googleFontHref(DEFAULT_THEME), fontPreloads: [] };
     }
   },
   head: ({ loaderData }) => {
     const theme = loaderData?.theme ?? DEFAULT_THEME;
-    const fontHref = googleFontHref(theme);
+    const fontHref = loaderData?.fontHref ?? "";
+    const fontPreloads = loaderData?.fontPreloads ?? [];
+    const fontPreloadLinks = fontPreloads.map((href) => ({
+      rel: "preload" as const,
+      href,
+      as: "font" as const,
+      type: "font/woff2",
+      crossOrigin: "anonymous" as const,
+    }));
     return ({
     meta: [
       { charSet: "utf-8" },
@@ -109,6 +116,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon-512.png", type: "image/png", sizes: "512x512" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      ...fontPreloadLinks,
       ...(fontHref ? [{ rel: "stylesheet", href: fontHref }] : []),
       {
         rel: "stylesheet",
@@ -141,12 +149,13 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const { theme } = Route.useLoaderData();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isAdmin = pathname.startsWith("/admin");
 
   return (
     <QueryClientProvider client={queryClient}>
-      {!isAdmin && <ThemeStyle />}
+      {!isAdmin && <ThemeStyle initialTheme={theme} />}
       <Outlet />
       {!isAdmin && <CookieBanner />}
       <Toaster richColors position="top-right" closeButton />

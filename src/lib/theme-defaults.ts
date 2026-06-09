@@ -88,7 +88,7 @@ export function googleFontHref(theme: ThemeSettings): string {
   if (wanted.size === 0) return "";
   return `https://fonts.googleapis.com/css2?${Array.from(wanted)
     .map((f) => `family=${f}`)
-    .join("&")}&display=swap`;
+    .join("&")}&display=optional`;
 }
 
 // Merge any partial settings stored in DB into the defaults.

@@ -190,7 +190,8 @@ const SECTION_COMPONENTS: Record<SectionTypeId, SectionCmp> = {
 };
 
 function ComposedSections() {
-  const { sections: initialSections } = Route.useLoaderData();
+  const loaderData = Route.useLoaderData() as { sections: SerializedSectionRow[] };
+  const initialSections = loaderData.sections;
   const initialRows = useMemo<PageSectionRow[]>(
     () =>
       initialSections.map((r) => ({

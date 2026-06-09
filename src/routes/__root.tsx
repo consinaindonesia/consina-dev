@@ -14,6 +14,8 @@ import { CookieBanner } from "@/components/CookieBanner";
 import { useRouterState } from "@tanstack/react-router";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeStyle } from "@/components/site/ThemeStyle";
+import { loadThemeSettings } from "@/lib/theme-load.functions";
+import { googleFontHref, themeToCss, DEFAULT_THEME, type ThemeSettings } from "@/lib/theme-defaults";
 
 function NotFoundComponent() {
   return (
@@ -73,7 +75,18 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({
+  loader: async (): Promise<{ theme: ThemeSettings }> => {
+    try {
+      const theme = await loadThemeSettings();
+      return { theme };
+    } catch {
+      return { theme: DEFAULT_THEME };
+    }
+  },
+  head: ({ loaderData }) => {
+    const theme = loaderData?.theme ?? DEFAULT_THEME;
+    const fontHref = googleFontHref(theme);
+    return ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
@@ -96,14 +109,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon-512.png", type: "image/png", sizes: "512x512" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Inter:wght@400;500;600&display=swap" },
+      ...(fontHref ? [{ rel: "stylesheet", href: fontHref }] : []),
       {
         rel: "stylesheet",
         href: appCss,
       },
     ],
     scripts: [{ src: "/_vercel/insights/script.js", defer: true }],
-  }),
+    styles: [{ children: themeToCss(theme) }],
+  });
+  },
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,

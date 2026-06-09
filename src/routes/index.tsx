@@ -789,11 +789,11 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
       style={styleProps.inlineStyle}
     >
       {/* Section heading */}
-      <div className="text-center">
+      <div className="text-left">
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">
           {pickLocalized(s.subtitle, lang, t("home.featured.eyebrow"))}
         </p>
-        <h2 className="mt-2 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl">
+        <h2 className="mt-2 font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl">
           {pickLocalized(s.title, lang, t("home.featured.title"))}
         </h2>
       </div>

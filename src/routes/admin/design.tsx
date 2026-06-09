@@ -608,10 +608,12 @@ function SectionSettings({
   row,
   onChange,
   onSave,
+  onResetToDefault,
 }: {
   row: PageSectionRow;
   onChange: (next: Record<string, unknown>) => void;
   onSave: (next: Record<string, unknown>) => Promise<void>;
+  onResetToDefault: () => Promise<void>;
 }) {
   const def = SECTION_REGISTRY[row.section_type as SectionTypeId];
   const type = row.section_type as SectionTypeId;
@@ -623,9 +625,14 @@ function SectionSettings({
           <div className="font-semibold">{def?.label ?? type} settings</div>
           <p className="text-xs text-muted-foreground">{def?.description}</p>
         </div>
-        <Button size="sm" onClick={() => void onSave(merged)}>
-          Save
-        </Button>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={() => void onResetToDefault()}>
+            <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Reset
+          </Button>
+          <Button size="sm" onClick={() => void onSave(merged)}>
+            Save
+          </Button>
+        </div>
       </div>
       <SectionSettingsEditor
         type={type}

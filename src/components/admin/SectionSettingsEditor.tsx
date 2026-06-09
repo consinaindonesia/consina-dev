@@ -31,6 +31,10 @@ import type {
   TestimonialItem,
   SpacerSettings,
   AnnouncementBarSettings,
+  StoreLocatorSettings,
+  StoreItem,
+  FaqSettings,
+  ContactSettings,
 } from "@/lib/section-registry";
 
 type AnyObj = Record<string, unknown>;
@@ -104,11 +108,14 @@ export function SectionSettingsEditor({
       {type === "announcement_bar" && (
         <AnnouncementBarEditor value={value as AnnouncementBarSettings} onChange={onChange as (v: AnnouncementBarSettings) => void} />
       )}
-      {(type === "store_locator" || type === "faq" || type === "contact") && (
-        <p className="text-xs text-muted-foreground">
-          This section uses its built-in content. Adjust the style above or
-          toggle visibility from the section list.
-        </p>
+      {type === "store_locator" && (
+        <StoreLocatorEditor value={value as StoreLocatorSettings} onChange={onChange as (v: StoreLocatorSettings) => void} />
+      )}
+      {type === "faq" && (
+        <FaqEditor value={value as FaqSettings} onChange={onChange as (v: FaqSettings) => void} />
+      )}
+      {type === "contact" && (
+        <ContactEditor value={value as ContactSettings} onChange={onChange as (v: ContactSettings) => void} />
       )}
     </div>
   );

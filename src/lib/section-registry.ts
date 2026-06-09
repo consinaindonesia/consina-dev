@@ -12,7 +12,14 @@ export type SectionTypeId =
   | "store_locator"
   | "faq"
   | "contact"
-  | "stats";
+  | "stats"
+  | "faq_custom"
+  | "newsletter"
+  | "image_banner"
+  | "gallery"
+  | "testimonials"
+  | "spacer"
+  | "announcement_bar";
 
 export type Localized = { id?: string; en?: string };
 
@@ -87,6 +94,76 @@ export type StatsSettings = {
 
 export type GenericSettings = { style?: SectionStyle };
 
+export type FaqItem = { questionId?: string; questionEn?: string; answerId?: string; answerEn?: string };
+export type FaqCustomSettings = {
+  style?: SectionStyle;
+  eyebrow?: Localized;
+  title?: Localized;
+  subtitle?: Localized;
+  items?: FaqItem[];
+};
+
+export type NewsletterSettings = {
+  style?: SectionStyle;
+  eyebrow?: Localized;
+  heading?: Localized;
+  body?: Localized;
+  placeholder?: Localized;
+  buttonLabel?: Localized;
+  successMessage?: Localized;
+};
+
+export type ImageBannerSettings = {
+  style?: SectionStyle;
+  image?: string;
+  overlay?: number; // 0..100
+  alignment?: "left" | "center" | "right";
+  eyebrow?: Localized;
+  heading?: Localized;
+  body?: Localized;
+  cta?: CTAConfig;
+  height?: "S" | "M" | "L";
+};
+
+export type GalleryImage = { src: string; alt?: string; href?: string };
+export type GallerySettings = {
+  style?: SectionStyle;
+  title?: Localized;
+  subtitle?: Localized;
+  columns?: 2 | 3 | 4;
+  images?: GalleryImage[];
+};
+
+export type TestimonialItem = {
+  quoteId?: string;
+  quoteEn?: string;
+  author?: string;
+  role?: string;
+  avatar?: string;
+  rating?: number; // 1..5
+};
+export type TestimonialsSettings = {
+  style?: SectionStyle;
+  eyebrow?: Localized;
+  title?: Localized;
+  items?: TestimonialItem[];
+};
+
+export type SpacerSettings = {
+  style?: SectionStyle;
+  height?: number; // px
+  showDivider?: boolean;
+};
+
+export type AnnouncementBarSettings = {
+  style?: SectionStyle;
+  message?: Localized;
+  linkLabel?: Localized;
+  href?: string;
+  bgColor?: string;
+  textColor?: string;
+};
+
 export type SectionSettingsMap = {
   hero: HeroSettings;
   brand_story: BrandStorySettings;
@@ -97,6 +174,13 @@ export type SectionSettingsMap = {
   faq: GenericSettings;
   contact: GenericSettings;
   stats: StatsSettings;
+  faq_custom: FaqCustomSettings;
+  newsletter: NewsletterSettings;
+  image_banner: ImageBannerSettings;
+  gallery: GallerySettings;
+  testimonials: TestimonialsSettings;
+  spacer: SpacerSettings;
+  announcement_bar: AnnouncementBarSettings;
 };
 
 export type AnySectionSettings = SectionSettingsMap[SectionTypeId];
@@ -117,6 +201,13 @@ export const SECTION_REGISTRY: Record<SectionTypeId, SectionDefinition> = {
   faq: { id: "faq", label: "FAQ", description: "Frequently asked questions accordion." },
   contact: { id: "contact", label: "Contact", description: "Contact form and details." },
   stats: { id: "stats", label: "Stats", description: "A row of number + label pairs." },
+  faq_custom: { id: "faq_custom", label: "FAQ (custom)", description: "Reusable FAQ block with your own Q&A pairs." },
+  newsletter: { id: "newsletter", label: "Newsletter Signup", description: "Collect emails to your subscriber list." },
+  image_banner: { id: "image_banner", label: "Image Banner / Promo", description: "Image-led promo banner with heading + CTA." },
+  gallery: { id: "gallery", label: "Gallery / Image Grid", description: "Grid of curated images." },
+  testimonials: { id: "testimonials", label: "Testimonials", description: "Customer quotes and reviews." },
+  spacer: { id: "spacer", label: "Spacer / Divider", description: "Adjustable empty space with optional divider." },
+  announcement_bar: { id: "announcement_bar", label: "Announcement Bar", description: "Slim message bar — place at top of the page." },
 };
 
 export const DEFAULT_HOME_SECTIONS: SectionTypeId[] = [
@@ -210,6 +301,91 @@ export const DEFAULT_STATS: StatsSettings = {
   items: DEFAULT_HERO.stats!,
 };
 
+export const DEFAULT_FAQ_CUSTOM: FaqCustomSettings = {
+  style: { padding: "M" },
+  eyebrow: { id: "FAQ", en: "FAQ" },
+  title: { id: "Pertanyaan yang Sering Diajukan", en: "Frequently Asked Questions" },
+  subtitle: { id: "Tidak menemukan jawaban? Hubungi kami.", en: "Can't find the answer? Reach out to us." },
+  items: [
+    {
+      questionId: "Apa itu Consina?",
+      questionEn: "What is Consina?",
+      answerId: "Consina adalah merek perlengkapan outdoor Indonesia sejak 1999.",
+      answerEn: "Consina is an Indonesian outdoor gear brand since 1999.",
+    },
+  ],
+};
+
+export const DEFAULT_NEWSLETTER: NewsletterSettings = {
+  style: { padding: "M", bgColor: "#f5efe6" },
+  eyebrow: { id: "Buletin", en: "Newsletter" },
+  heading: { id: "Tetap di Jalur", en: "Stay on the trail" },
+  body: {
+    id: "Dapatkan info produk baru, kisah komunitas, dan promo musiman.",
+    en: "Get new product drops, community stories, and seasonal offers.",
+  },
+  placeholder: { id: "Alamat email Anda", en: "Your email address" },
+  buttonLabel: { id: "Berlangganan", en: "Subscribe" },
+  successMessage: { id: "Terima kasih sudah berlangganan!", en: "Thanks for subscribing!" },
+};
+
+export const DEFAULT_IMAGE_BANNER: ImageBannerSettings = {
+  style: { padding: "M" },
+  image: "",
+  overlay: 35,
+  alignment: "center",
+  eyebrow: { id: "Promo Musiman", en: "Seasonal Promo" },
+  heading: { id: "Petualangan Baru Menanti", en: "New Adventures Await" },
+  body: { id: "Diskon hingga 25% untuk koleksi terpilih.", en: "Up to 25% off selected gear." },
+  cta: { labelId: "Belanja Sekarang", labelEn: "Shop now", href: "/catalog", style: "primary" },
+  height: "M",
+};
+
+export const DEFAULT_GALLERY: GallerySettings = {
+  style: { padding: "M" },
+  title: { id: "Galeri", en: "Gallery" },
+  subtitle: { id: "Momen dari komunitas kami", en: "Moments from our community" },
+  columns: 3,
+  images: [],
+};
+
+export const DEFAULT_TESTIMONIALS: TestimonialsSettings = {
+  style: { padding: "M" },
+  eyebrow: { id: "Ulasan", en: "Reviews" },
+  title: { id: "Apa kata para penjelajah", en: "What adventurers say" },
+  items: [
+    {
+      quoteId: "Ransel Consina menemani saya ke puncak Rinjani — nyaman dan tangguh.",
+      quoteEn: "My Consina pack carried me to Rinjani's summit — comfortable and tough.",
+      author: "Andi P.",
+      role: "Pendaki, Bandung",
+      rating: 5,
+    },
+    {
+      quoteId: "Kualitas tenda luar biasa untuk harganya.",
+      quoteEn: "Tent quality is outstanding for the price.",
+      author: "Rina S.",
+      role: "Penjelajah, Jakarta",
+      rating: 5,
+    },
+  ],
+};
+
+export const DEFAULT_SPACER: SpacerSettings = {
+  style: { padding: "S" },
+  height: 48,
+  showDivider: false,
+};
+
+export const DEFAULT_ANNOUNCEMENT_BAR: AnnouncementBarSettings = {
+  style: { padding: "S" },
+  message: { id: "Gratis ongkir untuk pembelian di atas Rp 500.000", en: "Free shipping on orders over Rp 500,000" },
+  linkLabel: { id: "Pelajari", en: "Learn more" },
+  href: "/",
+  bgColor: "#1a3a2e",
+  textColor: "#ffffff",
+};
+
 export const DEFAULT_SECTION_SETTINGS: { [K in SectionTypeId]: SectionSettingsMap[K] } = {
   hero: DEFAULT_HERO,
   brand_story: DEFAULT_BRAND_STORY,
@@ -220,6 +396,13 @@ export const DEFAULT_SECTION_SETTINGS: { [K in SectionTypeId]: SectionSettingsMa
   faq: { style: { padding: "M" } },
   contact: { style: { padding: "M" } },
   stats: DEFAULT_STATS,
+  faq_custom: DEFAULT_FAQ_CUSTOM,
+  newsletter: DEFAULT_NEWSLETTER,
+  image_banner: DEFAULT_IMAGE_BANNER,
+  gallery: DEFAULT_GALLERY,
+  testimonials: DEFAULT_TESTIMONIALS,
+  spacer: DEFAULT_SPACER,
+  announcement_bar: DEFAULT_ANNOUNCEMENT_BAR,
 };
 
 export function getDefaultSettings<K extends SectionTypeId>(type: K): SectionSettingsMap[K] {

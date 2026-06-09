@@ -41,7 +41,6 @@ import { SectionSettingsEditor } from "@/components/admin/SectionSettingsEditor"
 import { supabase } from "@/integrations/supabase/client";
 import {
   DEFAULT_HOME_SECTIONS,
-  DEFAULT_SECTION_SETTINGS,
   SECTION_REGISTRY,
   SECTION_TYPE_LIST,
   getDefaultSettings,

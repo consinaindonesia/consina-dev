@@ -445,7 +445,7 @@ function Categories() {
 
           <div
             ref={scrollerRef}
-            className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] md:-mx-8 md:px-8 md:gap-5 [&::-webkit-scrollbar]:hidden"
+            className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth scroll-pl-4 px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] md:-mx-8 md:px-8 md:scroll-pl-8 md:gap-5 [&::-webkit-scrollbar]:hidden"
           >
             {items.map((cat) => (
               <div

@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { DEFAULT_THEME, googleFontHref, mergeTheme, themeToCss, type ThemeSettings } from "@/lib/theme-defaults";
+import { googleFontHref, themeToCss } from "@/lib/theme-defaults";
+import { useSiteSettings } from "@/hooks/use-site-settings";
 
 /**
  * Injects the global theme (CSS variables + Google font link) for the
@@ -8,24 +7,7 @@ import { DEFAULT_THEME, googleFontHref, mergeTheme, themeToCss, type ThemeSettin
  * Skipped under /admin so the admin chrome keeps its fixed look.
  */
 export function ThemeStyle() {
-  const [theme, setTheme] = useState<ThemeSettings>(DEFAULT_THEME);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const { data } = await supabase
-        .from("theme_settings")
-        .select("settings")
-        .eq("id", "global")
-        .maybeSingle();
-      if (cancelled || !data) return;
-      setTheme(mergeTheme(data.settings));
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
+  const theme = useSiteSettings();
   const fontHref = googleFontHref(theme);
 
   return (

@@ -12,6 +12,45 @@ export type ThemeSettings = {
     heading: string;
     body: string;
   };
+  header: HeaderSettings;
+  footer: FooterSettings;
+};
+
+export type HeaderSettings = {
+  logoText: string;
+  showSinceTag: boolean;
+  showSearch: boolean;
+  showFindStore: boolean;
+  showWishlist: boolean;
+  showAccount: boolean;
+};
+
+export type FooterSettings = {
+  tagline: { id: string; en: string };
+  blurb: { id: string; en: string };
+  bgColor: string; // empty => default (var(--primary))
+  textColor: string;
+  socials: { instagram: string; facebook: string; youtube: string };
+};
+
+export const DEFAULT_HEADER: HeaderSettings = {
+  logoText: "CONSINA",
+  showSinceTag: true,
+  showSearch: true,
+  showFindStore: true,
+  showWishlist: true,
+  showAccount: true,
+};
+
+export const DEFAULT_FOOTER: FooterSettings = {
+  tagline: { id: "Outdoor Sejak 1999", en: "Outdoor Since 1999" },
+  blurb: {
+    id: "Perlengkapan untuk pendaki, penjelajah, pemanjat, dan pelari yang menjadikan Indonesia sebagai medan bermain.",
+    en: "Gear for hikers, campers, climbers and runners who call Indonesia their playground.",
+  },
+  bgColor: "",
+  textColor: "",
+  socials: { instagram: "#", facebook: "#", youtube: "#" },
 };
 
 export const DEFAULT_THEME: ThemeSettings = {
@@ -25,6 +64,8 @@ export const DEFAULT_THEME: ThemeSettings = {
     heading: "Archivo",
     body: "Inter",
   },
+  header: DEFAULT_HEADER,
+  footer: DEFAULT_FOOTER,
 };
 
 export const FONT_OPTIONS: { value: string; label: string; googleFamily: string }[] = [
@@ -56,6 +97,14 @@ export function mergeTheme(partial: unknown): ThemeSettings {
   return {
     colors: { ...DEFAULT_THEME.colors, ...(p.colors ?? {}) },
     fonts: { ...DEFAULT_THEME.fonts, ...(p.fonts ?? {}) },
+    header: { ...DEFAULT_HEADER, ...((p as { header?: Partial<HeaderSettings> }).header ?? {}) },
+    footer: {
+      ...DEFAULT_FOOTER,
+      ...((p as { footer?: Partial<FooterSettings> }).footer ?? {}),
+      tagline: { ...DEFAULT_FOOTER.tagline, ...(((p as { footer?: Partial<FooterSettings> }).footer?.tagline) ?? {}) },
+      blurb: { ...DEFAULT_FOOTER.blurb, ...(((p as { footer?: Partial<FooterSettings> }).footer?.blurb) ?? {}) },
+      socials: { ...DEFAULT_FOOTER.socials, ...(((p as { footer?: Partial<FooterSettings> }).footer?.socials) ?? {}) },
+    },
   };
 }
 

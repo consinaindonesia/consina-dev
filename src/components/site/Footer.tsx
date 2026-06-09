@@ -5,11 +5,16 @@ import { LanguageSwitcher } from "./LanguageSwitcher";
 import { usePublicCategories } from "@/hooks/use-public-categories";
 import { useLang } from "@/i18n/LangProvider";
 import { localizedField } from "@/i18n/format";
+import { useSiteSettings } from "@/hooks/use-site-settings";
 
 export function Footer() {
   const { t } = useTranslation();
   const lang = useLang();
   const { data: categories } = usePublicCategories();
+  const site = useSiteSettings();
+  const footer = site.footer;
+  const tagline = (lang === "en" ? footer.tagline.en : footer.tagline.id) || t("footer.tagline");
+  const blurb = (lang === "en" ? footer.blurb.en : footer.blurb.id) || t("footer.blurb");
   const shopLinks = (categories ?? []).map((c) => ({
     label: localizedField(c, "name", lang).value,
     slug: c.slug,
@@ -38,28 +43,42 @@ export function Footer() {
   ];
 
   return (
-    <footer className="mt-24 border-t border-border bg-primary text-primary-foreground">
+    <footer
+      className="mt-24 border-t border-border bg-primary text-primary-foreground"
+      style={{
+        ...(footer.bgColor ? { backgroundColor: footer.bgColor } : {}),
+        ...(footer.textColor ? { color: footer.textColor } : {}),
+      }}
+    >
       <div className="mx-auto max-w-[1280px] px-4 py-16 md:px-8">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-2">
-            <div className="font-[Archivo] text-3xl font-black tracking-tight">CONSINA</div>
+            <div className="font-[Archivo] text-3xl font-black tracking-tight">{site.header.logoText || "CONSINA"}</div>
             <p className="mt-1 text-xs font-medium uppercase tracking-[0.25em] text-accent">
-              {t("footer.tagline")}
+              {tagline}
             </p>
             <p className="mt-6 max-w-sm text-sm leading-relaxed text-primary-foreground/70">
-              {t("footer.blurb")}
+              {blurb}
             </p>
             <div className="mt-6 flex gap-3">
-              {[Instagram, Facebook, Youtube].map((Icon, i) => (
-                <a
-                  key={i}
-                  href="#"
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-primary-foreground/20 text-primary-foreground transition hover:border-accent hover:text-accent"
-                  aria-label="Social link"
-                >
-                  <Icon className="h-4 w-4" />
-                </a>
-              ))}
+              {([
+                { Icon: Instagram, href: footer.socials.instagram, label: "Instagram" },
+                { Icon: Facebook, href: footer.socials.facebook, label: "Facebook" },
+                { Icon: Youtube, href: footer.socials.youtube, label: "YouTube" },
+              ] as const)
+                .filter((s) => s.href && s.href !== "")
+                .map(({ Icon, href, label }) => (
+                  <a
+                    key={label}
+                    href={href}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-primary-foreground/20 text-primary-foreground transition hover:border-accent hover:text-accent"
+                    aria-label={label}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </a>
+                ))}
             </div>
           </div>
           <div>

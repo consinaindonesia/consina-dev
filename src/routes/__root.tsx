@@ -149,12 +149,13 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const { theme } = Route.useLoaderData();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isAdmin = pathname.startsWith("/admin");
 
   return (
     <QueryClientProvider client={queryClient}>
-      {!isAdmin && <ThemeStyle />}
+      {!isAdmin && <ThemeStyle initialTheme={theme} />}
       <Outlet />
       {!isAdmin && <CookieBanner />}
       <Toaster richColors position="top-right" closeButton />

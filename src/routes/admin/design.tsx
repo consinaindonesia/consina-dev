@@ -274,110 +274,253 @@ function DesignEditor() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-primary">Design</h1>
           <p className="text-sm text-muted-foreground">
-            Compose the homepage from modular sections and tune the global theme.
+            Compose the homepage, tune the header & footer, and adjust the theme — with live preview.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <Button size="sm" variant="outline" onClick={bumpPreview} title="Refresh preview">
+            <RefreshCcw className="mr-1.5 h-3.5 w-3.5" /> Refresh
+          </Button>
           <a
             href="/"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary hover:bg-muted"
           >
-            <ExternalLink className="h-3.5 w-3.5" /> View storefront
+            <ExternalLink className="h-3.5 w-3.5" /> Open storefront
           </a>
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-        {/* Left: sections list */}
+      <div className="grid gap-4 lg:grid-cols-[440px_1fr]">
+        {/* LEFT: editor pane */}
         <div className="space-y-4 rounded-lg border border-border bg-white p-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              Homepage sections
-            </h2>
-            <div className="flex items-center gap-2">
-              <Button size="sm" variant="outline" onClick={resetSections}>
-                <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Reset to default
-              </Button>
-              <div className="relative">
-                <Button size="sm" onClick={() => setAddOpen((o) => !o)}>
-                  <Plus className="mr-1.5 h-3.5 w-3.5" /> Add section
-                </Button>
-                {addOpen && (
-                  <>
-                    <div className="fixed inset-0 z-30" onClick={() => setAddOpen(false)} />
-                    <div className="absolute right-0 z-40 mt-1 w-64 overflow-hidden rounded-md border border-border bg-white shadow-lg">
-                      {SECTION_TYPE_LIST.map((d) => (
-                        <button
-                          key={d.id}
-                          type="button"
-                          onClick={() => void addSection(d.id)}
-                          className="block w-full px-3 py-2 text-left text-sm hover:bg-muted"
-                        >
-                          <div className="font-medium">{d.label}</div>
-                          <div className="text-xs text-muted-foreground">{d.description}</div>
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
+          {/* Tabs */}
+          <div className="flex gap-1 rounded-md bg-muted p-1 text-xs font-semibold uppercase tracking-wider">
+            {([
+              ["sections", "Sections"],
+              ["header", "Header"],
+              ["footer", "Footer"],
+              ["theme", "Theme"],
+            ] as const).map(([key, label]) => (
+              <button
+                key={key}
+                onClick={() => setTab(key)}
+                className={`flex-1 rounded px-2 py-1.5 transition ${
+                  tab === key ? "bg-white text-primary shadow-sm" : "text-muted-foreground"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
           </div>
 
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-            <SortableContext items={sections.map((s) => s.id)} strategy={verticalListSortingStrategy}>
-              <ul className="space-y-1.5">
-                {sections.map((row) => (
-                  <SectionRow
-                    key={row.id}
-                    row={row}
-                    selected={row.id === selectedId}
-                    onSelect={() => setSelectedId(row.id)}
-                    onToggle={() => void toggleEnabled(row)}
-                    onDuplicate={() => void duplicate(row)}
-                    onRemove={() => void remove(row)}
-                  />
-                ))}
-              </ul>
-            </SortableContext>
-          </DndContext>
+          {tab === "sections" && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                  Homepage sections
+                </h2>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="outline" onClick={resetSections}>
+                    <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Reset
+                  </Button>
+                  <div className="relative">
+                    <Button size="sm" onClick={() => setAddOpen((o) => !o)}>
+                      <Plus className="mr-1.5 h-3.5 w-3.5" /> Add
+                    </Button>
+                    {addOpen && (
+                      <>
+                        <div className="fixed inset-0 z-30" onClick={() => setAddOpen(false)} />
+                        <div className="absolute right-0 z-40 mt-1 w-72 max-h-[60vh] overflow-y-auto rounded-md border border-border bg-white shadow-lg">
+                          {SECTION_TYPE_LIST.map((d) => (
+                            <button
+                              key={d.id}
+                              type="button"
+                              onClick={() => void addSection(d.id)}
+                              className="block w-full px-3 py-2 text-left text-sm hover:bg-muted"
+                            >
+                              <div className="font-medium">{d.label}</div>
+                              <div className="text-xs text-muted-foreground">{d.description}</div>
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
 
-          {selected && (
-            <SectionSettings
-              row={selected}
-              onChange={(next) => {
-                setSections((cur) =>
-                  cur.map((s) => (s.id === selected.id ? { ...s, settings: next } : s)),
-                );
+              {/* Fixed Header pseudo-row */}
+              <FixedRow label="Header" sublabel="Logo, nav visibility" onClick={() => setTab("header")} />
+
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+                <SortableContext items={sections.map((s) => s.id)} strategy={verticalListSortingStrategy}>
+                  <ul className="space-y-1.5">
+                    {sections.map((row) => (
+                      <SectionRow
+                        key={row.id}
+                        row={row}
+                        selected={row.id === selectedId}
+                        onSelect={() => setSelectedId(row.id)}
+                        onToggle={() => void toggleEnabled(row)}
+                        onDuplicate={() => void duplicate(row)}
+                        onRemove={() => void remove(row)}
+                      />
+                    ))}
+                  </ul>
+                </SortableContext>
+              </DndContext>
+
+              {/* Fixed Footer pseudo-row */}
+              <FixedRow label="Footer" sublabel="Tagline, links, socials" onClick={() => setTab("footer")} />
+
+              {selected && (
+                <SectionSettings
+                  row={selected}
+                  onChange={(next) => {
+                    setSections((cur) =>
+                      cur.map((s) => (s.id === selected.id ? { ...s, settings: next } : s)),
+                    );
+                  }}
+                  onSave={async (next) => {
+                    const { error } = await supabase
+                      .from("page_sections")
+                      .update({ settings: next as never })
+                      .eq("id", selected.id);
+                    if (error) toast.error("Failed to save section");
+                    else {
+                      toast.success("Section saved");
+                      bumpPreview();
+                    }
+                  }}
+                  onResetToDefault={async () => {
+                    if (!confirm("Reset this section's settings to default?")) return;
+                    const def = getDefaultSettings(selected.section_type as SectionTypeId);
+                    const { error } = await supabase
+                      .from("page_sections")
+                      .update({ settings: def as never })
+                      .eq("id", selected.id);
+                    if (error) {
+                      toast.error("Failed to reset");
+                      return;
+                    }
+                    setSections((cur) =>
+                      cur.map((s) =>
+                        s.id === selected.id
+                          ? { ...s, settings: def as unknown as Record<string, unknown> }
+                          : s,
+                      ),
+                    );
+                    toast.success("Section reset to default");
+                    bumpPreview();
+                  }}
+                />
+              )}
+            </div>
+          )}
+
+          {tab === "header" && (
+            <HeaderPanel
+              theme={theme}
+              saving={savingTheme}
+              onChange={(t) => void saveTheme(t)}
+              onReset={async () => {
+                await saveTheme({ ...theme, header: DEFAULT_HEADER });
+                toast.success("Header reset");
               }}
-              onSave={async (next) => {
-                const { error } = await supabase
-                  .from("page_sections")
-                  .update({ settings: next as never })
-                  .eq("id", selected.id);
-                if (error) toast.error("Failed to save section");
-                else toast.success("Section saved");
+            />
+          )}
+
+          {tab === "footer" && (
+            <FooterPanel
+              theme={theme}
+              saving={savingTheme}
+              onChange={(t) => void saveTheme(t)}
+              onReset={async () => {
+                await saveTheme({ ...theme, footer: DEFAULT_FOOTER });
+                toast.success("Footer reset");
               }}
+            />
+          )}
+
+          {tab === "theme" && (
+            <ThemePanel
+              theme={theme}
+              saving={savingTheme}
+              onChange={(t) => void saveTheme(t)}
+              onReset={() => void resetTheme()}
             />
           )}
         </div>
 
-        {/* Right: theme */}
-        <ThemePanel
-          theme={theme}
-          saving={savingTheme}
-          onChange={(t) => void saveTheme(t)}
-          onReset={() => void resetTheme()}
-        />
+        {/* RIGHT: live preview */}
+        <div className="rounded-lg border border-border bg-muted/40 p-3">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              Live preview
+            </h2>
+            <div className="flex items-center gap-1 rounded-md bg-white p-1 shadow-sm">
+              <button
+                onClick={() => setDevice("desktop")}
+                className={`flex h-7 w-9 items-center justify-center rounded ${
+                  device === "desktop" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                }`}
+                aria-label="Desktop preview"
+              >
+                <Monitor className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => setDevice("mobile")}
+                className={`flex h-7 w-9 items-center justify-center rounded ${
+                  device === "mobile" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                }`}
+                aria-label="Mobile preview"
+              >
+                <Smartphone className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
+          <div className="flex justify-center overflow-hidden rounded-md bg-white">
+            <iframe
+              ref={previewRef}
+              key={previewKey}
+              src="/"
+              title="Storefront preview"
+              className="border-0 bg-white"
+              style={{
+                width: device === "mobile" ? 390 : "100%",
+                height: "min(82vh, 1100px)",
+                maxWidth: "100%",
+              }}
+            />
+          </div>
+        </div>
       </div>
     </div>
+  );
+}
+
+function FixedRow({ label, sublabel, onClick }: { label: string; sublabel: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full items-center gap-2 rounded-md border border-dashed border-border bg-muted/30 px-2 py-2 text-left text-sm hover:border-primary"
+    >
+      <div className="flex h-7 w-7 items-center justify-center rounded bg-primary/10 text-[10px] font-bold uppercase tracking-wider text-primary">
+        Fix
+      </div>
+      <div className="flex-1">
+        <div className="font-medium">{label}</div>
+        <div className="text-xs text-muted-foreground">{sublabel}</div>
+      </div>
+    </button>
   );
 }
 

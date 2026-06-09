@@ -94,6 +94,34 @@ export type StatsSettings = {
 
 export type GenericSettings = { style?: SectionStyle };
 
+export type StoreItem = { city: string; address: string; phone: string };
+export type StoreLocatorSettings = {
+  style?: SectionStyle;
+  eyebrow?: Localized;
+  title?: Localized;
+  subtitle?: Localized;
+  cta?: CTAConfig;
+  stores?: StoreItem[];
+};
+
+export type FaqSettings = {
+  style?: SectionStyle;
+  eyebrow?: Localized;
+  title?: Localized;
+  subtitle?: Localized;
+  items?: FaqItem[];
+};
+
+export type ContactSettings = {
+  style?: SectionStyle;
+  eyebrow?: Localized;
+  title?: Localized;
+  subtitle?: Localized;
+  email?: string;
+  phone?: string;
+  address?: string;
+};
+
 export type FaqItem = { questionId?: string; questionEn?: string; answerId?: string; answerEn?: string };
 export type FaqCustomSettings = {
   style?: SectionStyle;
@@ -170,9 +198,9 @@ export type SectionSettingsMap = {
   categories: CategoriesSettings;
   featured_products: FeaturedProductsSettings;
   community: CommunitySettings;
-  store_locator: GenericSettings;
-  faq: GenericSettings;
-  contact: GenericSettings;
+  store_locator: StoreLocatorSettings;
+  faq: FaqSettings;
+  contact: ContactSettings;
   stats: StatsSettings;
   faq_custom: FaqCustomSettings;
   newsletter: NewsletterSettings;

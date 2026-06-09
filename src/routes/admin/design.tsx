@@ -170,6 +170,7 @@ function DesignEditor() {
       .update({ enabled: next })
       .eq("id", row.id);
     if (error) toast.error("Failed to update section");
+    else bumpPreview();
   };
 
   const duplicate = async (row: PageSectionRow) => {
@@ -193,6 +194,7 @@ function DesignEditor() {
     next.splice(insertPos, 0, data as PageSectionRow);
     void persistOrder(next.map((s, i) => ({ ...s, position: i })));
     toast.success("Section duplicated");
+    bumpPreview();
   };
 
   const remove = async (row: PageSectionRow) => {
@@ -205,6 +207,7 @@ function DesignEditor() {
     const next = sections.filter((s) => s.id !== row.id);
     void persistOrder(next.map((s, i) => ({ ...s, position: i })));
     if (selectedId === row.id) setSelectedId(null);
+    bumpPreview();
   };
 
   const addSection = async (type: SectionTypeId) => {
@@ -227,6 +230,7 @@ function DesignEditor() {
     setSections((cur) => [...cur, data as PageSectionRow]);
     setAddOpen(false);
     setSelectedId(data.id);
+    bumpPreview();
   };
 
   const resetSections = async () => {
@@ -236,6 +240,7 @@ function DesignEditor() {
     setSelectedId(null);
     await load();
     toast.success("Sections reset to default");
+    bumpPreview();
   };
 
   const saveTheme = async (next: ThemeSettings) => {
@@ -246,13 +251,17 @@ function DesignEditor() {
       .upsert({ id: "global", settings: next as never });
     setSavingTheme(false);
     if (error) toast.error("Failed to save theme");
+    else bumpPreview();
   };
 
   const resetTheme = async () => {
     if (!confirm("Reset global theme to defaults?")) return;
     await supabase.from("theme_settings").delete().eq("id", "global");
     setTheme(DEFAULT_THEME);
+    // Persist defaults so other clients pick up cleared values.
+    await supabase.from("theme_settings").upsert({ id: "global", settings: DEFAULT_THEME as never });
     toast.success("Theme reset");
+    bumpPreview();
   };
 
   if (loading) {

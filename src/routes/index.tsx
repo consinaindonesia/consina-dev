@@ -191,14 +191,18 @@ function ComposedSections() {
   }, []);
 
   // While loading, render defaults so first paint matches existing site.
-  const order: { key: string; type: SectionTypeId }[] =
+  const order: { key: string; type: SectionTypeId; settings: unknown }[] =
     rows === null || rows.length === 0
-      ? DEFAULT_HOME_SECTIONS.map((t) => ({ key: t, type: t }))
+      ? DEFAULT_HOME_SECTIONS.map((t) => ({ key: t, type: t, settings: {} }))
       : rows
           .filter((r): r is PageSectionRow & { section_type: SectionTypeId } =>
             (r.section_type as SectionTypeId) in SECTION_REGISTRY,
           )
-          .map((r) => ({ key: r.id, type: r.section_type as SectionTypeId }));
+          .map((r) => ({
+            key: r.id,
+            type: r.section_type as SectionTypeId,
+            settings: r.settings ?? {},
+          }));
 
   return (
     <>

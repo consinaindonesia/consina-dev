@@ -938,3 +938,129 @@ function AnnouncementBarEditor({ value, onChange }: { value: AnnouncementBarSett
     </div>
   );
 }
+
+/* -------------------- Store Locator -------------------- */
+function StoreLocatorEditor({ value, onChange }: { value: StoreLocatorSettings; onChange: (v: StoreLocatorSettings) => void }) {
+  const items = value.stores ?? [];
+  const update = (i: number, patch: Partial<StoreItem>) =>
+    onChange({ ...value, stores: items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)) });
+  const move = (i: number, dir: -1 | 1) => {
+    const next = [...items];
+    const j = i + dir;
+    if (j < 0 || j >= next.length) return;
+    [next[i], next[j]] = [next[j], next[i]];
+    onChange({ ...value, stores: next });
+  };
+  return (
+    <div className="space-y-4">
+      <LocalizedField label="Eyebrow" value={value.eyebrow} onChange={(v) => onChange({ ...value, eyebrow: v })} />
+      <LocalizedField label="Heading" value={value.title} onChange={(v) => onChange({ ...value, title: v })} />
+      <LocalizedField label="Description" value={value.subtitle} onChange={(v) => onChange({ ...value, subtitle: v })} multiline />
+      <CTAEditor label="CTA" value={value.cta} onChange={(v) => onChange({ ...value, cta: v })} />
+      <div className="rounded border border-input p-3">
+        <div className="mb-2 flex items-center justify-between">
+          <Label className="text-xs font-semibold">Featured stores</Label>
+          <Button size="sm" variant="outline" onClick={() => onChange({ ...value, stores: [...items, { city: "", address: "", phone: "" }] })}>
+            <Plus className="mr-1 h-3 w-3" /> Add store
+          </Button>
+        </div>
+        <div className="space-y-2">
+          {items.map((it, i) => (
+            <div key={i} className="rounded border border-border bg-background p-2">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Store #{i + 1}</span>
+                <div className="flex items-center gap-1">
+                  <button type="button" onClick={() => move(i, -1)} className="rounded p-1 hover:bg-muted" aria-label="Up"><ChevronUp className="h-3 w-3" /></button>
+                  <button type="button" onClick={() => move(i, 1)} className="rounded p-1 hover:bg-muted" aria-label="Down"><ChevronDown className="h-3 w-3" /></button>
+                  <button type="button" onClick={() => onChange({ ...value, stores: items.filter((_, idx) => idx !== i) })} className="rounded p-1 text-muted-foreground hover:text-destructive" aria-label="Remove"><Trash2 className="h-3 w-3" /></button>
+                </div>
+              </div>
+              <div className="grid gap-2 sm:grid-cols-3">
+                <Input value={it.city} onChange={(e) => update(i, { city: e.target.value })} placeholder="City" />
+                <Input value={it.address} onChange={(e) => update(i, { address: e.target.value })} placeholder="Address" />
+                <Input value={it.phone} onChange={(e) => update(i, { phone: e.target.value })} placeholder="Phone" />
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="mt-2 text-[10px] text-muted-foreground">Shown next to the heading. Manage the full store directory in Admin → Stores.</p>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------- FAQ (built-in) -------------------- */
+function FaqEditor({ value, onChange }: { value: FaqSettings; onChange: (v: FaqSettings) => void }) {
+  const items = value.items ?? [];
+  const update = (i: number, patch: Partial<FaqItem>) =>
+    onChange({ ...value, items: items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)) });
+  const move = (i: number, dir: -1 | 1) => {
+    const next = [...items];
+    const j = i + dir;
+    if (j < 0 || j >= next.length) return;
+    [next[i], next[j]] = [next[j], next[i]];
+    onChange({ ...value, items: next });
+  };
+  return (
+    <div className="space-y-4">
+      <LocalizedField label="Eyebrow" value={value.eyebrow} onChange={(v) => onChange({ ...value, eyebrow: v })} />
+      <LocalizedField label="Heading" value={value.title} onChange={(v) => onChange({ ...value, title: v })} />
+      <LocalizedField label="Subtitle" value={value.subtitle} onChange={(v) => onChange({ ...value, subtitle: v })} />
+      <div className="rounded border border-input p-3">
+        <div className="mb-2 flex items-center justify-between">
+          <Label className="text-xs font-semibold">Questions & answers</Label>
+          <Button size="sm" variant="outline" onClick={() => onChange({ ...value, items: [...items, {}] })}>
+            <Plus className="mr-1 h-3 w-3" /> Add
+          </Button>
+        </div>
+        <p className="mb-2 text-[10px] text-muted-foreground">Leave empty to keep the built-in FAQ list.</p>
+        <div className="space-y-3">
+          {items.map((it, i) => (
+            <div key={i} className="rounded border border-border bg-background p-2">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Q&A #{i + 1}</span>
+                <div className="flex items-center gap-1">
+                  <button type="button" onClick={() => move(i, -1)} className="rounded p-1 hover:bg-muted" aria-label="Up"><ChevronUp className="h-3 w-3" /></button>
+                  <button type="button" onClick={() => move(i, 1)} className="rounded p-1 hover:bg-muted" aria-label="Down"><ChevronDown className="h-3 w-3" /></button>
+                  <button type="button" onClick={() => onChange({ ...value, items: items.filter((_, idx) => idx !== i) })} className="rounded p-1 text-muted-foreground hover:text-destructive" aria-label="Remove"><Trash2 className="h-3 w-3" /></button>
+                </div>
+              </div>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Input value={it.questionId ?? ""} onChange={(e) => update(i, { questionId: e.target.value })} placeholder="Pertanyaan (ID)" />
+                <Input value={it.questionEn ?? ""} onChange={(e) => update(i, { questionEn: e.target.value })} placeholder="Question (EN)" />
+                <Textarea value={it.answerId ?? ""} onChange={(e) => update(i, { answerId: e.target.value })} placeholder="Jawaban (ID)" />
+                <Textarea value={it.answerEn ?? ""} onChange={(e) => update(i, { answerEn: e.target.value })} placeholder="Answer (EN)" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------- Contact -------------------- */
+function ContactEditor({ value, onChange }: { value: ContactSettings; onChange: (v: ContactSettings) => void }) {
+  return (
+    <div className="space-y-4">
+      <LocalizedField label="Eyebrow" value={value.eyebrow} onChange={(v) => onChange({ ...value, eyebrow: v })} />
+      <LocalizedField label="Heading" value={value.title} onChange={(v) => onChange({ ...value, title: v })} />
+      <LocalizedField label="Description" value={value.subtitle} onChange={(v) => onChange({ ...value, subtitle: v })} multiline />
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div>
+          <Label className="text-xs">Email</Label>
+          <Input value={value.email ?? ""} onChange={(e) => onChange({ ...value, email: e.target.value })} placeholder="hello@consina.com" />
+        </div>
+        <div>
+          <Label className="text-xs">Phone</Label>
+          <Input value={value.phone ?? ""} onChange={(e) => onChange({ ...value, phone: e.target.value })} placeholder="+62 …" />
+        </div>
+        <div>
+          <Label className="text-xs">Address</Label>
+          <Input value={value.address ?? ""} onChange={(e) => onChange({ ...value, address: e.target.value })} placeholder="Jakarta, Indonesia" />
+        </div>
+      </div>
+      <p className="text-[11px] text-muted-foreground">Inquiries submitted from the form are saved to the contact_inquiries table.</p>
+    </div>
+  );
+}

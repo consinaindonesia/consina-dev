@@ -7,7 +7,8 @@ export type SerializedSectionRow = {
   section_type: string;
   position: number;
   enabled: boolean;
-  settings: unknown;
+  /** JSON-stringified settings; parse on consumer side. */
+  settings_json: string;
 };
 
 export const loadHomeSections = createServerFn({ method: "GET" }).handler(
@@ -19,7 +20,14 @@ export const loadHomeSections = createServerFn({ method: "GET" }).handler(
         .eq("page", "home")
         .eq("enabled", true)
         .order("position", { ascending: true });
-      return ((data ?? []) as unknown[]).map((r) => r as SerializedSectionRow);
+      return ((data ?? []) as Array<Record<string, unknown>>).map((r) => ({
+        id: String(r.id),
+        page: String(r.page),
+        section_type: String(r.section_type),
+        position: Number(r.position),
+        enabled: Boolean(r.enabled),
+        settings_json: JSON.stringify(r.settings ?? {}),
+      }));
     } catch {
       return [];
     }

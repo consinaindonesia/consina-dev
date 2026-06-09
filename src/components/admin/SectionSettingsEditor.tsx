@@ -21,6 +21,16 @@ import type {
   BrandStorySettings,
   CommunitySettings,
   StatsSettings,
+  FaqCustomSettings,
+  FaqItem,
+  NewsletterSettings,
+  ImageBannerSettings,
+  GallerySettings,
+  GalleryImage,
+  TestimonialsSettings,
+  TestimonialItem,
+  SpacerSettings,
+  AnnouncementBarSettings,
 } from "@/lib/section-registry";
 
 type AnyObj = Record<string, unknown>;
@@ -72,6 +82,27 @@ export function SectionSettingsEditor({
       )}
       {type === "stats" && (
         <StatsEditor value={value as StatsSettings} onChange={onChange as (v: StatsSettings) => void} />
+      )}
+      {type === "faq_custom" && (
+        <FaqCustomEditor value={value as FaqCustomSettings} onChange={onChange as (v: FaqCustomSettings) => void} />
+      )}
+      {type === "newsletter" && (
+        <NewsletterEditor value={value as NewsletterSettings} onChange={onChange as (v: NewsletterSettings) => void} />
+      )}
+      {type === "image_banner" && (
+        <ImageBannerEditor value={value as ImageBannerSettings} onChange={onChange as (v: ImageBannerSettings) => void} />
+      )}
+      {type === "gallery" && (
+        <GalleryEditor value={value as GallerySettings} onChange={onChange as (v: GallerySettings) => void} />
+      )}
+      {type === "testimonials" && (
+        <TestimonialsEditor value={value as TestimonialsSettings} onChange={onChange as (v: TestimonialsSettings) => void} />
+      )}
+      {type === "spacer" && (
+        <SpacerEditor value={value as SpacerSettings} onChange={onChange as (v: SpacerSettings) => void} />
+      )}
+      {type === "announcement_bar" && (
+        <AnnouncementBarEditor value={value as AnnouncementBarSettings} onChange={onChange as (v: AnnouncementBarSettings) => void} />
       )}
       {(type === "store_locator" || type === "faq" || type === "contact") && (
         <p className="text-xs text-muted-foreground">

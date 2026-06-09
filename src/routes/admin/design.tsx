@@ -315,7 +315,24 @@ function DesignEditor() {
             </SortableContext>
           </DndContext>
 
-          {selected && <SectionSettings row={selected} />}
+          {selected && (
+            <SectionSettings
+              row={selected}
+              onChange={(next) => {
+                setSections((cur) =>
+                  cur.map((s) => (s.id === selected.id ? { ...s, settings: next } : s)),
+                );
+              }}
+              onSave={async (next) => {
+                const { error } = await supabase
+                  .from("page_sections")
+                  .update({ settings: next as never })
+                  .eq("id", selected.id);
+                if (error) toast.error("Failed to save section");
+                else toast.success("Section saved");
+              }}
+            />
+          )}
         </div>
 
         {/* Right: theme */}

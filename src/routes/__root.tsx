@@ -14,8 +14,8 @@ import { CookieBanner } from "@/components/CookieBanner";
 import { useRouterState } from "@tanstack/react-router";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeStyle } from "@/components/site/ThemeStyle";
-import { loadThemeSettings } from "@/lib/theme-load.functions";
-import { googleFontHref, themeToCss, DEFAULT_THEME, type ThemeSettings } from "@/lib/theme-defaults";
+import { loadThemeSettings, type ThemeHeadPayload } from "@/lib/theme-load.functions";
+import { googleFontHref, themeToCss, DEFAULT_THEME } from "@/lib/theme-defaults";
 
 function NotFoundComponent() {
   return (
@@ -75,17 +75,20 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  loader: async (): Promise<{ theme: ThemeSettings }> => {
+  loader: async (): Promise<ThemeHeadPayload> => {
     try {
-      const theme = await loadThemeSettings();
-      return { theme };
+      return await loadThemeSettings();
     } catch {
-      return { theme: DEFAULT_THEME };
+      return { theme: DEFAULT_THEME, fontHref: googleFontHref(DEFAULT_THEME), fontPreloads: [] };
     }
   },
   head: ({ loaderData }) => {
-    const theme = loaderData?.theme ?? DEFAULT_THEME;
-    const fontHref = googleFontHref(theme);
+    const themeHead = loaderData ?? {
+      theme: DEFAULT_THEME,
+      fontHref: googleFontHref(DEFAULT_THEME),
+      fontPreloads: [],
+    };
+    const { theme, fontHref, fontPreloads } = themeHead;
     return ({
     meta: [
       { charSet: "utf-8" },
@@ -109,6 +112,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon-512.png", type: "image/png", sizes: "512x512" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      ...fontPreloads.map((href) => ({ rel: "preload", href, as: "font", type: "font/woff2", crossOrigin: "anonymous" })),
       ...(fontHref ? [{ rel: "stylesheet", href: fontHref }] : []),
       {
         rel: "stylesheet",

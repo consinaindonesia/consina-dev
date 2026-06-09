@@ -32,6 +32,10 @@ import { AdminShell } from "@/components/admin/AdminShell";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Slider } from "@/components/ui/slider";
+import { SectionSettingsEditor } from "@/components/admin/SectionSettingsEditor";
 import { supabase } from "@/integrations/supabase/client";
 import {
   DEFAULT_HOME_SECTIONS,
@@ -427,17 +431,34 @@ function SectionRow({
   );
 }
 
-function SectionSettings({ row }: { row: PageSectionRow }) {
+function SectionSettings({
+  row,
+  onChange,
+  onSave,
+}: {
+  row: PageSectionRow;
+  onChange: (next: Record<string, unknown>) => void;
+  onSave: (next: Record<string, unknown>) => Promise<void>;
+}) {
   const def = SECTION_REGISTRY[row.section_type as SectionTypeId];
+  const type = row.section_type as SectionTypeId;
+  const merged = mergeSettings(type, row.settings ?? {}) as unknown as Record<string, unknown>;
   return (
     <div className="mt-4 rounded-md border border-dashed border-border bg-muted/30 p-4 text-sm">
-      <div className="font-semibold">{def?.label ?? row.section_type} settings</div>
-      <p className="mt-1 text-xs text-muted-foreground">
-        {def?.description ?? "No description."}
-      </p>
-      <p className="mt-3 text-xs text-muted-foreground">
-        Per-section fields will land here in a follow-up. For now this section uses its built-in defaults.
-      </p>
+      <div className="mb-3 flex items-center justify-between">
+        <div>
+          <div className="font-semibold">{def?.label ?? type} settings</div>
+          <p className="text-xs text-muted-foreground">{def?.description}</p>
+        </div>
+        <Button size="sm" onClick={() => void onSave(merged)}>
+          Save
+        </Button>
+      </div>
+      <SectionSettingsEditor
+        type={type}
+        value={merged}
+        onChange={(next) => onChange(next)}
+      />
     </div>
   );
 }

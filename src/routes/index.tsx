@@ -921,7 +921,7 @@ function StatsSection({ settings }: { settings: StatsSettings }) {
 }
 
 /* ---------- Store Locator ---------- */
-function StoreLocator() {
+function StoreLocator(_: { settings?: unknown }) {
   const { t } = useTranslation();
   return (
     <section className="mx-auto max-w-[1280px] px-4 py-8 md:px-8 md:py-12 lg:py-20">
@@ -963,12 +963,12 @@ function StoreLocator() {
 }
 
 /* ---------- Contact ---------- */
-function ContactSection() {
+function ContactSection(_: { settings?: unknown }) {
   return <ContactSectionInner />;
 }
 
 /* ---------- FAQ ---------- */
-function FAQSection() {
+function FAQSection(_: { settings?: unknown }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState<number | null>(0);
   return (

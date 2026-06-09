@@ -843,43 +843,77 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
 }
 
 /* ---------- Community ---------- */
-function Community() {
-  const { t } = useTranslation();
+function Community({ settings }: { settings: CommunitySettings }) {
+  const lang = useLang();
+  const s = settings;
+  const styleProps = styleToProps(s.style);
+  const body = (lang === "en" ? s.bodyEn : s.bodyId) || s.bodyEn || s.bodyId || "";
+  const paragraphs = body.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
+  const imgRight = (s.imageSide ?? "right") === "right";
+  const imgSrc = s.image && s.image.trim() ? s.image : communityCleanup;
   return (
-    <section className="bg-[#1a3a2e]">
-      <div className="mx-auto grid max-w-[1280px] items-center gap-10 px-4 py-8 md:grid-cols-2 md:px-8 md:py-12 lg:py-20">
-        {/* LEFT COLUMN — Text */}
-        <div className="order-2 md:order-1">
+    <section
+      className={styleProps.className}
+      style={{ backgroundColor: s.style?.bgColor ?? "#1a3a2e", color: s.style?.textColor ?? "#ffffff" }}
+    >
+      <div className="mx-auto grid max-w-[1280px] items-center gap-10 px-4 md:grid-cols-2 md:px-8">
+        {/* Text */}
+        <div className={imgRight ? "order-2 md:order-1" : "order-2 md:order-2"}>
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#d4b896]">
-            {t("home.community.eyebrow")}
+            {pickLocalized(s.eyebrow, lang)}
           </p>
-          <h2 className="mt-4 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-white md:text-5xl">
-            {t("home.community.title")}
+          <h2 className="mt-4 font-[Archivo] text-4xl font-black leading-tight tracking-tight md:text-5xl">
+            {pickLocalized(s.heading, lang)}
           </h2>
-          <div className="mt-8 space-y-5 text-base leading-relaxed text-white/85 md:text-lg">
-            <p>{t("home.community.p1")}</p>
-            <p>{t("home.community.p2")}</p>
+          <div className="mt-8 space-y-5 text-base leading-relaxed opacity-90 md:text-lg">
+            {paragraphs.map((p, i) => <p key={i}>{p}</p>)}
           </div>
-          <Link
-            to="/"
-            className="mt-10 inline-flex items-center gap-2 rounded-full bg-[#d4b896] px-6 py-3 text-sm font-semibold uppercase tracking-wider text-[#1a3a2e] transition hover:bg-[#c9a84c]"
-          >
-            {t("cta.join_community")} <ArrowRight className="h-4 w-4" />
-          </Link>
+          {s.cta && pickLocalized({ id: s.cta.labelId, en: s.cta.labelEn }, lang) && (
+            <a
+              href={s.cta.href || "/"}
+              className="mt-10 inline-flex items-center gap-2 rounded-full bg-[#d4b896] px-6 py-3 text-sm font-semibold uppercase tracking-wider text-[#1a3a2e] transition hover:bg-[#c9a84c]"
+            >
+              {pickLocalized({ id: s.cta.labelId, en: s.cta.labelEn }, lang)} <ArrowRight className="h-4 w-4" />
+            </a>
+          )}
         </div>
-
-        {/* RIGHT COLUMN — Image (desktop only) */}
-        <div className="order-1 md:order-2">
+        {/* Image */}
+        <div className={imgRight ? "order-1 md:order-2" : "order-1 md:order-1"}>
           <div className="overflow-hidden rounded-2xl">
             <img
-              src={communityCleanup}
-              alt="Group of hikers cleaning up a trail"
+              src={imgSrc}
+              alt="Community"
               width={1024}
               height={1280}
               loading="lazy"
               className="h-full w-full object-cover"
             />
           </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- Stats ---------- */
+function StatsSection({ settings }: { settings: StatsSettings }) {
+  const lang = useLang();
+  const s = settings;
+  const styleProps = styleToProps(s.style);
+  const items = s.items ?? [];
+  if (items.length === 0) return <></>;
+  return (
+    <section className={styleProps.className} style={styleProps.inlineStyle}>
+      <div className="mx-auto max-w-[1280px] px-4 md:px-8">
+        <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
+          {items.map((st, i) => (
+            <div key={i} className="border-t border-border pt-4">
+              <div className="font-[Archivo] text-3xl font-black tracking-tight text-primary md:text-4xl">{st.value}</div>
+              <div className="mt-1 text-[11px] uppercase tracking-widest text-muted-foreground">
+                {pickLocalized({ id: st.labelId, en: st.labelEn }, lang)}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>

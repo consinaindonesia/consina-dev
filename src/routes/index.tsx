@@ -190,11 +190,31 @@ const SECTION_COMPONENTS: Record<SectionTypeId, SectionCmp> = {
 };
 
 function ComposedSections() {
-  const [rows, setRows] = useState<PageSectionRow[] | null>(null);
+  const { sections: initialSections } = Route.useLoaderData();
+  const initialRows = useMemo<PageSectionRow[]>(
+    () =>
+      initialSections.map((r) => ({
+        id: r.id,
+        page: r.page,
+        section_type: r.section_type,
+        position: r.position,
+        enabled: r.enabled,
+        settings: (() => {
+          try {
+            return JSON.parse(r.settings_json) as Record<string, unknown>;
+          } catch {
+            return {};
+          }
+        })(),
+      })),
+    [initialSections],
+  );
+  const [rows, setRows] = useState<PageSectionRow[]>(initialRows);
 
+  // Live-refresh from DB after mount (admin preview postMessage or future edits).
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+    const load = async () => {
       const { data, error } = await supabase
         .from("page_sections")
         .select("id,page,section_type,position,enabled,settings")
@@ -202,20 +222,21 @@ function ComposedSections() {
         .eq("enabled", true)
         .order("position", { ascending: true });
       if (cancelled) return;
-      if (error || !data || data.length === 0) {
-        setRows([]);
-      } else {
-        setRows(data as PageSectionRow[]);
-      }
-    })();
+      if (!error && data) setRows(data as PageSectionRow[]);
+    };
+    const onMsg = (e: MessageEvent) => {
+      if (e?.data?.type === "lovable-theme-refresh") void load();
+    };
+    window.addEventListener("message", onMsg);
     return () => {
       cancelled = true;
+      window.removeEventListener("message", onMsg);
     };
   }, []);
 
   // While loading, render defaults so first paint matches existing site.
   const order: { key: string; type: SectionTypeId; settings: unknown }[] =
-    rows === null || rows.length === 0
+    rows.length === 0
       ? DEFAULT_HOME_SECTIONS.map((t) => ({ key: t, type: t, settings: {} }))
       : rows
           .filter((r): r is PageSectionRow & { section_type: SectionTypeId } =>

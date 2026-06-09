@@ -969,36 +969,52 @@ function StatsSection({ settings }: { settings: StatsSettings }) {
 }
 
 /* ---------- Store Locator ---------- */
-function StoreLocator(_: { settings?: unknown }) {
+function StoreLocator({ settings }: { settings: StoreLocatorSettings }) {
   const { t } = useTranslation();
+  const lang = useLang();
+  const s = settings;
+  const styleProps = styleToProps(s.style);
+  const eyebrow = pickLocalized(s.eyebrow, lang, t("home.store_locator.eyebrow"));
+  const heading = pickLocalized(s.title, lang, t("home.store_locator.title"));
+  const subtitle = pickLocalized(s.subtitle, lang, t("home.store_locator.subtitle"));
+  const ctaLabel = pickLocalized({ id: s.cta?.labelId, en: s.cta?.labelEn }, lang, t("cta.all_stores"));
+  const ctaHref = s.cta?.href || "/stores";
+  const items = (s.stores && s.stores.length > 0)
+    ? s.stores
+    : stores.map((x) => ({ city: x.city, address: x.addr, phone: x.phone }));
   return (
-    <section className="mx-auto max-w-[1280px] px-4 py-8 md:px-8 md:py-12 lg:py-20">
+    <section
+      className={`mx-auto max-w-[1280px] px-4 md:px-8 ${styleProps.className}`}
+      style={styleProps.inlineStyle}
+    >
       <div className="grid gap-12 lg:grid-cols-12">
         <div className="lg:col-span-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">{t("home.store_locator.eyebrow")}</p>
-          <h2 className="mt-2 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl">
-            {t("home.store_locator.title")}
+          {eyebrow && <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">{eyebrow}</p>}
+          <h2 className="mt-2 font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl">
+            {heading}
           </h2>
-          <p className="mt-3 max-w-md text-base leading-relaxed text-muted-foreground">
-            {t("home.store_locator.subtitle")}
-          </p>
-          <Link
-            to="/stores"
-            className="mt-8 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-secondary"
-          >
-            <MapPin className="h-4 w-4" /> {t("cta.all_stores")}
-          </Link>
+          {subtitle && (
+            <p className="mt-3 max-w-md text-base leading-relaxed text-muted-foreground">{subtitle}</p>
+          )}
+          {ctaLabel && (
+            <a
+              href={ctaHref}
+              className="mt-8 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-secondary"
+            >
+              <MapPin className="h-4 w-4" /> {ctaLabel}
+            </a>
+          )}
         </div>
         <div className="lg:col-span-7">
           <ul className="divide-y divide-border border-y border-border">
-            {stores.map((s) => (
-              <li key={s.city} className="group grid grid-cols-[auto_1fr_auto] items-center gap-6 py-5">
+            {items.map((st, i) => (
+              <li key={`${st.city}-${i}`} className="group grid grid-cols-[auto_1fr_auto] items-center gap-6 py-5">
                 <span className="font-[Archivo] text-2xl font-black tracking-tight text-primary md:text-3xl">
-                  {s.city}
+                  {st.city}
                 </span>
                 <div>
-                  <p className="text-sm font-medium text-foreground">{s.addr}</p>
-                  <p className="text-xs text-muted-foreground">{s.phone}</p>
+                  <p className="text-sm font-medium text-foreground">{st.address}</p>
+                  <p className="text-xs text-muted-foreground">{st.phone}</p>
                 </div>
                 <ArrowUpRight className="h-5 w-5 text-secondary transition group-hover:translate-x-1 group-hover:-translate-y-1" />
               </li>
@@ -1011,32 +1027,45 @@ function StoreLocator(_: { settings?: unknown }) {
 }
 
 /* ---------- Contact ---------- */
-function ContactSection(_: { settings?: unknown }) {
-  return <ContactSectionInner />;
+function ContactSection({ settings }: { settings: ContactSettings }) {
+  return <ContactSectionInner settings={settings} />;
 }
 
 /* ---------- FAQ ---------- */
-function FAQSection(_: { settings?: unknown }) {
+function FAQSection({ settings }: { settings: FaqSettings }) {
   const { t } = useTranslation();
+  const lang = useLang();
+  const s = settings;
+  const styleProps = styleToProps(s.style);
   const [open, setOpen] = useState<number | null>(0);
+  const eyebrow = pickLocalized(s.eyebrow, lang, t("home.faq.eyebrow"));
+  const heading = pickLocalized(s.title, lang, t("home.faq.title"));
+  const subtitle = pickLocalized(s.subtitle, lang, t("home.faq.subtitle"));
+  const customItems = (s.items ?? []).map((it) => ({
+    q: pickLocalized({ id: it.questionId, en: it.questionEn }, lang),
+    a: pickLocalized({ id: it.answerId, en: it.answerEn }, lang),
+  })).filter((x) => x.q || x.a);
+  const list = customItems.length > 0 ? customItems : faqs;
   return (
-    <section className="bg-background py-8 md:py-12 lg:py-20" aria-labelledby="faq-heading">
+    <section
+      className={`bg-background ${styleProps.className}`}
+      style={styleProps.inlineStyle}
+      aria-labelledby="faq-heading"
+    >
       <div className="mx-auto max-w-3xl px-4 md:px-8">
         <div className="text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">{t("home.faq.eyebrow")}</p>
+          {eyebrow && <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">{eyebrow}</p>}
           <h2
             id="faq-heading"
             className="mt-2 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl"
           >
-            {t("home.faq.title")}
+            {heading}
           </h2>
-          <p className="mt-3 text-base text-muted-foreground">
-            {t("home.faq.subtitle")}
-          </p>
+          {subtitle && <p className="mt-3 text-base text-muted-foreground">{subtitle}</p>}
         </div>
 
         <ul className="mt-8 md:mt-10 divide-y divide-border border-y border-border">
-          {faqs.map((f, i) => {
+          {list.map((f, i) => {
             const isOpen = open === i;
             return (
               <li key={f.q}>

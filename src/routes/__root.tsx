@@ -89,6 +89,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       fontPreloads: [],
     };
     const { theme, fontHref, fontPreloads } = themeHead;
+    const fontPreloadLinks = fontPreloads.map((href) => ({
+      rel: "preload" as const,
+      href,
+      as: "font" as const,
+      type: "font/woff2",
+      crossOrigin: "anonymous" as const,
+    }));
     return ({
     meta: [
       { charSet: "utf-8" },
@@ -112,7 +119,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon-512.png", type: "image/png", sizes: "512x512" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      ...fontPreloads.map((href) => ({ rel: "preload", href, as: "font", type: "font/woff2", crossOrigin: "anonymous" })),
+      ...fontPreloadLinks,
       ...(fontHref ? [{ rel: "stylesheet", href: fontHref }] : []),
       {
         rel: "stylesheet",

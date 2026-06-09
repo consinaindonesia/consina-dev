@@ -145,7 +145,7 @@ export type PageSectionRow = {
 
 export const DEFAULT_HERO: HeroSettings = {
   style: { padding: "M" },
-  image: "/src/assets/hero-mountain.jpg",
+  image: "",
   overlay: 40,
   eyebrow: { id: "Gaya Hidup Outdoor — Sejak 1999", en: "The Outdoor Lifestyle — Est. 1999" },
   heading: {
@@ -182,7 +182,7 @@ export const DEFAULT_CATEGORIES: CategoriesSettings = {
 
 export const DEFAULT_BRAND_STORY: BrandStorySettings = {
   style: { padding: "M" },
-  image: "/src/assets/story-hiker.jpg",
+  image: "",
   eyebrow: { id: "Cerita Kami", en: "Our Story" },
   heading: { id: "Terinspirasi dari Pengalaman", en: "Inspired by Experience" },
   bodyId:
@@ -194,7 +194,7 @@ export const DEFAULT_BRAND_STORY: BrandStorySettings = {
 
 export const DEFAULT_COMMUNITY: CommunitySettings = {
   style: { padding: "M", bgColor: "#1a3a2e", textColor: "#ffffff" },
-  image: "/src/assets/community-cleanup.jpg",
+  image: "",
   imageSide: "right",
   eyebrow: { id: "Komunitas Kami", en: "Our Community" },
   heading: { id: "The Responsible Trekker", en: "The Responsible Trekker" },
@@ -252,7 +252,7 @@ export function pickLocalized(
 
 export function styleToProps(style: SectionStyle | undefined): {
   className: string;
-  inlineStyle: React.CSSProperties;
+  inlineStyle: Record<string, string>;
 } {
   const padding = style?.padding ?? "M";
   const padClass =
@@ -261,7 +261,7 @@ export function styleToProps(style: SectionStyle | undefined): {
       : padding === "L"
         ? "py-12 md:py-20 lg:py-28"
         : "py-8 md:py-12 lg:py-20";
-  const inlineStyle: React.CSSProperties = {};
+  const inlineStyle: Record<string, string> = {};
   if (style?.bgColor) inlineStyle.backgroundColor = style.bgColor;
   if (style?.textColor) inlineStyle.color = style.textColor;
   return { className: padClass, inlineStyle };

@@ -13,6 +13,17 @@ import { PriceDisplay } from "@/components/site/PriceDisplay";
 import {
   DEFAULT_HOME_SECTIONS,
   SECTION_REGISTRY,
+  mergeSettings,
+  pickLocalized,
+  styleToProps,
+  type AnySectionSettings,
+  type BrandStorySettings,
+  type CategoriesSettings,
+  type CommunitySettings,
+  type FeaturedProductsSettings,
+  type HeroSettings,
+  type StatsSettings,
+  type CTAConfig,
   type PageSectionRow,
   type SectionTypeId,
 } from "@/lib/section-registry";
@@ -139,16 +150,20 @@ export function HomePage() {
   );
 }
 
-// Map registry IDs to the actual section components defined below.
-const SECTION_COMPONENTS: Record<SectionTypeId, () => React.JSX.Element> = {
-  hero: Hero,
-  brand_story: BrandStory,
-  categories: Categories,
-  featured_products: FeaturedProducts,
-  community: Community,
-  store_locator: StoreLocator,
-  faq: FAQSection,
-  contact: ContactSection,
+// Map registry IDs to the actual section components defined below. Each
+// accepts a `settings` prop typed via SectionSettingsMap; defaults are merged
+// in by `mergeSettings` before render.
+type SectionCmp = (props: { settings: AnySectionSettings }) => React.JSX.Element;
+const SECTION_COMPONENTS: Record<SectionTypeId, SectionCmp> = {
+  hero: Hero as SectionCmp,
+  brand_story: BrandStory as SectionCmp,
+  categories: Categories as SectionCmp,
+  featured_products: FeaturedProducts as SectionCmp,
+  community: Community as SectionCmp,
+  store_locator: StoreLocator as SectionCmp,
+  faq: FAQSection as SectionCmp,
+  contact: ContactSection as SectionCmp,
+  stats: StatsSection as SectionCmp,
 };
 
 function ComposedSections() {
@@ -176,99 +191,148 @@ function ComposedSections() {
   }, []);
 
   // While loading, render defaults so first paint matches existing site.
-  const order: { key: string; type: SectionTypeId }[] =
+  const order: { key: string; type: SectionTypeId; settings: unknown }[] =
     rows === null || rows.length === 0
-      ? DEFAULT_HOME_SECTIONS.map((t) => ({ key: t, type: t }))
+      ? DEFAULT_HOME_SECTIONS.map((t) => ({ key: t, type: t, settings: {} }))
       : rows
           .filter((r): r is PageSectionRow & { section_type: SectionTypeId } =>
             (r.section_type as SectionTypeId) in SECTION_REGISTRY,
           )
-          .map((r) => ({ key: r.id, type: r.section_type as SectionTypeId }));
+          .map((r) => ({
+            key: r.id,
+            type: r.section_type as SectionTypeId,
+            settings: r.settings ?? {},
+          }));
 
   return (
     <>
-      {order.map(({ key, type }) => {
+      {order.map(({ key, type, settings }) => {
         const Comp = SECTION_COMPONENTS[type];
         if (!Comp) return null;
-        return <Comp key={key} />;
+        const merged = mergeSettings(type, settings);
+        return <Comp key={key} settings={merged} />;
       })}
     </>
   );
 }
 
 /* ---------- Hero ---------- */
-function Hero() {
-  const { t } = useTranslation();
+function Hero({ settings }: { settings: HeroSettings }) {
+  const lang = useLang();
+  const s = settings;
+  const heroImg = s.image && s.image.trim() ? s.image : hero;
+  const overlayPct = Math.max(0, Math.min(100, s.overlay ?? 40));
+  const heading = pickLocalized(s.heading, lang);
+  const eyebrow = pickLocalized(s.eyebrow, lang);
+  const subtitle = pickLocalized(s.subtitle, lang);
+  // Heading supports {em}…{/em} for highlighted span and \n for line break.
+  const headingParts = heading.split(/\{em\}|\{\/em\}/);
   return (
-    <section className="relative isolate overflow-hidden">
+    <section
+      className="relative isolate overflow-hidden"
+      style={s.style?.bgColor ? { backgroundColor: s.style.bgColor } : undefined}
+    >
       <div className="absolute inset-0 -z-10">
         <img
-          src={hero}
-          alt="Indonesian volcanic mountain at dawn"
+          src={heroImg}
+          alt="Hero background"
           width={1920}
           height={1080}
           className="h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/40 via-primary/30 to-background" />
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `linear-gradient(to bottom, rgba(26,58,46,${(overlayPct / 100).toFixed(2)}), rgba(26,58,46,${((overlayPct * 0.75) / 100).toFixed(2)}), var(--background))`,
+          }}
+        />
       </div>
-      <div className="mx-auto flex min-h-[88vh] max-w-[1280px] flex-col justify-end px-4 pb-8 pt-32 md:px-8 md:pb-12 lg:pb-16">
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">
-          {t("home.hero.tagline")}
-        </p>
+      <div
+        className="mx-auto flex min-h-[88vh] max-w-[1280px] flex-col justify-end px-4 pb-8 pt-32 md:px-8 md:pb-12 lg:pb-16"
+        style={s.style?.textColor ? { color: s.style.textColor } : undefined}
+      >
+        {eyebrow && (
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">{eyebrow}</p>
+        )}
         <h1 className="mt-5 max-w-4xl font-[Archivo] text-5xl font-black leading-[0.95] tracking-tight text-primary-foreground md:text-7xl lg:text-[88px]">
-          {t("home.hero.title_1")} <em className="not-italic text-accent">{t("home.hero.title_em")}</em>
-          <br />
-          {t("home.hero.title_2")}
+          {headingParts.map((part, i) =>
+            i % 2 === 1 ? (
+              <em key={i} className="not-italic text-accent">{part}</em>
+            ) : (
+              <span key={i}>{part.split("\n").map((ln, j) => (
+                <span key={j}>{j > 0 && <br />}{ln}</span>
+              ))}</span>
+            ),
+          )}
         </h1>
-        <p className="mt-6 max-w-xl text-base leading-relaxed text-primary-foreground/85 md:text-lg">
-          {t("home.hero.subtitle")}
-        </p>
+        {subtitle && (
+          <p className="mt-6 max-w-xl text-base leading-relaxed text-primary-foreground/85 md:text-lg">
+            {subtitle}
+          </p>
+        )}
         <div className="mt-10 flex flex-wrap items-center gap-4">
-          <Link
-            to="/catalog"
-            className="group inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold uppercase tracking-wider text-accent-foreground transition hover:bg-accent/90"
-          >
-            {t("cta.explore_collection")}
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </Link>
-          <Link
-            to="/stores"
-            className="inline-flex items-center gap-2 rounded-full border border-primary-foreground/30 px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-primary-foreground/10"
-          >
-            {t("cta.find_store")}
-          </Link>
+          <CTAButton cta={s.ctaPrimary} lang={lang} defaultStyle="primary" iconRight />
+          <CTAButton cta={s.ctaSecondary} lang={lang} defaultStyle="outline" />
         </div>
-        <div className="mt-16 grid max-w-2xl grid-cols-3 gap-6 border-t border-primary-foreground/20 pt-6 text-[#1a3a2e]">
-          {[
-            ["25+", t("home.hero.stat_years")],
-            ["150+", t("home.hero.stat_stores")],
-            ["100%", t("home.hero.stat_local")],
-          ].map(([n, l]) => (
-            <div key={l}>
-              <div className="font-[Archivo] text-2xl font-bold text-[#1a3a2e] md:text-3xl">{n}</div>
-              <div className="mt-1 text-[11px] uppercase tracking-widest text-[#1a3a2e]">{l}</div>
-            </div>
-          ))}
-        </div>
+        {s.stats && s.stats.length > 0 && (
+          <div className="mt-16 grid max-w-2xl grid-cols-3 gap-6 border-t border-primary-foreground/20 pt-6 text-[#1a3a2e]">
+            {s.stats.map((st, i) => (
+              <div key={i}>
+                <div className="font-[Archivo] text-2xl font-bold text-[#1a3a2e] md:text-3xl">{st.value}</div>
+                <div className="mt-1 text-[11px] uppercase tracking-widest text-[#1a3a2e]">
+                  {pickLocalized({ id: st.labelId, en: st.labelEn }, lang)}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
 }
 
+/* ---------- CTA helper ---------- */
+function CTAButton({
+  cta,
+  lang,
+  defaultStyle = "primary",
+  iconRight,
+}: {
+  cta?: CTAConfig;
+  lang: string;
+  defaultStyle?: "primary" | "secondary" | "outline";
+  iconRight?: boolean;
+}) {
+  if (!cta) return null;
+  const label = pickLocalized({ id: cta.labelId, en: cta.labelEn }, lang);
+  if (!label) return null;
+  const href = cta.href || "/";
+  const style = cta.style ?? defaultStyle;
+  const base = "group inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold uppercase tracking-wider transition";
+  const cls =
+    style === "primary"
+      ? `${base} bg-accent text-accent-foreground hover:bg-accent/90`
+      : style === "secondary"
+        ? `${base} bg-[#d4b896] text-[#1a3a2e] hover:bg-[#c9a84c]`
+        : `${base} border border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10`;
+  return (
+    <a href={href} className={cls}>
+      {label}
+      {iconRight && <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />}
+    </a>
+  );
+}
+
 /* ---------- Brand Story ---------- */
-function BrandStory() {
-  const { t } = useTranslation();
+function BrandStory({ settings }: { settings: BrandStorySettings }) {
+  const lang = useLang();
+  const s = settings;
   const [expanded, setExpanded] = useState(false);
   const textWrapRef = useRef<HTMLDivElement>(null);
+  const styleProps = styleToProps(s.style);
 
-  const paragraphs = [
-    t("home.story.p1"),
-    t("home.story.p2"),
-    t("home.story.p3"),
-  ].filter(Boolean);
-
-  const first = paragraphs[0] ?? "";
-  const rest = paragraphs.slice(1);
+  const body = (lang === "en" ? s.bodyEn : s.bodyId) || s.bodyEn || s.bodyId || "";
+  const paragraphs = body.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
 
   const handleToggle = () => {
     if (expanded && textWrapRef.current) {
@@ -278,13 +342,16 @@ function BrandStory() {
   };
 
   return (
-    <section className="mx-auto max-w-[1280px] px-4 py-8 md:px-8 md:py-12 lg:py-20">
+    <section
+      className={`mx-auto max-w-[1280px] px-4 md:px-8 ${styleProps.className}`}
+      style={styleProps.inlineStyle}
+    >
       <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
         {/* LEFT COLUMN — Image */}
         <div className="order-1">
           <div className="overflow-hidden rounded-2xl">
             <img
-              src={storyHiker}
+              src={s.image && s.image.trim() ? s.image : storyHiker}
               alt="Hiker on an Indonesian mountain trail"
               width={1024}
               height={1280}
@@ -296,11 +363,13 @@ function BrandStory() {
 
         {/* RIGHT COLUMN — Text */}
         <div className="order-2" ref={textWrapRef}>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">
-            {t("home.story.eyebrow")}
-          </p>
+          {pickLocalized(s.eyebrow, lang) && (
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">
+              {pickLocalized(s.eyebrow, lang)}
+            </p>
+          )}
           <h2 className="mt-4 font-[Archivo] text-4xl font-black leading-[1.05] tracking-tight text-primary md:text-5xl">
-            {t("home.story.title")}
+            {pickLocalized(s.heading, lang)}
           </h2>
 
           <div className="relative mt-6 md:mt-8">
@@ -308,7 +377,7 @@ function BrandStory() {
             <div className="max-w-prose">
               {/* Always-visible first paragraph */}
               <p className="text-base leading-[1.75] text-foreground/80 md:text-lg">
-                {first}
+                {paragraphs[0] ?? ""}
               </p>
 
               {/* Collapsible remaining paragraphs */}
@@ -318,7 +387,7 @@ function BrandStory() {
               >
                 <div className="min-h-0 overflow-hidden">
                   <div className="mt-5 space-y-5 text-base leading-[1.75] text-foreground/80 md:text-lg">
-                    {rest.map((p, i) => (
+                    {paragraphs.slice(1).map((p, i) => (
                       <p key={i}>{p}</p>
                     ))}
                   </div>
@@ -356,12 +425,15 @@ function BrandStory() {
             </button>
           </div>
 
-          <Link
-            to="/"
-            className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-secondary"
-          >
-            {t("cta.learn_more")} <span className="text-base">→</span>
-          </Link>
+          {s.cta && pickLocalized({ id: s.cta.labelId, en: s.cta.labelEn }, lang) && (
+            <a
+              href={s.cta.href || "/"}
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-secondary"
+            >
+              {pickLocalized({ id: s.cta.labelId, en: s.cta.labelEn }, lang)}{" "}
+              <span className="text-base">→</span>
+            </a>
+          )}
         </div>
       </div>
     </section>
@@ -383,11 +455,13 @@ const CATEGORY_IMAGE_MAP: Record<string, string> = {
   daypack: catCarriers,
 };
 
-function Categories() {
+function Categories({ settings }: { settings: CategoriesSettings }) {
   const { t } = useTranslation();
   const lang = useLang();
   const { products } = usePublicProducts();
   const { data: cats } = usePublicCategories();
+  const s = settings;
+  const styleProps = styleToProps(s.style);
 
   const counts = useMemo(() => {
     const map = new Map<string, number>();
@@ -400,7 +474,14 @@ function Categories() {
 
   const items = useMemo(() => {
     const list = cats ?? [];
-    return list.map((c) => ({
+    let ordered = list;
+    if (s.categorySlugs && s.categorySlugs.length > 0) {
+      const bySlug = new Map(list.map((c) => [c.slug, c]));
+      ordered = s.categorySlugs
+        .map((slug) => bySlug.get(slug))
+        .filter((c): c is PublicCategory => Boolean(c));
+    }
+    return ordered.map((c) => ({
       slug: c.slug,
       name: localizedField(c, "name", lang).value,
       desc:
@@ -408,7 +489,7 @@ function Categories() {
       img: CATEGORY_IMAGE_MAP[c.slug] ?? catAccessories,
       count: counts.get(c.slug) ?? 0,
     }));
-  }, [cats, counts, lang, t]);
+  }, [cats, counts, lang, t, s.categorySlugs]);
 
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [snapCount, setSnapCount] = useState(1);
@@ -453,7 +534,10 @@ function Categories() {
   };
 
   return (
-    <section className="bg-background py-8 md:py-12 lg:py-16">
+    <section
+      className={`${styleProps.className}`}
+      style={{ backgroundColor: s.style?.bgColor ?? "var(--background)", ...(s.style?.textColor ? { color: s.style.textColor } : {}) }}
+    >
       <div className="mx-auto max-w-[1280px] px-4 md:px-8">
         {/* Section heading */}
         <div className="flex items-end justify-between gap-4">
@@ -462,10 +546,10 @@ function Categories() {
               {t("home.categories.eyebrow")}
             </p>
             <h2 className="mt-2 font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl">
-              {t("home.categories.title")}
+              {pickLocalized(s.title, lang, t("home.categories.title"))}
             </h2>
             <p className="mt-2 max-w-xl text-sm text-muted-foreground md:text-base">
-              {t("home.categories.subtitle")}
+              {pickLocalized(s.subtitle, lang, t("home.categories.subtitle"))}
             </p>
           </div>
           <Link
@@ -591,14 +675,22 @@ function CategoryCard({ cat }: { cat: CategoryItem }) {
 }
 
 /* ---------- Featured Products ---------- */
-function FeaturedProducts() {
+function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) {
   const { t } = useTranslation();
   const lang = useLang();
   const { products } = usePublicProducts();
+  const s = settings;
+  const styleProps = styleToProps(s.style);
+  const count = Math.max(1, Math.min(24, s.count ?? 8));
   const featured: PublicProduct[] = useMemo(() => {
+    if (s.source === "manual" && s.productIds && s.productIds.length > 0) {
+      const byId = new Map(products.map((p) => [p.id, p]));
+      const list = s.productIds.map((id) => byId.get(id)).filter((p): p is PublicProduct => Boolean(p));
+      return list.slice(0, count);
+    }
     const f = products.filter((p) => p.is_featured);
-    return f.length ? f : products.slice(0, 8);
-  }, [products]);
+    return (f.length ? f : products).slice(0, count);
+  }, [products, s.source, s.productIds, count]);
   const prefix = lang === "id" ? "produk" : "products";
 
   const scrollerRef = useRef<HTMLDivElement>(null);
@@ -644,14 +736,17 @@ function FeaturedProducts() {
   };
 
   return (
-    <section className="mx-auto max-w-[1280px] px-4 py-8 md:px-8 md:py-12 lg:py-20">
+    <section
+      className={`mx-auto max-w-[1280px] px-4 md:px-8 ${styleProps.className}`}
+      style={styleProps.inlineStyle}
+    >
       {/* Section heading */}
       <div className="text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">
-          {t("home.featured.eyebrow")}
+          {pickLocalized(s.subtitle, lang, t("home.featured.eyebrow"))}
         </p>
         <h2 className="mt-2 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl">
-          {t("home.featured.title")}
+          {pickLocalized(s.title, lang, t("home.featured.title"))}
         </h2>
       </div>
 
@@ -748,37 +843,46 @@ function FeaturedProducts() {
 }
 
 /* ---------- Community ---------- */
-function Community() {
-  const { t } = useTranslation();
+function Community({ settings }: { settings: CommunitySettings }) {
+  const lang = useLang();
+  const s = settings;
+  const styleProps = styleToProps(s.style);
+  const body = (lang === "en" ? s.bodyEn : s.bodyId) || s.bodyEn || s.bodyId || "";
+  const paragraphs = body.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
+  const imgRight = (s.imageSide ?? "right") === "right";
+  const imgSrc = s.image && s.image.trim() ? s.image : communityCleanup;
   return (
-    <section className="bg-[#1a3a2e]">
-      <div className="mx-auto grid max-w-[1280px] items-center gap-10 px-4 py-8 md:grid-cols-2 md:px-8 md:py-12 lg:py-20">
-        {/* LEFT COLUMN — Text */}
-        <div className="order-2 md:order-1">
+    <section
+      className={styleProps.className}
+      style={{ backgroundColor: s.style?.bgColor ?? "#1a3a2e", color: s.style?.textColor ?? "#ffffff" }}
+    >
+      <div className="mx-auto grid max-w-[1280px] items-center gap-10 px-4 md:grid-cols-2 md:px-8">
+        {/* Text */}
+        <div className={imgRight ? "order-2 md:order-1" : "order-2 md:order-2"}>
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#d4b896]">
-            {t("home.community.eyebrow")}
+            {pickLocalized(s.eyebrow, lang)}
           </p>
-          <h2 className="mt-4 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-white md:text-5xl">
-            {t("home.community.title")}
+          <h2 className="mt-4 font-[Archivo] text-4xl font-black leading-tight tracking-tight md:text-5xl">
+            {pickLocalized(s.heading, lang)}
           </h2>
-          <div className="mt-8 space-y-5 text-base leading-relaxed text-white/85 md:text-lg">
-            <p>{t("home.community.p1")}</p>
-            <p>{t("home.community.p2")}</p>
+          <div className="mt-8 space-y-5 text-base leading-relaxed opacity-90 md:text-lg">
+            {paragraphs.map((p, i) => <p key={i}>{p}</p>)}
           </div>
-          <Link
-            to="/"
-            className="mt-10 inline-flex items-center gap-2 rounded-full bg-[#d4b896] px-6 py-3 text-sm font-semibold uppercase tracking-wider text-[#1a3a2e] transition hover:bg-[#c9a84c]"
-          >
-            {t("cta.join_community")} <ArrowRight className="h-4 w-4" />
-          </Link>
+          {s.cta && pickLocalized({ id: s.cta.labelId, en: s.cta.labelEn }, lang) && (
+            <a
+              href={s.cta.href || "/"}
+              className="mt-10 inline-flex items-center gap-2 rounded-full bg-[#d4b896] px-6 py-3 text-sm font-semibold uppercase tracking-wider text-[#1a3a2e] transition hover:bg-[#c9a84c]"
+            >
+              {pickLocalized({ id: s.cta.labelId, en: s.cta.labelEn }, lang)} <ArrowRight className="h-4 w-4" />
+            </a>
+          )}
         </div>
-
-        {/* RIGHT COLUMN — Image (desktop only) */}
-        <div className="order-1 md:order-2">
+        {/* Image */}
+        <div className={imgRight ? "order-1 md:order-2" : "order-1 md:order-1"}>
           <div className="overflow-hidden rounded-2xl">
             <img
-              src={communityCleanup}
-              alt="Group of hikers cleaning up a trail"
+              src={imgSrc}
+              alt="Community"
               width={1024}
               height={1280}
               loading="lazy"
@@ -791,8 +895,33 @@ function Community() {
   );
 }
 
+/* ---------- Stats ---------- */
+function StatsSection({ settings }: { settings: StatsSettings }) {
+  const lang = useLang();
+  const s = settings;
+  const styleProps = styleToProps(s.style);
+  const items = s.items ?? [];
+  if (items.length === 0) return <></>;
+  return (
+    <section className={styleProps.className} style={styleProps.inlineStyle}>
+      <div className="mx-auto max-w-[1280px] px-4 md:px-8">
+        <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
+          {items.map((st, i) => (
+            <div key={i} className="border-t border-border pt-4">
+              <div className="font-[Archivo] text-3xl font-black tracking-tight text-primary md:text-4xl">{st.value}</div>
+              <div className="mt-1 text-[11px] uppercase tracking-widest text-muted-foreground">
+                {pickLocalized({ id: st.labelId, en: st.labelEn }, lang)}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ---------- Store Locator ---------- */
-function StoreLocator() {
+function StoreLocator(_: { settings?: unknown }) {
   const { t } = useTranslation();
   return (
     <section className="mx-auto max-w-[1280px] px-4 py-8 md:px-8 md:py-12 lg:py-20">
@@ -834,12 +963,12 @@ function StoreLocator() {
 }
 
 /* ---------- Contact ---------- */
-function ContactSection() {
+function ContactSection(_: { settings?: unknown }) {
   return <ContactSectionInner />;
 }
 
 /* ---------- FAQ ---------- */
-function FAQSection() {
+function FAQSection(_: { settings?: unknown }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState<number | null>(0);
   return (

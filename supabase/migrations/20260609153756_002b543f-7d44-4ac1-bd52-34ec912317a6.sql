@@ -1,0 +1,1 @@
+CREATE POLICY "staff insert category images" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'category-images' AND public.is_admin_or_editor());

@@ -32,11 +32,17 @@ import { AdminShell } from "@/components/admin/AdminShell";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Slider } from "@/components/ui/slider";
+import { SectionSettingsEditor } from "@/components/admin/SectionSettingsEditor";
 import { supabase } from "@/integrations/supabase/client";
 import {
   DEFAULT_HOME_SECTIONS,
   SECTION_REGISTRY,
   SECTION_TYPE_LIST,
+  getDefaultSettings,
+  mergeSettings,
   type PageSectionRow,
   type SectionTypeId,
 } from "@/lib/section-registry";
@@ -92,7 +98,7 @@ function DesignEditor() {
         section_type: type,
         position: i,
         enabled: true,
-        settings: SECTION_REGISTRY[type].defaultSettings as never,
+        settings: getDefaultSettings(type) as never,
       }));
       const { data: inserted } = await supabase
         .from("page_sections")
@@ -190,7 +196,7 @@ function DesignEditor() {
         section_type: type,
         position: pos,
         enabled: true,
-        settings: SECTION_REGISTRY[type].defaultSettings as never,
+        settings: getDefaultSettings(type) as never,
       })
       .select("id,page,section_type,position,enabled,settings")
       .single();
@@ -313,7 +319,24 @@ function DesignEditor() {
             </SortableContext>
           </DndContext>
 
-          {selected && <SectionSettings row={selected} />}
+          {selected && (
+            <SectionSettings
+              row={selected}
+              onChange={(next) => {
+                setSections((cur) =>
+                  cur.map((s) => (s.id === selected.id ? { ...s, settings: next } : s)),
+                );
+              }}
+              onSave={async (next) => {
+                const { error } = await supabase
+                  .from("page_sections")
+                  .update({ settings: next as never })
+                  .eq("id", selected.id);
+                if (error) toast.error("Failed to save section");
+                else toast.success("Section saved");
+              }}
+            />
+          )}
         </div>
 
         {/* Right: theme */}
@@ -408,17 +431,34 @@ function SectionRow({
   );
 }
 
-function SectionSettings({ row }: { row: PageSectionRow }) {
+function SectionSettings({
+  row,
+  onChange,
+  onSave,
+}: {
+  row: PageSectionRow;
+  onChange: (next: Record<string, unknown>) => void;
+  onSave: (next: Record<string, unknown>) => Promise<void>;
+}) {
   const def = SECTION_REGISTRY[row.section_type as SectionTypeId];
+  const type = row.section_type as SectionTypeId;
+  const merged = mergeSettings(type, row.settings ?? {}) as unknown as Record<string, unknown>;
   return (
     <div className="mt-4 rounded-md border border-dashed border-border bg-muted/30 p-4 text-sm">
-      <div className="font-semibold">{def?.label ?? row.section_type} settings</div>
-      <p className="mt-1 text-xs text-muted-foreground">
-        {def?.description ?? "No description."}
-      </p>
-      <p className="mt-3 text-xs text-muted-foreground">
-        Per-section fields will land here in a follow-up. For now this section uses its built-in defaults.
-      </p>
+      <div className="mb-3 flex items-center justify-between">
+        <div>
+          <div className="font-semibold">{def?.label ?? type} settings</div>
+          <p className="text-xs text-muted-foreground">{def?.description}</p>
+        </div>
+        <Button size="sm" onClick={() => void onSave(merged)}>
+          Save
+        </Button>
+      </div>
+      <SectionSettingsEditor
+        type={type}
+        value={merged}
+        onChange={(next) => onChange(next)}
+      />
     </div>
   );
 }

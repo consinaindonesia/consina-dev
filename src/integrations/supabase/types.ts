@@ -950,6 +950,42 @@ export type Database = {
         }
         Relationships: []
       }
+      page_sections: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          i18n: Json
+          id: string
+          page: string
+          position: number
+          section_type: string
+          settings: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          i18n?: Json
+          id?: string
+          page: string
+          position?: number
+          section_type: string
+          settings?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          i18n?: Json
+          id?: string
+          page?: string
+          position?: number
+          section_type?: string
+          settings?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       payment_events: {
         Row: {
           created_at: string
@@ -1566,6 +1602,24 @@ export type Database = {
           id?: string
           metadata?: Json | null
           reason?: string
+        }
+        Relationships: []
+      }
+      theme_settings: {
+        Row: {
+          id: string
+          settings: Json
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          settings?: Json
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          settings?: Json
+          updated_at?: string
         }
         Relationships: []
       }

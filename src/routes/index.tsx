@@ -34,6 +34,9 @@ import {
   type TestimonialsSettings,
   type SpacerSettings,
   type AnnouncementBarSettings,
+  type StoreLocatorSettings,
+  type FaqSettings,
+  type ContactSettings,
 } from "@/lib/section-registry";
 import hero from "@/assets/hero-mountain.jpg";
 import catCarriers from "@/assets/cat-carriers.jpg";

@@ -148,6 +148,7 @@ function DesignEditor() {
         supabase.from("page_sections").update({ position: i }).eq("id", s.id),
       ),
     );
+    bumpPreview();
   };
 
   const onDragEnd = (e: DragEndEvent) => {

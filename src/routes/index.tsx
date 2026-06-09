@@ -1098,8 +1098,17 @@ function FAQSection({ settings }: { settings: FaqSettings }) {
   );
 }
 
-function ContactSectionInner() {
+function ContactSectionInner({ settings }: { settings: ContactSettings }) {
   const { t } = useTranslation();
+  const lang = useLang();
+  const s = settings;
+  const styleProps = styleToProps(s.style);
+  const eyebrow = pickLocalized(s.eyebrow, lang, t("home.contact.eyebrow"));
+  const heading = pickLocalized(s.title, lang, "");
+  const subtitle = pickLocalized(s.subtitle, lang, t("home.contact.subtitle"));
+  const emailAddr = s.email ?? "hello@consina.com";
+  const phoneNum = s.phone ?? "+62 21 345 6789";
+  const addressTxt = s.address ?? "Jakarta, Indonesia";
   const subjects = [
     t("home.contact.subject_product"),
     t("home.contact.subject_wholesale"),
@@ -1159,25 +1168,30 @@ function ContactSectionInner() {
   };
 
   return (
-    <section className="bg-muted/60 py-8 md:py-12 lg:py-20">
+    <section
+      className={`bg-muted/60 ${styleProps.className}`}
+      style={styleProps.inlineStyle}
+    >
       <div className="mx-auto grid max-w-[1280px] gap-14 px-4 md:grid-cols-2 md:px-8">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">{t("home.contact.eyebrow")}</p>
+          {eyebrow && (
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">{eyebrow}</p>
+          )}
           <h2 className="mt-2 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl">
-            {t("home.contact.title_1")}<br />{t("home.contact.title_2")}
+            {heading ? heading : (<>{t("home.contact.title_1")}<br />{t("home.contact.title_2")}</>)}
           </h2>
-          <p className="mt-3 max-w-md text-base leading-relaxed text-muted-foreground">
-            {t("home.contact.subtitle")}
-          </p>
+          {subtitle && (
+            <p className="mt-3 max-w-md text-base leading-relaxed text-muted-foreground">{subtitle}</p>
+          )}
           <div className="mt-10 space-y-4 text-sm">
             <div className="flex items-center gap-3 text-foreground">
-              <Mail className="h-4 w-4 text-secondary" /> hello@consina.com
+              <Mail className="h-4 w-4 text-secondary" /> {emailAddr}
             </div>
             <div className="flex items-center gap-3 text-foreground">
-              <Phone className="h-4 w-4 text-secondary" /> +62 21 345 6789
+              <Phone className="h-4 w-4 text-secondary" /> {phoneNum}
             </div>
             <div className="flex items-center gap-3 text-foreground">
-              <MapPin className="h-4 w-4 text-secondary" /> Jakarta, Indonesia
+              <MapPin className="h-4 w-4 text-secondary" /> {addressTxt}
             </div>
           </div>
         </div>

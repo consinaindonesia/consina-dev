@@ -40,7 +40,12 @@ export const loadThemeSettings = createServerFn({ method: "GET" }).handler(
         .maybeSingle();
       const theme = mergeTheme(data?.settings);
       const fontHref = googleFontHref(theme);
-      const fontPreloads = await resolveFontPreloads(fontHref);
+      let fontPreloads: string[] = [];
+      try {
+        fontPreloads = await resolveFontPreloads(fontHref);
+      } catch {
+        fontPreloads = [];
+      }
       return { theme, fontHref, fontPreloads };
     } catch {
       const theme = mergeTheme(undefined);

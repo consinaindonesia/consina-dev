@@ -334,9 +334,6 @@ function BrandStory({ settings }: { settings: BrandStorySettings }) {
   const body = (lang === "en" ? s.bodyEn : s.bodyId) || s.bodyEn || s.bodyId || "";
   const paragraphs = body.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
 
-  const first = paragraphs[0] ?? "";
-  const rest = paragraphs.slice(1);
-
   const handleToggle = () => {
     if (expanded && textWrapRef.current) {
       textWrapRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });

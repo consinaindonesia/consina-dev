@@ -24,8 +24,11 @@ import {
   EyeOff,
   GripVertical,
   Loader2,
+  Monitor,
   Plus,
+  RefreshCcw,
   RotateCcw,
+  Smartphone,
   Trash2,
 } from "lucide-react";
 import { AdminShell } from "@/components/admin/AdminShell";
@@ -34,11 +37,11 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Slider } from "@/components/ui/slider";
 import { SectionSettingsEditor } from "@/components/admin/SectionSettingsEditor";
 import { supabase } from "@/integrations/supabase/client";
 import {
   DEFAULT_HOME_SECTIONS,
+  DEFAULT_SECTION_SETTINGS,
   SECTION_REGISTRY,
   SECTION_TYPE_LIST,
   getDefaultSettings,
@@ -48,6 +51,8 @@ import {
 } from "@/lib/section-registry";
 import {
   DEFAULT_THEME,
+  DEFAULT_HEADER,
+  DEFAULT_FOOTER,
   FONT_OPTIONS,
   mergeTheme,
   type ThemeSettings,

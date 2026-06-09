@@ -10,6 +10,12 @@ import { usePublicCategories, type PublicCategory } from "@/hooks/use-public-cat
 import { useLang } from "@/i18n/LangProvider";
 import { formatPrice, localizedField } from "@/i18n/format";
 import { PriceDisplay } from "@/components/site/PriceDisplay";
+import {
+  DEFAULT_HOME_SECTIONS,
+  SECTION_REGISTRY,
+  type PageSectionRow,
+  type SectionTypeId,
+} from "@/lib/section-registry";
 import hero from "@/assets/hero-mountain.jpg";
 import catCarriers from "@/assets/cat-carriers.jpg";
 import catTents from "@/assets/cat-tents.jpg";
@@ -126,17 +132,67 @@ export function HomePage() {
     <div className="min-h-screen bg-background text-foreground">
       <Nav />
       <main>
-        <Hero />
-        <BrandStory />
-        <Categories />
-        <FeaturedProducts />
-        <Community />
-        <StoreLocator />
-        <FAQSection />
-        <ContactSection />
+        <ComposedSections />
       </main>
       <Footer />
     </div>
+  );
+}
+
+// Map registry IDs to the actual section components defined below.
+const SECTION_COMPONENTS: Record<SectionTypeId, () => React.JSX.Element> = {
+  hero: Hero,
+  brand_story: BrandStory,
+  categories: Categories,
+  featured_products: FeaturedProducts,
+  community: Community,
+  store_locator: StoreLocator,
+  faq: FAQSection,
+  contact: ContactSection,
+};
+
+function ComposedSections() {
+  const [rows, setRows] = useState<PageSectionRow[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("page_sections")
+        .select("id,page,section_type,position,enabled,settings")
+        .eq("page", "home")
+        .eq("enabled", true)
+        .order("position", { ascending: true });
+      if (cancelled) return;
+      if (error || !data || data.length === 0) {
+        setRows([]);
+      } else {
+        setRows(data as PageSectionRow[]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // While loading, render defaults so first paint matches existing site.
+  const order: { key: string; type: SectionTypeId }[] =
+    rows === null || rows.length === 0
+      ? DEFAULT_HOME_SECTIONS.map((t) => ({ key: t, type: t }))
+      : rows
+          .filter((r): r is PageSectionRow & { section_type: SectionTypeId } =>
+            (r.section_type as SectionTypeId) in SECTION_REGISTRY,
+          )
+          .map((r) => ({ key: r.id, type: r.section_type as SectionTypeId }));
+
+  return (
+    <>
+      {order.map(({ key, type }) => {
+        const Comp = SECTION_COMPONENTS[type];
+        if (!Comp) return null;
+        return <Comp key={key} />;
+      })}
+    </>
   );
 }
 

@@ -13,6 +13,7 @@ import "@/i18n";
 import { CookieBanner } from "@/components/CookieBanner";
 import { useRouterState } from "@tanstack/react-router";
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeStyle } from "@/components/site/ThemeStyle";
 
 function NotFoundComponent() {
   return (
@@ -130,6 +131,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      {!isAdmin && <ThemeStyle />}
       <Outlet />
       {!isAdmin && <CookieBanner />}
       <Toaster richColors position="top-right" closeButton />

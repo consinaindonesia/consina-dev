@@ -982,6 +982,25 @@ function HeaderPanel({
         value={h.logoUrl}
         onChange={(url) => set("logoUrl", url)}
       />
+      <div>
+        <Label className="text-xs">Background color</Label>
+        <div className="mt-1 flex items-center gap-2">
+          <input
+            type="color"
+            value={/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(h.bgColor) ? h.bgColor : "#ffffff"}
+            onChange={(e) => set("bgColor", e.target.value)}
+            className="h-8 w-10 cursor-pointer rounded border border-input bg-transparent"
+          />
+          <Input
+            placeholder="(default — theme background)"
+            value={h.bgColor}
+            onChange={(e) => set("bgColor", e.target.value)}
+          />
+        </div>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Solid color shown behind the nav. Leave empty to use the theme background.
+        </p>
+      </div>
       {([
         ["showSinceTag", "Show 'Since 1999' tag"],
         ["showSearch", "Show search icon"],

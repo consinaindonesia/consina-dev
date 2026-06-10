@@ -27,6 +27,7 @@ export type CustomFont = {
 export type HeaderSettings = {
   logoText: string;
   logoUrl: string;
+  bgColor: string; // empty => default (var(--background))
   showSinceTag: boolean;
   showSearch: boolean;
   showFindStore: boolean;
@@ -47,6 +48,7 @@ export type FooterSettings = {
 export const DEFAULT_HEADER: HeaderSettings = {
   logoText: "CONSINA",
   logoUrl: "",
+  bgColor: "",
   showSinceTag: true,
   showSearch: true,
   showFindStore: true,

@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Menu, X, Search, MapPin, ChevronDown, Heart, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "./LanguageSwitcher";
@@ -23,6 +23,32 @@ export function Nav() {
   const { count: wishCount } = useWishlist(user?.id ?? null);
   const site = useSiteSettings();
   const header = site.header;
+
+  // Auto-hide on scroll-down, reveal on scroll-up. Always shown near top.
+  const [hidden, setHidden] = useState(false);
+  const lastY = useRef(0);
+  useEffect(() => {
+    lastY.current = window.scrollY;
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(() => {
+        const y = window.scrollY;
+        const dy = y - lastY.current;
+        if (y < 80) setHidden(false);
+        else if (dy > 6) setHidden(true);
+        else if (dy < -6) setHidden(false);
+        lastY.current = y;
+        ticking = false;
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Keep header visible while a menu is open.
+  const isHidden = hidden && !open && !mobileShopOpen;
 
   const catLabel = (c: PublicCategory) => localizedField(c, "name", lang).value;
 
@@ -70,7 +96,12 @@ export function Nav() {
   ] as const;
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/85 backdrop-blur">
+    <header
+      className={`sticky top-0 z-50 border-b border-border/60 transition-transform duration-300 ease-out ${
+        isHidden ? "-translate-y-full" : "translate-y-0"
+      }`}
+      style={{ backgroundColor: header.bgColor || "var(--background)" }}
+    >
       <LangSuggestionBanner />
       <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-4 md:px-8">
         <Link to="/" className="flex items-center gap-2">

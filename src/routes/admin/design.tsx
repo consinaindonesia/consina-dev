@@ -1095,10 +1095,10 @@ function FooterPanel({
             <input
               type="color"
               value={/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(f[key]) ? f[key] : "#000000"}
-              onChange={(e) => setField({ [key]: e.target.value })}
+              onChange={(e) => setField({ [key]: e.target.value } as Partial<typeof f>)}
               className="h-8 w-10 cursor-pointer rounded border border-input bg-transparent"
             />
-            <Input placeholder={placeholder} value={f[key]} onChange={(e) => setField({ [key]: e.target.value })} />
+            <Input placeholder={placeholder} value={f[key]} onChange={(e) => setField({ [key]: e.target.value } as Partial<typeof f>)} />
           </div>
         </div>
       ))}

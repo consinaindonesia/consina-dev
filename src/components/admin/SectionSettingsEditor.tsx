@@ -196,6 +196,33 @@ function StyleEditor({
             value={value.ctaTextColor ?? ""}
             onChange={(v) => onChange({ ...value, ctaTextColor: v || undefined })}
           />
+          <div className="sm:col-span-3">
+            <Label className="text-xs">Description alignment</Label>
+            <div className="mt-1 flex gap-1">
+              {(["left", "center", "right"] as const).map((a) => {
+                const active = (value.bodyAlign ?? "") === a;
+                return (
+                  <button
+                    key={a}
+                    type="button"
+                    onClick={() =>
+                      onChange({ ...value, bodyAlign: active ? undefined : a })
+                    }
+                    className={`flex-1 rounded border px-2 py-1 text-xs font-semibold capitalize ${
+                      active
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-input bg-background hover:bg-muted"
+                    }`}
+                  >
+                    {a}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="mt-1 text-[10px] text-muted-foreground">
+              Applies to the description / body text. Click the active option again to clear.
+            </p>
+          </div>
         </div>
       )}
     </div>

@@ -691,11 +691,17 @@ function ThemePanel({
           label="Heading"
           value={theme.fonts.heading}
           onChange={(v) => set("fonts", "heading", v)}
+          customFonts={theme.customFonts}
         />
         <FontRow
           label="Body"
           value={theme.fonts.body}
           onChange={(v) => set("fonts", "body", v)}
+          customFonts={theme.customFonts}
+        />
+        <CustomFontsManager
+          fonts={theme.customFonts}
+          onChange={(next) => onChange({ ...theme, customFonts: next })}
         />
       </div>
 

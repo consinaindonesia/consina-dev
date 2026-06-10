@@ -686,11 +686,36 @@ function CategoriesEditor({
                 {mode === "manual" && (
                   <ImagePicker label="Manual image" value={cur.src} onChange={(v) => setOverride({ src: v })} />
                 )}
+                <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                  <div>
+                    <Label className="text-[10px]">Description (ID)</Label>
+                    <Input
+                      value={cur.descriptionId ?? ""}
+                      onChange={(e) => setOverride({ descriptionId: e.target.value })}
+                      placeholder="Override card description"
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-[10px]">Description (EN)</Label>
+                    <Input
+                      value={cur.descriptionEn ?? ""}
+                      onChange={(e) => setOverride({ descriptionEn: e.target.value })}
+                      placeholder="Override card description"
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                </div>
               </div>
             );
           })}
         </div>
       </div>
+      <CTAEditor
+        label="‘View all’ CTA (right of heading)"
+        value={value.viewAllCta}
+        onChange={(v) => onChange({ ...value, viewAllCta: v })}
+      />
     </div>
   );
 }

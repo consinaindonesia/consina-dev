@@ -524,6 +524,13 @@ export const DEFAULT_SECTION_SETTINGS: { [K in SectionTypeId]: SectionSettingsMa
     email: "hello@consina.com",
     phone: "+62 21 345 6789",
     address: "Jakarta, Indonesia",
+    subjects: [
+      { labelId: "Pertanyaan produk", labelEn: "Product question", value: "product" },
+      { labelId: "Kerja sama / grosir", labelEn: "Wholesale / partnership", value: "wholesale" },
+      { labelId: "Pers & media", labelEn: "Press & media", value: "press" },
+      { labelId: "Karir", labelEn: "Career", value: "career" },
+      { labelId: "Lainnya", labelEn: "Other", value: "other" },
+    ],
   },
   stats: DEFAULT_STATS,
   faq_custom: DEFAULT_FAQ_CUSTOM,

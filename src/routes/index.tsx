@@ -926,6 +926,7 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
                       className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
                     />
                   ) : null}
+                  <WishlistButton productId={p.id} className="absolute right-3 top-3" />
                 </Link>
                 <div className="mt-4">
                   <h3 className="font-[Archivo] text-base font-bold leading-snug text-primary">{name}</h3>

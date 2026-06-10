@@ -318,7 +318,7 @@ function Hero({ settings }: { settings: HeroSettings }) {
       <div className="absolute inset-0 -z-10">
         <img
           src={heroImg}
-          alt="Hero background"
+          alt={pickLocalized(s.imageAlt, lang, "Hero background")}
           width={1920}
           height={1080}
           className="h-full w-full object-cover"
@@ -349,7 +349,7 @@ function Hero({ settings }: { settings: HeroSettings }) {
           )}
         </h1>
         {subtitle && (
-          <p className="mt-6 max-w-xl text-base leading-relaxed text-primary-foreground/85 md:text-lg" style={tc(s.style, "bodyColor")}>
+          <p className="mt-6 max-w-xl text-base leading-relaxed text-primary-foreground/85 md:text-lg" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>
             {subtitle}
           </p>
         )}

@@ -39,6 +39,7 @@ import {
   type ContactSettings,
   type CustomSectionSettings,
   type SectionStyle,
+  type ContactSubject,
 } from "@/lib/section-registry";
 import hero from "@/assets/hero-mountain.jpg";
 import catCarriers from "@/assets/cat-carriers.jpg";
@@ -60,6 +61,12 @@ function tc(
 ): React.CSSProperties | undefined {
   const v = style?.[key];
   return v ? { color: v } : undefined;
+}
+
+/* Text-alignment helper for body/description paragraphs. */
+function ta(style: SectionStyle | undefined): React.CSSProperties | undefined {
+  const v = style?.bodyAlign;
+  return v ? { textAlign: v } : undefined;
 }
 
 /* Body-text picker that distinguishes "never set" (undefined → fall back to

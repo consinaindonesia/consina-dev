@@ -395,7 +395,7 @@ function BrandStory({ settings }: { settings: BrandStorySettings }) {
   const textWrapRef = useRef<HTMLDivElement>(null);
   const styleProps = styleToProps(s.style);
 
-  const body = (lang === "en" ? s.bodyEn : s.bodyId) || s.bodyEn || s.bodyId || "";
+  const body = pickBody(s.bodyId, s.bodyEn, lang);
   const paragraphs = body.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
 
   const handleToggle = () => {
@@ -939,7 +939,7 @@ function Community({ settings }: { settings: CommunitySettings }) {
   const lang = useLang();
   const s = settings;
   const styleProps = styleToProps(s.style);
-  const body = (lang === "en" ? s.bodyEn : s.bodyId) || s.bodyEn || s.bodyId || "";
+  const body = pickBody(s.bodyId, s.bodyEn, lang);
   const paragraphs = body.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
   const imgRight = (s.imageSide ?? "right") === "right";
   const imgSrc = s.image && s.image.trim() ? s.image : communityCleanup;

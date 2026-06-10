@@ -705,6 +705,11 @@ function BrandStoryEditor({
   return (
     <div className="space-y-4">
       <ImagePicker label="Image" value={value.image} onChange={(v) => onChange({ ...value, image: v })} />
+      <LocalizedField
+        label="Image alt text"
+        value={value.imageAlt}
+        onChange={(v) => onChange({ ...value, imageAlt: v })}
+      />
       <LocalizedField label="Eyebrow" value={value.eyebrow} onChange={(v) => onChange({ ...value, eyebrow: v })} />
       <LocalizedField label="Heading" value={value.heading} onChange={(v) => onChange({ ...value, heading: v })} />
       <div>
@@ -724,6 +729,20 @@ function BrandStoryEditor({
         />
       </div>
       <CTAEditor label="CTA" value={value.cta} onChange={(v) => onChange({ ...value, cta: v })} />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <LocalizedField
+          label="Expand button label"
+          value={value.expandLabel}
+          onChange={(v) => onChange({ ...value, expandLabel: v })}
+          placeholder="Read more"
+        />
+        <LocalizedField
+          label="Collapse button label"
+          value={value.collapseLabel}
+          onChange={(v) => onChange({ ...value, collapseLabel: v })}
+          placeholder="Show less"
+        />
+      </div>
     </div>
   );
 }

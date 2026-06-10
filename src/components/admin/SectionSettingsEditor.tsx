@@ -590,6 +590,11 @@ function FeaturedEditor({
           </div>
         </div>
       )}
+      <CTAEditor
+        label="‘View all’ CTA (optional)"
+        value={value.viewAllCta}
+        onChange={(v) => onChange({ ...value, viewAllCta: v })}
+      />
     </div>
   );
 }

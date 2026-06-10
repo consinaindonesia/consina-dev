@@ -34,6 +34,13 @@ export type HeaderSettings = {
   showFindStore: boolean;
   showWishlist: boolean;
   showAccount: boolean;
+  navLinks: NavLink[];
+};
+
+export type NavLink = {
+  labelId: string;
+  labelEn: string;
+  href: string;
 };
 
 export type FooterSettings = {
@@ -47,6 +54,14 @@ export type FooterSettings = {
   logoUrl: string;       // optional dark/colored logo
   logoLightUrl: string;  // optional light/white logo for dark footers
   socials: { instagram: string; facebook: string; youtube: string };
+  columns: FooterColumn[];
+  legalLinks: NavLink[];
+};
+
+export type FooterColumn = {
+  titleId: string;
+  titleEn: string;
+  items: NavLink[];
 };
 
 export const DEFAULT_HEADER: HeaderSettings = {
@@ -59,6 +74,11 @@ export const DEFAULT_HEADER: HeaderSettings = {
   showFindStore: true,
   showWishlist: true,
   showAccount: true,
+  navLinks: [
+    { labelId: "Katalog", labelEn: "Catalog", href: "/catalog" },
+    { labelId: "Toko", labelEn: "Stores", href: "/stores" },
+    { labelId: "Cerita", labelEn: "Story", href: "/" },
+  ],
 };
 
 export const DEFAULT_FOOTER: FooterSettings = {
@@ -75,6 +95,35 @@ export const DEFAULT_FOOTER: FooterSettings = {
   logoUrl: "",
   logoLightUrl: "",
   socials: { instagram: "#", facebook: "#", youtube: "#" },
+  columns: [
+    {
+      titleId: "Perusahaan",
+      titleEn: "Company",
+      items: [
+        { labelId: "Cerita Kami", labelEn: "Our Story", href: "/" },
+        { labelId: "Responsible Trekker", labelEn: "Responsible Trekker", href: "/" },
+        { labelId: "Keberlanjutan", labelEn: "Sustainability", href: "/" },
+        { labelId: "Karir", labelEn: "Careers", href: "/" },
+        { labelId: "Pers", labelEn: "Press", href: "/" },
+      ],
+    },
+    {
+      titleId: "Bantuan",
+      titleEn: "Support",
+      items: [
+        { labelId: "Lokasi Toko", labelEn: "Store Locator", href: "/stores" },
+        { labelId: "Garansi", labelEn: "Warranty", href: "/" },
+        { labelId: "Panduan Perawatan", labelEn: "Care Guides", href: "/" },
+        { labelId: "Kontak", labelEn: "Contact", href: "/" },
+        { labelId: "FAQ", labelEn: "FAQ", href: "/" },
+      ],
+    },
+  ],
+  legalLinks: [
+    { labelId: "Privasi", labelEn: "Privacy", href: "/" },
+    { labelId: "Ketentuan", labelEn: "Terms", href: "/" },
+    { labelId: "Cookies", labelEn: "Cookies", href: "/" },
+  ],
 };
 
 export const DEFAULT_THEME: ThemeSettings = {

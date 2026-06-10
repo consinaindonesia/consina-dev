@@ -40,6 +40,9 @@ export type SectionStyle = {
   headingColor?: string;
   bodyColor?: string;
   ctaTextColor?: string;
+  // Horizontal alignment for multi-line text (description / body). Unset
+  // keeps the section's default alignment.
+  bodyAlign?: "left" | "center" | "right";
 };
 
 export type StatItem = { value: string; labelId?: string; labelEn?: string };
@@ -47,6 +50,7 @@ export type StatItem = { value: string; labelId?: string; labelEn?: string };
 export type HeroSettings = {
   style?: SectionStyle;
   image?: string;
+  imageAlt?: Localized;
   overlay?: number; // 0..100
   eyebrow?: Localized;
   heading?: Localized; // supports {em} inline tag
@@ -63,6 +67,7 @@ export type FeaturedProductsSettings = {
   source?: "featured" | "manual";
   productIds?: string[];
   count?: number;
+  viewAllCta?: CTAConfig;
 };
 
 export type CategoriesSettings = {
@@ -73,22 +78,37 @@ export type CategoriesSettings = {
   categorySlugs?: string[]; // ordered; empty => auto from DB
   // Per-category image override. mode "manual" + src uses the uploaded image,
   // "auto" (default) uses the newest product image (falls back to the bundled default).
-  categoryImages?: Record<string, { mode?: "auto" | "manual"; src?: string }>;
+  categoryImages?: Record<
+    string,
+    {
+      mode?: "auto" | "manual";
+      src?: string;
+      // Optional per-card description override. When omitted, the i18n
+      // `home.categories.${slug}_desc` key is used.
+      descriptionId?: string;
+      descriptionEn?: string;
+    }
+  >;
+  viewAllCta?: CTAConfig;
 };
 
 export type BrandStorySettings = {
   style?: SectionStyle;
   image?: string;
+  imageAlt?: Localized;
   eyebrow?: Localized;
   heading?: Localized;
   bodyId?: string;
   bodyEn?: string;
   cta?: CTAConfig;
+  expandLabel?: Localized;
+  collapseLabel?: Localized;
 };
 
 export type CommunitySettings = {
   style?: SectionStyle;
   image?: string;
+  imageAlt?: Localized;
   imageSide?: "left" | "right";
   eyebrow?: Localized;
   heading?: Localized;
@@ -131,6 +151,7 @@ export type ContactSettings = {
   phone?: string;
   address?: string;
   contacts?: ContactPerson[];
+  subjects?: ContactSubject[];
 };
 
 export type ContactPerson = {
@@ -138,6 +159,13 @@ export type ContactPerson = {
   phone?: string;
   role?: string;
   email?: string;
+};
+
+export type ContactSubject = {
+  labelId?: string;
+  labelEn?: string;
+  // The raw value stored against an inquiry. Optional; falls back to label.
+  value?: string;
 };
 
 export type FaqItem = { questionId?: string; questionEn?: string; answerId?: string; answerEn?: string };
@@ -157,6 +185,7 @@ export type NewsletterSettings = {
   placeholder?: Localized;
   buttonLabel?: Localized;
   successMessage?: Localized;
+  errorMessage?: Localized;
 };
 
 export type ImageBannerSettings = {

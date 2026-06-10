@@ -1131,3 +1131,45 @@ function ContactEditor({ value, onChange }: { value: ContactSettings; onChange: 
     </div>
   );
 }
+
+/* -------------------- Custom Section -------------------- */
+function CustomEditor({ value, onChange }: { value: CustomSectionSettings; onChange: (v: CustomSectionSettings) => void }) {
+  const pos = value.imagePosition ?? "right";
+  const overlay = value.overlay ?? 35;
+  return (
+    <div className="space-y-4">
+      <ImagePicker label="Image" value={value.image} onChange={(v) => onChange({ ...value, image: v })} />
+      <div>
+        <Label className="text-xs">Image position</Label>
+        <div className="mt-1 flex gap-1">
+          {(["left", "right", "background"] as const).map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => onChange({ ...value, imagePosition: p })}
+              className={`flex-1 rounded border px-2 py-1 text-xs font-semibold capitalize ${
+                pos === p ? "border-primary bg-primary text-primary-foreground" : "border-input bg-background hover:bg-muted"
+              }`}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+      </div>
+      {pos === "background" && (
+        <div>
+          <Label className="text-xs">Overlay darkness — {overlay}%</Label>
+          <Slider value={[overlay]} min={0} max={100} step={5} onValueChange={(vals) => onChange({ ...value, overlay: vals[0] ?? 0 })} className="mt-2" />
+        </div>
+      )}
+      <div>
+        <Label className="text-xs">Image link (optional)</Label>
+        <Input value={value.imageHref ?? ""} onChange={(e) => onChange({ ...value, imageHref: e.target.value })} placeholder="/catalog or https://…" />
+      </div>
+      <LocalizedField label="Eyebrow" value={value.eyebrow} onChange={(v) => onChange({ ...value, eyebrow: v })} />
+      <LocalizedField label="Heading" value={value.heading} onChange={(v) => onChange({ ...value, heading: v })} />
+      <LocalizedField label="Description" value={value.body} onChange={(v) => onChange({ ...value, body: v })} multiline />
+      <CTAEditor label="CTA button" value={value.cta} onChange={(v) => onChange({ ...value, cta: v })} />
+    </div>
+  );
+}

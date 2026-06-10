@@ -908,6 +908,7 @@ function NewsletterEditor({ value, onChange }: { value: NewsletterSettings; onCh
       <LocalizedField label="Email placeholder" value={value.placeholder} onChange={(v) => onChange({ ...value, placeholder: v })} />
       <LocalizedField label="Button label" value={value.buttonLabel} onChange={(v) => onChange({ ...value, buttonLabel: v })} />
       <LocalizedField label="Success message" value={value.successMessage} onChange={(v) => onChange({ ...value, successMessage: v })} />
+      <LocalizedField label="Invalid email message" value={value.errorMessage} onChange={(v) => onChange({ ...value, errorMessage: v })} />
       <p className="text-[11px] text-muted-foreground">Subscribers are saved to the newsletter_subscribers table.</p>
     </div>
   );

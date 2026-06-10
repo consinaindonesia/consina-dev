@@ -1349,13 +1349,13 @@ function FaqCustomSection({ settings }: { settings: FaqCustomSettings }) {
       <div className="mx-auto max-w-3xl px-4 md:px-8">
         <div className="text-center">
           {pickLocalized(s.eyebrow, lang) && (
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">{pickLocalized(s.eyebrow, lang)}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>{pickLocalized(s.eyebrow, lang)}</p>
           )}
-          <h2 className="mt-2 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl">
+          <h2 className="mt-2 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl" style={tc(s.style, "headingColor")}>
             {pickLocalized(s.title, lang)}
           </h2>
           {pickLocalized(s.subtitle, lang) && (
-            <p className="mt-3 text-base text-muted-foreground">{pickLocalized(s.subtitle, lang)}</p>
+            <p className="mt-3 text-base text-muted-foreground" style={tc(s.style, "bodyColor")}>{pickLocalized(s.subtitle, lang)}</p>
           )}
         </div>
         <ul className="mt-8 md:mt-10 divide-y divide-border border-y border-border">
@@ -1371,11 +1371,11 @@ function FaqCustomSection({ settings }: { settings: FaqCustomSettings }) {
                   onClick={() => setOpen(isOpen ? null : i)}
                   className="flex w-full items-center justify-between gap-4 py-5 text-left"
                 >
-                  <h3 className="font-[Archivo] text-base font-bold text-primary md:text-lg">{q}</h3>
+                  <h3 className="font-[Archivo] text-base font-bold text-primary md:text-lg" style={tc(s.style, "headingColor")}>{q}</h3>
                   <ChevronDown className={`h-5 w-5 shrink-0 text-primary transition-transform ${isOpen ? "rotate-180" : ""}`} />
                 </button>
                 {isOpen && a && (
-                  <p className="pb-5 pr-10 text-sm leading-relaxed text-muted-foreground md:text-base">{a}</p>
+                  <p className="pb-5 pr-10 text-sm leading-relaxed text-muted-foreground md:text-base" style={tc(s.style, "bodyColor")}>{a}</p>
                 )}
               </li>
             );

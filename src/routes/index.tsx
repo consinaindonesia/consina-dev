@@ -1621,12 +1621,12 @@ function AnnouncementBarSection({ settings }: { settings: AnnouncementBarSetting
       className="w-full px-4 py-2 text-center text-xs font-medium md:text-sm"
       style={{
         backgroundColor: s.bgColor ?? s.style?.bgColor ?? "#1a3a2e",
-        color: s.textColor ?? s.style?.textColor ?? "#ffffff",
+        color: s.style?.bodyColor ?? s.textColor ?? s.style?.textColor ?? "#ffffff",
       }}
     >
       <Typewriter text={msg} />
       {linkLabel && s.href && (
-        <a href={s.href} className="ml-2 underline underline-offset-2 hover:opacity-80">
+        <a href={s.href} className="ml-2 underline underline-offset-2 hover:opacity-80" style={tc(s.style, "ctaTextColor")}>
           {linkLabel}
         </a>
       )}

@@ -1150,12 +1150,29 @@ function ContactSectionInner({ settings }: { settings: ContactSettings }) {
   const lang = useLang();
   const s = settings;
   const styleProps = styleToProps(s.style);
-  const eyebrow = pickLocalized(s.eyebrow, lang, t("home.contact.eyebrow"));
-  const heading = pickLocalized(s.title, lang, "");
-  const subtitle = pickLocalized(s.subtitle, lang, t("home.contact.subtitle"));
-  const emailAddr = s.email ?? "hello@consina.com";
-  const phoneNum = s.phone ?? "+62 21 345 6789";
-  const addressTxt = s.address ?? "Jakarta, Indonesia";
+  // Preserve intentionally-emptied fields: use ?? semantics (treat ""
+  // as a real value), and do NOT substitute translation fallbacks when
+  // the localized object exists on the section settings.
+  const locText = (l: { id?: string; en?: string } | undefined): string => {
+    if (!l) return "";
+    const v = lang === "en" ? l.en : l.id;
+    return (v ?? l.en ?? l.id ?? "") as string;
+  };
+  const eyebrow = locText(s.eyebrow);
+  const heading = locText(s.title);
+  const subtitle = locText(s.subtitle);
+  const addressTxt = s.address ?? "";
+  // Build contacts list: prefer explicit contacts array, otherwise seed
+  // from legacy single email/phone fields.
+  const contacts: NonNullable<ContactSettings["contacts"]> = (() => {
+    if (Array.isArray(s.contacts) && s.contacts.length > 0) {
+      return s.contacts.slice(0, 3);
+    }
+    const seed: NonNullable<ContactSettings["contacts"]>[number] = {};
+    if (s.email != null) seed.email = s.email;
+    if (s.phone != null) seed.phone = s.phone;
+    return Object.keys(seed).length > 0 ? [seed] : [];
+  })();
   const subjects = [
     t("home.contact.subject_product"),
     t("home.contact.subject_wholesale"),
@@ -1230,16 +1247,32 @@ function ContactSectionInner({ settings }: { settings: ContactSettings }) {
           {subtitle && (
             <p className="mt-3 max-w-md text-base leading-relaxed text-muted-foreground" style={tc(s.style, "bodyColor")}>{subtitle}</p>
           )}
-          <div className="mt-10 space-y-4 text-sm">
-            <div className="flex items-center gap-3 text-foreground" style={tc(s.style, "bodyColor")}>
-              <Mail className="h-4 w-4 text-secondary" /> {emailAddr}
-            </div>
-            <div className="flex items-center gap-3 text-foreground" style={tc(s.style, "bodyColor")}>
-              <Phone className="h-4 w-4 text-secondary" /> {phoneNum}
-            </div>
-            <div className="flex items-center gap-3 text-foreground" style={tc(s.style, "bodyColor")}>
-              <MapPin className="h-4 w-4 text-secondary" /> {addressTxt}
-            </div>
+          <div className="mt-10 space-y-6 text-sm">
+            {contacts.map((c, i) => (
+              <div key={i} className="space-y-2">
+                {c.name && (
+                  <div className="font-semibold text-foreground" style={tc(s.style, "headingColor")}>
+                    {c.name}
+                    {c.role && <span className="ml-2 font-normal text-muted-foreground">— {c.role}</span>}
+                  </div>
+                )}
+                {c.phone && (
+                  <div className="flex items-center gap-3 text-foreground" style={tc(s.style, "bodyColor")}>
+                    <Phone className="h-4 w-4 text-secondary" /> {c.phone}
+                  </div>
+                )}
+                {c.email && (
+                  <div className="flex items-center gap-3 text-foreground" style={tc(s.style, "bodyColor")}>
+                    <Mail className="h-4 w-4 text-secondary" /> {c.email}
+                  </div>
+                )}
+              </div>
+            ))}
+            {addressTxt && (
+              <div className="flex items-center gap-3 text-foreground" style={tc(s.style, "bodyColor")}>
+                <MapPin className="h-4 w-4 text-secondary" /> {addressTxt}
+              </div>
+            )}
           </div>
         </div>
         <form

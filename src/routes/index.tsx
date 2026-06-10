@@ -1514,12 +1514,12 @@ function GallerySection({ settings }: { settings: GallerySettings }) {
     <section className={styleProps.className} style={styleProps.inlineStyle}>
       <div className="mx-auto max-w-[1280px] px-4 md:px-8">
         {pickLocalized(s.title, lang) && (
-          <h2 className="font-[Archivo] text-3xl font-black tracking-tight text-primary md:text-4xl">
+          <h2 className="font-[Archivo] text-3xl font-black tracking-tight text-primary md:text-4xl" style={tc(s.style, "headingColor")}>
             {pickLocalized(s.title, lang)}
           </h2>
         )}
         {pickLocalized(s.subtitle, lang) && (
-          <p className="mt-2 text-base text-muted-foreground">{pickLocalized(s.subtitle, lang)}</p>
+          <p className="mt-2 text-base text-muted-foreground" style={tc(s.style, "bodyColor")}>{pickLocalized(s.subtitle, lang)}</p>
         )}
         <div className={`mt-6 grid grid-cols-1 gap-3 md:gap-4 ${gridClass}`}>
           {images.map((img, i) => {

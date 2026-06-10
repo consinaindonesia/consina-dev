@@ -326,6 +326,7 @@ export type PageSectionRow = {
 export const DEFAULT_HERO: HeroSettings = {
   style: { padding: "M" },
   image: "",
+  imageAlt: { id: "Latar belakang hero", en: "Hero background" },
   overlay: 40,
   eyebrow: { id: "Gaya Hidup Outdoor — Sejak 1999", en: "The Outdoor Lifestyle — Est. 1999" },
   heading: {
@@ -351,6 +352,7 @@ export const DEFAULT_FEATURED_PRODUCTS: FeaturedProductsSettings = {
   subtitle: { id: "Terlaris", en: "Bestsellers" },
   source: "featured",
   count: 8,
+  viewAllCta: { labelId: "", labelEn: "", href: "/catalog", style: "outline" },
 };
 
 export const DEFAULT_CATEGORIES: CategoriesSettings = {
@@ -359,11 +361,13 @@ export const DEFAULT_CATEGORIES: CategoriesSettings = {
   subtitle: { id: "Dibuat untuk setiap petualangan, dibuat di Indonesia", en: "Built for every adventure, made in Indonesia" },
   eyebrow: { id: "Koleksi", en: "Collections" },
   categorySlugs: [],
+  viewAllCta: { labelId: "Lihat semua", labelEn: "View all", href: "/catalog", style: "outline" },
 };
 
 export const DEFAULT_BRAND_STORY: BrandStorySettings = {
   style: { padding: "M" },
   image: "",
+  imageAlt: { id: "Pendaki di jalur pegunungan Indonesia", en: "Hiker on an Indonesian mountain trail" },
   eyebrow: { id: "Cerita Kami", en: "Our Story" },
   heading: { id: "Terinspirasi dari Pengalaman", en: "Inspired by Experience" },
   bodyId:
@@ -371,11 +375,14 @@ export const DEFAULT_BRAND_STORY: BrandStorySettings = {
   bodyEn:
     "Since 1999, Consina has been Indonesia's outdoor lifestyle brand — born in Jakarta, built for adventurers.\n\nEvery product we make is shaped by feedback from our community of hikers, campers, and climbers. We don't just design gear — we design from lived experience.\n\nToday, our 'Responsible Trekker' community spans the entire archipelago, sharing one belief: leave the trail better than you found it.",
   cta: { labelId: "Pelajari lebih lanjut", labelEn: "Learn more about us", href: "/", style: "primary" },
+  expandLabel: { id: "Lebih Detail", en: "Read more" },
+  collapseLabel: { id: "Lebih Sedikit", en: "Show less" },
 };
 
 export const DEFAULT_COMMUNITY: CommunitySettings = {
   style: { padding: "M", bgColor: "#1a3a2e", textColor: "#ffffff" },
   image: "",
+  imageAlt: { id: "Komunitas Consina", en: "Consina community" },
   imageSide: "right",
   eyebrow: { id: "Komunitas Kami", en: "Our Community" },
   heading: { id: "The Responsible Trekker", en: "The Responsible Trekker" },

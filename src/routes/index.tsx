@@ -1697,3 +1697,73 @@ function Typewriter({ text }: { text: string }) {
     </span>
   );
 }
+
+/* ---------- Custom (blank) Section ---------- */
+function CustomSection({ settings }: { settings: CustomSectionSettings }) {
+  const lang = useLang();
+  const s = settings;
+  const styleProps = styleToProps(s.style);
+  const pos = s.imagePosition ?? "right";
+  const eyebrow = pickLocalized(s.eyebrow, lang);
+  const heading = pickLocalized(s.heading, lang);
+  const body = pickLocalized(s.body, lang);
+  const overlay = Math.max(0, Math.min(100, s.overlay ?? 35));
+  const ImageEl = s.image ? (
+    s.imageHref ? (
+      <a href={s.imageHref} className="block h-full w-full">
+        <img src={s.image} alt={heading || ""} className="h-full w-full rounded-2xl object-cover" />
+      </a>
+    ) : (
+      <img src={s.image} alt={heading || ""} className="h-full w-full rounded-2xl object-cover" />
+    )
+  ) : null;
+  const Text = (
+    <div>
+      {eyebrow && (
+        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>
+          {eyebrow}
+        </p>
+      )}
+      {heading && (
+        <h2 className="mt-3 font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl" style={tc(s.style, "headingColor")}>
+          {heading}
+        </h2>
+      )}
+      {body && (
+        <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg" style={tc(s.style, "bodyColor")}>
+          {body}
+        </p>
+      )}
+      <div className="mt-6">
+        <CTAButton cta={s.cta} lang={lang} defaultStyle="primary" iconRight textStyle={tc(s.style, "ctaTextColor")} />
+      </div>
+    </div>
+  );
+  if (pos === "background") {
+    return (
+      <section className={styleProps.className} style={styleProps.inlineStyle}>
+        <div className="mx-auto max-w-[1280px] px-4 md:px-8">
+          <div className="relative min-h-[360px] overflow-hidden rounded-2xl">
+            {s.image && <img src={s.image} alt="" className="absolute inset-0 h-full w-full object-cover" />}
+            <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${(overlay / 100).toFixed(2)})` }} />
+            <div className="relative p-8 md:p-14 text-white">{Text}</div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+  return (
+    <section className={`mx-auto max-w-[1280px] px-4 md:px-8 ${styleProps.className}`} style={styleProps.inlineStyle}>
+      <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+        {ImageEl ? (
+          <>
+            <div className={pos === "left" ? "order-1" : "order-1 lg:order-2"}>{ImageEl}</div>
+            <div className={pos === "left" ? "order-2" : "order-2 lg:order-1"}>{Text}</div>
+          </>
+        ) : (
+          <div className="lg:col-span-2">{Text}</div>
+        )}
+      </div>
+    </section>
+  );
+}

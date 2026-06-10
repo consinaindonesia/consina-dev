@@ -23,6 +23,7 @@ export function Nav() {
   const { count: wishCount } = useWishlist(user?.id ?? null);
   const site = useSiteSettings();
   const header = site.header;
+  const linkStyle = header.linkColor ? { color: header.linkColor } : undefined;
 
   // Auto-hide on scroll-down, reveal on scroll-up. Always shown near top.
   const [hidden, setHidden] = useState(false);
@@ -135,6 +136,7 @@ export function Nav() {
               className="flex items-center gap-1 text-sm font-medium text-foreground/80 transition-colors hover:text-primary"
               aria-expanded={shopOpen}
               aria-haspopup="true"
+              style={linkStyle}
             >
               {t("nav.shop")}
               <ChevronDown className={`h-3.5 w-3.5 transition-transform ${shopOpen ? "rotate-180" : ""}`} />
@@ -174,6 +176,7 @@ export function Nav() {
               key={l.label}
               to={l.to}
               className="text-sm font-medium text-foreground/80 transition-colors hover:text-primary"
+              style={linkStyle}
             >
               {l.label}
             </Link>

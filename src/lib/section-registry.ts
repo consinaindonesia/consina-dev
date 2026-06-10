@@ -535,8 +535,16 @@ export function pickLocalized(
   fallback = "",
 ): string {
   if (!loc) return fallback;
+  // Treat explicit empty strings as intentional clears (return ""), and only
+  // fall back when the primary language value is genuinely missing
+  // (undefined/null). This preserves the distinction between "field never
+  // set" (no settings row → defaults seeded upstream) and "field cleared"
+  // (settings row exists with "" → render empty).
   const primary = lang === "en" ? loc.en : loc.id;
-  return (primary ?? loc.en ?? loc.id ?? fallback) || fallback;
+  if (typeof primary === "string") return primary;
+  const other = lang === "en" ? loc.id : loc.en;
+  if (typeof other === "string") return other;
+  return fallback;
 }
 
 export function styleToProps(style: SectionStyle | undefined): {

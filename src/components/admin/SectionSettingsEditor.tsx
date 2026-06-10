@@ -450,6 +450,12 @@ function HeroEditor({ value, onChange }: { value: HeroSettings; onChange: (v: He
         value={value.image}
         onChange={(v) => onChange({ ...value, image: v })}
       />
+      <LocalizedField
+        label="Image alt text"
+        value={value.imageAlt}
+        onChange={(v) => onChange({ ...value, imageAlt: v })}
+        placeholder="Describe the background image"
+      />
       <div>
         <Label className="text-xs">Overlay darkness — {overlay}%</Label>
         <Slider

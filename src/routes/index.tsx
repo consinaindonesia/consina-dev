@@ -51,6 +51,17 @@ import communityCleanup from "@/assets/community-cleanup.jpg";
 import storyHiker from "@/assets/story-hiker.jpg";
 const SITE_URL = getSiteUrl();
 
+/* Per-text color helper. Returns inline style object when a per-element
+ * color override exists in the section style, otherwise undefined so the
+ * default Tailwind/theme color keeps applying. */
+function tc(
+  style: SectionStyle | undefined,
+  key: "eyebrowColor" | "headingColor" | "bodyColor" | "ctaTextColor",
+): React.CSSProperties | undefined {
+  const v = style?.[key];
+  return v ? { color: v } : undefined;
+}
+
 const faqs = [
   {
     q: "What does Consina sell?",

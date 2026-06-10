@@ -1585,7 +1585,7 @@ function ImageBannerSection({ settings }: { settings: ImageBannerSettings }) {
               {pickLocalized(s.heading, lang)}
             </h2>
             {pickLocalized(s.body, lang) && (
-              <p className="max-w-xl text-base text-white/90" style={tc(s.style, "bodyColor")}>{pickLocalized(s.body, lang)}</p>
+              <p className="max-w-xl text-base text-white/90" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{pickLocalized(s.body, lang)}</p>
             )}
             <div className={align === "center" ? "mx-auto" : ""}>
               <CTAButton cta={s.cta} lang={lang} defaultStyle="primary" iconRight textStyle={tc(s.style, "ctaTextColor")} />
@@ -1615,7 +1615,7 @@ function GallerySection({ settings }: { settings: GallerySettings }) {
           </h2>
         )}
         {pickLocalized(s.subtitle, lang) && (
-          <p className="mt-2 text-base text-muted-foreground" style={tc(s.style, "bodyColor")}>{pickLocalized(s.subtitle, lang)}</p>
+          <p className="mt-2 text-base text-muted-foreground" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{pickLocalized(s.subtitle, lang)}</p>
         )}
         <div className={`mt-6 grid grid-cols-1 gap-3 md:gap-4 ${gridClass}`}>
           {images.map((img, i) => {
@@ -1669,7 +1669,7 @@ function TestimonialsSection({ settings }: { settings: TestimonialsSettings }) {
                 {rating > 0 && (
                   <div className="mb-3 text-accent">{"★".repeat(rating)}{"☆".repeat(5 - rating)}</div>
                 )}
-                <blockquote className="text-base leading-relaxed text-foreground" style={tc(s.style, "bodyColor")}>“{quote}”</blockquote>
+                <blockquote className="text-base leading-relaxed text-foreground" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>“{quote}”</blockquote>
                 <figcaption className="mt-4 flex items-center gap-3">
                   {it.avatar && <img src={it.avatar} alt="" className="h-9 w-9 rounded-full object-cover" />}
                   <div>

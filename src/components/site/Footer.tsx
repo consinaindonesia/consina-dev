@@ -23,28 +23,19 @@ export function Footer() {
     label: localizedField(c, "name", lang).value,
     slug: c.slug,
   }));
-  const cols = [
-    {
-      title: t("footer.company"),
-      items: [
-        t("footer.items.our_story"),
-        t("footer.items.responsible_trekker"),
-        t("footer.items.sustainability"),
-        t("footer.items.careers"),
-        t("footer.items.press"),
-      ],
-    },
-    {
-      title: t("footer.support"),
-      items: [
-        t("footer.items.store_locator"),
-        t("footer.items.warranty"),
-        t("footer.items.care_guides"),
-        t("footer.items.contact"),
-        t("footer.items.faq"),
-      ],
-    },
-  ];
+  const pickLabel = (id: string, en: string) =>
+    (lang === "en" ? en : id) || en || id || "";
+  const cols = (footer.columns ?? []).map((c) => ({
+    title: pickLabel(c.titleId, c.titleEn),
+    items: (c.items ?? []).map((it) => ({
+      label: pickLabel(it.labelId, it.labelEn),
+      href: it.href || "/",
+    })).filter((x) => x.label),
+  })).filter((c) => c.title || c.items.length > 0);
+  const legalLinks = (footer.legalLinks ?? []).map((it) => ({
+    label: pickLabel(it.labelId, it.labelEn),
+    href: it.href || "/",
+  })).filter((x) => x.label);
 
   return (
     <footer
@@ -122,11 +113,11 @@ export function Footer() {
                 {c.title}
               </h4>
               <ul className="mt-5 space-y-3">
-                {c.items.map((i) => (
-                  <li key={i}>
-                    <Link to="/" className="text-sm text-primary-foreground/75 transition hover:text-primary-foreground" style={linkStyle}>
-                      {i}
-                    </Link>
+                {c.items.map((i, idx) => (
+                  <li key={`${i.label}-${idx}`}>
+                    <a href={i.href} className="text-sm text-primary-foreground/75 transition hover:text-primary-foreground" style={linkStyle}>
+                      {i.label}
+                    </a>
                   </li>
                 ))}
               </ul>
@@ -136,9 +127,9 @@ export function Footer() {
         <div className="mt-14 flex flex-col gap-3 border-t border-primary-foreground/10 pt-6 text-xs text-primary-foreground/55 md:flex-row md:items-center md:justify-between">
           <span>{t("footer.copyright", { year: new Date().getFullYear() })}</span>
           <div className="flex flex-wrap items-center gap-5">
-            <Link to="/">{t("footer.privacy")}</Link>
-            <Link to="/">{t("footer.terms")}</Link>
-            <Link to="/">{t("footer.cookies")}</Link>
+            {legalLinks.map((l, i) => (
+              <a key={`${l.label}-${i}`} href={l.href} style={linkStyle}>{l.label}</a>
+            ))}
             <LanguageSwitcher className="ml-auto" />
           </div>
         </div>

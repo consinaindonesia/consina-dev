@@ -28,6 +28,7 @@ export type HeaderSettings = {
   logoText: string;
   logoUrl: string;
   bgColor: string; // empty => default (var(--background))
+  linkColor: string; // empty => default
   showSinceTag: boolean;
   showSearch: boolean;
   showFindStore: boolean;
@@ -40,6 +41,9 @@ export type FooterSettings = {
   blurb: { id: string; en: string };
   bgColor: string; // empty => default (var(--primary))
   textColor: string;
+  taglineColor: string; // empty => default accent
+  headingColor: string; // empty => default accent (column headings)
+  linkColor: string;    // empty => inherits textColor
   logoUrl: string;       // optional dark/colored logo
   logoLightUrl: string;  // optional light/white logo for dark footers
   socials: { instagram: string; facebook: string; youtube: string };
@@ -49,6 +53,7 @@ export const DEFAULT_HEADER: HeaderSettings = {
   logoText: "CONSINA",
   logoUrl: "",
   bgColor: "",
+  linkColor: "",
   showSinceTag: true,
   showSearch: true,
   showFindStore: true,
@@ -64,6 +69,9 @@ export const DEFAULT_FOOTER: FooterSettings = {
   },
   bgColor: "",
   textColor: "",
+  taglineColor: "",
+  headingColor: "",
+  linkColor: "",
   logoUrl: "",
   logoLightUrl: "",
   socials: { instagram: "#", facebook: "#", youtube: "#" },

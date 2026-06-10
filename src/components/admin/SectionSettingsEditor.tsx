@@ -35,6 +35,7 @@ import type {
   StoreItem,
   FaqSettings,
   ContactSettings,
+  CustomSectionSettings,
 } from "@/lib/section-registry";
 
 type AnyObj = Record<string, unknown>;
@@ -117,6 +118,9 @@ export function SectionSettingsEditor({
       {type === "contact" && (
         <ContactEditor value={value as ContactSettings} onChange={onChange as (v: ContactSettings) => void} />
       )}
+      {type === "custom" && (
+        <CustomEditor value={value as CustomSectionSettings} onChange={onChange as (v: CustomSectionSettings) => void} />
+      )}
     </div>
   );
 }
@@ -172,6 +176,26 @@ function StyleEditor({
               ))}
             </div>
           </div>
+          <ColorField
+            label="Eyebrow color"
+            value={value.eyebrowColor ?? ""}
+            onChange={(v) => onChange({ ...value, eyebrowColor: v || undefined })}
+          />
+          <ColorField
+            label="Heading color"
+            value={value.headingColor ?? ""}
+            onChange={(v) => onChange({ ...value, headingColor: v || undefined })}
+          />
+          <ColorField
+            label="Description color"
+            value={value.bodyColor ?? ""}
+            onChange={(v) => onChange({ ...value, bodyColor: v || undefined })}
+          />
+          <ColorField
+            label="CTA text color"
+            value={value.ctaTextColor ?? ""}
+            onChange={(v) => onChange({ ...value, ctaTextColor: v || undefined })}
+          />
         </div>
       )}
     </div>
@@ -591,6 +615,48 @@ function CategoriesEditor({
         <p className="mt-1 text-[10px] text-muted-foreground">
           Uncheck to hide a category. Use ↑↓ to reorder.
         </p>
+      </div>
+      <div className="rounded border border-input p-3">
+        <Label className="text-xs font-semibold">Category card images</Label>
+        <p className="mt-1 mb-2 text-[10px] text-muted-foreground">
+          Auto = newest uploaded product photo from this category. Manual = your chosen image.
+        </p>
+        <div className="space-y-3">
+          {orderedSlugs.map((slug) => {
+            const c = list.find((x) => x.slug === slug);
+            const cur = (value.categoryImages ?? {})[slug] ?? {};
+            const mode = cur.mode ?? "auto";
+            const setOverride = (next: { mode?: "auto" | "manual"; src?: string }) =>
+              onChange({
+                ...value,
+                categoryImages: { ...(value.categoryImages ?? {}), [slug]: { ...cur, ...next } },
+              });
+            return (
+              <div key={slug} className="rounded border border-border bg-background p-2">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <span className="truncate text-xs font-medium">{c?.name_en || slug}</span>
+                  <div className="flex gap-1">
+                    {(["auto", "manual"] as const).map((m) => (
+                      <button
+                        key={m}
+                        type="button"
+                        onClick={() => setOverride({ mode: m })}
+                        className={`rounded border px-2 py-0.5 text-[10px] font-semibold capitalize ${
+                          mode === m ? "border-primary bg-primary text-primary-foreground" : "border-input bg-background hover:bg-muted"
+                        }`}
+                      >
+                        {m}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {mode === "manual" && (
+                  <ImagePicker label="Manual image" value={cur.src} onChange={(v) => setOverride({ src: v })} />
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -1062,6 +1128,48 @@ function ContactEditor({ value, onChange }: { value: ContactSettings; onChange: 
         </div>
       </div>
       <p className="text-[11px] text-muted-foreground">Inquiries submitted from the form are saved to the contact_inquiries table.</p>
+    </div>
+  );
+}
+
+/* -------------------- Custom Section -------------------- */
+function CustomEditor({ value, onChange }: { value: CustomSectionSettings; onChange: (v: CustomSectionSettings) => void }) {
+  const pos = value.imagePosition ?? "right";
+  const overlay = value.overlay ?? 35;
+  return (
+    <div className="space-y-4">
+      <ImagePicker label="Image" value={value.image} onChange={(v) => onChange({ ...value, image: v })} />
+      <div>
+        <Label className="text-xs">Image position</Label>
+        <div className="mt-1 flex gap-1">
+          {(["left", "right", "background"] as const).map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => onChange({ ...value, imagePosition: p })}
+              className={`flex-1 rounded border px-2 py-1 text-xs font-semibold capitalize ${
+                pos === p ? "border-primary bg-primary text-primary-foreground" : "border-input bg-background hover:bg-muted"
+              }`}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+      </div>
+      {pos === "background" && (
+        <div>
+          <Label className="text-xs">Overlay darkness — {overlay}%</Label>
+          <Slider value={[overlay]} min={0} max={100} step={5} onValueChange={(vals) => onChange({ ...value, overlay: vals[0] ?? 0 })} className="mt-2" />
+        </div>
+      )}
+      <div>
+        <Label className="text-xs">Image link (optional)</Label>
+        <Input value={value.imageHref ?? ""} onChange={(e) => onChange({ ...value, imageHref: e.target.value })} placeholder="/catalog or https://…" />
+      </div>
+      <LocalizedField label="Eyebrow" value={value.eyebrow} onChange={(v) => onChange({ ...value, eyebrow: v })} />
+      <LocalizedField label="Heading" value={value.heading} onChange={(v) => onChange({ ...value, heading: v })} />
+      <LocalizedField label="Description" value={value.body} onChange={(v) => onChange({ ...value, body: v })} multiline />
+      <CTAEditor label="CTA button" value={value.cta} onChange={(v) => onChange({ ...value, cta: v })} />
     </div>
   );
 }

@@ -37,6 +37,8 @@ import {
   type StoreLocatorSettings,
   type FaqSettings,
   type ContactSettings,
+  type CustomSectionSettings,
+  type SectionStyle,
 } from "@/lib/section-registry";
 import hero from "@/assets/hero-mountain.jpg";
 import catCarriers from "@/assets/cat-carriers.jpg";
@@ -48,6 +50,17 @@ import story from "@/assets/story.jpg";
 import communityCleanup from "@/assets/community-cleanup.jpg";
 import storyHiker from "@/assets/story-hiker.jpg";
 const SITE_URL = getSiteUrl();
+
+/* Per-text color helper. Returns inline style object when a per-element
+ * color override exists in the section style, otherwise undefined so the
+ * default Tailwind/theme color keeps applying. */
+function tc(
+  style: SectionStyle | undefined,
+  key: "eyebrowColor" | "headingColor" | "bodyColor" | "ctaTextColor",
+): React.CSSProperties | undefined {
+  const v = style?.[key];
+  return v ? { color: v } : undefined;
+}
 
 const faqs = [
   {
@@ -190,6 +203,7 @@ const SECTION_COMPONENTS: Record<SectionTypeId, SectionCmp> = {
   testimonials: TestimonialsSection as SectionCmp,
   spacer: SpacerSection as SectionCmp,
   announcement_bar: AnnouncementBarSection as SectionCmp,
+  custom: CustomSection as SectionCmp,
 };
 
 function ComposedSections() {
@@ -300,9 +314,9 @@ function Hero({ settings }: { settings: HeroSettings }) {
         style={s.style?.textColor ? { color: s.style.textColor } : undefined}
       >
         {eyebrow && (
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">{eyebrow}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>
         )}
-        <h1 className="mt-5 max-w-4xl font-[Archivo] text-5xl font-black leading-[0.95] tracking-tight text-primary-foreground md:text-7xl lg:text-[88px]">
+        <h1 className="mt-5 max-w-4xl font-[Archivo] text-5xl font-black leading-[0.95] tracking-tight text-primary-foreground md:text-7xl lg:text-[88px]" style={tc(s.style, "headingColor")}>
           {headingParts.map((part, i) =>
             i % 2 === 1 ? (
               <em key={i} className="not-italic text-accent">{part}</em>
@@ -314,13 +328,13 @@ function Hero({ settings }: { settings: HeroSettings }) {
           )}
         </h1>
         {subtitle && (
-          <p className="mt-6 max-w-xl text-base leading-relaxed text-primary-foreground/85 md:text-lg">
+          <p className="mt-6 max-w-xl text-base leading-relaxed text-primary-foreground/85 md:text-lg" style={tc(s.style, "bodyColor")}>
             {subtitle}
           </p>
         )}
         <div className="mt-10 flex flex-wrap items-center gap-4">
-          <CTAButton cta={s.ctaPrimary} lang={lang} defaultStyle="primary" iconRight />
-          <CTAButton cta={s.ctaSecondary} lang={lang} defaultStyle="outline" />
+          <CTAButton cta={s.ctaPrimary} lang={lang} defaultStyle="primary" iconRight textStyle={tc(s.style, "ctaTextColor")} />
+          <CTAButton cta={s.ctaSecondary} lang={lang} defaultStyle="outline" textStyle={tc(s.style, "ctaTextColor")} />
         </div>
         {s.stats && s.stats.length > 0 && (
           <div className="mt-16 grid max-w-2xl grid-cols-3 gap-6 border-t border-primary-foreground/20 pt-6 text-[#1a3a2e]">
@@ -345,11 +359,13 @@ function CTAButton({
   lang,
   defaultStyle = "primary",
   iconRight,
+  textStyle,
 }: {
   cta?: CTAConfig;
   lang: string;
   defaultStyle?: "primary" | "secondary" | "outline";
   iconRight?: boolean;
+  textStyle?: React.CSSProperties;
 }) {
   if (!cta) return null;
   const label = pickLocalized({ id: cta.labelId, en: cta.labelEn }, lang);
@@ -364,7 +380,7 @@ function CTAButton({
         ? `${base} bg-[#d4b896] text-[#1a3a2e] hover:bg-[#c9a84c]`
         : `${base} border border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10`;
   return (
-    <a href={href} className={cls}>
+    <a href={href} className={cls} style={textStyle}>
       {label}
       {iconRight && <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />}
     </a>
@@ -412,11 +428,11 @@ function BrandStory({ settings }: { settings: BrandStorySettings }) {
         {/* RIGHT COLUMN — Text */}
         <div className="order-2" ref={textWrapRef}>
           {pickLocalized(s.eyebrow, lang) && (
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>
               {pickLocalized(s.eyebrow, lang)}
             </p>
           )}
-          <h2 className="mt-4 font-[Archivo] text-4xl font-black leading-[1.05] tracking-tight text-primary md:text-5xl">
+          <h2 className="mt-4 font-[Archivo] text-4xl font-black leading-[1.05] tracking-tight text-primary md:text-5xl" style={tc(s.style, "headingColor")}>
             {pickLocalized(s.heading, lang)}
           </h2>
 
@@ -424,7 +440,7 @@ function BrandStory({ settings }: { settings: BrandStorySettings }) {
             {/* Constrained width for comfortable reading */}
             <div className="max-w-prose">
               {/* Always-visible first paragraph */}
-              <p className="text-base leading-[1.75] text-foreground/80 md:text-lg">
+              <p className="text-base leading-[1.75] text-foreground/80 md:text-lg" style={tc(s.style, "bodyColor")}>
                 {paragraphs[0] ?? ""}
               </p>
 
@@ -434,7 +450,7 @@ function BrandStory({ settings }: { settings: BrandStorySettings }) {
                 style={{ gridTemplateRows: expanded ? "1fr" : "0fr" }}
               >
                 <div className="min-h-0 overflow-hidden">
-                  <div className="mt-5 space-y-5 text-base leading-[1.75] text-foreground/80 md:text-lg">
+                  <div className="mt-5 space-y-5 text-base leading-[1.75] text-foreground/80 md:text-lg" style={tc(s.style, "bodyColor")}>
                     {paragraphs.slice(1).map((p, i) => (
                       <p key={i}>{p}</p>
                     ))}
@@ -477,6 +493,7 @@ function BrandStory({ settings }: { settings: BrandStorySettings }) {
             <a
               href={s.cta.href || "/"}
               className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-secondary"
+              style={tc(s.style, "ctaTextColor")}
             >
               {pickLocalized({ id: s.cta.labelId, en: s.cta.labelEn }, lang)}{" "}
               <span className="text-base">→</span>
@@ -520,6 +537,21 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
     return map;
   }, [products]);
 
+  // Newest product image per category slug (auto image source).
+  const newestImageBySlug = useMemo(() => {
+    const map = new Map<string, string>();
+    const sorted = [...products].sort((a, b) => {
+      const at = a.created_at ?? "";
+      const bt = b.created_at ?? "";
+      return bt.localeCompare(at);
+    });
+    for (const p of sorted) {
+      if (!p.category_slug || !p.image_url) continue;
+      if (!map.has(p.category_slug)) map.set(p.category_slug, p.image_url);
+    }
+    return map;
+  }, [products]);
+
   const items = useMemo(() => {
     const list = cats ?? [];
     let ordered = list;
@@ -529,15 +561,27 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
         .map((slug) => bySlug.get(slug))
         .filter((c): c is PublicCategory => Boolean(c));
     }
-    return ordered.map((c) => ({
-      slug: c.slug,
-      name: localizedField(c, "name", lang).value,
-      desc:
-        (t(`home.categories.${c.slug}_desc` as never, { defaultValue: "" }) as string) || "",
-      img: CATEGORY_IMAGE_MAP[c.slug] ?? catAccessories,
-      count: counts.get(c.slug) ?? 0,
-    }));
-  }, [cats, counts, lang, t, s.categorySlugs]);
+    const overrides = s.categoryImages ?? {};
+    return ordered.map((c) => {
+      const override = overrides[c.slug];
+      const mode = override?.mode ?? "auto";
+      const manualSrc = override?.src?.trim();
+      const autoSrc = newestImageBySlug.get(c.slug);
+      const fallback = CATEGORY_IMAGE_MAP[c.slug] ?? catAccessories;
+      const img =
+        mode === "manual" && manualSrc
+          ? manualSrc
+          : autoSrc || fallback;
+      return {
+        slug: c.slug,
+        name: localizedField(c, "name", lang).value,
+        desc:
+          (t(`home.categories.${c.slug}_desc` as never, { defaultValue: "" }) as string) || "",
+        img,
+        count: counts.get(c.slug) ?? 0,
+      };
+    });
+  }, [cats, counts, lang, t, s.categorySlugs, s.categoryImages, newestImageBySlug]);
 
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [snapCount, setSnapCount] = useState(1);
@@ -590,13 +634,13 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
         {/* Section heading */}
         <div className="flex items-end justify-between gap-4">
           <div className="text-left">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>
               {pickLocalized(s.eyebrow, lang, t("home.categories.eyebrow"))}
             </p>
-            <h2 className="mt-2 font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl">
+            <h2 className="mt-2 font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl" style={tc(s.style, "headingColor")}>
               {pickLocalized(s.title, lang, t("home.categories.title"))}
             </h2>
-            <p className="mt-2 max-w-xl text-sm text-muted-foreground md:text-base">
+            <p className="mt-2 max-w-xl text-sm text-muted-foreground md:text-base" style={tc(s.style, "bodyColor")}>
               {pickLocalized(s.subtitle, lang, t("home.categories.subtitle"))}
             </p>
           </div>
@@ -790,10 +834,10 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
     >
       {/* Section heading */}
       <div className="text-left">
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">
+        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>
           {pickLocalized(s.subtitle, lang, t("home.featured.eyebrow"))}
         </p>
-        <h2 className="mt-2 font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl">
+        <h2 className="mt-2 font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl" style={tc(s.style, "headingColor")}>
           {pickLocalized(s.title, lang, t("home.featured.title"))}
         </h2>
       </div>
@@ -907,19 +951,20 @@ function Community({ settings }: { settings: CommunitySettings }) {
       <div className="mx-auto grid max-w-[1280px] items-center gap-10 px-4 md:grid-cols-2 md:px-8">
         {/* Text */}
         <div className={imgRight ? "order-2 md:order-1" : "order-2 md:order-2"}>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#d4b896]">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#d4b896]" style={tc(s.style, "eyebrowColor")}>
             {pickLocalized(s.eyebrow, lang)}
           </p>
-          <h2 className="mt-4 font-[Archivo] text-4xl font-black leading-tight tracking-tight md:text-5xl">
+          <h2 className="mt-4 font-[Archivo] text-4xl font-black leading-tight tracking-tight md:text-5xl" style={tc(s.style, "headingColor")}>
             {pickLocalized(s.heading, lang)}
           </h2>
-          <div className="mt-8 space-y-5 text-base leading-relaxed opacity-90 md:text-lg">
+          <div className="mt-8 space-y-5 text-base leading-relaxed opacity-90 md:text-lg" style={tc(s.style, "bodyColor")}>
             {paragraphs.map((p, i) => <p key={i}>{p}</p>)}
           </div>
           {s.cta && pickLocalized({ id: s.cta.labelId, en: s.cta.labelEn }, lang) && (
             <a
               href={s.cta.href || "/"}
               className="mt-10 inline-flex items-center gap-2 rounded-full bg-[#d4b896] px-6 py-3 text-sm font-semibold uppercase tracking-wider text-[#1a3a2e] transition hover:bg-[#c9a84c]"
+              style={tc(s.style, "ctaTextColor")}
             >
               {pickLocalized({ id: s.cta.labelId, en: s.cta.labelEn }, lang)} <ArrowRight className="h-4 w-4" />
             </a>
@@ -1650,5 +1695,75 @@ function Typewriter({ text }: { text: string }) {
       )}
       <style>{`@keyframes tw-cursor{0%,49%{opacity:1}50%,100%{opacity:0}}`}</style>
     </span>
+  );
+}
+
+/* ---------- Custom (blank) Section ---------- */
+function CustomSection({ settings }: { settings: CustomSectionSettings }) {
+  const lang = useLang();
+  const s = settings;
+  const styleProps = styleToProps(s.style);
+  const pos = s.imagePosition ?? "right";
+  const eyebrow = pickLocalized(s.eyebrow, lang);
+  const heading = pickLocalized(s.heading, lang);
+  const body = pickLocalized(s.body, lang);
+  const overlay = Math.max(0, Math.min(100, s.overlay ?? 35));
+  const ImageEl = s.image ? (
+    s.imageHref ? (
+      <a href={s.imageHref} className="block h-full w-full">
+        <img src={s.image} alt={heading || ""} className="h-full w-full rounded-2xl object-cover" />
+      </a>
+    ) : (
+      <img src={s.image} alt={heading || ""} className="h-full w-full rounded-2xl object-cover" />
+    )
+  ) : null;
+  const Text = (
+    <div>
+      {eyebrow && (
+        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>
+          {eyebrow}
+        </p>
+      )}
+      {heading && (
+        <h2 className="mt-3 font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl" style={tc(s.style, "headingColor")}>
+          {heading}
+        </h2>
+      )}
+      {body && (
+        <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg" style={tc(s.style, "bodyColor")}>
+          {body}
+        </p>
+      )}
+      <div className="mt-6">
+        <CTAButton cta={s.cta} lang={lang} defaultStyle="primary" iconRight textStyle={tc(s.style, "ctaTextColor")} />
+      </div>
+    </div>
+  );
+  if (pos === "background") {
+    return (
+      <section className={styleProps.className} style={styleProps.inlineStyle}>
+        <div className="mx-auto max-w-[1280px] px-4 md:px-8">
+          <div className="relative min-h-[360px] overflow-hidden rounded-2xl">
+            {s.image && <img src={s.image} alt="" className="absolute inset-0 h-full w-full object-cover" />}
+            <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${(overlay / 100).toFixed(2)})` }} />
+            <div className="relative p-8 md:p-14 text-white">{Text}</div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+  return (
+    <section className={`mx-auto max-w-[1280px] px-4 md:px-8 ${styleProps.className}`} style={styleProps.inlineStyle}>
+      <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+        {ImageEl ? (
+          <>
+            <div className={pos === "left" ? "order-1" : "order-1 lg:order-2"}>{ImageEl}</div>
+            <div className={pos === "left" ? "order-2" : "order-2 lg:order-1"}>{Text}</div>
+          </>
+        ) : (
+          <div className="lg:col-span-2">{Text}</div>
+        )}
+      </div>
+    </section>
   );
 }

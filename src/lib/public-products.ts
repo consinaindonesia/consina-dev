@@ -22,6 +22,7 @@ export type PublicProduct = {
   image_url: string | null;
   thumbnail_url: string | null;
   weight_grams: number | null;
+  created_at: string | null;
   variants: Array<{ color_hex: string; color_name: string }>;
   size_variants: Array<{
     price_idr: number | null;
@@ -46,6 +47,7 @@ type RawRow = {
   is_featured: boolean;
   category_id: string | null;
   weight_grams: number | null;
+  created_at: string | null;
   images: string[] | null;
   categories: { slug: string; name_en: string; name_id: string } | null;
   product_images: Array<{
@@ -106,6 +108,7 @@ function normalize(rows: RawRow[]): PublicProduct[] {
       image_url: top?.image_url ?? flatTop ?? null,
       thumbnail_url: top?.thumbnail_url ?? top?.image_url ?? flatTop ?? null,
       weight_grams: (r as { weight_grams?: number | null }).weight_grams ?? null,
+      created_at: r.created_at ?? null,
       variants,
       size_variants,
     };
@@ -123,7 +126,7 @@ export function usePublicProducts() {
       const { data: rows } = await supabase
         .from("products")
         .select(
-          "id,sku,slug,name_en,name_id,short_description_en,short_description_id,price_idr,original_price_idr,sale_price_idr,is_on_sale,discount_percent,is_featured,category_id,weight_grams,images,categories!products_category_id_fkey(slug,name_en,name_id),product_images(image_url,thumbnail_url,is_primary,sort_order),product_variants(color_hex,color_name,sort_order),product_size_variants(price_idr,original_price_idr,stock)",
+          "id,sku,slug,name_en,name_id,short_description_en,short_description_id,price_idr,original_price_idr,sale_price_idr,is_on_sale,discount_percent,is_featured,category_id,weight_grams,created_at,images,categories!products_category_id_fkey(slug,name_en,name_id),product_images(image_url,thumbnail_url,is_primary,sort_order),product_variants(color_hex,color_name,sort_order),product_size_variants(price_idr,original_price_idr,stock)",
         )
         .eq("is_active", true)
         .order("is_featured", { ascending: false })

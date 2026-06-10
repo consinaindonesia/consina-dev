@@ -437,7 +437,7 @@ function BrandStory({ settings }: { settings: BrandStorySettings }) {
           <div className="overflow-hidden rounded-2xl">
             <img
               src={s.image && s.image.trim() ? s.image : storyHiker}
-              alt="Hiker on an Indonesian mountain trail"
+              alt={pickLocalized(s.imageAlt, lang, "Hiker on an Indonesian mountain trail")}
               width={1024}
               height={1280}
               loading="lazy"
@@ -461,7 +461,7 @@ function BrandStory({ settings }: { settings: BrandStorySettings }) {
             {/* Constrained width for comfortable reading */}
             <div className="max-w-prose">
               {/* Always-visible first paragraph */}
-              <p className="text-base leading-[1.75] text-foreground/80 md:text-lg" style={tc(s.style, "bodyColor")}>
+              <p className="text-base leading-[1.75] text-foreground/80 md:text-lg" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>
                 {paragraphs[0] ?? ""}
               </p>
 
@@ -471,7 +471,7 @@ function BrandStory({ settings }: { settings: BrandStorySettings }) {
                 style={{ gridTemplateRows: expanded ? "1fr" : "0fr" }}
               >
                 <div className="min-h-0 overflow-hidden">
-                  <div className="mt-5 space-y-5 text-base leading-[1.75] text-foreground/80 md:text-lg" style={tc(s.style, "bodyColor")}>
+                  <div className="mt-5 space-y-5 text-base leading-[1.75] text-foreground/80 md:text-lg" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>
                     {paragraphs.slice(1).map((p, i) => (
                       <p key={i}>{p}</p>
                     ))}
@@ -500,11 +500,11 @@ function BrandStory({ settings }: { settings: BrandStorySettings }) {
             >
               {expanded ? (
                 <>
-                  Lebih Sedikit <ChevronUp className="h-4 w-4" />
+                  {pickLocalized(s.collapseLabel, lang, "Lebih Sedikit")} <ChevronUp className="h-4 w-4" />
                 </>
               ) : (
                 <>
-                  Lebih Detail <ChevronDown className="h-4 w-4" />
+                  {pickLocalized(s.expandLabel, lang, "Lebih Detail")} <ChevronDown className="h-4 w-4" />
                 </>
               )}
             </button>

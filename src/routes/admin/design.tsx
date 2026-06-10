@@ -877,6 +877,22 @@ function FooterPanel({
         </div>
       </div>
 
+      <div className="space-y-3 rounded-md border border-dashed border-border bg-muted/30 p-3">
+        <Label className="text-xs uppercase tracking-wide text-muted-foreground">Footer logos</Label>
+        <LogoUploader
+          label="Footer logo (light / white version)"
+          helper="Used on the dark green footer. Falls back to the dark logo, then header logo, then text."
+          value={f.logoLightUrl}
+          onChange={(url) => setField({ logoLightUrl: url })}
+        />
+        <LogoUploader
+          label="Footer logo (dark / colored version)"
+          helper="Optional. Used if no light version is uploaded."
+          value={f.logoUrl}
+          onChange={(url) => setField({ logoUrl: url })}
+        />
+      </div>
+
       <div className="space-y-2">
         <Label className="text-xs uppercase tracking-wide text-muted-foreground">Social links</Label>
         {(["instagram", "facebook", "youtube"] as const).map((key) => (

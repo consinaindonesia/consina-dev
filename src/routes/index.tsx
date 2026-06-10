@@ -62,6 +62,12 @@ function tc(
   return v ? { color: v } : undefined;
 }
 
+/* Text-alignment helper for body/description paragraphs. */
+function ta(style: SectionStyle | undefined): React.CSSProperties | undefined {
+  const v = style?.bodyAlign;
+  return v ? { textAlign: v } : undefined;
+}
+
 /* Body-text picker that distinguishes "never set" (undefined → fall back to
  * the other language) from "explicitly cleared" (string "" → render empty). */
 function pickBody(
@@ -311,7 +317,7 @@ function Hero({ settings }: { settings: HeroSettings }) {
       <div className="absolute inset-0 -z-10">
         <img
           src={heroImg}
-          alt="Hero background"
+          alt={pickLocalized(s.imageAlt, lang, "Hero background")}
           width={1920}
           height={1080}
           className="h-full w-full object-cover"
@@ -342,7 +348,7 @@ function Hero({ settings }: { settings: HeroSettings }) {
           )}
         </h1>
         {subtitle && (
-          <p className="mt-6 max-w-xl text-base leading-relaxed text-primary-foreground/85 md:text-lg" style={tc(s.style, "bodyColor")}>
+          <p className="mt-6 max-w-xl text-base leading-relaxed text-primary-foreground/85 md:text-lg" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>
             {subtitle}
           </p>
         )}
@@ -430,7 +436,7 @@ function BrandStory({ settings }: { settings: BrandStorySettings }) {
           <div className="overflow-hidden rounded-2xl">
             <img
               src={s.image && s.image.trim() ? s.image : storyHiker}
-              alt="Hiker on an Indonesian mountain trail"
+              alt={pickLocalized(s.imageAlt, lang, "Hiker on an Indonesian mountain trail")}
               width={1024}
               height={1280}
               loading="lazy"
@@ -454,7 +460,7 @@ function BrandStory({ settings }: { settings: BrandStorySettings }) {
             {/* Constrained width for comfortable reading */}
             <div className="max-w-prose">
               {/* Always-visible first paragraph */}
-              <p className="text-base leading-[1.75] text-foreground/80 md:text-lg" style={tc(s.style, "bodyColor")}>
+              <p className="text-base leading-[1.75] text-foreground/80 md:text-lg" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>
                 {paragraphs[0] ?? ""}
               </p>
 
@@ -464,7 +470,7 @@ function BrandStory({ settings }: { settings: BrandStorySettings }) {
                 style={{ gridTemplateRows: expanded ? "1fr" : "0fr" }}
               >
                 <div className="min-h-0 overflow-hidden">
-                  <div className="mt-5 space-y-5 text-base leading-[1.75] text-foreground/80 md:text-lg" style={tc(s.style, "bodyColor")}>
+                  <div className="mt-5 space-y-5 text-base leading-[1.75] text-foreground/80 md:text-lg" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>
                     {paragraphs.slice(1).map((p, i) => (
                       <p key={i}>{p}</p>
                     ))}
@@ -493,11 +499,11 @@ function BrandStory({ settings }: { settings: BrandStorySettings }) {
             >
               {expanded ? (
                 <>
-                  Lebih Sedikit <ChevronUp className="h-4 w-4" />
+                  {pickLocalized(s.collapseLabel, lang, "Lebih Sedikit")} <ChevronUp className="h-4 w-4" />
                 </>
               ) : (
                 <>
-                  Lebih Detail <ChevronDown className="h-4 w-4" />
+                  {pickLocalized(s.expandLabel, lang, "Lebih Detail")} <ChevronDown className="h-4 w-4" />
                 </>
               )}
             </button>
@@ -586,11 +592,15 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
         mode === "manual" && manualSrc
           ? manualSrc
           : autoSrc || fallback;
+      const descOverride =
+        (lang === "en" ? override?.descriptionEn : override?.descriptionId);
+      const desc = typeof descOverride === "string"
+        ? descOverride
+        : ((t(`home.categories.${c.slug}_desc` as never, { defaultValue: "" }) as string) || "");
       return {
         slug: c.slug,
         name: localizedField(c, "name", lang).value,
-        desc:
-          (t(`home.categories.${c.slug}_desc` as never, { defaultValue: "" }) as string) || "",
+        desc,
         img,
         count: counts.get(c.slug) ?? 0,
       };
@@ -654,17 +664,29 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
             <h2 className="mt-2 font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl" style={tc(s.style, "headingColor")}>
               {pickLocalized(s.title, lang, t("home.categories.title"))}
             </h2>
-            <p className="mt-2 max-w-xl text-sm text-muted-foreground md:text-base" style={tc(s.style, "bodyColor")}>
+            <p className="mt-2 max-w-xl text-sm text-muted-foreground md:text-base" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>
               {pickLocalized(s.subtitle, lang, t("home.categories.subtitle"))}
             </p>
           </div>
-          <Link
-            to="/catalog"
-            className="hidden shrink-0 items-center gap-1 text-sm font-semibold uppercase tracking-wider text-primary transition hover:gap-2 md:inline-flex"
-          >
-            {t("cta.view_all", { defaultValue: "Lihat semua" })}
-            <ArrowRight className="h-4 w-4" />
-          </Link>
+          {(() => {
+            const label = pickLocalized(
+              { id: s.viewAllCta?.labelId, en: s.viewAllCta?.labelEn },
+              lang,
+              t("cta.view_all", { defaultValue: "Lihat semua" }),
+            );
+            const href = s.viewAllCta?.href || "/catalog";
+            if (!label) return null;
+            return (
+              <a
+                href={href}
+                className="hidden shrink-0 items-center gap-1 text-sm font-semibold uppercase tracking-wider text-primary transition hover:gap-2 md:inline-flex"
+                style={tc(s.style, "ctaTextColor")}
+              >
+                {label}
+                <ArrowRight className="h-4 w-4" />
+              </a>
+            );
+          })()}
         </div>
 
         {/* Carousel */}
@@ -944,6 +966,25 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
           })}
         </div>
       )}
+      {(() => {
+        const label = pickLocalized(
+          { id: s.viewAllCta?.labelId, en: s.viewAllCta?.labelEn },
+          lang,
+        );
+        if (!label) return null;
+        const href = s.viewAllCta?.href || "/catalog";
+        return (
+          <div className="mt-8 flex justify-center">
+            <a
+              href={href}
+              className="inline-flex items-center gap-2 rounded-full border border-primary/30 px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary transition hover:bg-primary hover:text-primary-foreground"
+              style={tc(s.style, "ctaTextColor")}
+            >
+              {label} <ArrowRight className="h-4 w-4" />
+            </a>
+          </div>
+        );
+      })()}
     </section>
   );
 }
@@ -971,7 +1012,7 @@ function Community({ settings }: { settings: CommunitySettings }) {
           <h2 className="mt-4 font-[Archivo] text-4xl font-black leading-tight tracking-tight md:text-5xl" style={tc(s.style, "headingColor")}>
             {pickLocalized(s.heading, lang)}
           </h2>
-          <div className="mt-8 space-y-5 text-base leading-relaxed opacity-90 md:text-lg" style={tc(s.style, "bodyColor")}>
+          <div className="mt-8 space-y-5 text-base leading-relaxed opacity-90 md:text-lg" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>
             {paragraphs.map((p, i) => <p key={i}>{p}</p>)}
           </div>
           {s.cta && pickLocalized({ id: s.cta.labelId, en: s.cta.labelEn }, lang) && (
@@ -989,7 +1030,7 @@ function Community({ settings }: { settings: CommunitySettings }) {
           <div className="overflow-hidden rounded-2xl">
             <img
               src={imgSrc}
-              alt="Community"
+              alt={pickLocalized(s.imageAlt, lang, "Community")}
               width={1024}
               height={1280}
               loading="lazy"
@@ -1053,7 +1094,7 @@ function StoreLocator({ settings }: { settings: StoreLocatorSettings }) {
             {heading}
           </h2>
           {subtitle && (
-            <p className="mt-3 max-w-md text-base leading-relaxed text-muted-foreground" style={tc(s.style, "bodyColor")}>{subtitle}</p>
+            <p className="mt-3 max-w-md text-base leading-relaxed text-muted-foreground" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{subtitle}</p>
           )}
           {ctaLabel && (
             <a
@@ -1122,7 +1163,7 @@ function FAQSection({ settings }: { settings: FaqSettings }) {
           >
             {heading}
           </h2>
-          {subtitle && <p className="mt-3 text-base text-muted-foreground" style={tc(s.style, "bodyColor")}>{subtitle}</p>}
+          {subtitle && <p className="mt-3 text-base text-muted-foreground" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{subtitle}</p>}
         </div>
 
         <ul className="mt-8 md:mt-10 divide-y divide-border border-y border-border">
@@ -1146,7 +1187,7 @@ function FAQSection({ settings }: { settings: FaqSettings }) {
                   />
                 </button>
                 {isOpen && (
-                  <p className="pb-5 pr-10 text-sm leading-relaxed text-muted-foreground md:text-base" style={tc(s.style, "bodyColor")}>
+                  <p className="pb-5 pr-10 text-sm leading-relaxed text-muted-foreground md:text-base" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>
                     {f.a}
                   </p>
                 )}
@@ -1188,15 +1229,22 @@ function ContactSectionInner({ settings }: { settings: ContactSettings }) {
     return Object.keys(seed).length > 0 ? [seed] : [];
   })();
   const subjects = [
-    t("home.contact.subject_product"),
-    t("home.contact.subject_wholesale"),
-    t("home.contact.subject_press"),
-    t("home.contact.subject_career"),
-    t("home.contact.subject_other"),
-  ];
+    ...((s.subjects && s.subjects.length > 0)
+      ? s.subjects.map((it) => {
+          const label = pickLocalized({ id: it.labelId, en: it.labelEn }, lang);
+          return { label, value: it.value || label };
+        })
+      : ([
+          { label: t("home.contact.subject_product"), value: "product" },
+          { label: t("home.contact.subject_wholesale"), value: "wholesale" },
+          { label: t("home.contact.subject_press"), value: "press" },
+          { label: t("home.contact.subject_career"), value: "career" },
+          { label: t("home.contact.subject_other"), value: "other" },
+        ] as { label: string; value: string }[])),
+  ].filter((x) => x.label) as { label: string; value: string }[];
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [subject, setSubject] = useState<string>(subjects[0]);
+  const [subject, setSubject] = useState<string>(subjects[0]?.value ?? "");
   const [message, setMessage] = useState("");
   const [website, setWebsite] = useState(""); // honeypot
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
@@ -1205,7 +1253,7 @@ function ContactSectionInner({ settings }: { settings: ContactSettings }) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   const resetForm = () => {
-    setFullName(""); setEmail(""); setSubject(subjects[0]); setMessage("");
+    setFullName(""); setEmail(""); setSubject(subjects[0]?.value ?? ""); setMessage("");
   };
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -1259,7 +1307,7 @@ function ContactSectionInner({ settings }: { settings: ContactSettings }) {
             {heading ? heading : (<>{t("home.contact.title_1")}<br />{t("home.contact.title_2")}</>)}
           </h2>
           {subtitle && (
-            <p className="mt-3 max-w-md text-base leading-relaxed text-muted-foreground" style={tc(s.style, "bodyColor")}>{subtitle}</p>
+            <p className="mt-3 max-w-md text-base leading-relaxed text-muted-foreground" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{subtitle}</p>
           )}
           <div className="mt-10 space-y-6 text-sm">
             {contacts.map((c, i) => (
@@ -1320,8 +1368,8 @@ function ContactSectionInner({ settings }: { settings: ContactSettings }) {
               onChange={(e) => setSubject(e.target.value)}
               className="mt-2 w-full border-b border-border bg-transparent py-2 text-sm text-foreground outline-none focus:border-primary"
             >
-              {subjects.map((s) => (
-                <option key={s} value={s}>{s}</option>
+              {subjects.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
           </div>
@@ -1403,7 +1451,7 @@ function FaqCustomSection({ settings }: { settings: FaqCustomSettings }) {
             {pickLocalized(s.title, lang)}
           </h2>
           {pickLocalized(s.subtitle, lang) && (
-            <p className="mt-3 text-base text-muted-foreground" style={tc(s.style, "bodyColor")}>{pickLocalized(s.subtitle, lang)}</p>
+            <p className="mt-3 text-base text-muted-foreground" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{pickLocalized(s.subtitle, lang)}</p>
           )}
         </div>
         <ul className="mt-8 md:mt-10 divide-y divide-border border-y border-border">
@@ -1423,7 +1471,7 @@ function FaqCustomSection({ settings }: { settings: FaqCustomSettings }) {
                   <ChevronDown className={`h-5 w-5 shrink-0 text-primary transition-transform ${isOpen ? "rotate-180" : ""}`} />
                 </button>
                 {isOpen && a && (
-                  <p className="pb-5 pr-10 text-sm leading-relaxed text-muted-foreground md:text-base" style={tc(s.style, "bodyColor")}>{a}</p>
+                  <p className="pb-5 pr-10 text-sm leading-relaxed text-muted-foreground md:text-base" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{a}</p>
                 )}
               </li>
             );
@@ -1447,7 +1495,7 @@ function NewsletterSection({ settings }: { settings: NewsletterSettings }) {
     const mail = email.trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) {
       setStatus("err");
-      setErrMsg("Invalid email");
+      setErrMsg(pickLocalized(s.errorMessage, lang, "Invalid email"));
       return;
     }
     setStatus("loading");
@@ -1475,7 +1523,7 @@ function NewsletterSection({ settings }: { settings: NewsletterSettings }) {
           {pickLocalized(s.heading, lang)}
         </h2>
         {pickLocalized(s.body, lang) && (
-          <p className="mt-3 text-base text-muted-foreground" style={tc(s.style, "bodyColor")}>{pickLocalized(s.body, lang)}</p>
+          <p className="mt-3 text-base text-muted-foreground" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{pickLocalized(s.body, lang)}</p>
         )}
         <form onSubmit={onSubmit} className="mx-auto mt-6 flex max-w-md flex-col gap-2 sm:flex-row">
           <input
@@ -1537,7 +1585,7 @@ function ImageBannerSection({ settings }: { settings: ImageBannerSettings }) {
               {pickLocalized(s.heading, lang)}
             </h2>
             {pickLocalized(s.body, lang) && (
-              <p className="max-w-xl text-base text-white/90" style={tc(s.style, "bodyColor")}>{pickLocalized(s.body, lang)}</p>
+              <p className="max-w-xl text-base text-white/90" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{pickLocalized(s.body, lang)}</p>
             )}
             <div className={align === "center" ? "mx-auto" : ""}>
               <CTAButton cta={s.cta} lang={lang} defaultStyle="primary" iconRight textStyle={tc(s.style, "ctaTextColor")} />
@@ -1567,7 +1615,7 @@ function GallerySection({ settings }: { settings: GallerySettings }) {
           </h2>
         )}
         {pickLocalized(s.subtitle, lang) && (
-          <p className="mt-2 text-base text-muted-foreground" style={tc(s.style, "bodyColor")}>{pickLocalized(s.subtitle, lang)}</p>
+          <p className="mt-2 text-base text-muted-foreground" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{pickLocalized(s.subtitle, lang)}</p>
         )}
         <div className={`mt-6 grid grid-cols-1 gap-3 md:gap-4 ${gridClass}`}>
           {images.map((img, i) => {
@@ -1621,7 +1669,7 @@ function TestimonialsSection({ settings }: { settings: TestimonialsSettings }) {
                 {rating > 0 && (
                   <div className="mb-3 text-accent">{"★".repeat(rating)}{"☆".repeat(5 - rating)}</div>
                 )}
-                <blockquote className="text-base leading-relaxed text-foreground" style={tc(s.style, "bodyColor")}>“{quote}”</blockquote>
+                <blockquote className="text-base leading-relaxed text-foreground" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>“{quote}”</blockquote>
                 <figcaption className="mt-4 flex items-center gap-3">
                   {it.avatar && <img src={it.avatar} alt="" className="h-9 w-9 rounded-full object-cover" />}
                   <div>
@@ -1781,7 +1829,7 @@ function CustomSection({ settings }: { settings: CustomSectionSettings }) {
         </h2>
       )}
       {body && (
-        <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg" style={tc(s.style, "bodyColor")}>
+        <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>
           {body}
         </p>
       )}

@@ -90,11 +90,18 @@ export function Nav() {
     </>
   );
 
-  const mainLinks = [
-    { to: "/catalog", label: t("nav.catalog") },
-    { to: "/stores", label: t("nav.stores") },
-    { to: "/", label: t("nav.story") },
-  ] as const;
+  const mainLinks = (header.navLinks && header.navLinks.length > 0
+    ? header.navLinks.map((l, i) => ({
+        key: `${l.href}-${i}`,
+        to: l.href || "/",
+        label: (lang === "en" ? l.labelEn : l.labelId) || l.labelEn || l.labelId || "",
+      }))
+    : [
+        { key: "catalog", to: "/catalog", label: t("nav.catalog") },
+        { key: "stores", to: "/stores", label: t("nav.stores") },
+        { key: "story", to: "/", label: t("nav.story") },
+      ]
+  ).filter((l) => l.label);
 
   return (
     <header
@@ -173,8 +180,8 @@ export function Nav() {
 
           {mainLinks.map((l) => (
             <Link
-              key={l.label}
-              to={l.to}
+              key={l.key}
+              to={l.to as never}
               className="text-sm font-medium text-foreground/80 transition-colors hover:text-primary"
               style={linkStyle}
             >
@@ -265,8 +272,8 @@ export function Nav() {
 
             {mainLinks.map((l) => (
               <Link
-                key={l.label}
-                to={l.to}
+                key={l.key}
+                to={l.to as never}
                 onClick={() => setOpen(false)}
                 className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-muted"
               >

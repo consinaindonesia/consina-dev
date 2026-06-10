@@ -52,7 +52,7 @@ const OPTIONS: Array<{ code: Lang; label: string; short: string; Flag: typeof Fl
   { code: "en", label: "English", short: "EN", Flag: FlagEN },
 ];
 
-export function LanguageSwitcher({ className = "" }: { className?: string }) {
+export function LanguageSwitcher({ className = "", menuBg }: { className?: string; menuBg?: string }) {
   const { i18n } = useTranslation();
   const router = useRouter();
   const current = (i18n.language?.startsWith("en") ? "en" : "id") as Lang;
@@ -105,7 +105,8 @@ export function LanguageSwitcher({ className = "" }: { className?: string }) {
       {open && (
         <ul
           role="listbox"
-          className="absolute right-0 top-full z-50 mt-1 min-w-[180px] overflow-hidden rounded-lg border border-border bg-background py-1 shadow-lg"
+          className="absolute right-0 top-full z-50 mt-1 min-w-[180px] overflow-hidden rounded-lg border border-border py-1 shadow-xl"
+          style={{ backgroundColor: menuBg || "var(--background)" }}
         >
           {OPTIONS.map((opt) => {
             const selected = opt.code === current;

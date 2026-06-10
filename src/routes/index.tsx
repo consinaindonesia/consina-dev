@@ -37,6 +37,8 @@ import {
   type StoreLocatorSettings,
   type FaqSettings,
   type ContactSettings,
+  type CustomSectionSettings,
+  type SectionStyle,
 } from "@/lib/section-registry";
 import hero from "@/assets/hero-mountain.jpg";
 import catCarriers from "@/assets/cat-carriers.jpg";
@@ -190,6 +192,7 @@ const SECTION_COMPONENTS: Record<SectionTypeId, SectionCmp> = {
   testimonials: TestimonialsSection as SectionCmp,
   spacer: SpacerSection as SectionCmp,
   announcement_bar: AnnouncementBarSection as SectionCmp,
+  custom: CustomSection as SectionCmp,
 };
 
 function ComposedSections() {

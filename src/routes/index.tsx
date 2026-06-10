@@ -348,11 +348,13 @@ function CTAButton({
   lang,
   defaultStyle = "primary",
   iconRight,
+  textStyle,
 }: {
   cta?: CTAConfig;
   lang: string;
   defaultStyle?: "primary" | "secondary" | "outline";
   iconRight?: boolean;
+  textStyle?: React.CSSProperties;
 }) {
   if (!cta) return null;
   const label = pickLocalized({ id: cta.labelId, en: cta.labelEn }, lang);
@@ -367,7 +369,7 @@ function CTAButton({
         ? `${base} bg-[#d4b896] text-[#1a3a2e] hover:bg-[#c9a84c]`
         : `${base} border border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10`;
   return (
-    <a href={href} className={cls}>
+    <a href={href} className={cls} style={textStyle}>
       {label}
       {iconRight && <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />}
     </a>

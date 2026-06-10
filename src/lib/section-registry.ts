@@ -19,7 +19,8 @@ export type SectionTypeId =
   | "gallery"
   | "testimonials"
   | "spacer"
-  | "announcement_bar";
+  | "announcement_bar"
+  | "custom";
 
 export type Localized = { id?: string; en?: string };
 
@@ -34,6 +35,11 @@ export type SectionStyle = {
   bgColor?: string; // CSS color, "" / undefined => default
   textColor?: string;
   padding?: "S" | "M" | "L"; // default "M"
+  // Optional per-text overrides. When unset the section uses its theme defaults.
+  eyebrowColor?: string;
+  headingColor?: string;
+  bodyColor?: string;
+  ctaTextColor?: string;
 };
 
 export type StatItem = { value: string; labelId?: string; labelEn?: string };
@@ -65,6 +71,9 @@ export type CategoriesSettings = {
   subtitle?: Localized;
   eyebrow?: Localized;
   categorySlugs?: string[]; // ordered; empty => auto from DB
+  // Per-category image override. mode "manual" + src uses the uploaded image,
+  // "auto" (default) uses the newest product image (falls back to the bundled default).
+  categoryImages?: Record<string, { mode?: "auto" | "manual"; src?: string }>;
 };
 
 export type BrandStorySettings = {
@@ -193,6 +202,18 @@ export type AnnouncementBarSettings = {
   textColor?: string;
 };
 
+export type CustomSectionSettings = {
+  style?: SectionStyle;
+  image?: string;
+  imagePosition?: "left" | "right" | "background";
+  imageHref?: string;
+  overlay?: number; // 0..100 — only used when imagePosition === "background"
+  eyebrow?: Localized;
+  heading?: Localized;
+  body?: Localized;
+  cta?: CTAConfig;
+};
+
 export type SectionSettingsMap = {
   hero: HeroSettings;
   brand_story: BrandStorySettings;
@@ -210,6 +231,7 @@ export type SectionSettingsMap = {
   testimonials: TestimonialsSettings;
   spacer: SpacerSettings;
   announcement_bar: AnnouncementBarSettings;
+  custom: CustomSectionSettings;
 };
 
 export type AnySectionSettings = SectionSettingsMap[SectionTypeId];
@@ -237,6 +259,7 @@ export const SECTION_REGISTRY: Record<SectionTypeId, SectionDefinition> = {
   testimonials: { id: "testimonials", label: "Testimonials", description: "Customer quotes and reviews." },
   spacer: { id: "spacer", label: "Spacer / Divider", description: "Adjustable empty space with optional divider." },
   announcement_bar: { id: "announcement_bar", label: "Announcement Bar", description: "Slim message bar — place at top of the page." },
+  custom: { id: "custom", label: "Custom Section", description: "Blank section with image + eyebrow + heading + description + CTA." },
 };
 
 export const DEFAULT_HOME_SECTIONS: SectionTypeId[] = [

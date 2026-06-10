@@ -967,6 +967,25 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
           })}
         </div>
       )}
+      {(() => {
+        const label = pickLocalized(
+          { id: s.viewAllCta?.labelId, en: s.viewAllCta?.labelEn },
+          lang,
+        );
+        if (!label) return null;
+        const href = s.viewAllCta?.href || "/catalog";
+        return (
+          <div className="mt-8 flex justify-center">
+            <a
+              href={href}
+              className="inline-flex items-center gap-2 rounded-full border border-primary/30 px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary transition hover:bg-primary hover:text-primary-foreground"
+              style={tc(s.style, "ctaTextColor")}
+            >
+              {label} <ArrowRight className="h-4 w-4" />
+            </a>
+          </div>
+        );
+      })()}
     </section>
   );
 }

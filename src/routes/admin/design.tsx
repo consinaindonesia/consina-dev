@@ -1001,6 +1001,23 @@ function HeaderPanel({
           Solid color shown behind the nav. Leave empty to use the theme background.
         </p>
       </div>
+      <div>
+        <Label className="text-xs">Link color</Label>
+        <div className="mt-1 flex items-center gap-2">
+          <input
+            type="color"
+            value={/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(h.linkColor) ? h.linkColor : "#000000"}
+            onChange={(e) => set("linkColor", e.target.value)}
+            className="h-8 w-10 cursor-pointer rounded border border-input bg-transparent"
+          />
+          <Input
+            placeholder="(default)"
+            value={h.linkColor}
+            onChange={(e) => set("linkColor", e.target.value)}
+          />
+        </div>
+        <p className="mt-1 text-xs text-muted-foreground">Color for the main nav links. Empty = theme default.</p>
+      </div>
       {([
         ["showSinceTag", "Show 'Since 1999' tag"],
         ["showSearch", "Show search icon"],

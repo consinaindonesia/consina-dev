@@ -130,6 +130,14 @@ export type ContactSettings = {
   email?: string;
   phone?: string;
   address?: string;
+  contacts?: ContactPerson[];
+};
+
+export type ContactPerson = {
+  name?: string;
+  phone?: string;
+  role?: string;
+  email?: string;
 };
 
 export type FaqItem = { questionId?: string; questionEn?: string; answerId?: string; answerEn?: string };

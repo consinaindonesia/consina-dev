@@ -1829,7 +1829,7 @@ function CustomSection({ settings }: { settings: CustomSectionSettings }) {
         </h2>
       )}
       {body && (
-        <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg" style={tc(s.style, "bodyColor")}>
+        <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>
           {body}
         </p>
       )}

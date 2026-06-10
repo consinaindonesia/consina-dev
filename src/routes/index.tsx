@@ -1163,7 +1163,7 @@ function FAQSection({ settings }: { settings: FaqSettings }) {
           >
             {heading}
           </h2>
-          {subtitle && <p className="mt-3 text-base text-muted-foreground" style={tc(s.style, "bodyColor")}>{subtitle}</p>}
+          {subtitle && <p className="mt-3 text-base text-muted-foreground" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{subtitle}</p>}
         </div>
 
         <ul className="mt-8 md:mt-10 divide-y divide-border border-y border-border">
@@ -1187,7 +1187,7 @@ function FAQSection({ settings }: { settings: FaqSettings }) {
                   />
                 </button>
                 {isOpen && (
-                  <p className="pb-5 pr-10 text-sm leading-relaxed text-muted-foreground md:text-base" style={tc(s.style, "bodyColor")}>
+                  <p className="pb-5 pr-10 text-sm leading-relaxed text-muted-foreground md:text-base" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>
                     {f.a}
                   </p>
                 )}

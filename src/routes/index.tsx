@@ -1013,7 +1013,7 @@ function Community({ settings }: { settings: CommunitySettings }) {
           <h2 className="mt-4 font-[Archivo] text-4xl font-black leading-tight tracking-tight md:text-5xl" style={tc(s.style, "headingColor")}>
             {pickLocalized(s.heading, lang)}
           </h2>
-          <div className="mt-8 space-y-5 text-base leading-relaxed opacity-90 md:text-lg" style={tc(s.style, "bodyColor")}>
+          <div className="mt-8 space-y-5 text-base leading-relaxed opacity-90 md:text-lg" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>
             {paragraphs.map((p, i) => <p key={i}>{p}</p>)}
           </div>
           {s.cta && pickLocalized({ id: s.cta.labelId, en: s.cta.labelEn }, lang) && (
@@ -1031,7 +1031,7 @@ function Community({ settings }: { settings: CommunitySettings }) {
           <div className="overflow-hidden rounded-2xl">
             <img
               src={imgSrc}
-              alt="Community"
+              alt={pickLocalized(s.imageAlt, lang, "Community")}
               width={1024}
               height={1280}
               loading="lazy"

@@ -488,6 +488,19 @@ export const DEFAULT_SECTION_SETTINGS: { [K in SectionTypeId]: SectionSettingsMa
   testimonials: DEFAULT_TESTIMONIALS,
   spacer: DEFAULT_SPACER,
   announcement_bar: DEFAULT_ANNOUNCEMENT_BAR,
+  custom: {
+    style: { padding: "M" },
+    image: "",
+    imagePosition: "right",
+    overlay: 35,
+    eyebrow: { id: "", en: "" },
+    heading: { id: "Bagian Kustom", en: "Custom Section" },
+    body: {
+      id: "Tulis deskripsi singkat di sini.",
+      en: "Write a short description here.",
+    },
+    cta: { labelId: "", labelEn: "", href: "", style: "primary" },
+  },
 };
 
 export function getDefaultSettings<K extends SectionTypeId>(type: K): SectionSettingsMap[K] {

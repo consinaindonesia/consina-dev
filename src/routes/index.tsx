@@ -11,6 +11,7 @@ import { usePublicCategories, type PublicCategory } from "@/hooks/use-public-cat
 import { useLang } from "@/i18n/LangProvider";
 import { formatPrice, localizedField } from "@/i18n/format";
 import { PriceDisplay } from "@/components/site/PriceDisplay";
+import { WishlistButton } from "@/components/site/WishlistButton";
 import {
   DEFAULT_HOME_SECTIONS,
   SECTION_REGISTRY,

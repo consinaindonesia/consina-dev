@@ -1100,14 +1100,15 @@ function FAQSection({ settings }: { settings: FaqSettings }) {
     >
       <div className="mx-auto max-w-3xl px-4 md:px-8">
         <div className="text-center">
-          {eyebrow && <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">{eyebrow}</p>}
+          {eyebrow && <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>}
           <h2
             id="faq-heading"
             className="mt-2 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl"
+            style={tc(s.style, "headingColor")}
           >
             {heading}
           </h2>
-          {subtitle && <p className="mt-3 text-base text-muted-foreground">{subtitle}</p>}
+          {subtitle && <p className="mt-3 text-base text-muted-foreground" style={tc(s.style, "bodyColor")}>{subtitle}</p>}
         </div>
 
         <ul className="mt-8 md:mt-10 divide-y divide-border border-y border-border">
@@ -1121,7 +1122,7 @@ function FAQSection({ settings }: { settings: FaqSettings }) {
                   onClick={() => setOpen(isOpen ? null : i)}
                   className="flex w-full items-center justify-between gap-4 py-5 text-left"
                 >
-                  <h3 className="font-[Archivo] text-base font-bold text-primary md:text-lg">
+                  <h3 className="font-[Archivo] text-base font-bold text-primary md:text-lg" style={tc(s.style, "headingColor")}>
                     {f.q}
                   </h3>
                   <ChevronDown
@@ -1131,7 +1132,7 @@ function FAQSection({ settings }: { settings: FaqSettings }) {
                   />
                 </button>
                 {isOpen && (
-                  <p className="pb-5 pr-10 text-sm leading-relaxed text-muted-foreground md:text-base">
+                  <p className="pb-5 pr-10 text-sm leading-relaxed text-muted-foreground md:text-base" style={tc(s.style, "bodyColor")}>
                     {f.a}
                   </p>
                 )}

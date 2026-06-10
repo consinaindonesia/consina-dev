@@ -591,7 +591,7 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
         <div className="flex items-end justify-between gap-4">
           <div className="text-left">
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">
-              {t("home.categories.eyebrow")}
+              {pickLocalized(s.eyebrow, lang, t("home.categories.eyebrow"))}
             </p>
             <h2 className="mt-2 font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl">
               {pickLocalized(s.title, lang, t("home.categories.title"))}

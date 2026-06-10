@@ -1108,24 +1108,75 @@ function FaqEditor({ value, onChange }: { value: FaqSettings; onChange: (v: FaqS
 
 /* -------------------- Contact -------------------- */
 function ContactEditor({ value, onChange }: { value: ContactSettings; onChange: (v: ContactSettings) => void }) {
+  // Seed contacts from legacy single email/phone if no list exists yet.
+  const contacts =
+    Array.isArray(value.contacts) && value.contacts.length > 0
+      ? value.contacts
+      : (value.email || value.phone)
+        ? [{ email: value.email ?? "", phone: value.phone ?? "" }]
+        : [{}];
+  const updateContacts = (next: NonNullable<ContactSettings["contacts"]>) =>
+    onChange({ ...value, contacts: next });
+  const updateAt = (i: number, patch: Partial<NonNullable<ContactSettings["contacts"]>[number]>) => {
+    const next = contacts.map((c, idx) => (idx === i ? { ...c, ...patch } : c));
+    updateContacts(next);
+  };
   return (
     <div className="space-y-4">
       <LocalizedField label="Eyebrow" value={value.eyebrow} onChange={(v) => onChange({ ...value, eyebrow: v })} />
       <LocalizedField label="Heading" value={value.title} onChange={(v) => onChange({ ...value, title: v })} />
       <LocalizedField label="Description" value={value.subtitle} onChange={(v) => onChange({ ...value, subtitle: v })} multiline />
-      <div className="grid gap-3 sm:grid-cols-3">
-        <div>
-          <Label className="text-xs">Email</Label>
-          <Input value={value.email ?? ""} onChange={(e) => onChange({ ...value, email: e.target.value })} placeholder="hello@consina.com" />
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <Label className="text-xs">Contact persons ({contacts.length}/3)</Label>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={contacts.length >= 3}
+            onClick={() => updateContacts([...contacts, {}])}
+          >
+            <Plus className="mr-1 h-3 w-3" /> Add
+          </Button>
         </div>
-        <div>
-          <Label className="text-xs">Phone</Label>
-          <Input value={value.phone ?? ""} onChange={(e) => onChange({ ...value, phone: e.target.value })} placeholder="+62 …" />
-        </div>
-        <div>
-          <Label className="text-xs">Address</Label>
-          <Input value={value.address ?? ""} onChange={(e) => onChange({ ...value, address: e.target.value })} placeholder="Jakarta, Indonesia" />
-        </div>
+        {contacts.map((c, i) => (
+          <div key={i} className="space-y-2 rounded border border-input p-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">#{i + 1}</span>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                disabled={contacts.length <= 1}
+                onClick={() => updateContacts(contacts.filter((_, idx) => idx !== i))}
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <div>
+                <Label className="text-[11px]">Name / label</Label>
+                <Input value={c.name ?? ""} onChange={(e) => updateAt(i, { name: e.target.value })} placeholder="e.g. Customer Support" />
+              </div>
+              <div>
+                <Label className="text-[11px]">Phone</Label>
+                <Input value={c.phone ?? ""} onChange={(e) => updateAt(i, { phone: e.target.value })} placeholder="+62 …" />
+              </div>
+              <div>
+                <Label className="text-[11px]">Role (optional)</Label>
+                <Input value={c.role ?? ""} onChange={(e) => updateAt(i, { role: e.target.value })} placeholder="e.g. Sales" />
+              </div>
+              <div>
+                <Label className="text-[11px]">Email (optional)</Label>
+                <Input value={c.email ?? ""} onChange={(e) => updateAt(i, { email: e.target.value })} placeholder="hello@consina.com" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div>
+        <Label className="text-xs">Address</Label>
+        <Input value={value.address ?? ""} onChange={(e) => onChange({ ...value, address: e.target.value })} placeholder="Jakarta, Indonesia" />
       </div>
       <p className="text-[11px] text-muted-foreground">Inquiries submitted from the form are saved to the contact_inquiries table.</p>
     </div>

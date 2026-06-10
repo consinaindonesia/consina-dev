@@ -63,6 +63,7 @@ export type CategoriesSettings = {
   style?: SectionStyle;
   title?: Localized;
   subtitle?: Localized;
+  eyebrow?: Localized;
   categorySlugs?: string[]; // ordered; empty => auto from DB
 };
 

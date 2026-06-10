@@ -616,6 +616,48 @@ function CategoriesEditor({
           Uncheck to hide a category. Use ↑↓ to reorder.
         </p>
       </div>
+      <div className="rounded border border-input p-3">
+        <Label className="text-xs font-semibold">Category card images</Label>
+        <p className="mt-1 mb-2 text-[10px] text-muted-foreground">
+          Auto = newest uploaded product photo from this category. Manual = your chosen image.
+        </p>
+        <div className="space-y-3">
+          {orderedSlugs.map((slug) => {
+            const c = list.find((x) => x.slug === slug);
+            const cur = (value.categoryImages ?? {})[slug] ?? {};
+            const mode = cur.mode ?? "auto";
+            const setOverride = (next: { mode?: "auto" | "manual"; src?: string }) =>
+              onChange({
+                ...value,
+                categoryImages: { ...(value.categoryImages ?? {}), [slug]: { ...cur, ...next } },
+              });
+            return (
+              <div key={slug} className="rounded border border-border bg-background p-2">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <span className="truncate text-xs font-medium">{c?.name_en || slug}</span>
+                  <div className="flex gap-1">
+                    {(["auto", "manual"] as const).map((m) => (
+                      <button
+                        key={m}
+                        type="button"
+                        onClick={() => setOverride({ mode: m })}
+                        className={`rounded border px-2 py-0.5 text-[10px] font-semibold capitalize ${
+                          mode === m ? "border-primary bg-primary text-primary-foreground" : "border-input bg-background hover:bg-muted"
+                        }`}
+                      >
+                        {m}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {mode === "manual" && (
+                  <ImagePicker label="Manual image" value={cur.src} onChange={(v) => setOverride({ src: v })} />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }

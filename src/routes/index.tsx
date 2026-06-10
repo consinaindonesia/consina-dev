@@ -1034,17 +1034,18 @@ function StoreLocator({ settings }: { settings: StoreLocatorSettings }) {
     >
       <div className="grid gap-12 lg:grid-cols-12">
         <div className="lg:col-span-5">
-          {eyebrow && <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">{eyebrow}</p>}
-          <h2 className="mt-2 font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl">
+          {eyebrow && <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>}
+          <h2 className="mt-2 font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl" style={tc(s.style, "headingColor")}>
             {heading}
           </h2>
           {subtitle && (
-            <p className="mt-3 max-w-md text-base leading-relaxed text-muted-foreground">{subtitle}</p>
+            <p className="mt-3 max-w-md text-base leading-relaxed text-muted-foreground" style={tc(s.style, "bodyColor")}>{subtitle}</p>
           )}
           {ctaLabel && (
             <a
               href={ctaHref}
               className="mt-8 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-secondary"
+              style={tc(s.style, "ctaTextColor")}
             >
               <MapPin className="h-4 w-4" /> {ctaLabel}
             </a>
@@ -1053,14 +1054,14 @@ function StoreLocator({ settings }: { settings: StoreLocatorSettings }) {
         <div className="lg:col-span-7">
           <ul className="divide-y divide-border border-y border-border">
             {items.map((st, i) => (
-              <li key={`${st.city}-${i}`} className="group grid grid-cols-[auto_1fr_auto] items-center gap-6 py-5">
-                <span className="font-[Archivo] text-2xl font-black tracking-tight text-primary md:text-3xl">
-                  {st.city}
-                </span>
-                <div>
-                  <p className="text-sm font-medium text-foreground">{st.address}</p>
-                  <p className="text-xs text-muted-foreground">{st.phone}</p>
-                </div>
+               <li key={`${st.city}-${i}`} className="group grid grid-cols-[auto_1fr_auto] items-center gap-6 py-5">
+                 <span className="font-[Archivo] text-2xl font-black tracking-tight text-primary md:text-3xl" style={tc(s.style, "headingColor")}>
+                   {st.city}
+                 </span>
+                 <div>
+                   <p className="text-sm font-medium text-foreground" style={tc(s.style, "bodyColor")}>{st.address}</p>
+                   <p className="text-xs text-muted-foreground" style={tc(s.style, "bodyColor")}>{st.phone}</p>
+                 </div>
                 <ArrowUpRight className="h-5 w-5 text-secondary transition group-hover:translate-x-1 group-hover:-translate-y-1" />
               </li>
             ))}
@@ -1099,14 +1100,15 @@ function FAQSection({ settings }: { settings: FaqSettings }) {
     >
       <div className="mx-auto max-w-3xl px-4 md:px-8">
         <div className="text-center">
-          {eyebrow && <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">{eyebrow}</p>}
+          {eyebrow && <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>}
           <h2
             id="faq-heading"
             className="mt-2 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl"
+            style={tc(s.style, "headingColor")}
           >
             {heading}
           </h2>
-          {subtitle && <p className="mt-3 text-base text-muted-foreground">{subtitle}</p>}
+          {subtitle && <p className="mt-3 text-base text-muted-foreground" style={tc(s.style, "bodyColor")}>{subtitle}</p>}
         </div>
 
         <ul className="mt-8 md:mt-10 divide-y divide-border border-y border-border">
@@ -1120,7 +1122,7 @@ function FAQSection({ settings }: { settings: FaqSettings }) {
                   onClick={() => setOpen(isOpen ? null : i)}
                   className="flex w-full items-center justify-between gap-4 py-5 text-left"
                 >
-                  <h3 className="font-[Archivo] text-base font-bold text-primary md:text-lg">
+                  <h3 className="font-[Archivo] text-base font-bold text-primary md:text-lg" style={tc(s.style, "headingColor")}>
                     {f.q}
                   </h3>
                   <ChevronDown
@@ -1130,7 +1132,7 @@ function FAQSection({ settings }: { settings: FaqSettings }) {
                   />
                 </button>
                 {isOpen && (
-                  <p className="pb-5 pr-10 text-sm leading-relaxed text-muted-foreground md:text-base">
+                  <p className="pb-5 pr-10 text-sm leading-relaxed text-muted-foreground md:text-base" style={tc(s.style, "bodyColor")}>
                     {f.a}
                   </p>
                 )}
@@ -1220,22 +1222,22 @@ function ContactSectionInner({ settings }: { settings: ContactSettings }) {
       <div className="mx-auto grid max-w-[1280px] gap-14 px-4 md:grid-cols-2 md:px-8">
         <div>
           {eyebrow && (
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">{eyebrow}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>
           )}
-          <h2 className="mt-2 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl">
+          <h2 className="mt-2 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl" style={tc(s.style, "headingColor")}>
             {heading ? heading : (<>{t("home.contact.title_1")}<br />{t("home.contact.title_2")}</>)}
           </h2>
           {subtitle && (
-            <p className="mt-3 max-w-md text-base leading-relaxed text-muted-foreground">{subtitle}</p>
+            <p className="mt-3 max-w-md text-base leading-relaxed text-muted-foreground" style={tc(s.style, "bodyColor")}>{subtitle}</p>
           )}
           <div className="mt-10 space-y-4 text-sm">
-            <div className="flex items-center gap-3 text-foreground">
+            <div className="flex items-center gap-3 text-foreground" style={tc(s.style, "bodyColor")}>
               <Mail className="h-4 w-4 text-secondary" /> {emailAddr}
             </div>
-            <div className="flex items-center gap-3 text-foreground">
+            <div className="flex items-center gap-3 text-foreground" style={tc(s.style, "bodyColor")}>
               <Phone className="h-4 w-4 text-secondary" /> {phoneNum}
             </div>
-            <div className="flex items-center gap-3 text-foreground">
+            <div className="flex items-center gap-3 text-foreground" style={tc(s.style, "bodyColor")}>
               <MapPin className="h-4 w-4 text-secondary" /> {addressTxt}
             </div>
           </div>
@@ -1303,6 +1305,7 @@ function ContactSectionInner({ settings }: { settings: ContactSettings }) {
             type="submit"
             disabled={status === "submitting"}
             className="mt-8 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-secondary disabled:opacity-60"
+            style={tc(s.style, "ctaTextColor")}
           >
             {status === "submitting" ? t("cta.sending") : t("cta.send_message")} <ArrowRight className="h-4 w-4" />
           </button>
@@ -1347,13 +1350,13 @@ function FaqCustomSection({ settings }: { settings: FaqCustomSettings }) {
       <div className="mx-auto max-w-3xl px-4 md:px-8">
         <div className="text-center">
           {pickLocalized(s.eyebrow, lang) && (
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">{pickLocalized(s.eyebrow, lang)}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>{pickLocalized(s.eyebrow, lang)}</p>
           )}
-          <h2 className="mt-2 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl">
+          <h2 className="mt-2 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl" style={tc(s.style, "headingColor")}>
             {pickLocalized(s.title, lang)}
           </h2>
           {pickLocalized(s.subtitle, lang) && (
-            <p className="mt-3 text-base text-muted-foreground">{pickLocalized(s.subtitle, lang)}</p>
+            <p className="mt-3 text-base text-muted-foreground" style={tc(s.style, "bodyColor")}>{pickLocalized(s.subtitle, lang)}</p>
           )}
         </div>
         <ul className="mt-8 md:mt-10 divide-y divide-border border-y border-border">
@@ -1369,11 +1372,11 @@ function FaqCustomSection({ settings }: { settings: FaqCustomSettings }) {
                   onClick={() => setOpen(isOpen ? null : i)}
                   className="flex w-full items-center justify-between gap-4 py-5 text-left"
                 >
-                  <h3 className="font-[Archivo] text-base font-bold text-primary md:text-lg">{q}</h3>
+                  <h3 className="font-[Archivo] text-base font-bold text-primary md:text-lg" style={tc(s.style, "headingColor")}>{q}</h3>
                   <ChevronDown className={`h-5 w-5 shrink-0 text-primary transition-transform ${isOpen ? "rotate-180" : ""}`} />
                 </button>
                 {isOpen && a && (
-                  <p className="pb-5 pr-10 text-sm leading-relaxed text-muted-foreground md:text-base">{a}</p>
+                  <p className="pb-5 pr-10 text-sm leading-relaxed text-muted-foreground md:text-base" style={tc(s.style, "bodyColor")}>{a}</p>
                 )}
               </li>
             );
@@ -1419,13 +1422,13 @@ function NewsletterSection({ settings }: { settings: NewsletterSettings }) {
     >
       <div className="mx-auto max-w-2xl px-4 text-center md:px-8">
         {pickLocalized(s.eyebrow, lang) && (
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">{pickLocalized(s.eyebrow, lang)}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>{pickLocalized(s.eyebrow, lang)}</p>
         )}
-        <h2 className="mt-2 font-[Archivo] text-3xl font-black tracking-tight text-primary md:text-4xl">
+        <h2 className="mt-2 font-[Archivo] text-3xl font-black tracking-tight text-primary md:text-4xl" style={tc(s.style, "headingColor")}>
           {pickLocalized(s.heading, lang)}
         </h2>
         {pickLocalized(s.body, lang) && (
-          <p className="mt-3 text-base text-muted-foreground">{pickLocalized(s.body, lang)}</p>
+          <p className="mt-3 text-base text-muted-foreground" style={tc(s.style, "bodyColor")}>{pickLocalized(s.body, lang)}</p>
         )}
         <form onSubmit={onSubmit} className="mx-auto mt-6 flex max-w-md flex-col gap-2 sm:flex-row">
           <input
@@ -1440,6 +1443,7 @@ function NewsletterSection({ settings }: { settings: NewsletterSettings }) {
             type="submit"
             disabled={status === "loading"}
             className="h-11 rounded-full bg-primary px-6 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-secondary disabled:opacity-60"
+            style={tc(s.style, "ctaTextColor")}
           >
             {pickLocalized(s.buttonLabel, lang, "Subscribe")}
           </button>
@@ -1480,16 +1484,16 @@ function ImageBannerSection({ settings }: { settings: ImageBannerSettings }) {
           />
           <div className={`relative flex h-full flex-col justify-center gap-4 p-8 md:p-14 ${alignClass} ${heightClass}`}>
             {pickLocalized(s.eyebrow, lang) && (
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">{pickLocalized(s.eyebrow, lang)}</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>{pickLocalized(s.eyebrow, lang)}</p>
             )}
-            <h2 className="font-[Archivo] text-3xl font-black leading-tight tracking-tight text-white md:text-5xl">
+            <h2 className="font-[Archivo] text-3xl font-black leading-tight tracking-tight text-white md:text-5xl" style={tc(s.style, "headingColor")}>
               {pickLocalized(s.heading, lang)}
             </h2>
             {pickLocalized(s.body, lang) && (
-              <p className="max-w-xl text-base text-white/90">{pickLocalized(s.body, lang)}</p>
+              <p className="max-w-xl text-base text-white/90" style={tc(s.style, "bodyColor")}>{pickLocalized(s.body, lang)}</p>
             )}
             <div className={align === "center" ? "mx-auto" : ""}>
-              <CTAButton cta={s.cta} lang={lang} defaultStyle="primary" iconRight />
+              <CTAButton cta={s.cta} lang={lang} defaultStyle="primary" iconRight textStyle={tc(s.style, "ctaTextColor")} />
             </div>
           </div>
         </div>
@@ -1511,12 +1515,12 @@ function GallerySection({ settings }: { settings: GallerySettings }) {
     <section className={styleProps.className} style={styleProps.inlineStyle}>
       <div className="mx-auto max-w-[1280px] px-4 md:px-8">
         {pickLocalized(s.title, lang) && (
-          <h2 className="font-[Archivo] text-3xl font-black tracking-tight text-primary md:text-4xl">
+          <h2 className="font-[Archivo] text-3xl font-black tracking-tight text-primary md:text-4xl" style={tc(s.style, "headingColor")}>
             {pickLocalized(s.title, lang)}
           </h2>
         )}
         {pickLocalized(s.subtitle, lang) && (
-          <p className="mt-2 text-base text-muted-foreground">{pickLocalized(s.subtitle, lang)}</p>
+          <p className="mt-2 text-base text-muted-foreground" style={tc(s.style, "bodyColor")}>{pickLocalized(s.subtitle, lang)}</p>
         )}
         <div className={`mt-6 grid grid-cols-1 gap-3 md:gap-4 ${gridClass}`}>
           {images.map((img, i) => {
@@ -1553,10 +1557,10 @@ function TestimonialsSection({ settings }: { settings: TestimonialsSettings }) {
       <div className="mx-auto max-w-[1280px] px-4 md:px-8">
         <div className="text-center">
           {pickLocalized(s.eyebrow, lang) && (
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">{pickLocalized(s.eyebrow, lang)}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>{pickLocalized(s.eyebrow, lang)}</p>
           )}
           {pickLocalized(s.title, lang) && (
-            <h2 className="mt-2 font-[Archivo] text-3xl font-black tracking-tight text-primary md:text-4xl">
+            <h2 className="mt-2 font-[Archivo] text-3xl font-black tracking-tight text-primary md:text-4xl" style={tc(s.style, "headingColor")}>
               {pickLocalized(s.title, lang)}
             </h2>
           )}
@@ -1570,12 +1574,12 @@ function TestimonialsSection({ settings }: { settings: TestimonialsSettings }) {
                 {rating > 0 && (
                   <div className="mb-3 text-accent">{"★".repeat(rating)}{"☆".repeat(5 - rating)}</div>
                 )}
-                <blockquote className="text-base leading-relaxed text-foreground">“{quote}”</blockquote>
+                <blockquote className="text-base leading-relaxed text-foreground" style={tc(s.style, "bodyColor")}>“{quote}”</blockquote>
                 <figcaption className="mt-4 flex items-center gap-3">
                   {it.avatar && <img src={it.avatar} alt="" className="h-9 w-9 rounded-full object-cover" />}
                   <div>
-                    <div className="text-sm font-semibold text-primary">{it.author}</div>
-                    {it.role && <div className="text-xs text-muted-foreground">{it.role}</div>}
+                    <div className="text-sm font-semibold text-primary" style={tc(s.style, "headingColor")}>{it.author}</div>
+                    {it.role && <div className="text-xs text-muted-foreground" style={tc(s.style, "bodyColor")}>{it.role}</div>}
                   </div>
                 </figcaption>
               </figure>
@@ -1617,12 +1621,12 @@ function AnnouncementBarSection({ settings }: { settings: AnnouncementBarSetting
       className="w-full px-4 py-2 text-center text-xs font-medium md:text-sm"
       style={{
         backgroundColor: s.bgColor ?? s.style?.bgColor ?? "#1a3a2e",
-        color: s.textColor ?? s.style?.textColor ?? "#ffffff",
+        color: s.style?.bodyColor ?? s.textColor ?? s.style?.textColor ?? "#ffffff",
       }}
     >
       <Typewriter text={msg} />
       {linkLabel && s.href && (
-        <a href={s.href} className="ml-2 underline underline-offset-2 hover:opacity-80">
+        <a href={s.href} className="ml-2 underline underline-offset-2 hover:opacity-80" style={tc(s.style, "ctaTextColor")}>
           {linkLabel}
         </a>
       )}

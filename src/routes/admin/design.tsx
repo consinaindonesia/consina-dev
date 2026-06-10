@@ -1001,6 +1001,23 @@ function HeaderPanel({
           Solid color shown behind the nav. Leave empty to use the theme background.
         </p>
       </div>
+      <div>
+        <Label className="text-xs">Link color</Label>
+        <div className="mt-1 flex items-center gap-2">
+          <input
+            type="color"
+            value={/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(h.linkColor) ? h.linkColor : "#000000"}
+            onChange={(e) => set("linkColor", e.target.value)}
+            className="h-8 w-10 cursor-pointer rounded border border-input bg-transparent"
+          />
+          <Input
+            placeholder="(default)"
+            value={h.linkColor}
+            onChange={(e) => set("linkColor", e.target.value)}
+          />
+        </div>
+        <p className="mt-1 text-xs text-muted-foreground">Color for the main nav links. Empty = theme default.</p>
+      </div>
       {([
         ["showSinceTag", "Show 'Since 1999' tag"],
         ["showSearch", "Show search icon"],
@@ -1065,16 +1082,26 @@ function FooterPanel({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        <div>
-          <Label className="text-xs">Background color</Label>
-          <Input placeholder="(default)" value={f.bgColor} onChange={(e) => setField({ bgColor: e.target.value })} />
+      {([
+        ["bgColor", "Background color", "(default)"],
+        ["textColor", "Text color", "(default)"],
+        ["taglineColor", "Tagline color", "(default — accent)"],
+        ["headingColor", "Column heading color", "(default — accent)"],
+        ["linkColor", "Link color", "(default — inherits text)"],
+      ] as const).map(([key, label, placeholder]) => (
+        <div key={key}>
+          <Label className="text-xs">{label}</Label>
+          <div className="mt-1 flex items-center gap-2">
+            <input
+              type="color"
+              value={/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(f[key]) ? f[key] : "#000000"}
+              onChange={(e) => setField({ [key]: e.target.value } as Partial<typeof f>)}
+              className="h-8 w-10 cursor-pointer rounded border border-input bg-transparent"
+            />
+            <Input placeholder={placeholder} value={f[key]} onChange={(e) => setField({ [key]: e.target.value } as Partial<typeof f>)} />
+          </div>
         </div>
-        <div>
-          <Label className="text-xs">Text color</Label>
-          <Input placeholder="(default)" value={f.textColor} onChange={(e) => setField({ textColor: e.target.value })} />
-        </div>
-      </div>
+      ))}
 
       <div className="space-y-3 rounded-md border border-dashed border-border bg-muted/30 p-3">
         <Label className="text-xs uppercase tracking-wide text-muted-foreground">Footer logos</Label>

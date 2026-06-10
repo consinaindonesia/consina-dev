@@ -428,11 +428,11 @@ function BrandStory({ settings }: { settings: BrandStorySettings }) {
         {/* RIGHT COLUMN — Text */}
         <div className="order-2" ref={textWrapRef}>
           {pickLocalized(s.eyebrow, lang) && (
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>
               {pickLocalized(s.eyebrow, lang)}
             </p>
           )}
-          <h2 className="mt-4 font-[Archivo] text-4xl font-black leading-[1.05] tracking-tight text-primary md:text-5xl">
+          <h2 className="mt-4 font-[Archivo] text-4xl font-black leading-[1.05] tracking-tight text-primary md:text-5xl" style={tc(s.style, "headingColor")}>
             {pickLocalized(s.heading, lang)}
           </h2>
 
@@ -440,7 +440,7 @@ function BrandStory({ settings }: { settings: BrandStorySettings }) {
             {/* Constrained width for comfortable reading */}
             <div className="max-w-prose">
               {/* Always-visible first paragraph */}
-              <p className="text-base leading-[1.75] text-foreground/80 md:text-lg">
+              <p className="text-base leading-[1.75] text-foreground/80 md:text-lg" style={tc(s.style, "bodyColor")}>
                 {paragraphs[0] ?? ""}
               </p>
 
@@ -450,7 +450,7 @@ function BrandStory({ settings }: { settings: BrandStorySettings }) {
                 style={{ gridTemplateRows: expanded ? "1fr" : "0fr" }}
               >
                 <div className="min-h-0 overflow-hidden">
-                  <div className="mt-5 space-y-5 text-base leading-[1.75] text-foreground/80 md:text-lg">
+                  <div className="mt-5 space-y-5 text-base leading-[1.75] text-foreground/80 md:text-lg" style={tc(s.style, "bodyColor")}>
                     {paragraphs.slice(1).map((p, i) => (
                       <p key={i}>{p}</p>
                     ))}
@@ -493,6 +493,7 @@ function BrandStory({ settings }: { settings: BrandStorySettings }) {
             <a
               href={s.cta.href || "/"}
               className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-secondary"
+              style={tc(s.style, "ctaTextColor")}
             >
               {pickLocalized({ id: s.cta.labelId, en: s.cta.labelEn }, lang)}{" "}
               <span className="text-base">→</span>

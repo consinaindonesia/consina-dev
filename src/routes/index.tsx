@@ -1556,10 +1556,10 @@ function TestimonialsSection({ settings }: { settings: TestimonialsSettings }) {
       <div className="mx-auto max-w-[1280px] px-4 md:px-8">
         <div className="text-center">
           {pickLocalized(s.eyebrow, lang) && (
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">{pickLocalized(s.eyebrow, lang)}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>{pickLocalized(s.eyebrow, lang)}</p>
           )}
           {pickLocalized(s.title, lang) && (
-            <h2 className="mt-2 font-[Archivo] text-3xl font-black tracking-tight text-primary md:text-4xl">
+            <h2 className="mt-2 font-[Archivo] text-3xl font-black tracking-tight text-primary md:text-4xl" style={tc(s.style, "headingColor")}>
               {pickLocalized(s.title, lang)}
             </h2>
           )}
@@ -1573,12 +1573,12 @@ function TestimonialsSection({ settings }: { settings: TestimonialsSettings }) {
                 {rating > 0 && (
                   <div className="mb-3 text-accent">{"★".repeat(rating)}{"☆".repeat(5 - rating)}</div>
                 )}
-                <blockquote className="text-base leading-relaxed text-foreground">“{quote}”</blockquote>
+                <blockquote className="text-base leading-relaxed text-foreground" style={tc(s.style, "bodyColor")}>“{quote}”</blockquote>
                 <figcaption className="mt-4 flex items-center gap-3">
                   {it.avatar && <img src={it.avatar} alt="" className="h-9 w-9 rounded-full object-cover" />}
                   <div>
-                    <div className="text-sm font-semibold text-primary">{it.author}</div>
-                    {it.role && <div className="text-xs text-muted-foreground">{it.role}</div>}
+                    <div className="text-sm font-semibold text-primary" style={tc(s.style, "headingColor")}>{it.author}</div>
+                    {it.role && <div className="text-xs text-muted-foreground" style={tc(s.style, "bodyColor")}>{it.role}</div>}
                   </div>
                 </figcaption>
               </figure>

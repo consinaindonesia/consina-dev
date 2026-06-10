@@ -4,23 +4,13 @@ import { getRequest } from '@tanstack/react-start/server'
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from './types'
 
-const TARGET_SUPABASE_REF = "dbgxaffgujugnqyoyuic";
 
-function projectRefFromUrl(url: string): string | null {
-  try {
-    const hostname = new URL(url).hostname;
-    return hostname.endsWith(".supabase.co") ? hostname.split(".")[0] : null;
-  } catch {
-    return null;
-  }
-}
 
 export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server(
   async ({ next }) => {
     
     const SUPABASE_URL = process.env.SUPABASE_URL;
-    const SUPABASE_PUBLISHABLE_KEY =
-      process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY;
+    const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
 
     if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
       const missing = [
@@ -28,13 +18,6 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server
         ...(!SUPABASE_PUBLISHABLE_KEY ? ['SUPABASE_PUBLISHABLE_KEY'] : []),
       ];
       const message = `Missing Supabase environment variable(s): ${missing.join(', ')}. Connect Supabase in Lovable Cloud.`;
-      console.error(`[Supabase] ${message}`);
-      throw new Error(message);
-    }
-
-    const projectRef = projectRefFromUrl(SUPABASE_URL);
-    if (projectRef !== TARGET_SUPABASE_REF) {
-      const message = `Refusing to authenticate against Supabase project "${projectRef ?? "unknown"}"; expected "${TARGET_SUPABASE_REF}".`;
       console.error(`[Supabase] ${message}`);
       throw new Error(message);
     }

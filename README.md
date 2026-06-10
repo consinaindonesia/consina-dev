@@ -20,18 +20,6 @@ npm run dev
 
 The app is developed and previewed on [Lovable](https://lovable.dev). The `vercel.json` and `api/server.mjs` files are Vercel-only deployment infrastructure and have no effect on the Lovable or local dev experience.
 
-### Supabase project sanity check
-
-This repo is wired to Supabase project `dbgxaffgujugnqyoyuic`.
-
-Before running migrations, deploying, or debugging database-backed features from a new environment, verify the local env matches `supabase/config.toml`:
-
-```bash
-npm run check:supabase
-```
-
-If this check fails, stop before deploying and make sure `.env`, Lovable secrets, Vercel environment variables, and `supabase/config.toml` all point to `dbgxaffgujugnqyoyuic`.
-
 ## Deployment (Vercel)
 
 The app uses TanStack Start's SSR pipeline, not a plain SPA build. The Vercel configuration reflects this:

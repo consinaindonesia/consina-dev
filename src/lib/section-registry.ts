@@ -603,17 +603,7 @@ export function styleToProps(style: SectionStyle | undefined): {
         ? "py-12 md:py-20 lg:py-28"
         : "py-8 md:py-12 lg:py-20";
   const inlineStyle: Record<string, string> = {};
-  const bgColor = normalizeSectionColor(style?.bgColor);
-  const textColor = normalizeSectionColor(style?.textColor);
-  if (bgColor) inlineStyle.backgroundColor = bgColor;
-  if (textColor) inlineStyle.color = textColor;
+  if (style?.bgColor) inlineStyle.backgroundColor = style.bgColor;
+  if (style?.textColor) inlineStyle.color = style.textColor;
   return { className: padClass, inlineStyle };
-}
-
-export function normalizeSectionColor(value: unknown): string | undefined {
-  if (typeof value !== "string") return undefined;
-  const color = value.trim();
-  if (!color || color.toLowerCase() === "default") return undefined;
-  if (/^[0-9a-f]{3}([0-9a-f]{3})?$/i.test(color)) return `#${color}`;
-  return color;
 }

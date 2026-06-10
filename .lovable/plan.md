@@ -1,76 +1,82 @@
-## What's already in place (do not rebuild)
+# Make every section fully editable + add text-alignment control
 
-- `categories.parent_category_id` FK + index + self-FK already exist.
-- Admin `/admin/categories` already has a full drag-and-drop tree (dnd-kit) with parent selection and depth.
-- `usePublicCategories()` already returns a nested tree.
-- CSV importer (`CsvImportWizard`) and admin importer entry already exist.
+## Goal
+1. Add a left / center / right alignment control on multi-line text (description/body) for every section that has one.
+2. Eliminate the hardcoded leaks found in the audit so the Design editor controls every visible element — labels, hrefs, lists, alts — across Hero, BrandStory, Categories, Featured, Community, Stores, FAQ, Contact, Newsletter, Header (Nav), Footer, and Custom. Seed every new field with current values so the storefront looks identical until edited.
 
-So the actual gaps are: many-to-many, dynamic nested nav rendering, hierarchical breadcrumbs, and importer support for category paths and Activity tags.
+## 1. Text alignment control (shared)
 
----
+- Add `bodyAlign?: "left" | "center" | "right"` to `SectionStyle` in `src/lib/section-registry.ts` (so it lives on every section automatically).
+- In `StyleEditor` (`src/components/admin/SectionSettingsEditor.tsx`) add a 3-way toggle (L/C/R) shown only when the section type has a body/description field.
+- In `src/routes/index.tsx`, add a helper `ta(style)` that returns `{ textAlign }` and apply it to the description `<p>` (and paragraph wrappers) of: Hero subtitle, BrandStory body, Community body, Categories subtitle, Featured subtitle, StoreLocator subtitle, FAQ/FAQCustom subtitle, Newsletter body, ImageBanner body, Testimonials subtitle, Contact subtitle, Custom body, AnnouncementBar message.
 
-## 1. Database: product↔category many-to-many (new)
+## 2. Per-section gaps to wire up
 
-New table `public.product_categories`:
-- `product_id uuid` → `products(id) ON DELETE CASCADE`
-- `category_id uuid` → `categories(id) ON DELETE CASCADE`
-- `is_primary boolean default false`
-- PK `(product_id, category_id)`, index on `category_id`.
-- GRANTs: `SELECT` to anon+authenticated; `INSERT/UPDATE/DELETE` to authenticated (gated by RLS); `ALL` to service_role.
-- RLS: public can read rows whose product is `is_active=true`; staff (admin/editor via existing `is_admin_or_editor()`) can manage.
+### Hero
+- Add `imageAlt?: Localized` → image alt input in HeroEditor.
 
-Keep the existing `products.category_id` column untouched as the "primary" category — fully backward-compatible with current code, cart, checkout, product cards, and category pages. The new table only adds extra category memberships.
+### BrandStory
+- Add `imageAlt?: Localized`, `expandLabel?: Localized`, `collapseLabel?: Localized` (seeded "Lebih Detail" / "Lebih Sedikit" / EN equivalents).
+- Editor: image-alt + expand/collapse label inputs.
 
-Backfill: insert one `(product_id, products.category_id, is_primary=true)` row per existing product so listing-by-category through the join works immediately for current data.
+### Categories
+- Add `viewAllCta?: CTAConfig` (seeded label "Lihat semua" / "View all", href `/catalog`).
+- Extend `categoryImages[slug]` entry with optional `descriptionId/descriptionEn` so per-card description is editable. Editor already lists categories — add a Localized description field per card.
 
-No other tables modified.
+### FeaturedProducts
+- Add `viewAllCta?: CTAConfig` (optional, no default href so nothing renders unless set).
 
-## 2. Admin Categories page
+### Community
+- Add `imageAlt?: Localized`.
 
-No structural change — keep the existing tree + drag-drop UI exactly as is. Only verify it still works after the migration (it doesn't touch the new join table).
+### StoreLocator
+- Keep existing list editor. No new fields needed (already covered).
 
-## 3. Admin Product editor
+### FAQ / FAQ-custom
+- Already covered; the in-file `faqs` constant is only a default — leave defaults but they're already overridable.
 
-Add one section to `ProductForm.tsx` "Basic info" tab: **Additional categories** (multi-select chips), separate from the existing single "Primary category" dropdown. Stores extra rows in `product_categories`. On save:
-- Upsert primary `(product_id, primary_category_id, is_primary=true)`.
-- Diff additional categories against existing non-primary rows and insert/delete.
+### Contact
+- Add `subjects?: { labelId: string; labelEn: string; value: string }[]` (seeded with the 5 current i18n subject options). Editor: add/remove/reorder list. Renderer: build the `<select>` from this list.
 
-This is additive — the existing primary category field stays as-is.
+### Newsletter
+- Add `errorMessage?: Localized` (seeded "Email tidak valid" / "Invalid email").
+- Editor: localized text field.
 
-## 4. Public site: nested rendering
+### Custom / ImageBanner / Gallery / Testimonials / Spacer / AnnouncementBar / Stats
+- Already fully editor-covered. Only gain the new `bodyAlign` from step 1.
 
-- **Nav "Belanja" dropdown** (`src/components/site/Nav.tsx`): render the tree from `usePublicCategories()` as a 2-level mega-list (parent column with child links underneath). Mobile menu: render parent + indented children.
-- **Breadcrumbs**: add a helper `getCategoryAncestors(slug)` in `lib/public-products.ts`; product detail and category pages prepend the ancestor chain (Home › Apparel › Jaket › Softshell › Product).
-- **Category pages** (`/c/$slug`): when the category has children, also include products from descendant categories via the new `product_categories` join (`category_id in (cat + descendants)`). Today it filters by `products.category_id` only — switch to the join and dedupe.
+### Header (Nav) — `src/components/site/Nav.tsx` + HeaderSettings in `theme-defaults.ts`
+- Add `navLinks?: { labelId: string; labelEn: string; href: string }[]` (seeded with current 3 mainLinks: Shop/Catalog → `/catalog`, Stores → `/stores`, Story → `/`).
+- HeaderPanel editor: add/edit/remove/reorder list with label (ID+EN) + href.
+- Renderer: if `navLinks` exists, render that list; otherwise current default.
+- Localize the mobile-menu strings ("Wishlist", "Akun Saya", "Masuk / Daftar") via i18n keys (already in JSON) instead of new editor fields — these are UI chrome.
 
-Visuals unchanged — only data source/structure updates within existing markup.
+### Footer — `src/components/site/Footer.tsx` + FooterSettings
+- Add `columns?: { titleId: string; titleEn: string; items: { labelId: string; labelEn: string; href: string }[] }[]` (seeded with the current Company + Support columns and their items).
+- Add `legalLinks?: { labelId: string; labelEn: string; href: string }[]` (seeded with Privacy / Terms / Cookies → current targets).
+- FooterPanel editor: add/edit/remove/reorder for both lists, with optional href.
+- Renderer: build columns + legal row from settings; fall back to seeded defaults when fields are undefined (the "no row" case).
 
-## 5. Activity tags
+## 3. SEO & structured-data (out-of-scope marker)
+Leaving page-level `<head>` meta + Organization JSON-LD as-is for this task — the user's brief is the Design editor's section/header/footer content. Will mention as a follow-up rather than expanding scope.
 
-Treat activities as a top-level "Activities" parent category with children: Hiking, Running, Urban, Camping, Travelling. Created via one-time seed migration (idempotent `ON CONFLICT (slug) DO NOTHING`). Products attach via the same `product_categories` table — no separate "tags" concept needed.
+## 4. Verification
+- Type-check passes.
+- For each touched section, manually trace: editor change → `onChange` writes to `settings` → renderer reads the same key → `&&`-guarded so cleared fields render empty per the previous fix.
 
-## 6. CSV importer additions
+## Files to edit
+- `src/lib/section-registry.ts` (new fields on Style, Hero, BrandStory, Categories, Featured, Community, Contact, Newsletter; defaults updated)
+- `src/lib/theme-defaults.ts` (HeaderSettings.navLinks, FooterSettings.columns + legalLinks defaults)
+- `src/components/admin/SectionSettingsEditor.tsx` (new inputs across editors + shared bodyAlign toggle in StyleEditor)
+- `src/routes/admin/design.tsx` (HeaderPanel navLinks list, FooterPanel columns + legal list)
+- `src/routes/index.tsx` (apply alignment helper, render new fields, alt texts, Contact subjects, view-all CTAs)
+- `src/components/site/Nav.tsx` (use HeaderSettings.navLinks when present)
+- `src/components/site/Footer.tsx` (use FooterSettings.columns + legalLinks when present)
 
-Extend `CsvImportWizard.tsx`:
-- New column `category_path` accepts `Apparel > Jaket > Softshell` (or `|`-separated multiple paths for cross-listing, e.g. `Apparel > Jaket > Softshell | Activities > Hiking`).
-- Resolver walks/creates the path top-down (creates missing nodes with slugified names, `is_active=true`, appended `sort_order`).
-- First path becomes `products.category_id` (primary); all paths inserted into `product_categories`.
-- Slugs: if `slug` cell empty, derive from `name_en`/`name_id` and ensure uniqueness by appending `-2`, `-3`, … on conflict.
-- Per-row validation errors collected into the existing error report panel; valid rows still imported.
+## Out of scope (explicitly preserved)
+Section engine architecture, SSR data path, page-level SEO head, Organization JSON-LD, theme system, products, checkout, accounts.
 
-Other CSV fields (name, SKU, price, sale_price, stock, image URLs, description, SEO) already supported — only category resolution and slug auto-generation are added.
-
-## 7. Out of scope (explicit)
-
-Cart, checkout, Midtrans, color variants, size variants, pricing/discount logic, product cards, category carousel, and the admin shell remain untouched. PriceDisplay, ProductDetail layout, and admin Categories tree UI are not restyled.
-
-## Technical details
-
-- New migration file timestamps after latest. Includes `CREATE TABLE`, GRANTs, RLS, policies, backfill, and Activities seed in one file.
-- New TS types regenerated in `src/integrations/supabase/types.ts` after migration approval.
-- `lib/public-products.ts`: add `fetchCategoryDescendants(slug)` (recursive CTE via `rpc` or client-side walk over the cached tree) and update `fetchProductsByCategory` to use the join + descendants.
-- `Nav.tsx`: replace flat `categories.map` with a small `<CategoryTree>` renderer (only inside the dropdown).
-- `ProductForm.tsx`: add a `MultiSelect`-style chip input that reuses existing flattened category list with `Parent > Child` labels.
-- `CsvImportWizard.tsx`: add a `resolveCategoryPath(path)` helper and a unique-slug helper; otherwise no UI changes.
-
-After the migration runs, code wiring lands in one pass and I verify: (a) existing products still list under their category page, (b) a product can be added to a second category and shows in both, (c) Belanja dropdown shows nested children, (d) breadcrumbs include ancestors, (e) CSV import with `category_path` creates missing parents and routes products correctly.
+## Question for you
+Two small judgement calls — defaults if you don't reply:
+1. **Footer column link defaults**: the current links all point to `/`. Keep that as the seeded default (so existing visuals remain identical and you fill them in)? **Default: yes.**
+2. **Nav "Story" link** currently points to `/` (no story page). Keep `/` as the seeded default for that nav item? **Default: yes.**

@@ -1094,7 +1094,7 @@ function StoreLocator({ settings }: { settings: StoreLocatorSettings }) {
             {heading}
           </h2>
           {subtitle && (
-            <p className="mt-3 max-w-md text-base leading-relaxed text-muted-foreground" style={tc(s.style, "bodyColor")}>{subtitle}</p>
+            <p className="mt-3 max-w-md text-base leading-relaxed text-muted-foreground" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{subtitle}</p>
           )}
           {ctaLabel && (
             <a

@@ -56,7 +56,9 @@ import {
   DEFAULT_FOOTER,
   FONT_OPTIONS,
   mergeTheme,
+  fontFormatFromUrl,
   type ThemeSettings,
+  type CustomFont,
 } from "@/lib/theme-defaults";
 
 export const Route = createFileRoute("/admin/design")({
@@ -689,11 +691,17 @@ function ThemePanel({
           label="Heading"
           value={theme.fonts.heading}
           onChange={(v) => set("fonts", "heading", v)}
+          customFonts={theme.customFonts}
         />
         <FontRow
           label="Body"
           value={theme.fonts.body}
           onChange={(v) => set("fonts", "body", v)}
+          customFonts={theme.customFonts}
+        />
+        <CustomFontsManager
+          fonts={theme.customFonts}
+          onChange={(next) => onChange({ ...theme, customFonts: next })}
         />
       </div>
 
@@ -740,10 +748,12 @@ function FontRow({
   label,
   value,
   onChange,
+  customFonts,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
+  customFonts?: CustomFont[];
 }) {
   return (
     <div>
@@ -753,15 +763,159 @@ function FontRow({
         onChange={(e) => onChange(e.target.value)}
         className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
       >
-        {FONT_OPTIONS.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
+        <optgroup label="Curated">
+          {FONT_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </optgroup>
+        {customFonts && customFonts.length > 0 && (
+          <optgroup label="Custom">
+            {customFonts.map((f) => (
+              <option key={f.id} value={f.name}>
+                {f.name}
+              </option>
+            ))}
+          </optgroup>
+        )}
       </select>
       <span className="mt-1 block text-xs text-muted-foreground" style={{ fontFamily: value }}>
         The quick brown fox jumps over the lazy dog.
       </span>
+    </div>
+  );
+}
+
+function CustomFontsManager({
+  fonts,
+  onChange,
+}: {
+  fonts: CustomFont[];
+  onChange: (next: CustomFont[]) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [name, setName] = useState("");
+
+  const handleFile = async (file: File) => {
+    const family = name.trim() || file.name.replace(/\.[^.]+$/, "");
+    if (!family) {
+      toast.error("Give the font a name first");
+      return;
+    }
+    if (fonts.some((f) => f.name.toLowerCase() === family.toLowerCase())) {
+      toast.error("A custom font with that name already exists");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Font file must be under 5MB");
+      return;
+    }
+    const ext = (file.name.split(".").pop() || "").toLowerCase();
+    if (!["woff2", "woff", "ttf", "otf"].includes(ext)) {
+      toast.error("Use woff2, woff, ttf, or otf");
+      return;
+    }
+    setUploading(true);
+    const path = `site/fonts/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const contentType =
+      ext === "woff2"
+        ? "font/woff2"
+        : ext === "woff"
+          ? "font/woff"
+          : ext === "otf"
+            ? "font/otf"
+            : "font/ttf";
+    const { error } = await supabase.storage
+      .from("category-images")
+      .upload(path, file, { cacheControl: "31536000", upsert: false, contentType });
+    if (error) {
+      setUploading(false);
+      toast.error(error.message || "Upload failed");
+      return;
+    }
+    const { data } = supabase.storage.from("category-images").getPublicUrl(path);
+    const next: CustomFont = {
+      id: crypto.randomUUID(),
+      name: family,
+      url: data.publicUrl,
+      format: fontFormatFromUrl(data.publicUrl),
+    };
+    onChange([...fonts, next]);
+    setName("");
+    setUploading(false);
+    toast.success(`Uploaded "${family}"`);
+  };
+
+  return (
+    <div className="space-y-2 rounded-md border border-dashed border-border bg-muted/30 p-3">
+      <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+        Custom fonts
+      </Label>
+      <p className="text-xs text-muted-foreground">
+        Upload your own font file (woff2 recommended). It becomes selectable above and is
+        preloaded server-side for first paint. A safe system font is used as fallback.
+      </p>
+      <div className="flex gap-2">
+        <Input
+          placeholder="Font name (e.g. Acme Sans)"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="h-8 text-xs"
+        />
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          disabled={uploading}
+          onClick={() => inputRef.current?.click()}
+        >
+          {uploading ? (
+            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Upload className="mr-1.5 h-3.5 w-3.5" />
+          )}
+          Upload
+        </Button>
+      </div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept=".woff2,.woff,.ttf,.otf,font/woff2,font/woff,font/ttf,font/otf"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) void handleFile(f);
+          e.target.value = "";
+        }}
+      />
+      {fonts.length > 0 && (
+        <ul className="space-y-1">
+          {fonts.map((f) => (
+            <li
+              key={f.id}
+              className="flex items-center justify-between gap-2 rounded border border-border bg-card px-2 py-1.5 text-xs"
+            >
+              <span style={{ fontFamily: `"${f.name}", system-ui` }} className="truncate">
+                {f.name}{" "}
+                <span className="text-muted-foreground">· {f.format}</span>
+              </span>
+              <button
+                type="button"
+                className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-destructive"
+                onClick={() => {
+                  if (!confirm(`Remove font "${f.name}"?`)) return;
+                  onChange(fonts.filter((x) => x.id !== f.id));
+                }}
+                title="Remove"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

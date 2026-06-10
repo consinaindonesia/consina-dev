@@ -12,8 +12,16 @@ export type ThemeSettings = {
     heading: string;
     body: string;
   };
+  customFonts: CustomFont[];
   header: HeaderSettings;
   footer: FooterSettings;
+};
+
+export type CustomFont = {
+  id: string;
+  name: string;     // family name used in CSS (also the value selectable in dropdown)
+  url: string;      // public URL of the font file
+  format: "woff2" | "woff" | "truetype" | "opentype";
 };
 
 export type HeaderSettings = {
@@ -70,6 +78,7 @@ export const DEFAULT_THEME: ThemeSettings = {
     heading: "Archivo",
     body: "Inter",
   },
+  customFonts: [],
   header: DEFAULT_HEADER,
   footer: DEFAULT_FOOTER,
 };
@@ -87,7 +96,9 @@ export const FONT_OPTIONS: { value: string; label: string; googleFamily: string 
 
 export function googleFontHref(theme: ThemeSettings): string {
   const wanted = new Set<string>();
+  const customNames = new Set((theme.customFonts ?? []).map((f) => f.name));
   for (const family of [theme.fonts.heading, theme.fonts.body]) {
+    if (customNames.has(family)) continue;
     const opt = FONT_OPTIONS.find((o) => o.value === family);
     if (opt) wanted.add(opt.googleFamily);
   }
@@ -100,9 +111,16 @@ export function googleFontHref(theme: ThemeSettings): string {
 // Merge any partial settings stored in DB into the defaults.
 export function mergeTheme(partial: unknown): ThemeSettings {
   const p = (partial ?? {}) as Partial<ThemeSettings>;
+  const rawCustom = (p as { customFonts?: unknown }).customFonts;
+  const customFonts: CustomFont[] = Array.isArray(rawCustom)
+    ? (rawCustom as CustomFont[]).filter(
+        (f) => f && typeof f.name === "string" && typeof f.url === "string",
+      )
+    : [];
   return {
     colors: { ...DEFAULT_THEME.colors, ...(p.colors ?? {}) },
     fonts: { ...DEFAULT_THEME.fonts, ...(p.fonts ?? {}) },
+    customFonts,
     header: { ...DEFAULT_HEADER, ...((p as { header?: Partial<HeaderSettings> }).header ?? {}) },
     footer: {
       ...DEFAULT_FOOTER,
@@ -116,7 +134,28 @@ export function mergeTheme(partial: unknown): ThemeSettings {
 
 export function themeToCss(theme: ThemeSettings): string {
   const c = theme.colors;
-  return `:root{--background:${c.background};--foreground:${c.foreground};--primary:${c.primary};--ring:${c.primary};--accent:${c.accent};}
+  const faces = (theme.customFonts ?? [])
+    .map(
+      (f) =>
+        `@font-face{font-family:"${escapeCss(f.name)}";src:url("${escapeCssUrl(f.url)}") format("${f.format}");font-display:swap;font-weight:100 900;font-style:normal;}`,
+    )
+    .join("");
+  return `${faces}:root{--background:${c.background};--foreground:${c.foreground};--primary:${c.primary};--ring:${c.primary};--accent:${c.accent};}
 body{font-family:"${theme.fonts.body}",ui-sans-serif,system-ui,sans-serif;}
 h1,h2,h3,h4{font-family:"${theme.fonts.heading}","${theme.fonts.body}",ui-sans-serif,system-ui,sans-serif;}`;
+}
+
+function escapeCss(s: string): string {
+  return s.replace(/["\\]/g, "\\$&");
+}
+function escapeCssUrl(s: string): string {
+  return s.replace(/["\\)]/g, encodeURIComponent);
+}
+
+export function fontFormatFromUrl(url: string): CustomFont["format"] {
+  const ext = (url.split("?")[0].split(".").pop() || "").toLowerCase();
+  if (ext === "woff2") return "woff2";
+  if (ext === "woff") return "woff";
+  if (ext === "otf") return "opentype";
+  return "truetype";
 }

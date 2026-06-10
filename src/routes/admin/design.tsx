@@ -59,6 +59,8 @@ import {
   fontFormatFromUrl,
   type ThemeSettings,
   type CustomFont,
+  type NavLink,
+  type FooterColumn,
 } from "@/lib/theme-defaults";
 
 export const Route = createFileRoute("/admin/design")({

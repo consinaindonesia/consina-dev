@@ -62,6 +62,20 @@ function tc(
   return v ? { color: v } : undefined;
 }
 
+/* Body-text picker that distinguishes "never set" (undefined → fall back to
+ * the other language) from "explicitly cleared" (string "" → render empty). */
+function pickBody(
+  bodyId: string | undefined,
+  bodyEn: string | undefined,
+  lang: string,
+): string {
+  const primary = lang === "en" ? bodyEn : bodyId;
+  if (typeof primary === "string") return primary;
+  const other = lang === "en" ? bodyId : bodyEn;
+  if (typeof other === "string") return other;
+  return "";
+}
+
 const faqs = [
   {
     q: "What does Consina sell?",

@@ -314,9 +314,9 @@ function Hero({ settings }: { settings: HeroSettings }) {
         style={s.style?.textColor ? { color: s.style.textColor } : undefined}
       >
         {eyebrow && (
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">{eyebrow}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>
         )}
-        <h1 className="mt-5 max-w-4xl font-[Archivo] text-5xl font-black leading-[0.95] tracking-tight text-primary-foreground md:text-7xl lg:text-[88px]">
+        <h1 className="mt-5 max-w-4xl font-[Archivo] text-5xl font-black leading-[0.95] tracking-tight text-primary-foreground md:text-7xl lg:text-[88px]" style={tc(s.style, "headingColor")}>
           {headingParts.map((part, i) =>
             i % 2 === 1 ? (
               <em key={i} className="not-italic text-accent">{part}</em>
@@ -328,13 +328,13 @@ function Hero({ settings }: { settings: HeroSettings }) {
           )}
         </h1>
         {subtitle && (
-          <p className="mt-6 max-w-xl text-base leading-relaxed text-primary-foreground/85 md:text-lg">
+          <p className="mt-6 max-w-xl text-base leading-relaxed text-primary-foreground/85 md:text-lg" style={tc(s.style, "bodyColor")}>
             {subtitle}
           </p>
         )}
         <div className="mt-10 flex flex-wrap items-center gap-4">
-          <CTAButton cta={s.ctaPrimary} lang={lang} defaultStyle="primary" iconRight />
-          <CTAButton cta={s.ctaSecondary} lang={lang} defaultStyle="outline" />
+          <CTAButton cta={s.ctaPrimary} lang={lang} defaultStyle="primary" iconRight textStyle={tc(s.style, "ctaTextColor")} />
+          <CTAButton cta={s.ctaSecondary} lang={lang} defaultStyle="outline" textStyle={tc(s.style, "ctaTextColor")} />
         </div>
         {s.stats && s.stats.length > 0 && (
           <div className="mt-16 grid max-w-2xl grid-cols-3 gap-6 border-t border-primary-foreground/20 pt-6 text-[#1a3a2e]">

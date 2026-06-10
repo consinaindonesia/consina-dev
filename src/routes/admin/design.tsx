@@ -794,7 +794,14 @@ function HeaderPanel({
       <div>
         <Label className="text-xs">Logo text</Label>
         <Input value={h.logoText} onChange={(e) => set("logoText", e.target.value)} />
+        <p className="mt-1 text-xs text-muted-foreground">Used as the alt text and as a fallback when no logo image is uploaded.</p>
       </div>
+      <LogoUploader
+        label="Header logo image"
+        helper="Recommended: transparent PNG/SVG, ~200×60px. Leave empty to show the text logo."
+        value={h.logoUrl}
+        onChange={(url) => set("logoUrl", url)}
+      />
       {([
         ["showSinceTag", "Show 'Since 1999' tag"],
         ["showSearch", "Show search icon"],

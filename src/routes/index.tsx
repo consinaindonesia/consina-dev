@@ -1451,7 +1451,7 @@ function FaqCustomSection({ settings }: { settings: FaqCustomSettings }) {
             {pickLocalized(s.title, lang)}
           </h2>
           {pickLocalized(s.subtitle, lang) && (
-            <p className="mt-3 text-base text-muted-foreground" style={tc(s.style, "bodyColor")}>{pickLocalized(s.subtitle, lang)}</p>
+            <p className="mt-3 text-base text-muted-foreground" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{pickLocalized(s.subtitle, lang)}</p>
           )}
         </div>
         <ul className="mt-8 md:mt-10 divide-y divide-border border-y border-border">
@@ -1471,7 +1471,7 @@ function FaqCustomSection({ settings }: { settings: FaqCustomSettings }) {
                   <ChevronDown className={`h-5 w-5 shrink-0 text-primary transition-transform ${isOpen ? "rotate-180" : ""}`} />
                 </button>
                 {isOpen && a && (
-                  <p className="pb-5 pr-10 text-sm leading-relaxed text-muted-foreground md:text-base" style={tc(s.style, "bodyColor")}>{a}</p>
+                  <p className="pb-5 pr-10 text-sm leading-relaxed text-muted-foreground md:text-base" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{a}</p>
                 )}
               </li>
             );

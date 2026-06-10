@@ -155,7 +155,7 @@ function ProductCard({ p, lang }: { p: PublicProduct; lang: "id" | "en" }) {
           <div className="h-full w-full bg-muted" />
         )}
         <ArrowUpRight className="absolute right-3 top-3 h-4 w-4 text-primary-foreground opacity-0 transition group-hover:opacity-100" />
-        <WishlistButton productId={p.id} className="absolute left-3 top-3" />
+        <WishlistButton productId={p.id} className="absolute right-3 top-3" />
         {!requiresChoice && (
           <button
             type="button"

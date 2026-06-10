@@ -1307,7 +1307,7 @@ function ContactSectionInner({ settings }: { settings: ContactSettings }) {
             {heading ? heading : (<>{t("home.contact.title_1")}<br />{t("home.contact.title_2")}</>)}
           </h2>
           {subtitle && (
-            <p className="mt-3 max-w-md text-base leading-relaxed text-muted-foreground" style={tc(s.style, "bodyColor")}>{subtitle}</p>
+            <p className="mt-3 max-w-md text-base leading-relaxed text-muted-foreground" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{subtitle}</p>
           )}
           <div className="mt-10 space-y-6 text-sm">
             {contacts.map((c, i) => (

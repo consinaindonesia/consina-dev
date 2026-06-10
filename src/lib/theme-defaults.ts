@@ -176,18 +176,34 @@ export function mergeTheme(partial: unknown): ThemeSettings {
         (f) => f && typeof f.name === "string" && typeof f.url === "string",
       )
     : [];
+  const partialHeader = (p as { header?: Partial<HeaderSettings> }).header ?? {};
+  const partialFooter = (p as { footer?: Partial<FooterSettings> }).footer ?? {};
+  const header: HeaderSettings = {
+    ...DEFAULT_HEADER,
+    ...partialHeader,
+    navLinks: Array.isArray(partialHeader.navLinks)
+      ? (partialHeader.navLinks as NavLink[])
+      : DEFAULT_HEADER.navLinks,
+  };
+  const footer: FooterSettings = {
+    ...DEFAULT_FOOTER,
+    ...partialFooter,
+    tagline: { ...DEFAULT_FOOTER.tagline, ...(partialFooter.tagline ?? {}) },
+    blurb: { ...DEFAULT_FOOTER.blurb, ...(partialFooter.blurb ?? {}) },
+    socials: { ...DEFAULT_FOOTER.socials, ...(partialFooter.socials ?? {}) },
+    columns: Array.isArray(partialFooter.columns)
+      ? (partialFooter.columns as FooterColumn[])
+      : DEFAULT_FOOTER.columns,
+    legalLinks: Array.isArray(partialFooter.legalLinks)
+      ? (partialFooter.legalLinks as NavLink[])
+      : DEFAULT_FOOTER.legalLinks,
+  };
   return {
     colors: { ...DEFAULT_THEME.colors, ...(p.colors ?? {}) },
     fonts: { ...DEFAULT_THEME.fonts, ...(p.fonts ?? {}) },
     customFonts,
-    header: { ...DEFAULT_HEADER, ...((p as { header?: Partial<HeaderSettings> }).header ?? {}) },
-    footer: {
-      ...DEFAULT_FOOTER,
-      ...((p as { footer?: Partial<FooterSettings> }).footer ?? {}),
-      tagline: { ...DEFAULT_FOOTER.tagline, ...(((p as { footer?: Partial<FooterSettings> }).footer?.tagline) ?? {}) },
-      blurb: { ...DEFAULT_FOOTER.blurb, ...(((p as { footer?: Partial<FooterSettings> }).footer?.blurb) ?? {}) },
-      socials: { ...DEFAULT_FOOTER.socials, ...(((p as { footer?: Partial<FooterSettings> }).footer?.socials) ?? {}) },
-    },
+    header,
+    footer,
   };
 }
 

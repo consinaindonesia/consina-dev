@@ -565,6 +565,7 @@ function CategoriesEditor({
 
   return (
     <div className="space-y-4">
+      <LocalizedField label="Eyebrow" value={value.eyebrow} onChange={(v) => onChange({ ...value, eyebrow: v })} />
       <LocalizedField label="Title" value={value.title} onChange={(v) => onChange({ ...value, title: v })} />
       <LocalizedField label="Subtitle" value={value.subtitle} onChange={(v) => onChange({ ...value, subtitle: v })} />
       <div>

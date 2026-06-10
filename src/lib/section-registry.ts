@@ -63,6 +63,7 @@ export type CategoriesSettings = {
   style?: SectionStyle;
   title?: Localized;
   subtitle?: Localized;
+  eyebrow?: Localized;
   categorySlugs?: string[]; // ordered; empty => auto from DB
 };
 
@@ -225,9 +226,9 @@ export const SECTION_REGISTRY: Record<SectionTypeId, SectionDefinition> = {
   categories: { id: "categories", label: "Shop by Category", description: "Horizontal carousel of product categories." },
   featured_products: { id: "featured_products", label: "Bestsellers", description: "Featured products carousel." },
   community: { id: "community", label: "Community", description: "Image + text block." },
-  store_locator: { id: "store_locator", label: "Store Locator", description: "Find a Consina store across Indonesia." },
+  store_locator: { id: "store_locator", label: "Stores (Toko)", description: "Find a Consina store across Indonesia." },
   faq: { id: "faq", label: "FAQ", description: "Frequently asked questions accordion." },
-  contact: { id: "contact", label: "Contact", description: "Contact form and details." },
+  contact: { id: "contact", label: "Contact (Hubungi Kami)", description: "Contact form and details." },
   stats: { id: "stats", label: "Stats", description: "A row of number + label pairs." },
   faq_custom: { id: "faq_custom", label: "FAQ (custom)", description: "Reusable FAQ block with your own Q&A pairs." },
   newsletter: { id: "newsletter", label: "Newsletter Signup", description: "Collect emails to your subscriber list." },
@@ -296,6 +297,7 @@ export const DEFAULT_CATEGORIES: CategoriesSettings = {
   style: { padding: "M" },
   title: { id: "Belanja per Kategori", en: "Shop by Category" },
   subtitle: { id: "Dibuat untuk setiap petualangan, dibuat di Indonesia", en: "Built for every adventure, made in Indonesia" },
+  eyebrow: { id: "Koleksi", en: "Collections" },
   categorySlugs: [],
 };
 

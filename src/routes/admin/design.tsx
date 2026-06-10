@@ -129,7 +129,33 @@ function DesignEditor() {
         .select("id,page,section_type,position,enabled,settings");
       setSections((inserted ?? []) as PageSectionRow[]);
     } else {
-      setSections(secs as PageSectionRow[]);
+      // Backfill any missing default sections (e.g. store_locator / contact
+      // on legacy installs) so every editable section is reachable.
+      const existing = new Set((secs as PageSectionRow[]).map((r) => r.section_type));
+      const missing = DEFAULT_HOME_SECTIONS.filter((t) => !existing.has(t));
+      if (missing.length > 0) {
+        const maxPos = (secs as PageSectionRow[]).reduce(
+          (m, r) => Math.max(m, r.position ?? 0),
+          -1,
+        );
+        const addRows = missing.map((type, i) => ({
+          page: PAGE,
+          section_type: type,
+          position: maxPos + 1 + i,
+          enabled: true,
+          settings: getDefaultSettings(type) as never,
+        }));
+        const { data: inserted } = await supabase
+          .from("page_sections")
+          .insert(addRows)
+          .select("id,page,section_type,position,enabled,settings");
+        setSections([
+          ...(secs as PageSectionRow[]),
+          ...((inserted ?? []) as PageSectionRow[]),
+        ]);
+      } else {
+        setSections(secs as PageSectionRow[]);
+      }
     }
     setTheme(mergeTheme(th?.settings));
     setLoading(false);

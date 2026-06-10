@@ -1034,17 +1034,18 @@ function StoreLocator({ settings }: { settings: StoreLocatorSettings }) {
     >
       <div className="grid gap-12 lg:grid-cols-12">
         <div className="lg:col-span-5">
-          {eyebrow && <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">{eyebrow}</p>}
-          <h2 className="mt-2 font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl">
+          {eyebrow && <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>}
+          <h2 className="mt-2 font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl" style={tc(s.style, "headingColor")}>
             {heading}
           </h2>
           {subtitle && (
-            <p className="mt-3 max-w-md text-base leading-relaxed text-muted-foreground">{subtitle}</p>
+            <p className="mt-3 max-w-md text-base leading-relaxed text-muted-foreground" style={tc(s.style, "bodyColor")}>{subtitle}</p>
           )}
           {ctaLabel && (
             <a
               href={ctaHref}
               className="mt-8 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-secondary"
+              style={tc(s.style, "ctaTextColor")}
             >
               <MapPin className="h-4 w-4" /> {ctaLabel}
             </a>
@@ -1053,14 +1054,14 @@ function StoreLocator({ settings }: { settings: StoreLocatorSettings }) {
         <div className="lg:col-span-7">
           <ul className="divide-y divide-border border-y border-border">
             {items.map((st, i) => (
-              <li key={`${st.city}-${i}`} className="group grid grid-cols-[auto_1fr_auto] items-center gap-6 py-5">
-                <span className="font-[Archivo] text-2xl font-black tracking-tight text-primary md:text-3xl">
-                  {st.city}
-                </span>
-                <div>
-                  <p className="text-sm font-medium text-foreground">{st.address}</p>
-                  <p className="text-xs text-muted-foreground">{st.phone}</p>
-                </div>
+               <li key={`${st.city}-${i}`} className="group grid grid-cols-[auto_1fr_auto] items-center gap-6 py-5">
+                 <span className="font-[Archivo] text-2xl font-black tracking-tight text-primary md:text-3xl" style={tc(s.style, "headingColor")}>
+                   {st.city}
+                 </span>
+                 <div>
+                   <p className="text-sm font-medium text-foreground" style={tc(s.style, "bodyColor")}>{st.address}</p>
+                   <p className="text-xs text-muted-foreground" style={tc(s.style, "bodyColor")}>{st.phone}</p>
+                 </div>
                 <ArrowUpRight className="h-5 w-5 text-secondary transition group-hover:translate-x-1 group-hover:-translate-y-1" />
               </li>
             ))}

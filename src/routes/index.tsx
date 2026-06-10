@@ -1230,15 +1230,22 @@ function ContactSectionInner({ settings }: { settings: ContactSettings }) {
     return Object.keys(seed).length > 0 ? [seed] : [];
   })();
   const subjects = [
-    t("home.contact.subject_product"),
-    t("home.contact.subject_wholesale"),
-    t("home.contact.subject_press"),
-    t("home.contact.subject_career"),
-    t("home.contact.subject_other"),
-  ];
+    ...((s.subjects && s.subjects.length > 0)
+      ? s.subjects.map((it) => {
+          const label = pickLocalized({ id: it.labelId, en: it.labelEn }, lang);
+          return { label, value: it.value || label };
+        })
+      : ([
+          { label: t("home.contact.subject_product"), value: "product" },
+          { label: t("home.contact.subject_wholesale"), value: "wholesale" },
+          { label: t("home.contact.subject_press"), value: "press" },
+          { label: t("home.contact.subject_career"), value: "career" },
+          { label: t("home.contact.subject_other"), value: "other" },
+        ] as { label: string; value: string }[])),
+  ].filter((x) => x.label) as { label: string; value: string }[];
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [subject, setSubject] = useState<string>(subjects[0]);
+  const [subject, setSubject] = useState<string>(subjects[0]?.value ?? "");
   const [message, setMessage] = useState("");
   const [website, setWebsite] = useState(""); // honeypot
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
@@ -1247,7 +1254,7 @@ function ContactSectionInner({ settings }: { settings: ContactSettings }) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   const resetForm = () => {
-    setFullName(""); setEmail(""); setSubject(subjects[0]); setMessage("");
+    setFullName(""); setEmail(""); setSubject(subjects[0]?.value ?? ""); setMessage("");
   };
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -1362,8 +1369,8 @@ function ContactSectionInner({ settings }: { settings: ContactSettings }) {
               onChange={(e) => setSubject(e.target.value)}
               className="mt-2 w-full border-b border-border bg-transparent py-2 text-sm text-foreground outline-none focus:border-primary"
             >
-              {subjects.map((s) => (
-                <option key={s} value={s}>{s}</option>
+              {subjects.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
           </div>

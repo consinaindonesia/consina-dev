@@ -39,7 +39,6 @@ import {
   type ContactSettings,
   type CustomSectionSettings,
   type SectionStyle,
-  type ContactSubject,
 } from "@/lib/section-registry";
 import hero from "@/assets/hero-mountain.jpg";
 import catCarriers from "@/assets/cat-carriers.jpg";

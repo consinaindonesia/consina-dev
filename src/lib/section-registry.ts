@@ -424,6 +424,7 @@ export const DEFAULT_NEWSLETTER: NewsletterSettings = {
   placeholder: { id: "Alamat email Anda", en: "Your email address" },
   buttonLabel: { id: "Berlangganan", en: "Subscribe" },
   successMessage: { id: "Terima kasih sudah berlangganan!", en: "Thanks for subscribing!" },
+  errorMessage: { id: "Email tidak valid", en: "Invalid email" },
 };
 
 export const DEFAULT_IMAGE_BANNER: ImageBannerSettings = {

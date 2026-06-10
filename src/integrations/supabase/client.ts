@@ -2,11 +2,23 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
+const TARGET_SUPABASE_REF = "dbgxaffgujugnqyoyuic";
+const TARGET_SUPABASE_URL = `https://${TARGET_SUPABASE_REF}.supabase.co`;
+
+function projectRefFromUrl(url: string): string | null {
+  try {
+    const hostname = new URL(url).hostname;
+    return hostname.endsWith(".supabase.co") ? hostname.split(".")[0] : null;
+  } catch {
+    return null;
+  }
+}
+
 function createSupabaseClient() {
   // Use import.meta.env for client-side (Vite build-time replacement)
   // Fall back to process.env for SSR (server-side rendering)
   const processEnv = typeof process !== "undefined" ? process.env : {};
-  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || processEnv.SUPABASE_URL;
+  let SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || processEnv.SUPABASE_URL;
   const SUPABASE_PUBLISHABLE_KEY =
     import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
     import.meta.env.VITE_SUPABASE_ANON_KEY ||
@@ -21,6 +33,14 @@ function createSupabaseClient() {
     const message = `Missing Supabase environment variable(s): ${missing.join(', ')}. Connect Supabase in Lovable Cloud.`;
     console.error(`[Supabase] ${message}`);
     throw new Error(message);
+  }
+
+  const projectRef = projectRefFromUrl(SUPABASE_URL);
+  if (projectRef !== TARGET_SUPABASE_REF) {
+    console.warn(
+      `[Supabase] Ignoring configured project "${projectRef ?? "unknown"}"; using "${TARGET_SUPABASE_REF}".`,
+    );
+    SUPABASE_URL = TARGET_SUPABASE_URL;
   }
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {

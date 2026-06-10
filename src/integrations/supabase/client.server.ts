@@ -5,6 +5,17 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
+const TARGET_SUPABASE_REF = "dbgxaffgujugnqyoyuic";
+
+function projectRefFromUrl(url: string): string | null {
+  try {
+    const hostname = new URL(url).hostname;
+    return hostname.endsWith(".supabase.co") ? hostname.split(".")[0] : null;
+  } catch {
+    return null;
+  }
+}
+
 function createSupabaseAdminClient() {
   const SUPABASE_URL = process.env.SUPABASE_URL;
   const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -15,6 +26,13 @@ function createSupabaseAdminClient() {
       ...(!SUPABASE_SERVICE_ROLE_KEY ? ['SUPABASE_SERVICE_ROLE_KEY'] : []),
     ];
     const message = `Missing Supabase environment variable(s): ${missing.join(', ')}. Connect Supabase in Lovable Cloud.`;
+    console.error(`[Supabase] ${message}`);
+    throw new Error(message);
+  }
+
+  const projectRef = projectRefFromUrl(SUPABASE_URL);
+  if (projectRef !== TARGET_SUPABASE_REF) {
+    const message = `Refusing to use Supabase project "${projectRef ?? "unknown"}"; expected "${TARGET_SUPABASE_REF}". Update Vercel/Lovable env variables before serving production data.`;
     console.error(`[Supabase] ${message}`);
     throw new Error(message);
   }

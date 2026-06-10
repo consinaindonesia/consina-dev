@@ -834,10 +834,10 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
     >
       {/* Section heading */}
       <div className="text-left">
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">
+        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>
           {pickLocalized(s.subtitle, lang, t("home.featured.eyebrow"))}
         </p>
-        <h2 className="mt-2 font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl">
+        <h2 className="mt-2 font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl" style={tc(s.style, "headingColor")}>
           {pickLocalized(s.title, lang, t("home.featured.title"))}
         </h2>
       </div>
@@ -951,19 +951,20 @@ function Community({ settings }: { settings: CommunitySettings }) {
       <div className="mx-auto grid max-w-[1280px] items-center gap-10 px-4 md:grid-cols-2 md:px-8">
         {/* Text */}
         <div className={imgRight ? "order-2 md:order-1" : "order-2 md:order-2"}>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#d4b896]">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#d4b896]" style={tc(s.style, "eyebrowColor")}>
             {pickLocalized(s.eyebrow, lang)}
           </p>
-          <h2 className="mt-4 font-[Archivo] text-4xl font-black leading-tight tracking-tight md:text-5xl">
+          <h2 className="mt-4 font-[Archivo] text-4xl font-black leading-tight tracking-tight md:text-5xl" style={tc(s.style, "headingColor")}>
             {pickLocalized(s.heading, lang)}
           </h2>
-          <div className="mt-8 space-y-5 text-base leading-relaxed opacity-90 md:text-lg">
+          <div className="mt-8 space-y-5 text-base leading-relaxed opacity-90 md:text-lg" style={tc(s.style, "bodyColor")}>
             {paragraphs.map((p, i) => <p key={i}>{p}</p>)}
           </div>
           {s.cta && pickLocalized({ id: s.cta.labelId, en: s.cta.labelEn }, lang) && (
             <a
               href={s.cta.href || "/"}
               className="mt-10 inline-flex items-center gap-2 rounded-full bg-[#d4b896] px-6 py-3 text-sm font-semibold uppercase tracking-wider text-[#1a3a2e] transition hover:bg-[#c9a84c]"
+              style={tc(s.style, "ctaTextColor")}
             >
               {pickLocalized({ id: s.cta.labelId, en: s.cta.labelEn }, lang)} <ArrowRight className="h-4 w-4" />
             </a>

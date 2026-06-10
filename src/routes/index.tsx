@@ -537,6 +537,21 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
     return map;
   }, [products]);
 
+  // Newest product image per category slug (auto image source).
+  const newestImageBySlug = useMemo(() => {
+    const map = new Map<string, string>();
+    const sorted = [...products].sort((a, b) => {
+      const at = a.created_at ?? "";
+      const bt = b.created_at ?? "";
+      return bt.localeCompare(at);
+    });
+    for (const p of sorted) {
+      if (!p.category_slug || !p.image_url) continue;
+      if (!map.has(p.category_slug)) map.set(p.category_slug, p.image_url);
+    }
+    return map;
+  }, [products]);
+
   const items = useMemo(() => {
     const list = cats ?? [];
     let ordered = list;
@@ -546,15 +561,27 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
         .map((slug) => bySlug.get(slug))
         .filter((c): c is PublicCategory => Boolean(c));
     }
-    return ordered.map((c) => ({
-      slug: c.slug,
-      name: localizedField(c, "name", lang).value,
-      desc:
-        (t(`home.categories.${c.slug}_desc` as never, { defaultValue: "" }) as string) || "",
-      img: CATEGORY_IMAGE_MAP[c.slug] ?? catAccessories,
-      count: counts.get(c.slug) ?? 0,
-    }));
-  }, [cats, counts, lang, t, s.categorySlugs]);
+    const overrides = s.categoryImages ?? {};
+    return ordered.map((c) => {
+      const override = overrides[c.slug];
+      const mode = override?.mode ?? "auto";
+      const manualSrc = override?.src?.trim();
+      const autoSrc = newestImageBySlug.get(c.slug);
+      const fallback = CATEGORY_IMAGE_MAP[c.slug] ?? catAccessories;
+      const img =
+        mode === "manual" && manualSrc
+          ? manualSrc
+          : autoSrc || fallback;
+      return {
+        slug: c.slug,
+        name: localizedField(c, "name", lang).value,
+        desc:
+          (t(`home.categories.${c.slug}_desc` as never, { defaultValue: "" }) as string) || "",
+        img,
+        count: counts.get(c.slug) ?? 0,
+      };
+    });
+  }, [cats, counts, lang, t, s.categorySlugs, s.categoryImages, newestImageBySlug]);
 
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [snapCount, setSnapCount] = useState(1);
@@ -607,13 +634,13 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
         {/* Section heading */}
         <div className="flex items-end justify-between gap-4">
           <div className="text-left">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>
               {pickLocalized(s.eyebrow, lang, t("home.categories.eyebrow"))}
             </p>
-            <h2 className="mt-2 font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl">
+            <h2 className="mt-2 font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl" style={tc(s.style, "headingColor")}>
               {pickLocalized(s.title, lang, t("home.categories.title"))}
             </h2>
-            <p className="mt-2 max-w-xl text-sm text-muted-foreground md:text-base">
+            <p className="mt-2 max-w-xl text-sm text-muted-foreground md:text-base" style={tc(s.style, "bodyColor")}>
               {pickLocalized(s.subtitle, lang, t("home.categories.subtitle"))}
             </p>
           </div>

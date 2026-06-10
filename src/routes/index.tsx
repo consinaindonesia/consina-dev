@@ -1222,22 +1222,22 @@ function ContactSectionInner({ settings }: { settings: ContactSettings }) {
       <div className="mx-auto grid max-w-[1280px] gap-14 px-4 md:grid-cols-2 md:px-8">
         <div>
           {eyebrow && (
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">{eyebrow}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>
           )}
-          <h2 className="mt-2 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl">
+          <h2 className="mt-2 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl" style={tc(s.style, "headingColor")}>
             {heading ? heading : (<>{t("home.contact.title_1")}<br />{t("home.contact.title_2")}</>)}
           </h2>
           {subtitle && (
-            <p className="mt-3 max-w-md text-base leading-relaxed text-muted-foreground">{subtitle}</p>
+            <p className="mt-3 max-w-md text-base leading-relaxed text-muted-foreground" style={tc(s.style, "bodyColor")}>{subtitle}</p>
           )}
           <div className="mt-10 space-y-4 text-sm">
-            <div className="flex items-center gap-3 text-foreground">
+            <div className="flex items-center gap-3 text-foreground" style={tc(s.style, "bodyColor")}>
               <Mail className="h-4 w-4 text-secondary" /> {emailAddr}
             </div>
-            <div className="flex items-center gap-3 text-foreground">
+            <div className="flex items-center gap-3 text-foreground" style={tc(s.style, "bodyColor")}>
               <Phone className="h-4 w-4 text-secondary" /> {phoneNum}
             </div>
-            <div className="flex items-center gap-3 text-foreground">
+            <div className="flex items-center gap-3 text-foreground" style={tc(s.style, "bodyColor")}>
               <MapPin className="h-4 w-4 text-secondary" /> {addressTxt}
             </div>
           </div>
@@ -1305,6 +1305,7 @@ function ContactSectionInner({ settings }: { settings: ContactSettings }) {
             type="submit"
             disabled={status === "submitting"}
             className="mt-8 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-secondary disabled:opacity-60"
+            style={tc(s.style, "ctaTextColor")}
           >
             {status === "submitting" ? t("cta.sending") : t("cta.send_message")} <ArrowRight className="h-4 w-4" />
           </button>

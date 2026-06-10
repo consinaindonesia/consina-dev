@@ -56,7 +56,9 @@ import {
   DEFAULT_FOOTER,
   FONT_OPTIONS,
   mergeTheme,
+  fontFormatFromUrl,
   type ThemeSettings,
+  type CustomFont,
 } from "@/lib/theme-defaults";
 
 export const Route = createFileRoute("/admin/design")({

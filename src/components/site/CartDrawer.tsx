@@ -36,7 +36,7 @@ export function CartDrawer() {
           )}
         </button>
       </SheetTrigger>
-      <SheetContent className="flex w-full flex-col sm:max-w-md">
+      <SheetContent className="flex w-full flex-col border-l border-stone-200 bg-stone-50 text-stone-950 shadow-2xl sm:max-w-md">
         <SheetHeader>
           <SheetTitle>Keranjang ({count})</SheetTitle>
         </SheetHeader>

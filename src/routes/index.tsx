@@ -296,7 +296,7 @@ function Hero({ settings }: { settings: HeroSettings }) {
         />
       </div>
       <div
-        className="mx-auto flex min-h-[88vh] max-w-[1280px] flex-col justify-end px-4 pb-8 pt-32 md:px-8 md:pb-12 lg:pb-16"
+        className="mx-auto flex min-h-[62vh] max-w-[1280px] flex-col justify-center px-4 py-20 md:min-h-[68vh] md:px-8 md:py-24 lg:min-h-[72vh] lg:py-28"
         style={s.style?.textColor ? { color: s.style.textColor } : undefined}
       >
         {eyebrow && (

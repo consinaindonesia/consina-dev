@@ -757,6 +757,11 @@ function CommunityEditor({
   return (
     <div className="space-y-4">
       <ImagePicker label="Image" value={value.image} onChange={(v) => onChange({ ...value, image: v })} />
+      <LocalizedField
+        label="Image alt text"
+        value={value.imageAlt}
+        onChange={(v) => onChange({ ...value, imageAlt: v })}
+      />
       <div>
         <Label className="text-xs">Image side</Label>
         <div className="mt-1 flex gap-1">

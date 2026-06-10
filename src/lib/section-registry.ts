@@ -40,6 +40,9 @@ export type SectionStyle = {
   headingColor?: string;
   bodyColor?: string;
   ctaTextColor?: string;
+  // Horizontal alignment for multi-line text (description / body). Unset
+  // keeps the section's default alignment.
+  bodyAlign?: "left" | "center" | "right";
 };
 
 export type StatItem = { value: string; labelId?: string; labelEn?: string };
@@ -47,6 +50,7 @@ export type StatItem = { value: string; labelId?: string; labelEn?: string };
 export type HeroSettings = {
   style?: SectionStyle;
   image?: string;
+  imageAlt?: Localized;
   overlay?: number; // 0..100
   eyebrow?: Localized;
   heading?: Localized; // supports {em} inline tag
@@ -63,6 +67,7 @@ export type FeaturedProductsSettings = {
   source?: "featured" | "manual";
   productIds?: string[];
   count?: number;
+  viewAllCta?: CTAConfig;
 };
 
 export type CategoriesSettings = {
@@ -73,22 +78,37 @@ export type CategoriesSettings = {
   categorySlugs?: string[]; // ordered; empty => auto from DB
   // Per-category image override. mode "manual" + src uses the uploaded image,
   // "auto" (default) uses the newest product image (falls back to the bundled default).
-  categoryImages?: Record<string, { mode?: "auto" | "manual"; src?: string }>;
+  categoryImages?: Record<
+    string,
+    {
+      mode?: "auto" | "manual";
+      src?: string;
+      // Optional per-card description override. When omitted, the i18n
+      // `home.categories.${slug}_desc` key is used.
+      descriptionId?: string;
+      descriptionEn?: string;
+    }
+  >;
+  viewAllCta?: CTAConfig;
 };
 
 export type BrandStorySettings = {
   style?: SectionStyle;
   image?: string;
+  imageAlt?: Localized;
   eyebrow?: Localized;
   heading?: Localized;
   bodyId?: string;
   bodyEn?: string;
   cta?: CTAConfig;
+  expandLabel?: Localized;
+  collapseLabel?: Localized;
 };
 
 export type CommunitySettings = {
   style?: SectionStyle;
   image?: string;
+  imageAlt?: Localized;
   imageSide?: "left" | "right";
   eyebrow?: Localized;
   heading?: Localized;
@@ -131,6 +151,7 @@ export type ContactSettings = {
   phone?: string;
   address?: string;
   contacts?: ContactPerson[];
+  subjects?: ContactSubject[];
 };
 
 export type ContactPerson = {
@@ -138,6 +159,13 @@ export type ContactPerson = {
   phone?: string;
   role?: string;
   email?: string;
+};
+
+export type ContactSubject = {
+  labelId?: string;
+  labelEn?: string;
+  // The raw value stored against an inquiry. Optional; falls back to label.
+  value?: string;
 };
 
 export type FaqItem = { questionId?: string; questionEn?: string; answerId?: string; answerEn?: string };
@@ -157,6 +185,7 @@ export type NewsletterSettings = {
   placeholder?: Localized;
   buttonLabel?: Localized;
   successMessage?: Localized;
+  errorMessage?: Localized;
 };
 
 export type ImageBannerSettings = {
@@ -297,6 +326,7 @@ export type PageSectionRow = {
 export const DEFAULT_HERO: HeroSettings = {
   style: { padding: "M" },
   image: "",
+  imageAlt: { id: "Latar belakang hero", en: "Hero background" },
   overlay: 40,
   eyebrow: { id: "Gaya Hidup Outdoor — Sejak 1999", en: "The Outdoor Lifestyle — Est. 1999" },
   heading: {
@@ -322,6 +352,7 @@ export const DEFAULT_FEATURED_PRODUCTS: FeaturedProductsSettings = {
   subtitle: { id: "Terlaris", en: "Bestsellers" },
   source: "featured",
   count: 8,
+  viewAllCta: { labelId: "", labelEn: "", href: "/catalog", style: "outline" },
 };
 
 export const DEFAULT_CATEGORIES: CategoriesSettings = {
@@ -330,11 +361,13 @@ export const DEFAULT_CATEGORIES: CategoriesSettings = {
   subtitle: { id: "Dibuat untuk setiap petualangan, dibuat di Indonesia", en: "Built for every adventure, made in Indonesia" },
   eyebrow: { id: "Koleksi", en: "Collections" },
   categorySlugs: [],
+  viewAllCta: { labelId: "Lihat semua", labelEn: "View all", href: "/catalog", style: "outline" },
 };
 
 export const DEFAULT_BRAND_STORY: BrandStorySettings = {
   style: { padding: "M" },
   image: "",
+  imageAlt: { id: "Pendaki di jalur pegunungan Indonesia", en: "Hiker on an Indonesian mountain trail" },
   eyebrow: { id: "Cerita Kami", en: "Our Story" },
   heading: { id: "Terinspirasi dari Pengalaman", en: "Inspired by Experience" },
   bodyId:
@@ -342,11 +375,14 @@ export const DEFAULT_BRAND_STORY: BrandStorySettings = {
   bodyEn:
     "Since 1999, Consina has been Indonesia's outdoor lifestyle brand — born in Jakarta, built for adventurers.\n\nEvery product we make is shaped by feedback from our community of hikers, campers, and climbers. We don't just design gear — we design from lived experience.\n\nToday, our 'Responsible Trekker' community spans the entire archipelago, sharing one belief: leave the trail better than you found it.",
   cta: { labelId: "Pelajari lebih lanjut", labelEn: "Learn more about us", href: "/", style: "primary" },
+  expandLabel: { id: "Lebih Detail", en: "Read more" },
+  collapseLabel: { id: "Lebih Sedikit", en: "Show less" },
 };
 
 export const DEFAULT_COMMUNITY: CommunitySettings = {
   style: { padding: "M", bgColor: "#1a3a2e", textColor: "#ffffff" },
   image: "",
+  imageAlt: { id: "Komunitas Consina", en: "Consina community" },
   imageSide: "right",
   eyebrow: { id: "Komunitas Kami", en: "Our Community" },
   heading: { id: "The Responsible Trekker", en: "The Responsible Trekker" },
@@ -388,6 +424,7 @@ export const DEFAULT_NEWSLETTER: NewsletterSettings = {
   placeholder: { id: "Alamat email Anda", en: "Your email address" },
   buttonLabel: { id: "Berlangganan", en: "Subscribe" },
   successMessage: { id: "Terima kasih sudah berlangganan!", en: "Thanks for subscribing!" },
+  errorMessage: { id: "Email tidak valid", en: "Invalid email" },
 };
 
 export const DEFAULT_IMAGE_BANNER: ImageBannerSettings = {
@@ -487,6 +524,13 @@ export const DEFAULT_SECTION_SETTINGS: { [K in SectionTypeId]: SectionSettingsMa
     email: "hello@consina.com",
     phone: "+62 21 345 6789",
     address: "Jakarta, Indonesia",
+    subjects: [
+      { labelId: "Pertanyaan produk", labelEn: "Product question", value: "product" },
+      { labelId: "Kerja sama / grosir", labelEn: "Wholesale / partnership", value: "wholesale" },
+      { labelId: "Pers & media", labelEn: "Press & media", value: "press" },
+      { labelId: "Karir", labelEn: "Career", value: "career" },
+      { labelId: "Lainnya", labelEn: "Other", value: "other" },
+    ],
   },
   stats: DEFAULT_STATS,
   faq_custom: DEFAULT_FAQ_CUSTOM,

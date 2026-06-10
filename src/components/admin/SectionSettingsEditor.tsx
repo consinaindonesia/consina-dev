@@ -196,6 +196,33 @@ function StyleEditor({
             value={value.ctaTextColor ?? ""}
             onChange={(v) => onChange({ ...value, ctaTextColor: v || undefined })}
           />
+          <div className="sm:col-span-3">
+            <Label className="text-xs">Description alignment</Label>
+            <div className="mt-1 flex gap-1">
+              {(["left", "center", "right"] as const).map((a) => {
+                const active = (value.bodyAlign ?? "") === a;
+                return (
+                  <button
+                    key={a}
+                    type="button"
+                    onClick={() =>
+                      onChange({ ...value, bodyAlign: active ? undefined : a })
+                    }
+                    className={`flex-1 rounded border px-2 py-1 text-xs font-semibold capitalize ${
+                      active
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-input bg-background hover:bg-muted"
+                    }`}
+                  >
+                    {a}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="mt-1 text-[10px] text-muted-foreground">
+              Applies to the description / body text. Click the active option again to clear.
+            </p>
+          </div>
         </div>
       )}
     </div>
@@ -423,6 +450,12 @@ function HeroEditor({ value, onChange }: { value: HeroSettings; onChange: (v: He
         value={value.image}
         onChange={(v) => onChange({ ...value, image: v })}
       />
+      <LocalizedField
+        label="Image alt text"
+        value={value.imageAlt}
+        onChange={(v) => onChange({ ...value, imageAlt: v })}
+        placeholder="Describe the background image"
+      />
       <div>
         <Label className="text-xs">Overlay darkness — {overlay}%</Label>
         <Slider
@@ -557,6 +590,11 @@ function FeaturedEditor({
           </div>
         </div>
       )}
+      <CTAEditor
+        label="‘View all’ CTA (optional)"
+        value={value.viewAllCta}
+        onChange={(v) => onChange({ ...value, viewAllCta: v })}
+      />
     </div>
   );
 }
@@ -626,7 +664,12 @@ function CategoriesEditor({
             const c = list.find((x) => x.slug === slug);
             const cur = (value.categoryImages ?? {})[slug] ?? {};
             const mode = cur.mode ?? "auto";
-            const setOverride = (next: { mode?: "auto" | "manual"; src?: string }) =>
+            const setOverride = (next: {
+              mode?: "auto" | "manual";
+              src?: string;
+              descriptionId?: string;
+              descriptionEn?: string;
+            }) =>
               onChange({
                 ...value,
                 categoryImages: { ...(value.categoryImages ?? {}), [slug]: { ...cur, ...next } },
@@ -653,11 +696,36 @@ function CategoriesEditor({
                 {mode === "manual" && (
                   <ImagePicker label="Manual image" value={cur.src} onChange={(v) => setOverride({ src: v })} />
                 )}
+                <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                  <div>
+                    <Label className="text-[10px]">Description (ID)</Label>
+                    <Input
+                      value={cur.descriptionId ?? ""}
+                      onChange={(e) => setOverride({ descriptionId: e.target.value })}
+                      placeholder="Override card description"
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-[10px]">Description (EN)</Label>
+                    <Input
+                      value={cur.descriptionEn ?? ""}
+                      onChange={(e) => setOverride({ descriptionEn: e.target.value })}
+                      placeholder="Override card description"
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                </div>
               </div>
             );
           })}
         </div>
       </div>
+      <CTAEditor
+        label="‘View all’ CTA (right of heading)"
+        value={value.viewAllCta}
+        onChange={(v) => onChange({ ...value, viewAllCta: v })}
+      />
     </div>
   );
 }
@@ -672,6 +740,11 @@ function BrandStoryEditor({
   return (
     <div className="space-y-4">
       <ImagePicker label="Image" value={value.image} onChange={(v) => onChange({ ...value, image: v })} />
+      <LocalizedField
+        label="Image alt text"
+        value={value.imageAlt}
+        onChange={(v) => onChange({ ...value, imageAlt: v })}
+      />
       <LocalizedField label="Eyebrow" value={value.eyebrow} onChange={(v) => onChange({ ...value, eyebrow: v })} />
       <LocalizedField label="Heading" value={value.heading} onChange={(v) => onChange({ ...value, heading: v })} />
       <div>
@@ -691,6 +764,20 @@ function BrandStoryEditor({
         />
       </div>
       <CTAEditor label="CTA" value={value.cta} onChange={(v) => onChange({ ...value, cta: v })} />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <LocalizedField
+          label="Expand button label"
+          value={value.expandLabel}
+          onChange={(v) => onChange({ ...value, expandLabel: v })}
+          placeholder="Read more"
+        />
+        <LocalizedField
+          label="Collapse button label"
+          value={value.collapseLabel}
+          onChange={(v) => onChange({ ...value, collapseLabel: v })}
+          placeholder="Show less"
+        />
+      </div>
     </div>
   );
 }
@@ -705,6 +792,11 @@ function CommunityEditor({
   return (
     <div className="space-y-4">
       <ImagePicker label="Image" value={value.image} onChange={(v) => onChange({ ...value, image: v })} />
+      <LocalizedField
+        label="Image alt text"
+        value={value.imageAlt}
+        onChange={(v) => onChange({ ...value, imageAlt: v })}
+      />
       <div>
         <Label className="text-xs">Image side</Label>
         <div className="mt-1 flex gap-1">
@@ -816,6 +908,7 @@ function NewsletterEditor({ value, onChange }: { value: NewsletterSettings; onCh
       <LocalizedField label="Email placeholder" value={value.placeholder} onChange={(v) => onChange({ ...value, placeholder: v })} />
       <LocalizedField label="Button label" value={value.buttonLabel} onChange={(v) => onChange({ ...value, buttonLabel: v })} />
       <LocalizedField label="Success message" value={value.successMessage} onChange={(v) => onChange({ ...value, successMessage: v })} />
+      <LocalizedField label="Invalid email message" value={value.errorMessage} onChange={(v) => onChange({ ...value, errorMessage: v })} />
       <p className="text-[11px] text-muted-foreground">Subscribers are saved to the newsletter_subscribers table.</p>
     </div>
   );
@@ -1178,7 +1271,59 @@ function ContactEditor({ value, onChange }: { value: ContactSettings; onChange: 
         <Label className="text-xs">Address</Label>
         <Input value={value.address ?? ""} onChange={(e) => onChange({ ...value, address: e.target.value })} placeholder="Jakarta, Indonesia" />
       </div>
+      <ContactSubjectsEditor
+        subjects={value.subjects ?? []}
+        onChange={(subjects) => onChange({ ...value, subjects })}
+      />
       <p className="text-[11px] text-muted-foreground">Inquiries submitted from the form are saved to the contact_inquiries table.</p>
+    </div>
+  );
+}
+
+function ContactSubjectsEditor({
+  subjects,
+  onChange,
+}: {
+  subjects: NonNullable<ContactSettings["subjects"]>;
+  onChange: (s: NonNullable<ContactSettings["subjects"]>) => void;
+}) {
+  const update = (i: number, patch: Partial<NonNullable<ContactSettings["subjects"]>[number]>) =>
+    onChange(subjects.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
+  const move = (i: number, dir: -1 | 1) => {
+    const next = [...subjects];
+    const j = i + dir;
+    if (j < 0 || j >= next.length) return;
+    [next[i], next[j]] = [next[j], next[i]];
+    onChange(next);
+  };
+  return (
+    <div className="rounded border border-input p-3">
+      <div className="mb-2 flex items-center justify-between">
+        <Label className="text-xs font-semibold">Form subjects ({subjects.length})</Label>
+        <Button size="sm" variant="outline" onClick={() => onChange([...subjects, { labelId: "", labelEn: "", value: "" }])}>
+          <Plus className="mr-1 h-3 w-3" /> Add
+        </Button>
+      </div>
+      <div className="space-y-2">
+        {subjects.map((s, i) => (
+          <div key={i} className="rounded border border-border bg-background p-2">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Subject #{i + 1}</span>
+              <div className="flex items-center gap-1">
+                <button type="button" onClick={() => move(i, -1)} className="rounded p-1 hover:bg-muted" aria-label="Up"><ChevronUp className="h-3 w-3" /></button>
+                <button type="button" onClick={() => move(i, 1)} className="rounded p-1 hover:bg-muted" aria-label="Down"><ChevronDown className="h-3 w-3" /></button>
+                <button type="button" onClick={() => onChange(subjects.filter((_, idx) => idx !== i))} className="rounded p-1 text-muted-foreground hover:text-destructive" aria-label="Remove"><Trash2 className="h-3 w-3" /></button>
+              </div>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-3">
+              <Input value={s.labelId ?? ""} onChange={(e) => update(i, { labelId: e.target.value })} placeholder="Label (ID)" className="h-8 text-xs" />
+              <Input value={s.labelEn ?? ""} onChange={(e) => update(i, { labelEn: e.target.value })} placeholder="Label (EN)" className="h-8 text-xs" />
+              <Input value={s.value ?? ""} onChange={(e) => update(i, { value: e.target.value })} placeholder="Value (optional)" className="h-8 text-xs" />
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="mt-2 text-[10px] text-muted-foreground">Leave empty to use the built-in 5 subjects.</p>
     </div>
   );
 }

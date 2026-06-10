@@ -1032,6 +1032,12 @@ function HeaderPanel({
           <Switch checked={h[k] as boolean} onCheckedChange={(v) => set(k, !!v)} />
         </label>
       ))}
+      <NavLinkListEditor
+        label="Navigation links"
+        helper="Main desktop & mobile nav links (shown after the Shop dropdown)."
+        value={h.navLinks ?? []}
+        onChange={(navLinks) => onChange({ ...theme, header: { ...h, navLinks } })}
+      />
       <Button variant="outline" size="sm" onClick={onReset} className="w-full">
         <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Reset header
       </Button>

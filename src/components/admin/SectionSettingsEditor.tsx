@@ -659,7 +659,12 @@ function CategoriesEditor({
             const c = list.find((x) => x.slug === slug);
             const cur = (value.categoryImages ?? {})[slug] ?? {};
             const mode = cur.mode ?? "auto";
-            const setOverride = (next: { mode?: "auto" | "manual"; src?: string }) =>
+            const setOverride = (next: {
+              mode?: "auto" | "manual";
+              src?: string;
+              descriptionId?: string;
+              descriptionEn?: string;
+            }) =>
               onChange({
                 ...value,
                 categoryImages: { ...(value.categoryImages ?? {}), [slug]: { ...cur, ...next } },

@@ -30,6 +30,8 @@ import {
   RotateCcw,
   Smartphone,
   Trash2,
+  Upload,
+  X,
 } from "lucide-react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { Button } from "@/components/ui/button";

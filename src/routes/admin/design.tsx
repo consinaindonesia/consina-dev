@@ -30,6 +30,8 @@ import {
   RotateCcw,
   Smartphone,
   Trash2,
+  Upload,
+  X,
 } from "lucide-react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { Button } from "@/components/ui/button";
@@ -792,7 +794,14 @@ function HeaderPanel({
       <div>
         <Label className="text-xs">Logo text</Label>
         <Input value={h.logoText} onChange={(e) => set("logoText", e.target.value)} />
+        <p className="mt-1 text-xs text-muted-foreground">Used as the alt text and as a fallback when no logo image is uploaded.</p>
       </div>
+      <LogoUploader
+        label="Header logo image"
+        helper="Recommended: transparent PNG/SVG, ~200×60px. Leave empty to show the text logo."
+        value={h.logoUrl}
+        onChange={(url) => set("logoUrl", url)}
+      />
       {([
         ["showSinceTag", "Show 'Since 1999' tag"],
         ["showSearch", "Show search icon"],
@@ -868,6 +877,22 @@ function FooterPanel({
         </div>
       </div>
 
+      <div className="space-y-3 rounded-md border border-dashed border-border bg-muted/30 p-3">
+        <Label className="text-xs uppercase tracking-wide text-muted-foreground">Footer logos</Label>
+        <LogoUploader
+          label="Footer logo (light / white version)"
+          helper="Used on the dark green footer. Falls back to the dark logo, then header logo, then text."
+          value={f.logoLightUrl}
+          onChange={(url) => setField({ logoLightUrl: url })}
+        />
+        <LogoUploader
+          label="Footer logo (dark / colored version)"
+          helper="Optional. Used if no light version is uploaded."
+          value={f.logoUrl}
+          onChange={(url) => setField({ logoUrl: url })}
+        />
+      </div>
+
       <div className="space-y-2">
         <Label className="text-xs uppercase tracking-wide text-muted-foreground">Social links</Label>
         {(["instagram", "facebook", "youtube"] as const).map((key) => (
@@ -885,6 +910,106 @@ function FooterPanel({
       <Button variant="outline" size="sm" onClick={onReset} className="w-full">
         <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Reset footer
       </Button>
+    </div>
+  );
+}
+
+function LogoUploader({
+  label,
+  helper,
+  value,
+  onChange,
+}: {
+  label: string;
+  helper?: string;
+  value: string;
+  onChange: (url: string) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleFile = async (file: File) => {
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Logo must be under 2MB");
+      return;
+    }
+    setUploading(true);
+    const ext = (file.name.split(".").pop() || "png").toLowerCase();
+    const path = `site/logo-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await supabase.storage
+      .from("category-images")
+      .upload(path, file, { cacheControl: "3600", upsert: false, contentType: file.type });
+    if (error) {
+      setUploading(false);
+      toast.error(error.message || "Upload failed");
+      return;
+    }
+    const { data } = supabase.storage.from("category-images").getPublicUrl(path);
+    onChange(data.publicUrl);
+    setUploading(false);
+    toast.success("Logo uploaded");
+  };
+
+  return (
+    <div className="space-y-2">
+      <Label className="text-xs">{label}</Label>
+      <div className="flex items-center gap-3">
+        <div className="flex h-16 w-28 items-center justify-center overflow-hidden rounded border border-border bg-muted/40">
+          {value ? (
+            <img src={value} alt="" className="max-h-full max-w-full object-contain" />
+          ) : (
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">No logo</span>
+          )}
+        </div>
+        <div className="flex flex-1 flex-col gap-1.5">
+          <div className="flex gap-1.5">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={uploading}
+              onClick={() => inputRef.current?.click()}
+            >
+              {uploading ? (
+                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Upload className="mr-1.5 h-3.5 w-3.5" />
+              )}
+              Upload
+            </Button>
+            {value && (
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => onChange("")}
+                title="Remove logo"
+              >
+                <X className="mr-1 h-3.5 w-3.5" /> Remove
+              </Button>
+            )}
+          </div>
+          <Input
+            placeholder="Or paste an image URL"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className="h-7 text-xs"
+          />
+        </div>
+      </div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/png,image/jpeg,image/svg+xml,image/webp"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) void handleFile(f);
+          e.target.value = "";
+        }}
+      />
+      {helper && <p className="text-xs text-muted-foreground">{helper}</p>}
     </div>
   );
 }

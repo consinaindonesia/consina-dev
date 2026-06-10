@@ -74,9 +74,17 @@ export function Nav() {
       <LangSuggestionBanner />
       <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-4 md:px-8">
         <Link to="/" className="flex items-center gap-2">
-          <span className="font-[Archivo] text-2xl font-black tracking-tight text-primary">
-            {header.logoText || "CONSINA"}
-          </span>
+          {header.logoUrl ? (
+            <img
+              src={header.logoUrl}
+              alt={header.logoText || "CONSINA"}
+              className="h-8 w-auto object-contain md:h-9"
+            />
+          ) : (
+            <span className="font-[Archivo] text-2xl font-black tracking-tight text-primary">
+              {header.logoText || "CONSINA"}
+            </span>
+          )}
           {header.showSinceTag && (
             <span className="hidden text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground md:inline">
               {t("nav.since")}

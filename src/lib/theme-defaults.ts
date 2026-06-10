@@ -18,6 +18,7 @@ export type ThemeSettings = {
 
 export type HeaderSettings = {
   logoText: string;
+  logoUrl: string;
   showSinceTag: boolean;
   showSearch: boolean;
   showFindStore: boolean;
@@ -30,11 +31,14 @@ export type FooterSettings = {
   blurb: { id: string; en: string };
   bgColor: string; // empty => default (var(--primary))
   textColor: string;
+  logoUrl: string;       // optional dark/colored logo
+  logoLightUrl: string;  // optional light/white logo for dark footers
   socials: { instagram: string; facebook: string; youtube: string };
 };
 
 export const DEFAULT_HEADER: HeaderSettings = {
   logoText: "CONSINA",
+  logoUrl: "",
   showSinceTag: true,
   showSearch: true,
   showFindStore: true,
@@ -50,6 +54,8 @@ export const DEFAULT_FOOTER: FooterSettings = {
   },
   bgColor: "",
   textColor: "",
+  logoUrl: "",
+  logoLightUrl: "",
   socials: { instagram: "#", facebook: "#", youtube: "#" },
 };
 

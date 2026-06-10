@@ -1259,3 +1259,144 @@ function LogoUploader({
     </div>
   );
 }
+
+function NavLinkListEditor({
+  label,
+  helper,
+  value,
+  onChange,
+}: {
+  label: string;
+  helper?: string;
+  value: NavLink[];
+  onChange: (next: NavLink[]) => void;
+}) {
+  const update = (i: number, patch: Partial<NavLink>) => {
+    const next = value.map((it, idx) => (idx === i ? { ...it, ...patch } : it));
+    onChange(next);
+  };
+  const remove = (i: number) => onChange(value.filter((_, idx) => idx !== i));
+  const move = (i: number, dir: -1 | 1) => {
+    const j = i + dir;
+    if (j < 0 || j >= value.length) return;
+    const next = value.slice();
+    [next[i], next[j]] = [next[j], next[i]];
+    onChange(next);
+  };
+  const add = () =>
+    onChange([...value, { labelId: "", labelEn: "", href: "/" }]);
+  return (
+    <div className="space-y-2 rounded-md border border-dashed border-border bg-muted/30 p-3">
+      <div className="flex items-center justify-between">
+        <Label className="text-xs uppercase tracking-wide text-muted-foreground">{label}</Label>
+        <Button type="button" size="sm" variant="outline" onClick={add}>
+          <Plus className="mr-1.5 h-3.5 w-3.5" /> Add
+        </Button>
+      </div>
+      {helper && <p className="text-xs text-muted-foreground">{helper}</p>}
+      {value.length === 0 && (
+        <p className="text-xs text-muted-foreground">No links yet.</p>
+      )}
+      <ul className="space-y-2">
+        {value.map((it, i) => (
+          <li key={i} className="space-y-1.5 rounded border border-border bg-card p-2">
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                placeholder="Label (ID)"
+                value={it.labelId}
+                onChange={(e) => update(i, { labelId: e.target.value })}
+                className="h-8 text-xs"
+              />
+              <Input
+                placeholder="Label (EN)"
+                value={it.labelEn}
+                onChange={(e) => update(i, { labelEn: e.target.value })}
+                className="h-8 text-xs"
+              />
+            </div>
+            <Input
+              placeholder="URL (e.g. /catalog or https://…)"
+              value={it.href}
+              onChange={(e) => update(i, { href: e.target.value })}
+              className="h-8 text-xs"
+            />
+            <div className="flex justify-end gap-1">
+              <Button type="button" size="sm" variant="ghost" onClick={() => move(i, -1)} disabled={i === 0}>↑</Button>
+              <Button type="button" size="sm" variant="ghost" onClick={() => move(i, 1)} disabled={i === value.length - 1}>↓</Button>
+              <Button type="button" size="sm" variant="ghost" onClick={() => remove(i)} title="Remove">
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function FooterColumnsEditor({
+  value,
+  onChange,
+}: {
+  value: FooterColumn[];
+  onChange: (next: FooterColumn[]) => void;
+}) {
+  const update = (i: number, patch: Partial<FooterColumn>) => {
+    onChange(value.map((c, idx) => (idx === i ? { ...c, ...patch } : c)));
+  };
+  const remove = (i: number) => onChange(value.filter((_, idx) => idx !== i));
+  const move = (i: number, dir: -1 | 1) => {
+    const j = i + dir;
+    if (j < 0 || j >= value.length) return;
+    const next = value.slice();
+    [next[i], next[j]] = [next[j], next[i]];
+    onChange(next);
+  };
+  const add = () =>
+    onChange([...value, { titleId: "", titleEn: "", items: [] }]);
+  return (
+    <div className="space-y-2 rounded-md border border-dashed border-border bg-muted/30 p-3">
+      <div className="flex items-center justify-between">
+        <Label className="text-xs uppercase tracking-wide text-muted-foreground">Footer columns</Label>
+        <Button type="button" size="sm" variant="outline" onClick={add}>
+          <Plus className="mr-1.5 h-3.5 w-3.5" /> Add column
+        </Button>
+      </div>
+      {value.length === 0 && (
+        <p className="text-xs text-muted-foreground">No columns yet.</p>
+      )}
+      <ul className="space-y-3">
+        {value.map((c, i) => (
+          <li key={i} className="space-y-2 rounded border border-border bg-card p-2">
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                placeholder="Title (ID)"
+                value={c.titleId}
+                onChange={(e) => update(i, { titleId: e.target.value })}
+                className="h-8 text-xs"
+              />
+              <Input
+                placeholder="Title (EN)"
+                value={c.titleEn}
+                onChange={(e) => update(i, { titleEn: e.target.value })}
+                className="h-8 text-xs"
+              />
+            </div>
+            <NavLinkListEditor
+              label="Links"
+              value={c.items ?? []}
+              onChange={(items) => update(i, { items })}
+            />
+            <div className="flex justify-end gap-1">
+              <Button type="button" size="sm" variant="ghost" onClick={() => move(i, -1)} disabled={i === 0}>↑</Button>
+              <Button type="button" size="sm" variant="ghost" onClick={() => move(i, 1)} disabled={i === value.length - 1}>↓</Button>
+              <Button type="button" size="sm" variant="ghost" onClick={() => remove(i)} title="Remove column">
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}

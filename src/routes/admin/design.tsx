@@ -1141,6 +1141,18 @@ function FooterPanel({
         ))}
       </div>
 
+      <FooterColumnsEditor
+        value={f.columns ?? []}
+        onChange={(columns) => setField({ columns })}
+      />
+
+      <NavLinkListEditor
+        label="Legal / bottom links"
+        helper="Shown at the bottom (Privacy, Terms, Cookies)."
+        value={f.legalLinks ?? []}
+        onChange={(legalLinks) => setField({ legalLinks })}
+      />
+
       <Button variant="outline" size="sm" onClick={onReset} className="w-full">
         <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Reset footer
       </Button>

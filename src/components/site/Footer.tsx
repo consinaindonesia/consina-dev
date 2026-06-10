@@ -13,6 +13,7 @@ export function Footer() {
   const { data: categories } = usePublicCategories();
   const site = useSiteSettings();
   const footer = site.footer;
+  const footerLogo = footer.logoLightUrl || footer.logoUrl || site.header.logoUrl || "";
   const tagline = (lang === "en" ? footer.tagline.en : footer.tagline.id) || t("footer.tagline");
   const blurb = (lang === "en" ? footer.blurb.en : footer.blurb.id) || t("footer.blurb");
   const shopLinks = (categories ?? []).map((c) => ({
@@ -53,7 +54,19 @@ export function Footer() {
       <div className="mx-auto max-w-[1280px] px-4 py-16 md:px-8">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-2">
-            <div className="font-[Archivo] text-3xl font-black tracking-tight">{site.header.logoText || "CONSINA"}</div>
+            <Link to="/" aria-label={site.header.logoText || "CONSINA"} className="inline-block">
+              {footerLogo ? (
+                <img
+                  src={footerLogo}
+                  alt={site.header.logoText || "CONSINA"}
+                  className="h-10 w-auto object-contain"
+                />
+              ) : (
+                <div className="font-[Archivo] text-3xl font-black tracking-tight">
+                  {site.header.logoText || "CONSINA"}
+                </div>
+              )}
+            </Link>
             <p className="mt-1 text-xs font-medium uppercase tracking-[0.25em] text-accent">
               {tagline}
             </p>

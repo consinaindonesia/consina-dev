@@ -18,6 +18,7 @@ import {
   mergeSettings,
   pickLocalized,
   styleToProps,
+  normalizeSectionColor,
   type AnySectionSettings,
   type BrandStorySettings,
   type CategoriesSettings,
@@ -59,8 +60,12 @@ function tc(
   style: SectionStyle | undefined,
   key: "eyebrowColor" | "headingColor" | "bodyColor" | "ctaTextColor",
 ): React.CSSProperties | undefined {
-  const v = style?.[key];
+  const v = normalizeSectionColor(style?.[key]);
   return v ? { color: v } : undefined;
+}
+
+function bg(value: unknown, fallback?: string): string | undefined {
+  return normalizeSectionColor(value) ?? fallback;
 }
 
 /* Text-alignment helper for body/description paragraphs. */
@@ -313,7 +318,7 @@ function Hero({ settings }: { settings: HeroSettings }) {
   return (
     <section
       className="relative isolate overflow-hidden"
-      style={s.style?.bgColor ? { backgroundColor: s.style.bgColor } : undefined}
+      style={bg(s.style?.bgColor) ? { backgroundColor: bg(s.style?.bgColor) } : undefined}
     >
       <div className="absolute inset-0 -z-10">
         <img
@@ -332,7 +337,7 @@ function Hero({ settings }: { settings: HeroSettings }) {
       </div>
       <div
         className="mx-auto flex min-h-[62vh] max-w-[1280px] flex-col justify-center px-4 py-20 md:min-h-[68vh] md:px-8 md:py-24 lg:min-h-[72vh] lg:py-28"
-        style={s.style?.textColor ? { color: s.style.textColor } : undefined}
+        style={bg(s.style?.textColor) ? { color: bg(s.style?.textColor) } : undefined}
       >
         {eyebrow && (
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>
@@ -653,7 +658,7 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
   return (
     <section
       className={`${styleProps.className}`}
-      style={{ backgroundColor: s.style?.bgColor ?? "var(--background)", ...(s.style?.textColor ? { color: s.style.textColor } : {}) }}
+      style={{ backgroundColor: bg(s.style?.bgColor, "var(--background)"), ...(bg(s.style?.textColor) ? { color: bg(s.style?.textColor) } : {}) }}
     >
       <div className="mx-auto max-w-[1280px] px-4 md:px-8">
         {/* Section heading */}
@@ -1003,7 +1008,7 @@ function Community({ settings }: { settings: CommunitySettings }) {
   return (
     <section
       className={styleProps.className}
-      style={{ backgroundColor: s.style?.bgColor ?? "#1a3a2e", color: s.style?.textColor ?? "#ffffff" }}
+      style={{ backgroundColor: bg(s.style?.bgColor, "#1a3a2e"), color: bg(s.style?.textColor, "#ffffff") }}
     >
       <div className="mx-auto grid max-w-[1280px] items-center gap-10 px-4 md:grid-cols-2 md:px-8">
         {/* Text */}
@@ -1515,7 +1520,7 @@ function NewsletterSection({ settings }: { settings: NewsletterSettings }) {
   return (
     <section
       className={styleProps.className}
-      style={{ ...styleProps.inlineStyle, backgroundColor: s.style?.bgColor ?? styleProps.inlineStyle.backgroundColor ?? "#f5efe6" }}
+      style={{ ...styleProps.inlineStyle, backgroundColor: bg(s.style?.bgColor, styleProps.inlineStyle.backgroundColor ?? "#f5efe6") }}
     >
       <div className="mx-auto max-w-2xl px-4 text-center md:px-8">
         {pickLocalized(s.eyebrow, lang) && (
@@ -1694,7 +1699,7 @@ function SpacerSection({ settings }: { settings: SpacerSettings }) {
   const h = Math.max(0, Math.min(400, s.height ?? 48));
   return (
     <div
-      style={{ height: h, backgroundColor: s.style?.bgColor }}
+      style={{ height: h, backgroundColor: bg(s.style?.bgColor) }}
       className="w-full"
     >
       {s.showDivider && (
@@ -1717,8 +1722,8 @@ function AnnouncementBarSection({ settings }: { settings: AnnouncementBarSetting
     <div
       className="w-full px-4 py-2 text-center text-xs font-medium md:text-sm"
       style={{
-        backgroundColor: s.bgColor ?? s.style?.bgColor ?? "#1a3a2e",
-        color: s.style?.bodyColor ?? s.textColor ?? s.style?.textColor ?? "#ffffff",
+        backgroundColor: bg(s.bgColor, bg(s.style?.bgColor, "#1a3a2e")),
+        color: bg(s.style?.bodyColor, bg(s.textColor, bg(s.style?.textColor, "#ffffff"))),
       }}
     >
       <Typewriter text={msg} />

@@ -199,12 +199,25 @@ export function mergeTheme(partial: unknown): ThemeSettings {
       : DEFAULT_FOOTER.legalLinks,
   };
   return {
-    colors: { ...DEFAULT_THEME.colors, ...(p.colors ?? {}) },
+    colors: {
+      background: normalizeCssColor(p.colors?.background) ?? DEFAULT_THEME.colors.background,
+      foreground: normalizeCssColor(p.colors?.foreground) ?? DEFAULT_THEME.colors.foreground,
+      primary: normalizeCssColor(p.colors?.primary) ?? DEFAULT_THEME.colors.primary,
+      accent: normalizeCssColor(p.colors?.accent) ?? DEFAULT_THEME.colors.accent,
+    },
     fonts: { ...DEFAULT_THEME.fonts, ...(p.fonts ?? {}) },
     customFonts,
     header,
     footer,
   };
+}
+
+export function normalizeCssColor(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const color = value.trim();
+  if (!color || color.toLowerCase() === "default") return undefined;
+  if (/^[0-9a-f]{3}([0-9a-f]{3})?$/i.test(color)) return `#${color}`;
+  return color;
 }
 
 export function themeToCss(theme: ThemeSettings): string {

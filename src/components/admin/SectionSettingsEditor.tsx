@@ -35,6 +35,7 @@ import type {
   StoreItem,
   FaqSettings,
   ContactSettings,
+  CustomSectionSettings,
 } from "@/lib/section-registry";
 
 type AnyObj = Record<string, unknown>;
@@ -116,6 +117,9 @@ export function SectionSettingsEditor({
       )}
       {type === "contact" && (
         <ContactEditor value={value as ContactSettings} onChange={onChange as (v: ContactSettings) => void} />
+      )}
+      {type === "custom" && (
+        <CustomEditor value={value as CustomSectionSettings} onChange={onChange as (v: CustomSectionSettings) => void} />
       )}
     </div>
   );

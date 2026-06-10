@@ -1483,16 +1483,16 @@ function ImageBannerSection({ settings }: { settings: ImageBannerSettings }) {
           />
           <div className={`relative flex h-full flex-col justify-center gap-4 p-8 md:p-14 ${alignClass} ${heightClass}`}>
             {pickLocalized(s.eyebrow, lang) && (
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">{pickLocalized(s.eyebrow, lang)}</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>{pickLocalized(s.eyebrow, lang)}</p>
             )}
-            <h2 className="font-[Archivo] text-3xl font-black leading-tight tracking-tight text-white md:text-5xl">
+            <h2 className="font-[Archivo] text-3xl font-black leading-tight tracking-tight text-white md:text-5xl" style={tc(s.style, "headingColor")}>
               {pickLocalized(s.heading, lang)}
             </h2>
             {pickLocalized(s.body, lang) && (
-              <p className="max-w-xl text-base text-white/90">{pickLocalized(s.body, lang)}</p>
+              <p className="max-w-xl text-base text-white/90" style={tc(s.style, "bodyColor")}>{pickLocalized(s.body, lang)}</p>
             )}
             <div className={align === "center" ? "mx-auto" : ""}>
-              <CTAButton cta={s.cta} lang={lang} defaultStyle="primary" iconRight />
+              <CTAButton cta={s.cta} lang={lang} defaultStyle="primary" iconRight textStyle={tc(s.style, "ctaTextColor")} />
             </div>
           </div>
         </div>

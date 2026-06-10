@@ -24,6 +24,9 @@ export function Nav() {
   const site = useSiteSettings();
   const header = site.header;
   const linkStyle = header.linkColor ? { color: header.linkColor } : undefined;
+  const dropdownStyle: React.CSSProperties = {
+    backgroundColor: header.bgColor || "var(--background)",
+  };
 
   // Auto-hide on scroll-down, reveal on scroll-up. Always shown near top.
   const [hidden, setHidden] = useState(false);
@@ -149,7 +152,10 @@ export function Nav() {
               <ChevronDown className={`h-3.5 w-3.5 transition-transform ${shopOpen ? "rotate-180" : ""}`} />
             </button>
             {shopOpen && (
-              <div className="absolute -left-4 top-full min-w-[200px] rounded-xl border border-border bg-background py-2 shadow-lg">
+              <div
+                className="absolute -left-4 top-full min-w-[200px] rounded-xl border border-border py-2 shadow-xl"
+                style={dropdownStyle}
+              >
                 {catsLoading ? (
                   <div className="space-y-2 px-4 py-2">
                     {[0, 1, 2, 3].map((i) => (
@@ -211,7 +217,7 @@ export function Nav() {
           >
             <User className="h-4 w-4" />
           </Link>}
-          <LanguageSwitcher className="hidden md:inline-flex" />
+          <LanguageSwitcher className="hidden md:inline-flex" menuBg={header.bgColor} />
           {header.showSearch && <button className="hidden h-9 w-9 items-center justify-center rounded-full text-foreground/70 transition hover:bg-muted hover:text-primary md:flex" aria-label={t("nav.search")}>
             <Search className="h-4 w-4" />
           </button>}

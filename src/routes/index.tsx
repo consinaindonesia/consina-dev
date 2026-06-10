@@ -1421,13 +1421,13 @@ function NewsletterSection({ settings }: { settings: NewsletterSettings }) {
     >
       <div className="mx-auto max-w-2xl px-4 text-center md:px-8">
         {pickLocalized(s.eyebrow, lang) && (
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent">{pickLocalized(s.eyebrow, lang)}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>{pickLocalized(s.eyebrow, lang)}</p>
         )}
-        <h2 className="mt-2 font-[Archivo] text-3xl font-black tracking-tight text-primary md:text-4xl">
+        <h2 className="mt-2 font-[Archivo] text-3xl font-black tracking-tight text-primary md:text-4xl" style={tc(s.style, "headingColor")}>
           {pickLocalized(s.heading, lang)}
         </h2>
         {pickLocalized(s.body, lang) && (
-          <p className="mt-3 text-base text-muted-foreground">{pickLocalized(s.body, lang)}</p>
+          <p className="mt-3 text-base text-muted-foreground" style={tc(s.style, "bodyColor")}>{pickLocalized(s.body, lang)}</p>
         )}
         <form onSubmit={onSubmit} className="mx-auto mt-6 flex max-w-md flex-col gap-2 sm:flex-row">
           <input
@@ -1442,6 +1442,7 @@ function NewsletterSection({ settings }: { settings: NewsletterSettings }) {
             type="submit"
             disabled={status === "loading"}
             className="h-11 rounded-full bg-primary px-6 text-sm font-semibold uppercase tracking-wider text-primary-foreground transition hover:bg-secondary disabled:opacity-60"
+            style={tc(s.style, "ctaTextColor")}
           >
             {pickLocalized(s.buttonLabel, lang, "Subscribe")}
           </button>

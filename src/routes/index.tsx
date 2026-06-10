@@ -593,11 +593,15 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
         mode === "manual" && manualSrc
           ? manualSrc
           : autoSrc || fallback;
+      const descOverride =
+        (lang === "en" ? override?.descriptionEn : override?.descriptionId);
+      const desc = typeof descOverride === "string"
+        ? descOverride
+        : ((t(`home.categories.${c.slug}_desc` as never, { defaultValue: "" }) as string) || "");
       return {
         slug: c.slug,
         name: localizedField(c, "name", lang).value,
-        desc:
-          (t(`home.categories.${c.slug}_desc` as never, { defaultValue: "" }) as string) || "",
+        desc,
         img,
         count: counts.get(c.slug) ?? 0,
       };
@@ -661,17 +665,29 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
             <h2 className="mt-2 font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl" style={tc(s.style, "headingColor")}>
               {pickLocalized(s.title, lang, t("home.categories.title"))}
             </h2>
-            <p className="mt-2 max-w-xl text-sm text-muted-foreground md:text-base" style={tc(s.style, "bodyColor")}>
+            <p className="mt-2 max-w-xl text-sm text-muted-foreground md:text-base" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>
               {pickLocalized(s.subtitle, lang, t("home.categories.subtitle"))}
             </p>
           </div>
-          <Link
-            to="/catalog"
-            className="hidden shrink-0 items-center gap-1 text-sm font-semibold uppercase tracking-wider text-primary transition hover:gap-2 md:inline-flex"
-          >
-            {t("cta.view_all", { defaultValue: "Lihat semua" })}
-            <ArrowRight className="h-4 w-4" />
-          </Link>
+          {(() => {
+            const label = pickLocalized(
+              { id: s.viewAllCta?.labelId, en: s.viewAllCta?.labelEn },
+              lang,
+              t("cta.view_all", { defaultValue: "Lihat semua" }),
+            );
+            const href = s.viewAllCta?.href || "/catalog";
+            if (!label) return null;
+            return (
+              <a
+                href={href}
+                className="hidden shrink-0 items-center gap-1 text-sm font-semibold uppercase tracking-wider text-primary transition hover:gap-2 md:inline-flex"
+                style={tc(s.style, "ctaTextColor")}
+              >
+                {label}
+                <ArrowRight className="h-4 w-4" />
+              </a>
+            );
+          })()}
         </div>
 
         {/* Carousel */}

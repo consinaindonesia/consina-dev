@@ -176,6 +176,26 @@ function StyleEditor({
               ))}
             </div>
           </div>
+          <ColorField
+            label="Eyebrow color"
+            value={value.eyebrowColor ?? ""}
+            onChange={(v) => onChange({ ...value, eyebrowColor: v || undefined })}
+          />
+          <ColorField
+            label="Heading color"
+            value={value.headingColor ?? ""}
+            onChange={(v) => onChange({ ...value, headingColor: v || undefined })}
+          />
+          <ColorField
+            label="Description color"
+            value={value.bodyColor ?? ""}
+            onChange={(v) => onChange({ ...value, bodyColor: v || undefined })}
+          />
+          <ColorField
+            label="CTA text color"
+            value={value.ctaTextColor ?? ""}
+            onChange={(v) => onChange({ ...value, ctaTextColor: v || undefined })}
+          />
         </div>
       )}
     </div>

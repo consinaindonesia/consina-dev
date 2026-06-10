@@ -16,6 +16,9 @@ export function Footer() {
   const footerLogo = footer.logoLightUrl || footer.logoUrl || site.header.logoUrl || "";
   const tagline = (lang === "en" ? footer.tagline.en : footer.tagline.id) || t("footer.tagline");
   const blurb = (lang === "en" ? footer.blurb.en : footer.blurb.id) || t("footer.blurb");
+  const taglineStyle = footer.taglineColor ? { color: footer.taglineColor } : undefined;
+  const headingStyle = footer.headingColor ? { color: footer.headingColor } : undefined;
+  const linkStyle = footer.linkColor ? { color: footer.linkColor } : undefined;
   const shopLinks = (categories ?? []).map((c) => ({
     label: localizedField(c, "name", lang).value,
     slug: c.slug,
@@ -67,10 +70,10 @@ export function Footer() {
                 </div>
               )}
             </Link>
-            <p className="mt-1 text-xs font-medium uppercase tracking-[0.25em] text-accent">
+            <p className="mt-1 text-xs font-medium uppercase tracking-[0.25em] text-accent" style={taglineStyle}>
               {tagline}
             </p>
-            <p className="mt-6 max-w-sm text-sm leading-relaxed text-primary-foreground/70">
+            <p className="mt-6 max-w-sm text-sm leading-relaxed text-primary-foreground/70" style={linkStyle}>
               {blurb}
             </p>
             <div className="mt-6 flex gap-3">
@@ -95,7 +98,7 @@ export function Footer() {
             </div>
           </div>
           <div>
-            <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
+            <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-accent" style={headingStyle}>
               {t("footer.shop")}
             </h4>
             <ul className="mt-5 space-y-3">
@@ -105,6 +108,7 @@ export function Footer() {
                     to={"/c/$slug" as never}
                     params={{ slug: l.slug } as never}
                     className="text-sm text-primary-foreground/75 transition hover:text-primary-foreground"
+                    style={linkStyle}
                   >
                     {l.label}
                   </Link>
@@ -114,13 +118,13 @@ export function Footer() {
           </div>
           {cols.map((c) => (
             <div key={c.title}>
-              <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
+              <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-accent" style={headingStyle}>
                 {c.title}
               </h4>
               <ul className="mt-5 space-y-3">
                 {c.items.map((i) => (
                   <li key={i}>
-                    <Link to="/" className="text-sm text-primary-foreground/75 transition hover:text-primary-foreground">
+                    <Link to="/" className="text-sm text-primary-foreground/75 transition hover:text-primary-foreground" style={linkStyle}>
                       {i}
                     </Link>
                   </li>

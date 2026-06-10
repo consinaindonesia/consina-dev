@@ -1271,7 +1271,59 @@ function ContactEditor({ value, onChange }: { value: ContactSettings; onChange: 
         <Label className="text-xs">Address</Label>
         <Input value={value.address ?? ""} onChange={(e) => onChange({ ...value, address: e.target.value })} placeholder="Jakarta, Indonesia" />
       </div>
+      <ContactSubjectsEditor
+        subjects={value.subjects ?? []}
+        onChange={(subjects) => onChange({ ...value, subjects })}
+      />
       <p className="text-[11px] text-muted-foreground">Inquiries submitted from the form are saved to the contact_inquiries table.</p>
+    </div>
+  );
+}
+
+function ContactSubjectsEditor({
+  subjects,
+  onChange,
+}: {
+  subjects: NonNullable<ContactSettings["subjects"]>;
+  onChange: (s: NonNullable<ContactSettings["subjects"]>) => void;
+}) {
+  const update = (i: number, patch: Partial<NonNullable<ContactSettings["subjects"]>[number]>) =>
+    onChange(subjects.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
+  const move = (i: number, dir: -1 | 1) => {
+    const next = [...subjects];
+    const j = i + dir;
+    if (j < 0 || j >= next.length) return;
+    [next[i], next[j]] = [next[j], next[i]];
+    onChange(next);
+  };
+  return (
+    <div className="rounded border border-input p-3">
+      <div className="mb-2 flex items-center justify-between">
+        <Label className="text-xs font-semibold">Form subjects ({subjects.length})</Label>
+        <Button size="sm" variant="outline" onClick={() => onChange([...subjects, { labelId: "", labelEn: "", value: "" }])}>
+          <Plus className="mr-1 h-3 w-3" /> Add
+        </Button>
+      </div>
+      <div className="space-y-2">
+        {subjects.map((s, i) => (
+          <div key={i} className="rounded border border-border bg-background p-2">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Subject #{i + 1}</span>
+              <div className="flex items-center gap-1">
+                <button type="button" onClick={() => move(i, -1)} className="rounded p-1 hover:bg-muted" aria-label="Up"><ChevronUp className="h-3 w-3" /></button>
+                <button type="button" onClick={() => move(i, 1)} className="rounded p-1 hover:bg-muted" aria-label="Down"><ChevronDown className="h-3 w-3" /></button>
+                <button type="button" onClick={() => onChange(subjects.filter((_, idx) => idx !== i))} className="rounded p-1 text-muted-foreground hover:text-destructive" aria-label="Remove"><Trash2 className="h-3 w-3" /></button>
+              </div>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-3">
+              <Input value={s.labelId ?? ""} onChange={(e) => update(i, { labelId: e.target.value })} placeholder="Label (ID)" className="h-8 text-xs" />
+              <Input value={s.labelEn ?? ""} onChange={(e) => update(i, { labelEn: e.target.value })} placeholder="Label (EN)" className="h-8 text-xs" />
+              <Input value={s.value ?? ""} onChange={(e) => update(i, { value: e.target.value })} placeholder="Value (optional)" className="h-8 text-xs" />
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="mt-2 text-[10px] text-muted-foreground">Leave empty to use the built-in 5 subjects.</p>
     </div>
   );
 }

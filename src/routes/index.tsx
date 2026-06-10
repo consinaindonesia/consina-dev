@@ -1495,7 +1495,7 @@ function NewsletterSection({ settings }: { settings: NewsletterSettings }) {
     const mail = email.trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) {
       setStatus("err");
-      setErrMsg("Invalid email");
+      setErrMsg(pickLocalized(s.errorMessage, lang, "Invalid email"));
       return;
     }
     setStatus("loading");
@@ -1523,7 +1523,7 @@ function NewsletterSection({ settings }: { settings: NewsletterSettings }) {
           {pickLocalized(s.heading, lang)}
         </h2>
         {pickLocalized(s.body, lang) && (
-          <p className="mt-3 text-base text-muted-foreground" style={tc(s.style, "bodyColor")}>{pickLocalized(s.body, lang)}</p>
+          <p className="mt-3 text-base text-muted-foreground" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{pickLocalized(s.body, lang)}</p>
         )}
         <form onSubmit={onSubmit} className="mx-auto mt-6 flex max-w-md flex-col gap-2 sm:flex-row">
           <input

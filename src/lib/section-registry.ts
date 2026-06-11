@@ -198,6 +198,13 @@ export type ImageBannerSettings = {
   body?: Localized;
   cta?: CTAConfig;
   height?: "S" | "M" | "L";
+  /** Carousel slides. When present (length >= 1), renders a carousel above the text block.
+   *  Backward-compatible: when undefined/empty, the legacy `image` field is used as a single slide. */
+  slides?: { image: string; href?: string; alt?: string }[];
+  /** Aspect ratio for the carousel images. Defaults to 16:9. */
+  aspectRatio?: "16:9" | "4:3" | "1:1";
+  /** Auto-advance interval in ms (1000..5000). Defaults to 2000. 0 disables auto-advance. */
+  intervalMs?: number;
 };
 
 export type GalleryImage = { src: string; alt?: string; href?: string };

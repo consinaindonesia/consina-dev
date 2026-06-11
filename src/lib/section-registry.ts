@@ -256,6 +256,11 @@ export type CustomSectionSettings = {
   heading?: Localized;
   body?: Localized;
   cta?: CTAConfig;
+  /** Carousel slides. When length >= 2 the renderer auto-activates carousel mode.
+   *  Backward-compatible: when undefined/empty, the legacy `image` field is used as a single slide. */
+  slides?: { image: string; href?: string; alt?: string }[];
+  /** Auto-advance interval in ms (1000..5000). Defaults to 2000. 0 disables auto-advance. */
+  intervalMs?: number;
 };
 
 export type SectionSettingsMap = {

@@ -1341,7 +1341,7 @@ function ContactSectionInner({ settings }: { settings: ContactSettings }) {
         </div>
         <form
           onSubmit={onSubmit}
-          className="rounded-sm border border-border bg-background p-6 md:p-8"
+          className=""
         >
           {/* Honeypot — hidden from real users */}
           <div aria-hidden="true" className="absolute left-[-9999px] h-0 w-0 overflow-hidden">

@@ -1560,42 +1560,194 @@ function ImageBannerSection({ settings }: { settings: ImageBannerSettings }) {
   const s = settings;
   const styleProps = styleToProps(s.style);
   const align = s.alignment ?? "center";
-  const overlay = Math.max(0, Math.min(100, s.overlay ?? 35));
-  const heightClass = s.height === "S" ? "min-h-[260px]" : s.height === "L" ? "min-h-[560px]" : "min-h-[400px]";
   const alignClass =
     align === "left"
       ? "items-start text-left"
       : align === "right"
         ? "items-end text-right"
         : "items-center text-center";
+  // Build slides list (backward compat with legacy `image`)
+  const rawSlides = (s.slides && s.slides.length > 0)
+    ? s.slides
+    : s.image
+      ? [{ image: s.image }]
+      : [];
+  const slides = rawSlides.filter((sl) => sl && sl.image);
+  const aspect = s.aspectRatio ?? "16:9";
+  const aspectClass =
+    aspect === "1:1" ? "aspect-square" : aspect === "4:3" ? "aspect-[4/3]" : "aspect-[16/9]";
+  const interval = typeof s.intervalMs === "number"
+    ? Math.max(0, Math.min(10000, s.intervalMs))
+    : 2000;
   return (
     <section className={styleProps.className} style={styleProps.inlineStyle}>
       <div className="mx-auto max-w-[1280px] px-4 md:px-8">
-        <div className={`relative overflow-hidden rounded-2xl ${heightClass}`}>
-          {s.image && (
-            <img src={s.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
-          )}
-          <div
-            className="absolute inset-0"
-            style={{ backgroundColor: `rgba(0,0,0,${(overlay / 100).toFixed(2)})` }}
-          />
-          <div className={`relative flex h-full flex-col justify-center gap-4 p-8 md:p-14 ${alignClass} ${heightClass}`}>
-            {pickLocalized(s.eyebrow, lang) && (
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>{pickLocalized(s.eyebrow, lang)}</p>
-            )}
-            <h2 className="font-[Archivo] text-3xl font-black leading-tight tracking-tight text-white md:text-5xl" style={tc(s.style, "headingColor")}>
-              {pickLocalized(s.heading, lang)}
-            </h2>
-            {pickLocalized(s.body, lang) && (
-              <p className="max-w-xl text-base text-white/90" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{pickLocalized(s.body, lang)}</p>
-            )}
-            <div className={align === "center" ? "mx-auto" : ""}>
-              <CTAButton cta={s.cta} lang={lang} defaultStyle="primary" iconRight textStyle={tc(s.style, "ctaTextColor")} />
+        <div className={`flex flex-col gap-6 ${alignClass}`}>
+          {(pickLocalized(s.eyebrow, lang) || pickLocalized(s.heading, lang) || pickLocalized(s.body, lang) || s.cta?.href) && (
+            <div className={`flex w-full flex-col gap-3 ${alignClass}`}>
+              {pickLocalized(s.eyebrow, lang) && (
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>{pickLocalized(s.eyebrow, lang)}</p>
+              )}
+              {pickLocalized(s.heading, lang) && (
+                <h2 className="font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-5xl" style={tc(s.style, "headingColor")}>
+                  {pickLocalized(s.heading, lang)}
+                </h2>
+              )}
+              {pickLocalized(s.body, lang) && (
+                <p className="max-w-2xl text-base text-muted-foreground" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{pickLocalized(s.body, lang)}</p>
+              )}
+              {s.cta?.href && (
+                <div className={align === "center" ? "mx-auto" : ""}>
+                  <CTAButton cta={s.cta} lang={lang} defaultStyle="primary" iconRight textStyle={tc(s.style, "ctaTextColor")} />
+                </div>
+              )}
             </div>
-          </div>
+          )}
+          <PromoCarousel slides={slides} aspectClass={aspectClass} intervalMs={interval} />
         </div>
       </div>
     </section>
+  );
+}
+
+function PromoCarousel({
+  slides,
+  aspectClass,
+  intervalMs,
+}: {
+  slides: { image: string; href?: string; alt?: string }[];
+  aspectClass: string;
+  intervalMs: number;
+}) {
+  const [idx, setIdx] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const count = slides.length;
+  const touchStartX = useRef<number | null>(null);
+  const touchDeltaX = useRef(0);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReducedMotion(mq.matches);
+    update();
+    mq.addEventListener?.("change", update);
+    return () => mq.removeEventListener?.("change", update);
+  }, []);
+
+  useEffect(() => {
+    if (count <= 1 || paused || reducedMotion || !intervalMs) return;
+    const t = window.setInterval(() => {
+      setIdx((i) => (i + 1) % count);
+    }, intervalMs);
+    return () => window.clearInterval(t);
+  }, [count, paused, reducedMotion, intervalMs]);
+
+  // Keep idx in range if slides change
+  useEffect(() => {
+    if (idx >= count) setIdx(0);
+  }, [count, idx]);
+
+  if (count === 0) {
+    return (
+      <div className={`w-full ${aspectClass} rounded-2xl bg-muted flex items-center justify-center text-sm text-muted-foreground`}>
+        Add images in the Design editor.
+      </div>
+    );
+  }
+
+  const go = (next: number) => setIdx(((next % count) + count) % count);
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0]?.clientX ?? null;
+    touchDeltaX.current = 0;
+    setPaused(true);
+  };
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (touchStartX.current == null) return;
+    touchDeltaX.current = (e.touches[0]?.clientX ?? 0) - touchStartX.current;
+  };
+  const onTouchEnd = () => {
+    const dx = touchDeltaX.current;
+    touchStartX.current = null;
+    touchDeltaX.current = 0;
+    setPaused(false);
+    if (Math.abs(dx) > 40) {
+      if (dx < 0) go(idx + 1); else go(idx - 1);
+    }
+  };
+
+  return (
+    <div
+      className={`relative w-full overflow-hidden rounded-2xl bg-muted ${aspectClass}`}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+      role="region"
+      aria-roledescription="carousel"
+    >
+      {slides.map((sl, i) => {
+        const visible = i === idx;
+        const img = (
+          <img
+            src={sl.image}
+            alt={sl.alt ?? ""}
+            className="absolute inset-0 h-full w-full object-cover"
+            loading={i === 0 ? "eager" : "lazy"}
+            draggable={false}
+          />
+        );
+        return (
+          <div
+            key={i}
+            className="absolute inset-0 transition-opacity duration-700 ease-in-out"
+            style={{ opacity: visible ? 1 : 0, pointerEvents: visible ? "auto" : "none" }}
+            aria-hidden={!visible}
+          >
+            {sl.href ? (
+              <a href={sl.href} className="block h-full w-full">{img}</a>
+            ) : (
+              img
+            )}
+          </div>
+        );
+      })}
+
+      {count > 1 && (
+        <>
+          <button
+            type="button"
+            onClick={() => go(idx - 1)}
+            aria-label="Previous slide"
+            className="absolute left-3 top-1/2 hidden -translate-y-1/2 items-center justify-center rounded-full bg-background/80 p-2 text-foreground shadow hover:bg-background md:flex"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => go(idx + 1)}
+            aria-label="Next slide"
+            className="absolute right-3 top-1/2 hidden -translate-y-1/2 items-center justify-center rounded-full bg-background/80 p-2 text-foreground shadow hover:bg-background md:flex"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+          <div className="absolute inset-x-0 bottom-3 flex items-center justify-center gap-2">
+            {slides.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => go(i)}
+                aria-label={`Go to slide ${i + 1}`}
+                aria-current={i === idx}
+                className={`h-2 rounded-full transition-all ${i === idx ? "w-6 bg-white" : "w-2 bg-white/60 hover:bg-white/80"}`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 

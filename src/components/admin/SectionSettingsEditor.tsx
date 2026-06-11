@@ -1379,9 +1379,61 @@ function ContactSubjectsEditor({
 function CustomEditor({ value, onChange }: { value: CustomSectionSettings; onChange: (v: CustomSectionSettings) => void }) {
   const pos = value.imagePosition ?? "right";
   const overlay = value.overlay ?? 35;
+  // Seed slides from legacy single `image` on first edit so existing content carries over.
+  const slides = value.slides && value.slides.length > 0
+    ? value.slides
+    : value.image
+      ? [{ image: value.image, href: value.imageHref }]
+      : [];
+  const interval = typeof value.intervalMs === "number" ? value.intervalMs : 2000;
+  const updateSlide = (i: number, patch: Partial<{ image: string; href?: string; alt?: string }>) =>
+    onChange({ ...value, slides: slides.map((sl, idx) => (idx === i ? { ...sl, ...patch } : sl)) });
+  const moveSlide = (i: number, dir: -1 | 1) => {
+    const next = [...slides];
+    const j = i + dir;
+    if (j < 0 || j >= next.length) return;
+    [next[i], next[j]] = [next[j], next[i]];
+    onChange({ ...value, slides: next });
+  };
   return (
     <div className="space-y-4">
-      <ImagePicker label="Image" value={value.image} onChange={(v) => onChange({ ...value, image: v })} />
+      <div className="rounded border border-input p-3">
+        <div className="mb-2 flex items-center justify-between">
+          <Label className="text-xs font-semibold">Slides</Label>
+          <Button size="sm" variant="outline" onClick={() => onChange({ ...value, slides: [...slides, { image: "" }] })}>
+            <Plus className="mr-1 h-3 w-3" /> Add slide
+          </Button>
+        </div>
+        <p className="mb-2 text-[11px] text-muted-foreground">Add 2+ slides to auto-activate carousel mode (autoplay, swipe, arrows, dots). With 1 slide, renders as a single image.</p>
+        <div className="space-y-3">
+          {slides.map((sl, i) => (
+            <div key={i} className="rounded border border-border bg-background p-2">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Slide #{i + 1}</span>
+                <div className="flex items-center gap-1">
+                  <button type="button" onClick={() => moveSlide(i, -1)} className="rounded p-1 hover:bg-muted" aria-label="Up"><ChevronUp className="h-3 w-3" /></button>
+                  <button type="button" onClick={() => moveSlide(i, 1)} className="rounded p-1 hover:bg-muted" aria-label="Down"><ChevronDown className="h-3 w-3" /></button>
+                  <button type="button" onClick={() => onChange({ ...value, slides: slides.filter((_, idx) => idx !== i) })} className="rounded p-1 text-muted-foreground hover:text-destructive" aria-label="Remove"><Trash2 className="h-3 w-3" /></button>
+                </div>
+              </div>
+              <ImagePicker label="Image" value={sl.image} onChange={(v) => updateSlide(i, { image: v })} />
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                <Input value={sl.alt ?? ""} onChange={(e) => updateSlide(i, { alt: e.target.value })} placeholder="Alt text (optional)" />
+                <Input value={sl.href ?? ""} onChange={(e) => updateSlide(i, { href: e.target.value })} placeholder="Link URL (optional)" />
+              </div>
+            </div>
+          ))}
+          {slides.length === 0 && (
+            <p className="text-[11px] text-muted-foreground">No slides yet. Add at least one image.</p>
+          )}
+        </div>
+      </div>
+      {slides.length > 1 && (
+        <div>
+          <Label className="text-xs">Auto-advance interval — {(interval / 1000).toFixed(1)}s {interval === 0 ? "(off)" : ""}</Label>
+          <Slider value={[interval]} min={0} max={5000} step={500} onValueChange={(vals) => onChange({ ...value, intervalMs: vals[0] ?? 2000 })} className="mt-2" />
+        </div>
+      )}
       <div>
         <Label className="text-xs">Image position</Label>
         <div className="mt-1 flex gap-1">
@@ -1405,10 +1457,6 @@ function CustomEditor({ value, onChange }: { value: CustomSectionSettings; onCha
           <Slider value={[overlay]} min={0} max={100} step={5} onValueChange={(vals) => onChange({ ...value, overlay: vals[0] ?? 0 })} className="mt-2" />
         </div>
       )}
-      <div>
-        <Label className="text-xs">Image link (optional)</Label>
-        <Input value={value.imageHref ?? ""} onChange={(e) => onChange({ ...value, imageHref: e.target.value })} placeholder="/catalog or https://…" />
-      </div>
       <LocalizedField label="Eyebrow" value={value.eyebrow} onChange={(v) => onChange({ ...value, eyebrow: v })} />
       <LocalizedField label="Heading" value={value.heading} onChange={(v) => onChange({ ...value, heading: v })} />
       <LocalizedField label="Description" value={value.body} onChange={(v) => onChange({ ...value, body: v })} multiline />

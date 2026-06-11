@@ -1341,7 +1341,7 @@ function ContactSectionInner({ settings }: { settings: ContactSettings }) {
         </div>
         <form
           onSubmit={onSubmit}
-          className="rounded-sm border border-border bg-background p-6 md:p-8"
+          className=""
         >
           {/* Honeypot — hidden from real users */}
           <div aria-hidden="true" className="absolute left-[-9999px] h-0 w-0 overflow-hidden">
@@ -1961,15 +1961,33 @@ function CustomSection({ settings }: { settings: CustomSectionSettings }) {
   const heading = pickLocalized(s.heading, lang);
   const body = pickLocalized(s.body, lang);
   const overlay = Math.max(0, Math.min(100, s.overlay ?? 35));
-  const ImageEl = s.image ? (
-    s.imageHref ? (
-      <a href={s.imageHref} className="block h-full w-full">
-        <img src={s.image} alt={heading || ""} className="h-full w-full rounded-2xl object-cover" />
-      </a>
-    ) : (
-      <img src={s.image} alt={heading || ""} className="h-full w-full rounded-2xl object-cover" />
-    )
-  ) : null;
+  // Backward-compatible: seed slides from legacy single `image` if no slides yet.
+  const slides: { image: string; href?: string; alt?: string }[] =
+    s.slides && s.slides.length > 0
+      ? s.slides.filter((sl) => sl.image)
+      : s.image
+        ? [{ image: s.image, href: s.imageHref, alt: heading || "" }]
+        : [];
+  const interval = typeof s.intervalMs === "number"
+    ? Math.max(0, Math.min(10000, s.intervalMs))
+    : 2000;
+  const firstImage = slides[0]?.image;
+  const renderMedia = (rounded = true) => {
+    if (slides.length === 0) return null;
+    if (slides.length === 1) {
+      const sl = slides[0]!;
+      const img = (
+        <img src={sl.image} alt={sl.alt ?? heading ?? ""} className={`h-full w-full object-cover ${rounded ? "rounded-2xl" : ""}`} />
+      );
+      return sl.href ? (
+        <a href={sl.href} className="block h-full w-full">{img}</a>
+      ) : img;
+    }
+    return (
+      <PromoCarousel slides={slides} aspectClass="aspect-[4/3]" intervalMs={interval} />
+    );
+  };
+  const ImageEl = slides.length > 0 ? renderMedia(true) : null;
   const Text = (
     <div>
       {eyebrow && (
@@ -1997,7 +2015,13 @@ function CustomSection({ settings }: { settings: CustomSectionSettings }) {
       <section className={styleProps.className} style={styleProps.inlineStyle}>
         <div className="mx-auto max-w-[1280px] px-4 md:px-8">
           <div className="relative min-h-[360px] overflow-hidden rounded-2xl">
-            {s.image && <img src={s.image} alt="" className="absolute inset-0 h-full w-full object-cover" />}
+            {slides.length > 1 ? (
+              <div className="absolute inset-0">
+                <PromoCarousel slides={slides} aspectClass="h-full w-full" intervalMs={interval} />
+              </div>
+            ) : firstImage ? (
+              <img src={firstImage} alt="" className="absolute inset-0 h-full w-full object-cover" />
+            ) : null}
             <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${(overlay / 100).toFixed(2)})` }} />
             <div className="relative p-8 md:p-14 text-white">{Text}</div>
           </div>

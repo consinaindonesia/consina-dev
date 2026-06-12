@@ -172,7 +172,14 @@ export function CsvImportWizard({
       return;
     }
     setFileName(file.name);
-    const text = await file.text();
+    let text: string;
+    try {
+      text = await file.text();
+    } catch (e) {
+      console.error("[CsvImportWizard] failed to read file:", e);
+      toast.error(`Failed to read file: ${(e as Error).message}`);
+      return;
+    }
     const parsed = Papa.parse<Record<string, string>>(text, {
       header: true,
       skipEmptyLines: true,
@@ -189,20 +196,50 @@ export function CsvImportWizard({
     }));
     setRows(parsedRows);
 
-    // Load categories + existing SKUs to validate
+    // Load categories + existing SKUs to validate.
+    // IMPORTANT: chunk `.in(...)` calls — PostgREST builds a URL from the
+    // list and very long lists (e.g. 758 SKUs) blow past the URL length
+    // limit and fail silently. Batch ~100 at a time, surface errors via toast.
     const slugs = Array.from(new Set(parsedRows.map((r) => (r.raw.category_slug ?? "").trim()).filter(Boolean)));
     const skus = Array.from(new Set(parsedRows.map((r) => (r.raw.sku ?? "").trim()).filter(Boolean)));
-    const [catsRes, prodRes] = await Promise.all([
-      slugs.length
-        ? supabase.from("categories").select("slug").in("slug", slugs)
-        : Promise.resolve({ data: [] as { slug: string }[] }),
-      skus.length
-        ? supabase.from("products").select("sku").in("sku", skus)
-        : Promise.resolve({ data: [] as { sku: string }[] }),
-    ]);
-    setValidCategorySlugs(new Set((catsRes.data ?? []).map((c) => c.slug)));
-    setExistingSkus(new Set((prodRes.data ?? []).map((p) => p.sku)));
-    setStep("validate");
+    const CHUNK = 100;
+
+    async function fetchChunked<T extends { sku?: string; slug?: string }>(
+      table: "products" | "categories",
+      column: "sku" | "slug",
+      values: string[],
+    ): Promise<T[]> {
+      const out: T[] = [];
+      for (let i = 0; i < values.length; i += CHUNK) {
+        const batch = values.slice(i, i + CHUNK);
+        const { data, error } = await supabase
+          .from(table)
+          .select(column)
+          .in(column, batch);
+        if (error) {
+          throw new Error(`${table}.${column} lookup failed (batch ${i / CHUNK + 1}): ${error.message}`);
+        }
+        if (data) out.push(...(data as T[]));
+      }
+      return out;
+    }
+
+    try {
+      const [catRows, prodRows] = await Promise.all([
+        fetchChunked<{ slug: string }>("categories", "slug", slugs),
+        fetchChunked<{ sku: string }>("products", "sku", skus),
+      ]);
+      setValidCategorySlugs(new Set(catRows.map((c) => c.slug)));
+      setExistingSkus(new Set(prodRows.map((p) => p.sku)));
+      setStep("validate");
+    } catch (e) {
+      const msg = (e as Error).message || "Failed to validate CSV";
+      console.error("[CsvImportWizard] validation lookup failed:", e);
+      toast.error(msg);
+      // Stay on upload step so the user can retry.
+      setRows([]);
+      setFileName("");
+    }
   }
 
   // Compute per-row errors based on validation state

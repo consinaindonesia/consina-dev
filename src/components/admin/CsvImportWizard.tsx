@@ -172,7 +172,14 @@ export function CsvImportWizard({
       return;
     }
     setFileName(file.name);
-    const text = await file.text();
+    let text: string;
+    try {
+      text = await file.text();
+    } catch (e) {
+      console.error("[CsvImportWizard] failed to read file:", e);
+      toast.error(`Failed to read file: ${(e as Error).message}`);
+      return;
+    }
     const parsed = Papa.parse<Record<string, string>>(text, {
       header: true,
       skipEmptyLines: true,

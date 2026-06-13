@@ -41,6 +41,7 @@ import {
   type CustomSectionSettings,
   type SectionStyle,
 } from "@/lib/section-registry";
+import { autoCompactStyle } from "@/lib/section-registry";
 import hero from "@/assets/hero-mountain.jpg";
 import catCarriers from "@/assets/cat-carriers.jpg";
 import catTents from "@/assets/cat-tents.jpg";

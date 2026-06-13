@@ -1955,11 +1955,12 @@ function Typewriter({ text }: { text: string }) {
 function CustomSection({ settings }: { settings: CustomSectionSettings }) {
   const lang = useLang();
   const s = settings;
-  const styleProps = styleToProps(s.style);
   const pos = s.imagePosition ?? "right";
   const eyebrow = pickLocalized(s.eyebrow, lang);
   const heading = pickLocalized(s.heading, lang);
   const body = pickLocalized(s.body, lang);
+  const hasText = !!(eyebrow || heading || body);
+  const styleProps = styleToProps(autoCompactStyle(s.style, hasText));
   const overlay = Math.max(0, Math.min(100, s.overlay ?? 35));
   // Backward-compatible: seed slides from legacy single `image` if no slides yet.
   const slides: { image: string; href?: string; alt?: string }[] =
@@ -1971,20 +1972,23 @@ function CustomSection({ settings }: { settings: CustomSectionSettings }) {
   const interval = typeof s.intervalMs === "number"
     ? Math.max(0, Math.min(10000, s.intervalMs))
     : 2000;
+  const aspect = s.aspectRatio ?? "16:9";
+  const aspectClass =
+    aspect === "1:1" ? "aspect-square" : aspect === "4:3" ? "aspect-[4/3]" : "aspect-[16/9]";
   const firstImage = slides[0]?.image;
   const renderMedia = (rounded = true) => {
     if (slides.length === 0) return null;
     if (slides.length === 1) {
       const sl = slides[0]!;
       const img = (
-        <img src={sl.image} alt={sl.alt ?? heading ?? ""} className={`h-full w-full object-cover ${rounded ? "rounded-2xl" : ""}`} />
+        <img src={sl.image} alt={sl.alt ?? heading ?? ""} className={`w-full ${aspectClass} object-cover ${rounded ? "rounded-2xl" : ""}`} />
       );
       return sl.href ? (
         <a href={sl.href} className="block h-full w-full">{img}</a>
       ) : img;
     }
     return (
-      <PromoCarousel slides={slides} aspectClass="aspect-[4/3]" intervalMs={interval} />
+      <PromoCarousel slides={slides} aspectClass={aspectClass} intervalMs={interval} />
     );
   };
   const ImageEl = slides.length > 0 ? renderMedia(true) : null;

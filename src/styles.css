@@ -155,3 +155,25 @@
     color: var(--color-foreground);
   }
 }
+
+/*
+ * Overlay safety net — ensure every popover, dropdown, dialog, sheet,
+ * select menu, and command palette ALWAYS renders on a solid surface, no
+ * matter what theme override is active or what content sits behind it.
+ * Targets Radix primitives by their data attributes so the rule applies
+ * site-wide (storefront and admin) without per-component changes.
+ */
+@layer components {
+  [data-radix-popper-content-wrapper] > * {
+    background-color: var(--popover) !important;
+    color: var(--popover-foreground);
+    box-shadow:
+      0 10px 30px -10px rgb(0 0 0 / 0.18),
+      0 2px 8px -2px rgb(0 0 0 / 0.12);
+  }
+  [role="dialog"][data-state],
+  [role="alertdialog"][data-state] {
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+}

@@ -989,7 +989,18 @@ function ImageBannerEditor({ value, onChange }: { value: ImageBannerSettings; on
       </div>
       <div>
         <Label className="text-xs">Auto-advance interval — {(interval / 1000).toFixed(1)}s {interval === 0 ? "(off)" : ""}</Label>
-        <Slider value={[interval]} min={0} max={5000} step={500} onValueChange={(vals) => onChange({ ...value, intervalMs: vals[0] ?? 2000 })} className="mt-2" />
+        <Input
+          type="number"
+          min={1}
+          max={10}
+          step={1}
+          className="mt-2 w-28"
+          value={Math.max(1, Math.round((interval || 2000) / 1000))}
+          onChange={(e) => {
+            const n = Math.max(1, Math.min(10, Number(e.target.value) || 2));
+            onChange({ ...value, intervalMs: n * 1000 });
+          }}
+        />
         <p className="mt-1 text-[11px] text-muted-foreground">Set to 0 to disable auto-advance. Always disabled for users with reduced-motion preference.</p>
       </div>
       <LocalizedField label="Eyebrow" value={value.eyebrow} onChange={(v) => onChange({ ...value, eyebrow: v })} />

@@ -259,6 +259,8 @@ export type CustomSectionSettings = {
   /** Carousel slides. When length >= 2 the renderer auto-activates carousel mode.
    *  Backward-compatible: when undefined/empty, the legacy `image` field is used as a single slide. */
   slides?: { image: string; href?: string; alt?: string }[];
+  /** Aspect ratio for the carousel images. Defaults to 16:9. */
+  aspectRatio?: "16:9" | "4:3" | "1:1";
   /** Auto-advance interval in ms (1000..5000). Defaults to 2000. 0 disables auto-advance. */
   intervalMs?: number;
 };
@@ -618,4 +620,16 @@ export function styleToProps(style: SectionStyle | undefined): {
   if (style?.bgColor) inlineStyle.backgroundColor = style.bgColor;
   if (style?.textColor) inlineStyle.color = style.textColor;
   return { className: padClass, inlineStyle };
+}
+
+/** Returns a style with padding forced to "S" when the section has no
+ * eyebrow + heading + description text. Used by section renderers to
+ * automatically tighten vertical spacing for image/CTA-only sections so
+ * empty sections don't leave large vertical gaps. */
+export function autoCompactStyle(
+  style: SectionStyle | undefined,
+  hasTextContent: boolean,
+): SectionStyle | undefined {
+  if (hasTextContent) return style;
+  return { ...(style ?? {}), padding: "S" };
 }

@@ -14,8 +14,13 @@ export function Footer() {
   const site = useSiteSettings();
   const footer = site.footer;
   const footerLogo = footer.logoLightUrl || footer.logoUrl || site.header.logoUrl || "";
-  const tagline = (lang === "en" ? footer.tagline.en : footer.tagline.id) || t("footer.tagline");
-  const blurb = (lang === "en" ? footer.blurb.en : footer.blurb.id) || t("footer.blurb");
+  // Use the saved footer fields directly so admin edits always win.
+  // Only fall back to the i18n string when the saved value is undefined
+  // (never set). Explicit empty string => render empty (intentional clear).
+  const taglineRaw = lang === "en" ? footer.tagline.en : footer.tagline.id;
+  const blurbRaw = lang === "en" ? footer.blurb.en : footer.blurb.id;
+  const tagline = typeof taglineRaw === "string" ? taglineRaw : t("footer.tagline");
+  const blurb = typeof blurbRaw === "string" ? blurbRaw : t("footer.blurb");
   const taglineStyle = footer.taglineColor ? { color: footer.taglineColor } : undefined;
   const headingStyle = footer.headingColor ? { color: footer.headingColor } : undefined;
   const linkStyle = footer.linkColor ? { color: footer.linkColor } : undefined;

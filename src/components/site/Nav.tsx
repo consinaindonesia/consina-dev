@@ -24,8 +24,11 @@ export function Nav() {
   const site = useSiteSettings();
   const header = site.header;
   const linkStyle = header.linkColor ? { color: header.linkColor } : undefined;
+  // Always use a solid surface color for overlay dropdowns so they remain
+  // readable regardless of the header's own background (which the user may
+  // have set to a translucent or image-backed value).
   const dropdownStyle: React.CSSProperties = {
-    backgroundColor: header.bgColor || "var(--background)",
+    backgroundColor: "var(--background)",
   };
 
   // Auto-hide on scroll-down, reveal on scroll-up. Always shown near top.

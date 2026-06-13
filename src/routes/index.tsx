@@ -1559,8 +1559,11 @@ function NewsletterSection({ settings }: { settings: NewsletterSettings }) {
 function ImageBannerSection({ settings }: { settings: ImageBannerSettings }) {
   const lang = useLang();
   const s = settings;
-  const styleProps = styleToProps(s.style);
   const align = s.alignment ?? "center";
+  const hasText = !!(
+    pickLocalized(s.eyebrow, lang) || pickLocalized(s.heading, lang) || pickLocalized(s.body, lang)
+  );
+  const styleProps = styleToProps(autoCompactStyle(s.style, hasText));
   const alignClass =
     align === "left"
       ? "items-start text-left"

@@ -20,6 +20,7 @@ export type SectionTypeId =
   | "testimonials"
   | "spacer"
   | "announcement_bar"
+  | "video_youtube"
   | "custom";
 
 export type Localized = { id?: string; en?: string };

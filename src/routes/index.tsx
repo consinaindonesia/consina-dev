@@ -39,9 +39,11 @@ import {
   type FaqSettings,
   type ContactSettings,
   type CustomSectionSettings,
+  type VideoYoutubeSettings,
   type SectionStyle,
 } from "@/lib/section-registry";
 import { autoCompactStyle } from "@/lib/section-registry";
+import { getLatestYoutubeVideo, extractYoutubeId } from "@/lib/youtube-latest.functions";
 import hero from "@/assets/hero-mountain.jpg";
 import catCarriers from "@/assets/cat-carriers.jpg";
 import catTents from "@/assets/cat-tents.jpg";
@@ -225,6 +227,7 @@ const SECTION_COMPONENTS: Record<SectionTypeId, SectionCmp> = {
   testimonials: TestimonialsSection as SectionCmp,
   spacer: SpacerSection as SectionCmp,
   announcement_bar: AnnouncementBarSection as SectionCmp,
+  video_youtube: VideoYoutubeSection as SectionCmp,
   custom: CustomSection as SectionCmp,
 };
 
@@ -370,6 +373,105 @@ function Hero({ settings }: { settings: HeroSettings }) {
             ))}
           </div>
         )}
+      </div>
+    </section>
+  );
+}
+
+function VideoYoutubeSection({ settings }: { settings: VideoYoutubeSettings }) {
+  const lang = useLang();
+  const s = settings;
+  const align = s.alignment ?? "center";
+  const hasText = !!(
+    pickLocalized(s.eyebrow, lang) || pickLocalized(s.heading, lang) || pickLocalized(s.body, lang)
+  );
+  const styleProps = styleToProps(autoCompactStyle(s.style, hasText));
+  const alignClass =
+    align === "left"
+      ? "items-start text-left"
+      : align === "right"
+        ? "items-end text-right"
+        : "items-center text-center";
+  const aspect = s.aspectRatio ?? "16:9";
+  const aspectClass =
+    aspect === "1:1" ? "aspect-square" : aspect === "4:3" ? "aspect-[4/3]" : "aspect-[16/9]";
+
+  const manualId = s.mode === "manual" ? extractYoutubeId(s.videoUrl ?? "") : null;
+  const [autoId, setAutoId] = useState<string | null>(null);
+  const [autoError, setAutoError] = useState<string | null>(null);
+  const channelId = (s.channelId ?? "").trim();
+
+  useEffect(() => {
+    if (s.mode !== "auto_latest" || !channelId) {
+      setAutoId(null);
+      setAutoError(null);
+      return;
+    }
+    let cancelled = false;
+    setAutoError(null);
+    getLatestYoutubeVideo({ data: { channelId } })
+      .then((r) => {
+        if (cancelled) return;
+        setAutoId(r.videoId);
+        if (r.error) setAutoError(r.error);
+      })
+      .catch((e: unknown) => {
+        if (cancelled) return;
+        setAutoError(e instanceof Error ? e.message : "Failed to load video");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [s.mode, channelId]);
+
+  const videoId = s.mode === "auto_latest" ? autoId : manualId;
+  const autoplay = !!s.autoplay;
+  const embedSrc = videoId
+    ? `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1${autoplay ? "&autoplay=1&mute=1&playsinline=1" : ""}`
+    : null;
+
+  return (
+    <section className={styleProps.className} style={styleProps.inlineStyle}>
+      <div className="mx-auto max-w-[1280px] px-4 md:px-8">
+        <div className={`flex flex-col gap-6 ${alignClass}`}>
+          {hasText && (
+            <div className={`flex w-full flex-col gap-3 ${alignClass}`}>
+              {pickLocalized(s.eyebrow, lang) && (
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>{pickLocalized(s.eyebrow, lang)}</p>
+              )}
+              {pickLocalized(s.heading, lang) && (
+                <h2 className="font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-5xl" style={tc(s.style, "headingColor")}>
+                  {pickLocalized(s.heading, lang)}
+                </h2>
+              )}
+              {pickLocalized(s.body, lang) && (
+                <p className="max-w-2xl text-base text-muted-foreground" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{pickLocalized(s.body, lang)}</p>
+              )}
+            </div>
+          )}
+          <div className={`w-full overflow-hidden rounded-2xl bg-muted ${aspectClass}`}>
+            {embedSrc ? (
+              <iframe
+                key={embedSrc}
+                src={embedSrc}
+                title="YouTube video"
+                loading="lazy"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                referrerPolicy="strict-origin-when-cross-origin"
+                className="h-full w-full border-0"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center p-6 text-center text-sm text-muted-foreground">
+                {s.mode === "auto_latest"
+                  ? channelId
+                    ? (autoError ?? "Loading latest video…")
+                    : "Add a YouTube Channel ID in the section editor."
+                  : "Paste a YouTube URL or video ID in the section editor."}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </section>
   );

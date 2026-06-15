@@ -20,6 +20,7 @@ export type SectionTypeId =
   | "testimonials"
   | "spacer"
   | "announcement_bar"
+  | "video_youtube"
   | "custom";
 
 export type Localized = { id?: string; en?: string };
@@ -265,6 +266,24 @@ export type CustomSectionSettings = {
   intervalMs?: number;
 };
 
+export type VideoYoutubeSettings = {
+  style?: SectionStyle;
+  eyebrow?: Localized;
+  heading?: Localized;
+  body?: Localized;
+  alignment?: "left" | "center" | "right";
+  /** Source mode for the video. */
+  mode?: "manual" | "auto_latest";
+  /** Manual mode: YouTube URL or 11-char video ID. */
+  videoUrl?: string;
+  /** Auto-latest mode: YouTube Channel ID (UC...). */
+  channelId?: string;
+  /** Aspect ratio for the embed. Defaults to 16:9. */
+  aspectRatio?: "16:9" | "4:3" | "1:1";
+  /** Whether to autoplay the embed (muted). Defaults to false. */
+  autoplay?: boolean;
+};
+
 export type SectionSettingsMap = {
   hero: HeroSettings;
   brand_story: BrandStorySettings;
@@ -282,6 +301,7 @@ export type SectionSettingsMap = {
   testimonials: TestimonialsSettings;
   spacer: SpacerSettings;
   announcement_bar: AnnouncementBarSettings;
+  video_youtube: VideoYoutubeSettings;
   custom: CustomSectionSettings;
 };
 
@@ -310,6 +330,7 @@ export const SECTION_REGISTRY: Record<SectionTypeId, SectionDefinition> = {
   testimonials: { id: "testimonials", label: "Testimonials", description: "Customer quotes and reviews." },
   spacer: { id: "spacer", label: "Spacer / Divider", description: "Adjustable empty space with optional divider." },
   announcement_bar: { id: "announcement_bar", label: "Announcement Bar", description: "Slim message bar — place at top of the page." },
+  video_youtube: { id: "video_youtube", label: "Video YouTube", description: "Embed a YouTube video — manual URL or auto-latest from a channel." },
   custom: { id: "custom", label: "Custom Section", description: "Blank section with image + eyebrow + heading + description + CTA." },
 };
 
@@ -554,6 +575,18 @@ export const DEFAULT_SECTION_SETTINGS: { [K in SectionTypeId]: SectionSettingsMa
   testimonials: DEFAULT_TESTIMONIALS,
   spacer: DEFAULT_SPACER,
   announcement_bar: DEFAULT_ANNOUNCEMENT_BAR,
+  video_youtube: {
+    style: { padding: "M" },
+    eyebrow: { id: "Tonton", en: "Watch" },
+    heading: { id: "Video Terbaru", en: "Latest Video" },
+    body: { id: "", en: "" },
+    alignment: "center",
+    mode: "manual",
+    videoUrl: "",
+    channelId: "",
+    aspectRatio: "16:9",
+    autoplay: false,
+  },
   custom: {
     style: { padding: "M" },
     image: "",

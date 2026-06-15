@@ -575,6 +575,18 @@ export const DEFAULT_SECTION_SETTINGS: { [K in SectionTypeId]: SectionSettingsMa
   testimonials: DEFAULT_TESTIMONIALS,
   spacer: DEFAULT_SPACER,
   announcement_bar: DEFAULT_ANNOUNCEMENT_BAR,
+  video_youtube: {
+    style: { padding: "M" },
+    eyebrow: { id: "Tonton", en: "Watch" },
+    heading: { id: "Video Terbaru", en: "Latest Video" },
+    body: { id: "", en: "" },
+    alignment: "center",
+    mode: "manual",
+    videoUrl: "",
+    channelId: "",
+    aspectRatio: "16:9",
+    autoplay: false,
+  },
   custom: {
     style: { padding: "M" },
     image: "",

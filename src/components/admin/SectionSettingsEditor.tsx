@@ -36,6 +36,7 @@ import type {
   FaqSettings,
   ContactSettings,
   CustomSectionSettings,
+  VideoYoutubeSettings,
 } from "@/lib/section-registry";
 
 type AnyObj = Record<string, unknown>;
@@ -120,6 +121,9 @@ export function SectionSettingsEditor({
       )}
       {type === "custom" && (
         <CustomEditor value={value as CustomSectionSettings} onChange={onChange as (v: CustomSectionSettings) => void} />
+      )}
+      {type === "video_youtube" && (
+        <VideoYoutubeEditor value={value as VideoYoutubeSettings} onChange={onChange as (v: VideoYoutubeSettings) => void} />
       )}
     </div>
   );

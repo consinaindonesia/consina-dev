@@ -39,9 +39,11 @@ import {
   type FaqSettings,
   type ContactSettings,
   type CustomSectionSettings,
+  type VideoYoutubeSettings,
   type SectionStyle,
 } from "@/lib/section-registry";
 import { autoCompactStyle } from "@/lib/section-registry";
+import { getLatestYoutubeVideo, extractYoutubeId } from "@/lib/youtube-latest.functions";
 import hero from "@/assets/hero-mountain.jpg";
 import catCarriers from "@/assets/cat-carriers.jpg";
 import catTents from "@/assets/cat-tents.jpg";
@@ -225,6 +227,7 @@ const SECTION_COMPONENTS: Record<SectionTypeId, SectionCmp> = {
   testimonials: TestimonialsSection as SectionCmp,
   spacer: SpacerSection as SectionCmp,
   announcement_bar: AnnouncementBarSection as SectionCmp,
+  video_youtube: VideoYoutubeSection as SectionCmp,
   custom: CustomSection as SectionCmp,
 };
 

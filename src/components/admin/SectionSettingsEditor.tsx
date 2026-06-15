@@ -1510,3 +1510,93 @@ function CustomEditor({ value, onChange }: { value: CustomSectionSettings; onCha
     </div>
   );
 }
+
+function VideoYoutubeEditor({ value, onChange }: { value: VideoYoutubeSettings; onChange: (v: VideoYoutubeSettings) => void }) {
+  const mode = value.mode ?? "manual";
+  const align = value.alignment ?? "center";
+  const aspect = value.aspectRatio ?? "16:9";
+  return (
+    <div className="space-y-4">
+      <div>
+        <Label className="text-xs">Source</Label>
+        <div className="mt-1 inline-flex rounded-md border border-border overflow-hidden text-xs">
+          {(["manual", "auto_latest"] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => onChange({ ...value, mode: m })}
+              className={`px-3 py-1.5 ${mode === m ? "bg-foreground text-background" : "bg-background"}`}
+            >
+              {m === "manual" ? "Manual URL" : "Auto-latest from channel"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {mode === "manual" ? (
+        <div>
+          <Label className="text-xs">YouTube URL or video ID</Label>
+          <Input
+            value={value.videoUrl ?? ""}
+            placeholder="https://www.youtube.com/watch?v=... or 11-char ID"
+            onChange={(e) => onChange({ ...value, videoUrl: e.target.value })}
+            className="mt-1"
+          />
+        </div>
+      ) : (
+        <div>
+          <Label className="text-xs">YouTube Channel ID</Label>
+          <Input
+            value={value.channelId ?? ""}
+            placeholder="UCxxxxxxxxxxxxxxxxxxxxxx"
+            onChange={(e) => onChange({ ...value, channelId: e.target.value })}
+            className="mt-1"
+          />
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            Latest public video is fetched server-side (1-hour cache). Requires the YOUTUBE_API_KEY secret.
+          </p>
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label className="text-xs">Aspect ratio</Label>
+          <select
+            value={aspect}
+            onChange={(e) => onChange({ ...value, aspectRatio: e.target.value as "16:9" | "4:3" | "1:1" })}
+            className="mt-1 w-full rounded-md border border-border bg-background px-2 py-1.5 text-sm"
+          >
+            <option value="16:9">16:9</option>
+            <option value="4:3">4:3</option>
+            <option value="1:1">1:1</option>
+          </select>
+        </div>
+        <div>
+          <Label className="text-xs">Text alignment</Label>
+          <select
+            value={align}
+            onChange={(e) => onChange({ ...value, alignment: e.target.value as "left" | "center" | "right" })}
+            className="mt-1 w-full rounded-md border border-border bg-background px-2 py-1.5 text-sm"
+          >
+            <option value="left">Left</option>
+            <option value="center">Center</option>
+            <option value="right">Right</option>
+          </select>
+        </div>
+      </div>
+
+      <label className="flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          checked={!!value.autoplay}
+          onChange={(e) => onChange({ ...value, autoplay: e.target.checked })}
+        />
+        Autoplay (muted)
+      </label>
+
+      <LocalizedField label="Eyebrow" value={value.eyebrow} onChange={(v) => onChange({ ...value, eyebrow: v })} />
+      <LocalizedField label="Heading" value={value.heading} onChange={(v) => onChange({ ...value, heading: v })} />
+      <LocalizedField label="Description" value={value.body} onChange={(v) => onChange({ ...value, body: v })} multiline />
+    </div>
+  );
+}

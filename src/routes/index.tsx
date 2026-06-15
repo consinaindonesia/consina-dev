@@ -338,25 +338,29 @@ function Hero({ settings }: { settings: HeroSettings }) {
         className="mx-auto flex min-h-[62vh] max-w-[1280px] flex-col justify-center px-4 py-20 md:min-h-[68vh] md:px-8 md:py-24 lg:min-h-[72vh] lg:py-28"
         style={s.style?.textColor ? { color: s.style.textColor } : undefined}
       >
-        {eyebrow && (
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>
-        )}
-        <h1 className="mt-5 max-w-4xl font-[Archivo] text-5xl font-black leading-[0.95] tracking-tight text-primary-foreground md:text-7xl lg:text-[88px]" style={tc(s.style, "headingColor")}>
-          {headingParts.map((part, i) =>
-            i % 2 === 1 ? (
-              <em key={i} className="not-italic text-accent">{part}</em>
-            ) : (
-              <span key={i}>{part.split("\n").map((ln, j) => (
-                <span key={j}>{j > 0 && <br />}{ln}</span>
-              ))}</span>
-            ),
+        <div className="flex flex-col gap-5">
+          {eyebrow && (
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>
           )}
-        </h1>
-        {subtitle && (
-          <p className="mt-6 max-w-xl text-base leading-relaxed text-primary-foreground/85 md:text-lg" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>
-            {subtitle}
-          </p>
-        )}
+          {heading && (
+            <h1 className="max-w-4xl font-[Archivo] text-5xl font-black leading-[0.95] tracking-tight text-primary-foreground md:text-7xl lg:text-[88px]" style={tc(s.style, "headingColor")}>
+              {headingParts.map((part, i) =>
+                i % 2 === 1 ? (
+                  <em key={i} className="not-italic text-accent">{part}</em>
+                ) : (
+                  <span key={i}>{part.split("\n").map((ln, j) => (
+                    <span key={j}>{j > 0 && <br />}{ln}</span>
+                  ))}</span>
+                ),
+              )}
+            </h1>
+          )}
+          {subtitle && (
+            <p className="max-w-xl text-base leading-relaxed text-primary-foreground/85 md:text-lg" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>
+              {subtitle}
+            </p>
+          )}
+        </div>
         <div className="mt-10 flex flex-wrap items-center gap-4">
           <CTAButton cta={s.ctaPrimary} lang={lang} defaultStyle="primary" iconRight textStyle={tc(s.style, "ctaTextColor")} />
           <CTAButton cta={s.ctaSecondary} lang={lang} defaultStyle="outline" textStyle={tc(s.style, "ctaTextColor")} />
@@ -551,14 +555,25 @@ function BrandStory({ settings }: { settings: BrandStorySettings }) {
 
         {/* RIGHT COLUMN — Text */}
         <div className="order-2" ref={textWrapRef}>
-          {pickLocalized(s.eyebrow, lang) && (
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>
-              {pickLocalized(s.eyebrow, lang)}
-            </p>
-          )}
-          <h2 className="mt-4 font-[Archivo] text-4xl font-black leading-[1.05] tracking-tight text-primary md:text-5xl" style={tc(s.style, "headingColor")}>
-            {pickLocalized(s.heading, lang)}
-          </h2>
+          {(() => {
+            const eyebrow = pickLocalized(s.eyebrow, lang);
+            const heading = pickLocalized(s.heading, lang);
+            if (!eyebrow && !heading) return null;
+            return (
+              <div className="flex flex-col gap-4">
+                {eyebrow && (
+                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>
+                    {eyebrow}
+                  </p>
+                )}
+                {heading && (
+                  <h2 className="font-[Archivo] text-4xl font-black leading-[1.05] tracking-tight text-primary md:text-5xl" style={tc(s.style, "headingColor")}>
+                    {heading}
+                  </h2>
+                )}
+              </div>
+            );
+          })()}
 
           <div className="relative mt-6 md:mt-8">
             {/* Constrained width for comfortable reading */}
@@ -761,16 +776,25 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
       <div className="mx-auto max-w-[1280px] px-4 md:px-8">
         {/* Section heading */}
         <div className="flex items-end justify-between gap-4">
-          <div className="text-left">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>
-              {pickLocalized(s.eyebrow, lang, t("home.categories.eyebrow"))}
-            </p>
-            <h2 className="mt-2 font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl" style={tc(s.style, "headingColor")}>
-              {pickLocalized(s.title, lang, t("home.categories.title"))}
-            </h2>
-            <p className="mt-2 max-w-xl text-sm text-muted-foreground md:text-base" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>
-              {pickLocalized(s.subtitle, lang, t("home.categories.subtitle"))}
-            </p>
+          <div className="flex flex-col gap-2 text-left">
+            {(() => {
+              const eyebrow = pickLocalized(s.eyebrow, lang, t("home.categories.eyebrow"));
+              const title = pickLocalized(s.title, lang, t("home.categories.title"));
+              const subtitle = pickLocalized(s.subtitle, lang, t("home.categories.subtitle"));
+              return (
+                <>
+                  {eyebrow && (
+                    <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>
+                  )}
+                  {title && (
+                    <h2 className="font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl" style={tc(s.style, "headingColor")}>{title}</h2>
+                  )}
+                  {subtitle && (
+                    <p className="max-w-xl text-sm text-muted-foreground md:text-base" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{subtitle}</p>
+                  )}
+                </>
+              );
+            })()}
           </div>
           {(() => {
             const label = pickLocalized(
@@ -973,13 +997,21 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
       style={styleProps.inlineStyle}
     >
       {/* Section heading */}
-      <div className="text-left">
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>
-          {pickLocalized(s.subtitle, lang, t("home.featured.eyebrow"))}
-        </p>
-        <h2 className="mt-2 font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl" style={tc(s.style, "headingColor")}>
-          {pickLocalized(s.title, lang, t("home.featured.title"))}
-        </h2>
+      <div className="flex flex-col gap-2 text-left">
+        {(() => {
+          const eyebrow = pickLocalized(s.subtitle, lang, t("home.featured.eyebrow"));
+          const title = pickLocalized(s.title, lang, t("home.featured.title"));
+          return (
+            <>
+              {eyebrow && (
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>
+              )}
+              {title && (
+                <h2 className="font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl" style={tc(s.style, "headingColor")}>{title}</h2>
+              )}
+            </>
+          );
+        })()}
       </div>
 
       {/* Carousel */}
@@ -1111,15 +1143,30 @@ function Community({ settings }: { settings: CommunitySettings }) {
       <div className="mx-auto grid max-w-[1280px] items-center gap-10 px-4 md:grid-cols-2 md:px-8">
         {/* Text */}
         <div className={imgRight ? "order-2 md:order-1" : "order-2 md:order-2"}>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#d4b896]" style={tc(s.style, "eyebrowColor")}>
-            {pickLocalized(s.eyebrow, lang)}
-          </p>
-          <h2 className="mt-4 font-[Archivo] text-4xl font-black leading-tight tracking-tight md:text-5xl" style={tc(s.style, "headingColor")}>
-            {pickLocalized(s.heading, lang)}
-          </h2>
-          <div className="mt-8 space-y-5 text-base leading-relaxed opacity-90 md:text-lg" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>
-            {paragraphs.map((p, i) => <p key={i}>{p}</p>)}
-          </div>
+          {(() => {
+            const eyebrow = pickLocalized(s.eyebrow, lang);
+            const heading = pickLocalized(s.heading, lang);
+            if (!eyebrow && !heading && paragraphs.length === 0) return null;
+            return (
+              <div className="flex flex-col gap-5">
+                {(eyebrow || heading) && (
+                  <div className="flex flex-col gap-4">
+                    {eyebrow && (
+                      <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#d4b896]" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>
+                    )}
+                    {heading && (
+                      <h2 className="font-[Archivo] text-4xl font-black leading-tight tracking-tight md:text-5xl" style={tc(s.style, "headingColor")}>{heading}</h2>
+                    )}
+                  </div>
+                )}
+                {paragraphs.length > 0 && (
+                  <div className="space-y-5 text-base leading-relaxed opacity-90 md:text-lg" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>
+                    {paragraphs.map((p, i) => <p key={i}>{p}</p>)}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
           {s.cta && pickLocalized({ id: s.cta.labelId, en: s.cta.labelEn }, lang) && (
             <a
               href={s.cta.href || "/"}
@@ -1194,12 +1241,18 @@ function StoreLocator({ settings }: { settings: StoreLocatorSettings }) {
     >
       <div className="grid gap-12 lg:grid-cols-12">
         <div className="lg:col-span-5">
-          {eyebrow && <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>}
-          <h2 className="mt-2 font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl" style={tc(s.style, "headingColor")}>
-            {heading}
-          </h2>
-          {subtitle && (
-            <p className="mt-3 max-w-md text-base leading-relaxed text-muted-foreground" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{subtitle}</p>
+          {(eyebrow || heading || subtitle) && (
+            <div className="flex flex-col gap-2">
+              {eyebrow && <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>}
+              {heading && (
+                <h2 className="font-[Archivo] text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl" style={tc(s.style, "headingColor")}>
+                  {heading}
+                </h2>
+              )}
+              {subtitle && (
+                <p className="max-w-md text-base leading-relaxed text-muted-foreground" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{subtitle}</p>
+              )}
+            </div>
           )}
           {ctaLabel && (
             <a
@@ -1256,19 +1309,21 @@ function FAQSection({ settings }: { settings: FaqSettings }) {
     <section
       className={`bg-background ${styleProps.className}`}
       style={styleProps.inlineStyle}
-      aria-labelledby="faq-heading"
+      {...(heading ? { "aria-labelledby": "faq-heading" } : { "aria-label": "FAQ" })}
     >
       <div className="mx-auto max-w-3xl px-4 md:px-8">
-        <div className="text-center">
+        <div className="flex flex-col items-center gap-2 text-center">
           {eyebrow && <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>}
-          <h2
-            id="faq-heading"
-            className="mt-2 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl"
-            style={tc(s.style, "headingColor")}
-          >
-            {heading}
-          </h2>
-          {subtitle && <p className="mt-3 text-base text-muted-foreground" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{subtitle}</p>}
+          {heading && (
+            <h2
+              id="faq-heading"
+              className="font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl"
+              style={tc(s.style, "headingColor")}
+            >
+              {heading}
+            </h2>
+          )}
+          {subtitle && <p className="text-base text-muted-foreground" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{subtitle}</p>}
         </div>
 
         <ul className="mt-8 md:mt-10 divide-y divide-border border-y border-border">
@@ -1405,15 +1460,17 @@ function ContactSectionInner({ settings }: { settings: ContactSettings }) {
     >
       <div className="mx-auto grid max-w-[1280px] gap-14 px-4 md:grid-cols-2 md:px-8">
         <div>
-          {eyebrow && (
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>
-          )}
-          <h2 className="mt-2 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl" style={tc(s.style, "headingColor")}>
-            {heading ? heading : (<>{t("home.contact.title_1")}<br />{t("home.contact.title_2")}</>)}
-          </h2>
-          {subtitle && (
-            <p className="mt-3 max-w-md text-base leading-relaxed text-muted-foreground" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{subtitle}</p>
-          )}
+          <div className="flex flex-col gap-2">
+            {eyebrow && (
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>
+            )}
+            <h2 className="font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl" style={tc(s.style, "headingColor")}>
+              {heading ? heading : (<>{t("home.contact.title_1")}<br />{t("home.contact.title_2")}</>)}
+            </h2>
+            {subtitle && (
+              <p className="max-w-md text-base leading-relaxed text-muted-foreground" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{subtitle}</p>
+            )}
+          </div>
           <div className="mt-10 space-y-6 text-sm">
             {contacts.map((c, i) => (
               <div key={i} className="space-y-2">
@@ -1548,17 +1605,25 @@ function FaqCustomSection({ settings }: { settings: FaqCustomSettings }) {
   return (
     <section className={styleProps.className} style={styleProps.inlineStyle}>
       <div className="mx-auto max-w-3xl px-4 md:px-8">
-        <div className="text-center">
-          {pickLocalized(s.eyebrow, lang) && (
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>{pickLocalized(s.eyebrow, lang)}</p>
-          )}
-          <h2 className="mt-2 font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl" style={tc(s.style, "headingColor")}>
-            {pickLocalized(s.title, lang)}
-          </h2>
-          {pickLocalized(s.subtitle, lang) && (
-            <p className="mt-3 text-base text-muted-foreground" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{pickLocalized(s.subtitle, lang)}</p>
-          )}
-        </div>
+        {(() => {
+          const eyebrow = pickLocalized(s.eyebrow, lang);
+          const title = pickLocalized(s.title, lang);
+          const subtitle = pickLocalized(s.subtitle, lang);
+          if (!eyebrow && !title && !subtitle) return null;
+          return (
+            <div className="flex flex-col items-center gap-2 text-center">
+              {eyebrow && (
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>
+              )}
+              {title && (
+                <h2 className="font-[Archivo] text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl" style={tc(s.style, "headingColor")}>{title}</h2>
+              )}
+              {subtitle && (
+                <p className="text-base text-muted-foreground" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{subtitle}</p>
+              )}
+            </div>
+          );
+        })()}
         <ul className="mt-8 md:mt-10 divide-y divide-border border-y border-border">
           {items.map((f, i) => {
             const q = pickLocalized({ id: f.questionId, en: f.questionEn }, lang);
@@ -1621,15 +1686,25 @@ function NewsletterSection({ settings }: { settings: NewsletterSettings }) {
       style={{ ...styleProps.inlineStyle, backgroundColor: s.style?.bgColor ?? styleProps.inlineStyle.backgroundColor ?? "#f5efe6" }}
     >
       <div className="mx-auto max-w-2xl px-4 text-center md:px-8">
-        {pickLocalized(s.eyebrow, lang) && (
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>{pickLocalized(s.eyebrow, lang)}</p>
-        )}
-        <h2 className="mt-2 font-[Archivo] text-3xl font-black tracking-tight text-primary md:text-4xl" style={tc(s.style, "headingColor")}>
-          {pickLocalized(s.heading, lang)}
-        </h2>
-        {pickLocalized(s.body, lang) && (
-          <p className="mt-3 text-base text-muted-foreground" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{pickLocalized(s.body, lang)}</p>
-        )}
+        {(() => {
+          const eyebrow = pickLocalized(s.eyebrow, lang);
+          const heading = pickLocalized(s.heading, lang);
+          const body = pickLocalized(s.body, lang);
+          if (!eyebrow && !heading && !body) return null;
+          return (
+            <div className="flex flex-col items-center gap-2">
+              {eyebrow && (
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>
+              )}
+              {heading && (
+                <h2 className="font-[Archivo] text-3xl font-black tracking-tight text-primary md:text-4xl" style={tc(s.style, "headingColor")}>{heading}</h2>
+              )}
+              {body && (
+                <p className="text-base text-muted-foreground" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>{body}</p>
+              )}
+            </div>
+          );
+        })()}
         <form onSubmit={onSubmit} className="mx-auto mt-6 flex max-w-md flex-col gap-2 sm:flex-row">
           <input
             type="email"

@@ -703,7 +703,7 @@ function ThemePanel({
 
       <div className="space-y-3">
         <Label className="text-xs uppercase tracking-wide text-muted-foreground">Colors</Label>
-        {(["background", "foreground", "primary", "accent"] as const).map((k) => (
+        {(["background", "foreground", "primary", "secondary", "accent"] as const).map((k) => (
           <ColorRow
             key={k}
             label={k}

@@ -6,6 +6,7 @@ export type ThemeSettings = {
     background: string;
     foreground: string;
     primary: string;
+    secondary: string;
     accent: string;
   };
   fonts: {
@@ -131,6 +132,7 @@ export const DEFAULT_THEME: ThemeSettings = {
     background: "oklch(0.975 0.012 90)",
     foreground: "oklch(0.18 0.005 60)",
     primary: "oklch(0.30 0.045 155)",
+    secondary: "oklch(0.42 0.055 155)",
     accent: "oklch(0.80 0.055 80)",
   },
   fonts: {
@@ -215,7 +217,7 @@ export function themeToCss(theme: ThemeSettings): string {
         `@font-face{font-family:"${escapeCss(f.name)}";src:url("${escapeCssUrl(f.url)}") format("${f.format}");font-display:swap;font-weight:100 900;font-style:normal;}`,
     )
     .join("");
-  return `${faces}:root{--background:${c.background};--foreground:${c.foreground};--primary:${c.primary};--ring:${c.primary};--accent:${c.accent};}
+  return `${faces}:root{--background:${c.background};--foreground:${c.foreground};--primary:${c.primary};--ring:${c.primary};--secondary:${c.secondary};--accent:${c.accent};}
 body{font-family:"${theme.fonts.body}",ui-sans-serif,system-ui,sans-serif;}
 h1,h2,h3,h4{font-family:"${theme.fonts.heading}","${theme.fonts.body}",ui-sans-serif,system-ui,sans-serif;}`;
 }

@@ -405,7 +405,6 @@ export const DEFAULT_CATEGORIES: CategoriesSettings = {
   title: { id: "Belanja per Kategori", en: "Shop by Category" },
   subtitle: { id: "Dibuat untuk setiap petualangan, dibuat di Indonesia", en: "Built for every adventure, made in Indonesia" },
   eyebrow: { id: "Koleksi", en: "Collections" },
-  categorySlugs: [],
   autoScroll: true,
   pauseSeconds: 3,
   scrollDurationMs: 900,

@@ -652,17 +652,23 @@ function CategoriesEditor({
 }) {
   const { data: cats } = usePublicCategories();
   const list = cats ?? [];
-  const slugs = value.categorySlugs ?? [];
-  const orderedSlugs = slugs.length ? slugs : list.map((c) => c.slug);
+  const allSlugs = list.map((c) => c.slug);
+  const hasManualSelection = Array.isArray(value.categorySlugs);
+  const selectedSlugs = hasManualSelection ? value.categorySlugs ?? [] : allSlugs;
+  const hiddenSlugs = allSlugs.filter((slug) => !selectedSlugs.includes(slug));
+  const editorSlugs = [...selectedSlugs, ...hiddenSlugs];
   const autoScroll = value.autoScroll ?? true;
 
   const toggle = (slug: string) => {
-    const cur = slugs.length ? slugs : list.map((c) => c.slug);
+    const cur = hasManualSelection ? [...selectedSlugs] : [...allSlugs];
     const next = cur.includes(slug) ? cur.filter((x) => x !== slug) : [...cur, slug];
-    onChange({ ...value, categorySlugs: next });
+    onChange({
+      ...value,
+      categorySlugs: next.length === allSlugs.length ? undefined : next,
+    });
   };
   const move = (slug: string, dir: -1 | 1) => {
-    const cur = [...orderedSlugs];
+    const cur = [...selectedSlugs];
     const idx = cur.indexOf(slug);
     const j = idx + dir;
     if (idx < 0 || j < 0 || j >= cur.length) return;
@@ -717,17 +723,29 @@ function CategoriesEditor({
       <div>
         <Label className="text-xs">Categories & order</Label>
         <ul className="mt-1 divide-y divide-border rounded border border-input">
-          {orderedSlugs.map((slug) => {
+          {editorSlugs.map((slug) => {
             const c = list.find((x) => x.slug === slug);
-            const included = !slugs.length || slugs.includes(slug);
+            const included = selectedSlugs.includes(slug);
             return (
               <li key={slug} className="flex items-center gap-2 px-2 py-1.5 text-xs">
                 <input type="checkbox" checked={included} onChange={() => toggle(slug)} />
                 <span className="flex-1 truncate">{c?.name_en || slug}</span>
-                <button type="button" onClick={() => move(slug, -1)} className="rounded p-1 hover:bg-muted" aria-label="Move up">
+                <button
+                  type="button"
+                  onClick={() => move(slug, -1)}
+                  disabled={!included}
+                  className="rounded p-1 hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+                  aria-label="Move up"
+                >
                   <ChevronUp className="h-3 w-3" />
                 </button>
-                <button type="button" onClick={() => move(slug, 1)} className="rounded p-1 hover:bg-muted" aria-label="Move down">
+                <button
+                  type="button"
+                  onClick={() => move(slug, 1)}
+                  disabled={!included}
+                  className="rounded p-1 hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+                  aria-label="Move down"
+                >
                   <ChevronDown className="h-3 w-3" />
                 </button>
               </li>
@@ -735,7 +753,7 @@ function CategoriesEditor({
           })}
         </ul>
         <p className="mt-1 text-[10px] text-muted-foreground">
-          Uncheck to hide a category. Use ↑↓ to reorder.
+          Check to show a category, uncheck to hide it. Use ↑↓ to reorder visible cards.
         </p>
       </div>
       <div className="rounded border border-input p-3">
@@ -744,7 +762,7 @@ function CategoriesEditor({
           Auto = newest uploaded product photo from this category. Manual = your chosen image.
         </p>
         <div className="space-y-3">
-          {orderedSlugs.map((slug) => {
+          {selectedSlugs.map((slug) => {
             const c = list.find((x) => x.slug === slug);
             const cur = (value.categoryImages ?? {})[slug] ?? {};
             const mode = cur.mode ?? "auto";

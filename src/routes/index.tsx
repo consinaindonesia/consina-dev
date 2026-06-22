@@ -813,7 +813,7 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
   const items = useMemo(() => {
     const list = cats ?? [];
     let ordered = list;
-    if (s.categorySlugs && s.categorySlugs.length > 0) {
+    if (Array.isArray(s.categorySlugs)) {
       const bySlug = new Map(list.map((c) => [c.slug, c]));
       ordered = s.categorySlugs
         .map((slug) => bySlug.get(slug))

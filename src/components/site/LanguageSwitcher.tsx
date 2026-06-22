@@ -4,6 +4,7 @@ import { useRouter } from "@tanstack/react-router";
 import { Check, Globe, ChevronDown } from "lucide-react";
 import { setLanguage, type Lang } from "@/i18n";
 import { parseLocalizedPath, localizedPath } from "@/i18n/routes";
+import { isValidColor } from "@/lib/theme-defaults";
 
 const PREF_COOKIE = "preferred_language";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
@@ -87,6 +88,7 @@ export function LanguageSwitcher({ className = "", menuBg }: { className?: strin
   };
 
   const Current = OPTIONS.find((o) => o.code === current) ?? OPTIONS[0];
+  const safeMenuBg = menuBg && isValidColor(menuBg) ? menuBg : "var(--background)";
 
   return (
     <div ref={ref} className={`relative inline-flex ${className}`}>
@@ -106,7 +108,7 @@ export function LanguageSwitcher({ className = "", menuBg }: { className?: strin
         <ul
           role="listbox"
           className="absolute right-0 top-full z-50 mt-1 min-w-[180px] overflow-hidden rounded-lg border border-border py-1 shadow-xl"
-          style={{ backgroundColor: menuBg || "var(--background)" }}
+          style={{ backgroundColor: safeMenuBg }}
         >
           {OPTIONS.map((opt) => {
             const selected = opt.code === current;

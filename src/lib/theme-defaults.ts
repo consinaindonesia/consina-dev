@@ -212,7 +212,7 @@ export function mergeTheme(partial: unknown): ThemeSettings {
 // Only inject a CSS var if the value is a recognisable CSS color format.
 // An invalid value (e.g. "fffff") would override the static styles.css fallback
 // and cause any element using var(--background) etc. to render as transparent.
-function isValidColor(v: string): boolean {
+export function isValidColor(v: string): boolean {
   if (!v?.trim()) return false;
   const s = v.trim();
   return /^(oklch|rgb|rgba|hsl|hsla)\(/i.test(s) ||

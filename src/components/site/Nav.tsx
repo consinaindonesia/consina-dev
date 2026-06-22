@@ -12,6 +12,7 @@ import { usePublicCategories, type PublicCategory } from "@/hooks/use-public-cat
 import { useLang } from "@/i18n/LangProvider";
 import { localizedField } from "@/i18n/format";
 import { useSiteSettings } from "@/hooks/use-site-settings";
+import { isValidColor } from "@/lib/theme-defaults";
 
 export function Nav() {
   const { t } = useTranslation();
@@ -24,7 +25,8 @@ export function Nav() {
   const { count: wishCount } = useWishlist(user?.id ?? null);
   const site = useSiteSettings();
   const header = site.header;
-  const linkStyle = header.linkColor ? { color: header.linkColor } : undefined;
+  const headerBgColor = isValidColor(header.bgColor) ? header.bgColor : "var(--background)";
+  const linkStyle = isValidColor(header.linkColor) ? { color: header.linkColor } : undefined;
   // Always use a solid surface color for overlay dropdowns so they remain
   // readable regardless of the header's own background (which the user may
   // have set to a translucent or image-backed value).
@@ -115,7 +117,7 @@ export function Nav() {
       className={`sticky top-0 z-50 border-b border-border/60 transition-transform duration-300 ease-out ${
         isHidden ? "-translate-y-full" : "translate-y-0"
       }`}
-      style={{ backgroundColor: header.bgColor || "var(--background)" }}
+      style={{ backgroundColor: headerBgColor }}
     >
       <AnnouncementBar />
       <LangSuggestionBanner />
@@ -222,7 +224,7 @@ export function Nav() {
           >
             <User className="h-4 w-4" />
           </Link>}
-          <LanguageSwitcher className="hidden md:inline-flex" menuBg={header.bgColor} />
+          <LanguageSwitcher className="hidden md:inline-flex" menuBg={headerBgColor} />
           {header.showSearch && <button className="hidden h-9 w-9 items-center justify-center rounded-full text-foreground/70 transition hover:bg-muted hover:text-primary md:flex" aria-label={t("nav.search")}>
             <Search className="h-4 w-4" />
           </button>}

@@ -75,6 +75,8 @@ import { Route as LangInquirySentRouteImport } from './routes/$lang.inquiry.sent
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
+import { Route as ApiPublicSearchReindexRouteImport } from './routes/api/public/search/reindex'
+import { Route as ApiPublicSearchProductsRouteImport } from './routes/api/public/search/products'
 import { Route as ApiPublicHooksWeeklyInquirySummaryRouteImport } from './routes/api/public/hooks/weekly-inquiry-summary'
 import { Route as ApiPublicHooksStripeRouteImport } from './routes/api/public/hooks/stripe'
 import { Route as ApiPublicHooksMidtransRouteImport } from './routes/api/public/hooks/midtrans'
@@ -418,6 +420,16 @@ const LovableEmailQueueProcessRoute =
     path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicSearchReindexRoute = ApiPublicSearchReindexRouteImport.update({
+  id: '/api/public/search/reindex',
+  path: '/api/public/search/reindex',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicSearchProductsRoute = ApiPublicSearchProductsRouteImport.update({
+  id: '/api/public/search/products',
+  path: '/api/public/search/products',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksWeeklyInquirySummaryRoute =
   ApiPublicHooksWeeklyInquirySummaryRouteImport.update({
     id: '/api/public/hooks/weekly-inquiry-summary',
@@ -534,6 +546,8 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/midtrans': typeof ApiPublicHooksMidtransRoute
   '/api/public/hooks/stripe': typeof ApiPublicHooksStripeRoute
   '/api/public/hooks/weekly-inquiry-summary': typeof ApiPublicHooksWeeklyInquirySummaryRoute
+  '/api/public/search/products': typeof ApiPublicSearchProductsRoute
+  '/api/public/search/reindex': typeof ApiPublicSearchReindexRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -606,6 +620,8 @@ export interface FileRoutesByTo {
   '/api/public/hooks/midtrans': typeof ApiPublicHooksMidtransRoute
   '/api/public/hooks/stripe': typeof ApiPublicHooksStripeRoute
   '/api/public/hooks/weekly-inquiry-summary': typeof ApiPublicHooksWeeklyInquirySummaryRoute
+  '/api/public/search/products': typeof ApiPublicSearchProductsRoute
+  '/api/public/search/reindex': typeof ApiPublicSearchReindexRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -683,6 +699,8 @@ export interface FileRoutesById {
   '/api/public/hooks/midtrans': typeof ApiPublicHooksMidtransRoute
   '/api/public/hooks/stripe': typeof ApiPublicHooksStripeRoute
   '/api/public/hooks/weekly-inquiry-summary': typeof ApiPublicHooksWeeklyInquirySummaryRoute
+  '/api/public/search/products': typeof ApiPublicSearchProductsRoute
+  '/api/public/search/reindex': typeof ApiPublicSearchReindexRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -761,6 +779,8 @@ export interface FileRouteTypes {
     | '/api/public/hooks/midtrans'
     | '/api/public/hooks/stripe'
     | '/api/public/hooks/weekly-inquiry-summary'
+    | '/api/public/search/products'
+    | '/api/public/search/reindex'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -833,6 +853,8 @@ export interface FileRouteTypes {
     | '/api/public/hooks/midtrans'
     | '/api/public/hooks/stripe'
     | '/api/public/hooks/weekly-inquiry-summary'
+    | '/api/public/search/products'
+    | '/api/public/search/reindex'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -909,6 +931,8 @@ export interface FileRouteTypes {
     | '/api/public/hooks/midtrans'
     | '/api/public/hooks/stripe'
     | '/api/public/hooks/weekly-inquiry-summary'
+    | '/api/public/search/products'
+    | '/api/public/search/reindex'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -963,6 +987,8 @@ export interface RootRouteChildren {
   ApiPublicHooksMidtransRoute: typeof ApiPublicHooksMidtransRoute
   ApiPublicHooksStripeRoute: typeof ApiPublicHooksStripeRoute
   ApiPublicHooksWeeklyInquirySummaryRoute: typeof ApiPublicHooksWeeklyInquirySummaryRoute
+  ApiPublicSearchProductsRoute: typeof ApiPublicSearchProductsRoute
+  ApiPublicSearchReindexRoute: typeof ApiPublicSearchReindexRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
@@ -1432,6 +1458,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/search/reindex': {
+      id: '/api/public/search/reindex'
+      path: '/api/public/search/reindex'
+      fullPath: '/api/public/search/reindex'
+      preLoaderRoute: typeof ApiPublicSearchReindexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/search/products': {
+      id: '/api/public/search/products'
+      path: '/api/public/search/products'
+      fullPath: '/api/public/search/products'
+      preLoaderRoute: typeof ApiPublicSearchProductsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/weekly-inquiry-summary': {
       id: '/api/public/hooks/weekly-inquiry-summary'
       path: '/api/public/hooks/weekly-inquiry-summary'
@@ -1672,6 +1712,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksStripeRoute: ApiPublicHooksStripeRoute,
   ApiPublicHooksWeeklyInquirySummaryRoute:
     ApiPublicHooksWeeklyInquirySummaryRoute,
+  ApiPublicSearchProductsRoute: ApiPublicSearchProductsRoute,
+  ApiPublicSearchReindexRoute: ApiPublicSearchReindexRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
   LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,

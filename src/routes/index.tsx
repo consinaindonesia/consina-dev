@@ -4,6 +4,7 @@ import { ArrowRight, ArrowUpRight, MapPin, Mountain, Leaf, Users, Mail, Phone, C
 import { useTranslation } from "react-i18next";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
+import { TypewriterText } from "@/components/site/TypewriterText";
 import { supabase } from "@/integrations/supabase/client";
 import { loadHomeSections, type SerializedSectionRow } from "@/lib/page-sections.functions";
 import { usePublicProducts, type PublicProduct, getSiteUrl } from "@/lib/public-products";
@@ -285,6 +286,7 @@ function ComposedSections() {
           .filter((r): r is PageSectionRow & { section_type: SectionTypeId } =>
             (r.section_type as SectionTypeId) in SECTION_REGISTRY,
           )
+          .filter((r) => r.section_type !== "announcement_bar")
           .map((r) => ({
             key: r.id,
             type: r.section_type as SectionTypeId,
@@ -1972,81 +1974,13 @@ function AnnouncementBarSection({ settings }: { settings: AnnouncementBarSetting
         color: s.style?.bodyColor ?? s.textColor ?? s.style?.textColor ?? "#ffffff",
       }}
     >
-      <Typewriter text={msg} />
+      <TypewriterText text={msg} />
       {linkLabel && s.href && (
         <a href={s.href} className="ml-2 underline underline-offset-2 hover:opacity-80" style={tc(s.style, "ctaTextColor")}>
           {linkLabel}
         </a>
       )}
     </div>
-  );
-}
-
-function Typewriter({ text }: { text: string }) {
-  const [typed, setTyped] = useState("");
-  const [reduced, setReduced] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => setReduced(mq.matches);
-    update();
-    mq.addEventListener?.("change", update);
-    return () => mq.removeEventListener?.("change", update);
-  }, []);
-
-  useEffect(() => {
-    if (reduced || !text) {
-      setTyped(text);
-      return;
-    }
-    let cancelled = false;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const TYPE_MS = 55;
-    const ERASE_MS = 28;
-    const HOLD_MS = 2600;
-    const GAP_MS = 600;
-
-    const run = async () => {
-      while (!cancelled) {
-        for (let i = 1; i <= text.length; i++) {
-          if (cancelled) return;
-          setTyped(text.slice(0, i));
-          await new Promise<void>((r) => { timer = setTimeout(r, TYPE_MS); });
-        }
-        await new Promise<void>((r) => { timer = setTimeout(r, HOLD_MS); });
-        if (cancelled) return;
-        for (let i = text.length; i >= 0; i--) {
-          if (cancelled) return;
-          setTyped(text.slice(0, i));
-          await new Promise<void>((r) => { timer = setTimeout(r, ERASE_MS); });
-        }
-        await new Promise<void>((r) => { timer = setTimeout(r, GAP_MS); });
-      }
-    };
-    void run();
-    return () => {
-      cancelled = true;
-      if (timer) clearTimeout(timer);
-    };
-  }, [text, reduced]);
-
-  return (
-    <span aria-label={text}>
-      <span aria-hidden={!reduced}>{typed}</span>
-      {!reduced && (
-        <span
-          aria-hidden="true"
-          className="ml-0.5 inline-block w-[1px] align-baseline"
-          style={{
-            height: "1em",
-            background: "currentColor",
-            animation: "tw-cursor 1s steps(1) infinite",
-            verticalAlign: "-0.15em",
-          }}
-        />
-      )}
-      <style>{`@keyframes tw-cursor{0%,49%{opacity:1}50%,100%{opacity:0}}`}</style>
-    </span>
   );
 }
 

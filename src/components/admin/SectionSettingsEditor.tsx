@@ -1156,7 +1156,9 @@ function AnnouncementBarEditor({ value, onChange }: { value: AnnouncementBarSett
         <ColorField label="Background" value={value.bgColor ?? ""} onChange={(v) => onChange({ ...value, bgColor: v || undefined })} />
         <ColorField label="Text" value={value.textColor ?? ""} onChange={(v) => onChange({ ...value, textColor: v || undefined })} />
       </div>
-      <p className="text-[11px] text-muted-foreground">Tip: place this section at the top of the page list.</p>
+      <p className="text-[11px] text-muted-foreground">
+        Edit it here. The storefront uses the first enabled announcement bar from Homepage Sections and renders it above the header.
+      </p>
     </div>
   );
 }

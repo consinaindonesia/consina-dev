@@ -39,7 +39,7 @@ export type ProductSearchResult = {
   vectorReady: boolean;
 };
 
-const DEFAULT_GROQ_MODEL = process.env.GROQ_CHAT_MODEL || "gemma-4-31b-it";
+const DEFAULT_GROQ_MODEL = process.env.GROQ_CHAT_MODEL || "llama-3.1-8b-instant";
 const DEFAULT_COHERE_EMBED_MODEL = process.env.COHERE_EMBED_MODEL || "embed-v4.0";
 const DEFAULT_COHERE_RERANK_MODEL = process.env.COHERE_RERANK_MODEL || "rerank-v3.5";
 
@@ -192,21 +192,25 @@ async function groqChat(messages: AdvisorTurn[] | Array<{ role: "system" | "user
 async function condenseSearchQuery(history: AdvisorTurn[], latest: string) {
   if (history.length === 0 || !process.env.GROQ_API_KEY) return latest.trim();
 
-  const condensed = await groqChat(
-    [
-      {
-        role: "system",
-        content:
-          "Rewrite the user's latest message into one standalone product-search query. " +
-          "Fold in relevant context from the conversation. Output only the query.",
-      },
-      ...history,
-      { role: "user", content: latest },
-    ],
-    80,
-  );
+  try {
+    const condensed = await groqChat(
+      [
+        {
+          role: "system",
+          content:
+            "Rewrite the user's latest message into one standalone product-search query. " +
+            "Fold in relevant context from the conversation. Output only the query.",
+        },
+        ...history,
+        { role: "user", content: latest },
+      ],
+      80,
+    );
 
-  return condensed || latest.trim();
+    return condensed || latest.trim();
+  } catch {
+    return latest.trim();
+  }
 }
 
 async function hasAdvisorEmbeddings() {
@@ -342,24 +346,30 @@ export async function runProductAdvisorSearch({
   let products: AdvisorProduct[] = [];
 
   if (vectorReady && process.env.COHERE_API_KEY) {
-    engine = "semantic";
-    products = await fetchSemanticCandidates(searchQuery, Math.max(limit * 4, 12), 0.15);
+    try {
+      engine = "semantic";
+      products = await fetchSemanticCandidates(searchQuery, Math.max(limit * 4, 12), 0.15);
 
-    if (products.length > 1) {
-      const rerankedResults = await cohereRerank(
-        searchQuery,
-        products.map(buildProductSearchDocument),
-        Math.min(limit, 5),
-      );
-      if (rerankedResults.length > 0) {
-        reranked = true;
-        products = rerankedResults
-          .map((result) => products[result.index])
-          .filter(Boolean);
+      if (products.length > 1) {
+        const rerankedResults = await cohereRerank(
+          searchQuery,
+          products.map(buildProductSearchDocument),
+          Math.min(limit, 5),
+        );
+        if (rerankedResults.length > 0) {
+          reranked = true;
+          products = rerankedResults
+            .map((result) => products[result.index])
+            .filter(Boolean);
+        }
       }
-    }
 
-    products = products.slice(0, limit);
+      products = products.slice(0, limit);
+    } catch {
+      engine = "keyword";
+      reranked = false;
+      products = await fetchKeywordCandidates(searchQuery, limit);
+    }
   } else {
     products = await fetchKeywordCandidates(searchQuery, limit);
   }
@@ -375,12 +385,16 @@ export async function runProductAdvisorSearch({
         : "You are the Consina product advisor. Recommend ONLY from the products below. Never invent products, prices, or specs. If nothing fits, say so honestly and explain what is missing. Reference products by [#id]. Be concise, practical, and buyer-focused.\n\nAVAILABLE PRODUCTS:\n") +
       groundedContext;
 
-    const response = await groqChat([
-      { role: "system", content: system },
-      ...history.slice(-6),
-      { role: "user", content: cleanQuestion },
-    ]);
-    if (response) advice = response;
+    try {
+      const response = await groqChat([
+        { role: "system", content: system },
+        ...history.slice(-6),
+        { role: "user", content: cleanQuestion },
+      ]);
+      if (response) advice = response;
+    } catch {
+      // Keep grounded fallback advice if the chat model is unavailable.
+    }
   }
 
   return {

@@ -36,7 +36,11 @@ export function AnnouncementBar() {
         return;
       }
       const row = (data?.[0] ?? null) as AnnouncementBarRow | null;
-      setSettings(row ? mergeSettings("announcement_bar", row.settings) : null);
+      setSettings(
+        row
+          ? mergeSettings("announcement_bar", row.settings)
+          : DEFAULT_ANNOUNCEMENT_BAR,
+      );
     };
 
     void load();
@@ -50,7 +54,6 @@ export function AnnouncementBar() {
     };
   }, []);
 
-  if (!settings) return null;
   const msg = pickLocalized(settings.message, lang);
   if (!msg) return null;
   const linkLabel = pickLocalized(settings.linkLabel, lang);

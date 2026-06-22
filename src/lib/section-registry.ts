@@ -335,6 +335,7 @@ export const SECTION_REGISTRY: Record<SectionTypeId, SectionDefinition> = {
 };
 
 export const DEFAULT_HOME_SECTIONS: SectionTypeId[] = [
+  "announcement_bar",
   "hero",
   "brand_story",
   "categories",

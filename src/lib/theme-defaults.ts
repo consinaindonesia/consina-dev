@@ -166,7 +166,7 @@ export function googleFontHref(theme: ThemeSettings): string {
   if (wanted.size === 0) return "";
   return `https://fonts.googleapis.com/css2?${Array.from(wanted)
     .map((f) => `family=${f}`)
-    .join("&")}&display=optional`;
+    .join("&")}&display=swap`;
 }
 
 // Merge any partial settings stored in DB into the defaults.
@@ -217,9 +217,17 @@ export function themeToCss(theme: ThemeSettings): string {
         `@font-face{font-family:"${escapeCss(f.name)}";src:url("${escapeCssUrl(f.url)}") format("${f.format}");font-display:swap;font-weight:100 900;font-style:normal;}`,
     )
     .join("");
-  return `${faces}:root{--background:${c.background};--foreground:${c.foreground};--primary:${c.primary};--ring:${c.primary};--secondary:${c.secondary};--accent:${c.accent};}
+  const sgFallback =
+    theme.fonts.heading === "Space Grotesk"
+      ? `@font-face{font-family:"Space Grotesk Fallback";src:local("Arial");size-adjust:95%;ascent-override:90%;descent-override:22%;line-gap-override:0%;}`
+      : "";
+  const headingFamily =
+    theme.fonts.heading === "Space Grotesk"
+      ? `"Space Grotesk","Space Grotesk Fallback",system-ui,-apple-system,"Segoe UI",sans-serif`
+      : `"${escapeCss(theme.fonts.heading)}",system-ui,-apple-system,"Segoe UI",sans-serif`;
+  return `${faces}${sgFallback}:root{--background:${c.background};--foreground:${c.foreground};--primary:${c.primary};--ring:${c.primary};--secondary:${c.secondary};--accent:${c.accent};}
 body{font-family:"${theme.fonts.body}",ui-sans-serif,system-ui,sans-serif;}
-h1,h2,h3,h4{font-family:"${theme.fonts.heading}","${theme.fonts.body}",ui-sans-serif,system-ui,sans-serif;}`;
+h1,h2,h3,h4{font-family:${headingFamily};}`;
 }
 
 function escapeCss(s: string): string {

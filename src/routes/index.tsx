@@ -387,6 +387,9 @@ function VideoYoutubeSection({ settings }: { settings: VideoYoutubeSettings }) {
       : align === "right"
         ? "items-end text-right"
         : "items-center text-center";
+  const textAlignStyle: React.CSSProperties = {
+    textAlign: align,
+  };
   const aspect = s.aspectRatio ?? "16:9";
   const aspectClass =
     aspect === "1:1" ? "aspect-square" : aspect === "4:3" ? "aspect-[4/3]" : "aspect-[16/9]";
@@ -430,7 +433,7 @@ function VideoYoutubeSection({ settings }: { settings: VideoYoutubeSettings }) {
       <div className="mx-auto max-w-[1280px] px-4 md:px-8">
         <div className={`flex flex-col gap-6 ${alignClass}`}>
           {hasText && (
-            <div className={`flex w-full flex-col gap-3 ${alignClass}`}>
+            <div className="flex w-full flex-col gap-3" style={textAlignStyle}>
               {pickLocalized(s.eyebrow, lang) && (
                 <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>{pickLocalized(s.eyebrow, lang)}</p>
               )}

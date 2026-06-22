@@ -65,7 +65,7 @@
 :root {
   --radius: 0.25rem;
   /* Consina earthy palette */
-  --background: oklch(0.975 0.012 90);      /* #faf8f3 off-white */
+  --background: #ffffff;
   --foreground: oklch(0.18 0.005 60);       /* #1a1a1a charcoal */
   --card: oklch(0.985 0.008 90);
   --card-foreground: oklch(0.18 0.005 60);

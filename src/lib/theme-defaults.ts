@@ -129,7 +129,7 @@ export const DEFAULT_FOOTER: FooterSettings = {
 
 export const DEFAULT_THEME: ThemeSettings = {
   colors: {
-    background: "oklch(0.975 0.012 90)",
+    background: "#ffffff",
     foreground: "oklch(0.18 0.005 60)",
     primary: "oklch(0.30 0.045 155)",
     secondary: "oklch(0.42 0.055 155)",

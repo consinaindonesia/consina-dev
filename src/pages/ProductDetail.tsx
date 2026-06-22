@@ -29,6 +29,7 @@ import { type CategoryNode } from "@/lib/public-products";
 type Product = {
   id: string;
   sku: string;
+  slug?: string | null;
   category_id: string | null;
   name_id: string;
   name_en: string;
@@ -71,6 +72,9 @@ type ColorVariant = {
   color_name: string;
   color_hex: string;
   image_url: string | null;
+  price_idr: number | null;
+  original_price_idr: number | null;
+  sale_price_idr: number | null;
   stock: number | null;
   sort_order: number;
 };
@@ -118,7 +122,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
       setMissing(false);
 
       const selectCols =
-        "id,sku,category_id,name_id,name_en,short_description_id,short_description_en,description_id,description_en,price_idr,original_price_idr,sale_price_idr,is_on_sale,discount_percent,size_guide_id,capacity,weight_grams,attributes,stock_status,images,product_images(image_url,large_url,thumbnail_url,alt_text_id,alt_text_en,is_primary,sort_order)";
+        "id,sku,slug,category_id,name_id,name_en,short_description_id,short_description_en,description_id,description_en,price_idr,original_price_idr,sale_price_idr,is_on_sale,discount_percent,size_guide_id,capacity,weight_grams,attributes,stock_status,images,product_images(image_url,large_url,thumbnail_url,alt_text_id,alt_text_en,is_primary,sort_order)";
 
       // Prefer slug lookup; fall back to SKU so old URLs keep working.
       let { data: prods } = await supabase
@@ -193,7 +197,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
       // Load color variants for this product (separate query keeps types simple).
       const { data: vRows } = await supabase
         .from("product_variants")
-        .select("id,color_name,color_hex,image_url,stock,sort_order")
+        .select("id,color_name,color_hex,image_url,price_idr,original_price_idr,sale_price_idr,stock,sort_order")
         .eq("product_id", prod.id)
         .order("sort_order");
       if (cancelled) return;
@@ -353,13 +357,21 @@ export function ProductDetailPage({ slug }: { slug: string }) {
   function handleAddToCart() {
     if (!product) return;
     const top = images[0];
+    const selectedSize = sizeVariants.find((v) => v.id === selectedSizeId) ?? null;
+    const selectedVariant = variants.find((v) => v.id === selectedVariantId) ?? null;
+    const effectivePrice =
+      (selectedSize?.price_idr ?? null) ||
+      (selectedVariant?.sale_price_idr && selectedVariant.sale_price_idr > 0
+        ? selectedVariant.sale_price_idr
+        : selectedVariant?.price_idr) ||
+      (product.sale_price_idr && product.sale_price_idr > 0 ? product.sale_price_idr : product.price_idr);
     addToCart({
       productId: product.id,
-      slug: product.sku,
+      slug: product.slug ?? product.sku,
       sku: product.sku,
       name_id: product.name_id,
       name_en: product.name_en,
-      price_idr: product.price_idr,
+      price_idr: effectivePrice,
       weight_grams: product.weight_grams,
       thumbnail: top ? (top.thumbnail_url ?? top.image_url) : null,
       attributes: selectedAttrs,
@@ -392,15 +404,28 @@ export function ProductDetailPage({ slug }: { slug: string }) {
     );
   }
 
-  const stockBadge =
-    product.stock_status === "in_stock"
+  const stockBadge = (() => {
+    const selectedSize = sizeVariants.find((v) => v.id === selectedSizeId) ?? null;
+    if (selectedSize) {
+      if (selectedSize.stock <= 0) return { text: t("labels.out_of_stock"), cls: "bg-destructive/15 text-destructive border-destructive/30" };
+      if (selectedSize.stock <= 3) return { text: t("labels.low_stock"), cls: "bg-amber-500/15 text-amber-700 border-amber-500/30" };
+      return { text: t("labels.in_stock"), cls: "bg-secondary/15 text-secondary border-secondary/30" };
+    }
+    const selectedVariant = variants.find((v) => v.id === selectedVariantId) ?? null;
+    if (selectedVariant && typeof selectedVariant.stock === "number") {
+      if (selectedVariant.stock <= 0) return { text: t("labels.out_of_stock"), cls: "bg-destructive/15 text-destructive border-destructive/30" };
+      if (selectedVariant.stock <= 3) return { text: t("labels.low_stock"), cls: "bg-amber-500/15 text-amber-700 border-amber-500/30" };
+      return { text: t("labels.in_stock"), cls: "bg-secondary/15 text-secondary border-secondary/30" };
+    }
+    return product.stock_status === "in_stock"
       ? { text: t("labels.in_stock"), cls: "bg-secondary/15 text-secondary border-secondary/30" }
       : product.stock_status === "low_stock"
         ? { text: t("labels.low_stock"), cls: "bg-amber-500/15 text-amber-700 border-amber-500/30" }
         : { text: t("labels.out_of_stock"), cls: "bg-destructive/15 text-destructive border-destructive/30" };
+  })();
 
-  const isOut = product.stock_status === "out_of_stock";
-  const isLow = product.stock_status === "low_stock";
+  const isOut = stockBadge.text === t("labels.out_of_stock");
+  const isLow = stockBadge.text === t("labels.low_stock");
 
   async function submitNotify(e: React.FormEvent) {
     e.preventDefault();
@@ -537,6 +562,19 @@ export function ProductDetailPage({ slug }: { slug: string }) {
                   sale_price_idr: product.sale_price_idr,
                   is_on_sale: product.is_on_sale,
                   discount_percent: product.discount_percent,
+                  color_variants: selectedVariant
+                    ? [{
+                        price_idr: selectedVariant.price_idr,
+                        original_price_idr: selectedVariant.original_price_idr,
+                        sale_price_idr: selectedVariant.sale_price_idr,
+                        stock: selectedVariant.stock,
+                      }]
+                    : variants.map((v) => ({
+                        price_idr: v.price_idr,
+                        original_price_idr: v.original_price_idr,
+                        sale_price_idr: v.sale_price_idr,
+                        stock: v.stock,
+                      })),
                   size_variants: sizeVariants.map((v) => ({
                     price_idr: v.price_idr,
                     original_price_idr: v.original_price_idr,

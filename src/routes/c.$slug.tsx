@@ -49,7 +49,13 @@ type ProductRow = {
   attributes: Record<string, string> | null;
   product_images: Array<{ thumbnail_url: string | null; image_url: string }>;
   images: string[] | null;
-  variants: Array<{ color_hex: string; color_name: string }>;
+  variants: Array<{
+    color_hex: string;
+    color_name: string;
+    price_idr: number | null;
+    original_price_idr: number | null;
+    sale_price_idr: number | null;
+  }>;
   size_variants: Array<{
     price_idr: number | null;
     original_price_idr: number | null;
@@ -128,7 +134,7 @@ function CategoryPage() {
       const { data: prods } = await supabase
         .from("products")
         .select(
-          "id,sku,slug,name_en,name_id,price_idr,weight_grams,original_price_idr,sale_price_idr,is_on_sale,attributes,images,product_images(thumbnail_url,image_url,is_primary,sort_order),product_variants(color_hex,color_name,sort_order),product_size_variants(id)",
+          "id,sku,slug,name_en,name_id,price_idr,weight_grams,original_price_idr,sale_price_idr,is_on_sale,attributes,images,product_images(thumbnail_url,image_url,is_primary,sort_order),product_variants(color_hex,color_name,price_idr,original_price_idr,sale_price_idr,sort_order),product_size_variants(id)",
         )
         .eq("category_id", cat.id)
         .eq("is_active", true)
@@ -148,10 +154,16 @@ function CategoryPage() {
           : flat.length > 0
             ? [{ thumbnail_url: flat[0], image_url: flat[0] }]
             : [];
-        const variantsRaw = ((p as { product_variants?: Array<{ color_hex: string; color_name: string; sort_order: number }> }).product_variants ?? [])
+        const variantsRaw = ((p as { product_variants?: Array<{ color_hex: string; color_name: string; price_idr: number | null; original_price_idr: number | null; sale_price_idr: number | null; sort_order: number }> }).product_variants ?? [])
           .slice()
           .sort((a, b) => a.sort_order - b.sort_order)
-          .map((v) => ({ color_hex: v.color_hex, color_name: v.color_name }));
+          .map((v) => ({
+            color_hex: v.color_hex,
+            color_name: v.color_name,
+            price_idr: v.price_idr ?? null,
+            original_price_idr: v.original_price_idr ?? null,
+            sale_price_idr: v.sale_price_idr ?? null,
+          }));
         return {
           id: p.id,
           slug: (p as { slug?: string | null }).slug ?? null,

@@ -7,6 +7,12 @@ export type PriceDisplayProduct = {
   sale_price_idr?: number | null;
   is_on_sale?: boolean | null;
   discount_percent?: number | string | null;
+  color_variants?: Array<{
+    price_idr: number | null;
+    original_price_idr: number | null;
+    sale_price_idr?: number | null;
+    stock?: number | null;
+  }> | null;
   size_variants?: Array<{
     price_idr: number | null;
     original_price_idr: number | null;
@@ -24,9 +30,35 @@ function discountPct(original: number, current: number): number {
  * Considers size_variants overriding the base price, and per-product sale_price.
  */
 export function resolvePricing(p: PriceDisplayProduct) {
-  const variantPrices = (p.size_variants ?? [])
-    .map((v) => (typeof v.price_idr === "number" ? v.price_idr : null))
-    .filter((n): n is number => typeof n === "number" && n > 0);
+  const colorEntries = (p.color_variants ?? [])
+    .map((v) => {
+      const current =
+        typeof v.sale_price_idr === "number" && v.sale_price_idr > 0
+          ? v.sale_price_idr
+          : typeof v.price_idr === "number" && v.price_idr > 0
+            ? v.price_idr
+            : null;
+      if (current === null) return null;
+      const original =
+        typeof v.sale_price_idr === "number" && v.sale_price_idr > 0
+          ? v.price_idr || v.original_price_idr || null
+          : typeof v.original_price_idr === "number" && v.original_price_idr > current
+            ? v.original_price_idr
+            : null;
+      return { current, original };
+    })
+    .filter((v): v is { current: number; original: number | null } => v !== null);
+
+  const sizeEntries = (p.size_variants ?? [])
+    .map((v) => {
+      if (typeof v.price_idr !== "number" || v.price_idr <= 0) return null;
+      const original =
+        typeof v.original_price_idr === "number" && v.original_price_idr > v.price_idr
+          ? v.original_price_idr
+          : null;
+      return { current: v.price_idr, original };
+    })
+    .filter((v): v is { current: number; original: number | null } => v !== null);
 
   // Effective "current" price for the base product (sale wins when present).
   const baseCurrent =
@@ -40,13 +72,22 @@ export function resolvePricing(p: PriceDisplayProduct) {
         ? p.original_price_idr
         : null;
 
-  const allCurrent = variantPrices.length > 0 ? variantPrices : [baseCurrent];
+  const effectiveEntries =
+    sizeEntries.length > 0
+      ? sizeEntries
+      : colorEntries.length > 0
+        ? colorEntries
+        : [{ current: baseCurrent, original: baseOriginal }];
+  const allCurrent = effectiveEntries.map((entry) => entry.current);
   const min = Math.min(...allCurrent);
   const max = Math.max(...allCurrent);
+  const singleEntry =
+    effectiveEntries.length === 1 ? effectiveEntries[0] : { current: baseCurrent, original: baseOriginal };
 
   const onSale =
     !!p.is_on_sale ||
     (baseOriginal !== null && baseOriginal > baseCurrent) ||
+    colorEntries.some((v) => v.original !== null && v.original > v.current) ||
     (p.size_variants ?? []).some(
       (v) =>
         typeof v.price_idr === "number" &&
@@ -58,7 +99,7 @@ export function resolvePricing(p: PriceDisplayProduct) {
     p.discount_percent === null || p.discount_percent === undefined
       ? null
       : Number(p.discount_percent);
-  const derivedPct = baseOriginal ? discountPct(baseOriginal, baseCurrent) : 0;
+  const derivedPct = singleEntry.original ? discountPct(singleEntry.original, singleEntry.current) : 0;
   const badgePct =
     explicitPct !== null && Number.isFinite(explicitPct) && explicitPct > 0
       ? explicitPct
@@ -68,8 +109,8 @@ export function resolvePricing(p: PriceDisplayProduct) {
     min,
     max,
     hasRange: min !== max,
-    current: baseCurrent,
-    original: baseOriginal,
+    current: singleEntry.current,
+    original: singleEntry.original,
     onSale,
     discount: badgePct,
   };

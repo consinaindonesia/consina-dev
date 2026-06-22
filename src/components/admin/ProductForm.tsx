@@ -706,6 +706,9 @@ export function ProductForm(props: ProductFormProps) {
             color_name: v.color_name.trim(),
             color_hex: v.color_hex.toLowerCase(),
             image_url: v.image_url,
+            price_idr: v.price_idr,
+            original_price_idr: v.original_price_idr,
+            sale_price_idr: v.sale_price_idr,
             stock: v.stock,
             sort_order: i,
           }));

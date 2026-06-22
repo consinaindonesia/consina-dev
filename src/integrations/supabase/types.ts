@@ -1247,7 +1247,10 @@ export type Database = {
           created_at: string
           id: string
           image_url: string | null
+          original_price_idr: number | null
+          price_idr: number | null
           product_id: string
+          sale_price_idr: number | null
           sort_order: number
           stock: number | null
           updated_at: string
@@ -1258,7 +1261,10 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          original_price_idr?: number | null
+          price_idr?: number | null
           product_id: string
+          sale_price_idr?: number | null
           sort_order?: number
           stock?: number | null
           updated_at?: string
@@ -1269,7 +1275,10 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          original_price_idr?: number | null
+          price_idr?: number | null
           product_id?: string
+          sale_price_idr?: number | null
           sort_order?: number
           stock?: number | null
           updated_at?: string

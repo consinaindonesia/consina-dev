@@ -23,7 +23,13 @@ export type PublicProduct = {
   thumbnail_url: string | null;
   weight_grams: number | null;
   created_at: string | null;
-  variants: Array<{ color_hex: string; color_name: string }>;
+  variants: Array<{
+    color_hex: string;
+    color_name: string;
+    price_idr: number | null;
+    original_price_idr: number | null;
+    sale_price_idr: number | null;
+  }>;
   size_variants: Array<{
     price_idr: number | null;
     original_price_idr: number | null;
@@ -59,6 +65,9 @@ type RawRow = {
   product_variants: Array<{
     color_hex: string;
     color_name: string;
+    price_idr: number | null;
+    original_price_idr: number | null;
+    sale_price_idr: number | null;
     sort_order: number;
   }> | null;
   product_size_variants: Array<{
@@ -78,7 +87,13 @@ function normalize(rows: RawRow[]): PublicProduct[] {
     const variants = (r.product_variants ?? [])
       .slice()
       .sort((a, b) => a.sort_order - b.sort_order)
-      .map((v) => ({ color_hex: v.color_hex, color_name: v.color_name }));
+      .map((v) => ({
+        color_hex: v.color_hex,
+        color_name: v.color_name,
+        price_idr: v.price_idr ?? null,
+        original_price_idr: v.original_price_idr ?? null,
+        sale_price_idr: v.sale_price_idr ?? null,
+      }));
     const size_variants = (r.product_size_variants ?? []).map((v) => ({
       price_idr: v.price_idr,
       original_price_idr: v.original_price_idr,
@@ -126,7 +141,7 @@ export function usePublicProducts() {
       const { data: rows } = await supabase
         .from("products")
         .select(
-          "id,sku,slug,name_en,name_id,short_description_en,short_description_id,price_idr,original_price_idr,sale_price_idr,is_on_sale,discount_percent,is_featured,category_id,weight_grams,created_at,images,categories!products_category_id_fkey(slug,name_en,name_id),product_images(image_url,thumbnail_url,is_primary,sort_order),product_variants(color_hex,color_name,sort_order),product_size_variants(price_idr,original_price_idr,stock)",
+          "id,sku,slug,name_en,name_id,short_description_en,short_description_id,price_idr,original_price_idr,sale_price_idr,is_on_sale,discount_percent,is_featured,category_id,weight_grams,created_at,images,categories!products_category_id_fkey(slug,name_en,name_id),product_images(image_url,thumbnail_url,is_primary,sort_order),product_variants(color_hex,color_name,price_idr,original_price_idr,sale_price_idr,sort_order),product_size_variants(price_idr,original_price_idr,stock)",
         )
         .eq("is_active", true)
         .order("is_featured", { ascending: false })

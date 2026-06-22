@@ -135,6 +135,25 @@ function DesignEditor() {
       // on legacy installs) so every editable section is reachable.
       const existing = new Set((secs as PageSectionRow[]).map((r) => r.section_type));
       const missing = DEFAULT_HOME_SECTIONS.filter((t) => !existing.has(t));
+      const normalizeRows = async (rows: PageSectionRow[]) => {
+        const defaultOrder = new Map(DEFAULT_HOME_SECTIONS.map((type, i) => [type, i]));
+        const next = [...rows]
+          .sort((a, b) => {
+            const aOrder = defaultOrder.get(a.section_type as SectionTypeId);
+            const bOrder = defaultOrder.get(b.section_type as SectionTypeId);
+            if (aOrder != null && bOrder != null) return aOrder - bOrder;
+            if (aOrder != null) return -1;
+            if (bOrder != null) return 1;
+            return (a.position ?? 0) - (b.position ?? 0);
+          })
+          .map((row, i) => ({ ...row, position: i }));
+        await Promise.all(
+          next.map((row) =>
+            supabase.from("page_sections").update({ position: row.position }).eq("id", row.id),
+          ),
+        );
+        setSections(next);
+      };
       if (missing.length > 0) {
         const maxPos = (secs as PageSectionRow[]).reduce(
           (m, r) => Math.max(m, r.position ?? 0),
@@ -151,12 +170,12 @@ function DesignEditor() {
           .from("page_sections")
           .insert(addRows)
           .select("id,page,section_type,position,enabled,settings");
-        setSections([
+        await normalizeRows([
           ...(secs as PageSectionRow[]),
           ...((inserted ?? []) as PageSectionRow[]),
         ]);
       } else {
-        setSections(secs as PageSectionRow[]);
+        await normalizeRows(secs as PageSectionRow[]);
       }
     }
     setTheme(mergeTheme(th?.settings));
@@ -261,35 +280,6 @@ function DesignEditor() {
     }
     setSections((cur) => [...cur, data as PageSectionRow]);
     setAddOpen(false);
-    setSelectedId(data.id);
-    bumpPreview();
-  };
-
-  const ensureSection = async (type: SectionTypeId) => {
-    const existing = sections.find((s) => s.section_type === type);
-    if (existing) {
-      setTab("sections");
-      setSelectedId(existing.id);
-      return;
-    }
-    const pos = sections.length;
-    const { data, error } = await supabase
-      .from("page_sections")
-      .insert({
-        page: PAGE,
-        section_type: type,
-        position: pos,
-        enabled: true,
-        settings: getDefaultSettings(type) as never,
-      })
-      .select("id,page,section_type,position,enabled,settings")
-      .single();
-    if (error || !data) {
-      toast.error("Failed to create section");
-      return;
-    }
-    setSections((cur) => [...cur, data as PageSectionRow]);
-    setTab("sections");
     setSelectedId(data.id);
     bumpPreview();
   };
@@ -418,12 +408,6 @@ function DesignEditor() {
 
               {/* Fixed Header pseudo-row */}
               <FixedRow label="Header" sublabel="Logo, nav visibility" onClick={() => setTab("header")} />
-
-              <FixedRow
-                label="Announcement Bar"
-                sublabel="Top message, link, animation"
-                onClick={() => void ensureSection("announcement_bar")}
-              />
 
               <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
                 <SortableContext items={sections.map((s) => s.id)} strategy={verticalListSortingStrategy}>

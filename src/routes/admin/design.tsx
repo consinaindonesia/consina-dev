@@ -136,16 +136,8 @@ function DesignEditor() {
       const existing = new Set((secs as PageSectionRow[]).map((r) => r.section_type));
       const missing = DEFAULT_HOME_SECTIONS.filter((t) => !existing.has(t));
       const normalizeRows = async (rows: PageSectionRow[]) => {
-        const defaultOrder = new Map(DEFAULT_HOME_SECTIONS.map((type, i) => [type, i]));
         const next = [...rows]
-          .sort((a, b) => {
-            const aOrder = defaultOrder.get(a.section_type as SectionTypeId);
-            const bOrder = defaultOrder.get(b.section_type as SectionTypeId);
-            if (aOrder != null && bOrder != null) return aOrder - bOrder;
-            if (aOrder != null) return -1;
-            if (bOrder != null) return 1;
-            return (a.position ?? 0) - (b.position ?? 0);
-          })
+          .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
           .map((row, i) => ({ ...row, position: i }));
         await Promise.all(
           next.map((row) =>

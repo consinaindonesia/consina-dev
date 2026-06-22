@@ -107,6 +107,7 @@ function useAutoSlidingCarousel({
   const frameRef = useRef<number | null>(null);
   const timeoutRef = useRef<number | null>(null);
   const scheduleNextRef = useRef<() => void>(() => undefined);
+  const interactionUntilRef = useRef(0);
 
   const clearPending = useCallback(() => {
     if (frameRef.current !== null) {
@@ -162,6 +163,10 @@ function useAutoSlidingCarousel({
     clearPending();
     if (!enabled || pageCount <= 1) return;
     timeoutRef.current = window.setTimeout(() => {
+      if (Date.now() < interactionUntilRef.current) {
+        scheduleNextRef.current();
+        return;
+      }
       const el = scrollerRef.current;
       if (!el) return;
       const currentIndex = getCarouselPageIndex(el);
@@ -177,15 +182,42 @@ function useAutoSlidingCarousel({
     return clearPending;
   }, [clearPending, scheduleNext]);
 
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+
+    const onInteract = () => {
+      interactionUntilRef.current = Date.now() + Math.max(1, pauseSeconds) * 1000;
+      scheduleNextRef.current();
+    };
+
+    const observer = new ResizeObserver(() => {
+      scheduleNextRef.current();
+    });
+
+    observer.observe(el);
+    el.addEventListener("pointerdown", onInteract, { passive: true });
+    el.addEventListener("mouseenter", onInteract, { passive: true });
+    el.addEventListener("touchstart", onInteract, { passive: true });
+
+    return () => {
+      observer.disconnect();
+      el.removeEventListener("pointerdown", onInteract);
+      el.removeEventListener("mouseenter", onInteract);
+      el.removeEventListener("touchstart", onInteract);
+    };
+  }, [pauseSeconds, scrollerRef]);
+
   const nudge = useCallback(
     (dir: 1 | -1) => {
       const el = scrollerRef.current;
       if (!el) return;
+      interactionUntilRef.current = Date.now() + Math.max(1, pauseSeconds) * 1000;
       const currentIndex = getCarouselPageIndex(el);
       const nextIndex = Math.min(Math.max(currentIndex + dir, 0), Math.max(pageCount - 1, 0));
       animateToPage(nextIndex, true);
     },
-    [animateToPage, pageCount, scrollerRef],
+    [animateToPage, pageCount, pauseSeconds, scrollerRef],
   );
 
   return { animateToPage, nudge };

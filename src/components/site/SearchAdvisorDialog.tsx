@@ -6,7 +6,6 @@ import { formatPrice } from "@/i18n/format";
 import { useLang } from "@/i18n/LangProvider";
 import { usePublicProducts } from "@/lib/public-products";
 import { Button } from "@/components/ui/button";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 
@@ -39,19 +38,6 @@ type AdvisorResponse = {
 
 const MAX_HISTORY_TURNS = 10;
 
-const QUICK_PROMPTS = {
-  id: [
-    "carrier untuk hiking 3 hari",
-    "sepatu trail yang ringan",
-    "tenda untuk 2 orang",
-  ],
-  en: [
-    "carrier for a 3-day hike",
-    "lightweight trail shoes",
-    "tent for 2 people",
-  ],
-} as const;
-
 export function SearchAdvisorDialog({
   open,
   onOpenChange,
@@ -68,8 +54,6 @@ export function SearchAdvisorDialog({
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  const prompts = QUICK_PROMPTS[lang];
 
   const resetConversation = () => {
     setQuestion("");
@@ -136,6 +120,7 @@ export function SearchAdvisorDialog({
     name,
     category,
     price,
+    imageUrl,
   }: {
     id: string;
     slug: string | null;
@@ -143,6 +128,7 @@ export function SearchAdvisorDialog({
     name: string;
     category: string | null;
     price: number | null;
+    imageUrl?: string | null;
   }) => {
     const targetSlug = slug || sku;
     return (
@@ -150,13 +136,16 @@ export function SearchAdvisorDialog({
         key={id}
         to="/$lang/products/$slug"
         params={{ lang, slug: targetSlug }}
-        className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-background px-4 py-3 transition hover:border-primary/40"
+        className="flex items-center gap-4 rounded-2xl border border-border bg-background px-3 py-3 transition hover:border-primary/40"
       >
-        <div className="min-w-0">
-          <div className="truncate text-sm font-semibold text-primary">{name}</div>
-          {category ? <div className="mt-1 text-xs uppercase tracking-[0.16em] text-muted-foreground">{category}</div> : null}
+        <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-muted">
+          {imageUrl ? <img src={imageUrl} alt={name} className="h-full w-full object-cover" /> : null}
         </div>
-        {price !== null ? <div className="shrink-0 text-sm font-semibold text-foreground">{formatPrice(price, lang)}</div> : null}
+        <div className="min-w-0 flex-1">
+          <div className="line-clamp-2 text-sm font-semibold text-primary">{name}</div>
+          {category ? <div className="mt-1 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">{category}</div> : null}
+          {price !== null ? <div className="mt-2 text-sm font-semibold text-foreground">{formatPrice(price, lang)}</div> : null}
+        </div>
       </Link>
     );
   };
@@ -195,18 +184,6 @@ export function SearchAdvisorDialog({
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
               </Button>
             </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {prompts.map((prompt) => (
-                <button
-                  key={prompt}
-                  type="button"
-                  onClick={() => void ask(prompt)}
-                  className="rounded-full border border-primary/20 bg-white px-3 py-1.5 text-xs font-semibold text-primary transition hover:bg-primary hover:text-primary-foreground"
-                >
-                  {prompt}
-                </button>
-              ))}
-            </div>
           </form>
 
           <div className="mt-4">
@@ -222,77 +199,67 @@ export function SearchAdvisorDialog({
               </div>
             )}
 
-            <Accordion type="multiple" defaultValue={["recommendations", "bestsellers"]} className="rounded-3xl border border-border bg-background px-4">
-              <AccordionItem value="recommendations">
-                <AccordionTrigger className="text-left text-base font-semibold text-primary">
-                  {lang === "id" ? "Rekomendasi" : "Recommendations"}
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="space-y-3 pb-4">
-                    {products.length === 0 && !loading ? (
-                      <div className="rounded-2xl border border-dashed border-border p-4 text-sm text-muted-foreground">
-                        {lang === "id"
-                          ? "Cari produk dulu, lalu rekomendasinya akan muncul di sini."
-                          : "Search first and the recommendations will appear here."}
-                      </div>
-                    ) : null}
+            <div className="grid gap-5 rounded-3xl border border-border bg-background p-4 md:grid-cols-[1.4fr_0.8fr]">
+              <section>
+                <div className="mb-3 text-2xl font-semibold text-primary">
+                  {lang === "id" ? "Rekomendasi" : "Featured Results"}
+                </div>
+                <div className="space-y-3">
+                  {products.length === 0 && !loading ? (
+                    <div className="rounded-2xl border border-dashed border-border p-4 text-sm text-muted-foreground">
+                      {lang === "id"
+                        ? "Ketik nama atau kategori produk untuk melihat hasil pencarian."
+                        : "Type a product name or category to see search results."}
+                    </div>
+                  ) : null}
 
-                    {products.map((product) =>
-                      renderProductRow({
-                        id: product.id,
-                        slug: product.slug,
-                        sku: product.sku,
-                        name: lang === "id" ? product.name_id : product.name_en,
-                        category:
-                          (lang === "id" ? product.category_name_id : product.category_name_en) ||
-                          product.category_name_en ||
-                          product.category_name_id,
-                        price: product.sale_price_idr ?? product.price_idr,
-                      }),
-                    )}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
+                  {products.map((product) =>
+                    renderProductRow({
+                      id: product.id,
+                      slug: product.slug,
+                      sku: product.sku,
+                      name: lang === "id" ? product.name_id : product.name_en,
+                      category:
+                        (lang === "id" ? product.category_name_id : product.category_name_en) ||
+                        product.category_name_en ||
+                        product.category_name_id,
+                      price: product.sale_price_idr ?? product.price_idr,
+                      imageUrl: product.image_url,
+                    }),
+                  )}
+                </div>
+              </section>
 
-              <AccordionItem value="bestsellers">
-                <AccordionTrigger className="text-left text-base font-semibold text-primary">
+              <section>
+                <div className="mb-3 text-2xl font-semibold text-primary">
                   {lang === "id" ? "Best Seller" : "Best Sellers"}
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="space-y-3 pb-4">
-                    {featuredProducts.length === 0 ? (
-                      <div className="rounded-2xl border border-dashed border-border p-4 text-sm text-muted-foreground">
-                        {lang === "id"
-                          ? "Belum ada produk best seller yang ditampilkan."
-                          : "No bestseller products are currently available."}
-                      </div>
-                    ) : null}
+                </div>
+                <div className="space-y-3">
+                  {featuredProducts.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-border p-4 text-sm text-muted-foreground">
+                      {lang === "id"
+                        ? "Belum ada best seller yang tersedia."
+                        : "No best sellers are available yet."}
+                    </div>
+                  ) : null}
 
-                    {featuredProducts.map((product) =>
-                      renderProductRow({
-                        id: product.id,
-                        slug: product.slug,
-                        sku: product.sku,
-                        name: lang === "id" ? product.name_id : product.name_en,
-                        category:
-                          (lang === "id" ? product.category_name_id : product.category_name_en) ||
-                          product.category_name_en ||
-                          product.category_name_id,
-                        price: product.sale_price_idr ?? product.price_idr,
-                      }),
-                    )}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-
-            {!products.length && !error && !loading ? (
-              <div className="mt-4 rounded-2xl border border-dashed border-border bg-muted/30 p-4 text-sm text-muted-foreground">
-                {lang === "id"
-                  ? "Tampilan dibuat lebih simpel: cukup cari produk, lalu buka dropdown rekomendasi atau best seller."
-                  : "This view is intentionally simpler: search for a product, then open the recommendations or best sellers dropdown."}
-              </div>
-            ) : null}
+                  {featuredProducts.map((product) =>
+                    renderProductRow({
+                      id: product.id,
+                      slug: product.slug,
+                      sku: product.sku,
+                      name: lang === "id" ? product.name_id : product.name_en,
+                      category:
+                        (lang === "id" ? product.category_name_id : product.category_name_en) ||
+                        product.category_name_en ||
+                        product.category_name_id,
+                      price: product.sale_price_idr ?? product.price_idr,
+                      imageUrl: product.image_url,
+                    }),
+                  )}
+                </div>
+              </section>
+            </div>
           </div>
         </div>
       </DialogContent>

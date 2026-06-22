@@ -140,6 +140,34 @@ export function ProductDetailPage({ slug }: { slug: string }) {
       const prod = prods?.[0] as (Product & { product_images: ProductImage[] }) | undefined;
       if (cancelled) return;
       if (!prod) {
+        const { data: redirect } = await supabase
+          .from("product_slug_redirects" as never)
+          .select("target_product_id,target_slug")
+          .eq("old_slug", slug)
+          .maybeSingle();
+        if (cancelled) return;
+        const target = redirect as { target_product_id?: string | null; target_slug?: string | null } | null;
+        if (target?.target_product_id) {
+          const { data: targetProd } = await supabase
+            .from("products")
+            .select("slug,sku")
+            .eq("id", target.target_product_id)
+            .eq("is_active", true)
+            .maybeSingle();
+          if (cancelled) return;
+          const resolvedSlug =
+            (targetProd as { slug?: string | null; sku?: string | null } | null)?.slug ??
+            (targetProd as { slug?: string | null; sku?: string | null } | null)?.sku ??
+            target.target_slug;
+          if (resolvedSlug) {
+            void navigate({
+              to: "/$lang/products/$slug" as never,
+              params: { lang, slug: resolvedSlug } as never,
+              replace: true,
+            });
+            return;
+          }
+        }
         setMissing(true);
         setLoading(false);
         return;
@@ -312,7 +340,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
     return () => {
       cancelled = true;
     };
-  }, [slug]);
+  }, [slug, lang, navigate]);
 
   const nameField = useMemo(() => localizedField(product, "name", lang), [product, lang]);
   const shortDescField = useMemo(() => localizedField(product, "short_description", lang), [product, lang]);

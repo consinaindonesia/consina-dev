@@ -265,6 +265,35 @@ function DesignEditor() {
     bumpPreview();
   };
 
+  const ensureSection = async (type: SectionTypeId) => {
+    const existing = sections.find((s) => s.section_type === type);
+    if (existing) {
+      setTab("sections");
+      setSelectedId(existing.id);
+      return;
+    }
+    const pos = sections.length;
+    const { data, error } = await supabase
+      .from("page_sections")
+      .insert({
+        page: PAGE,
+        section_type: type,
+        position: pos,
+        enabled: true,
+        settings: getDefaultSettings(type) as never,
+      })
+      .select("id,page,section_type,position,enabled,settings")
+      .single();
+    if (error || !data) {
+      toast.error("Failed to create section");
+      return;
+    }
+    setSections((cur) => [...cur, data as PageSectionRow]);
+    setTab("sections");
+    setSelectedId(data.id);
+    bumpPreview();
+  };
+
   const resetSections = async () => {
     if (!confirm("Reset homepage sections to the default layout? This removes any custom sections.")) return;
     await supabase.from("page_sections").delete().eq("page", PAGE);
@@ -389,6 +418,12 @@ function DesignEditor() {
 
               {/* Fixed Header pseudo-row */}
               <FixedRow label="Header" sublabel="Logo, nav visibility" onClick={() => setTab("header")} />
+
+              <FixedRow
+                label="Announcement Bar"
+                sublabel="Top message, link, animation"
+                onClick={() => void ensureSection("announcement_bar")}
+              />
 
               <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
                 <SortableContext items={sections.map((s) => s.id)} strategy={verticalListSortingStrategy}>

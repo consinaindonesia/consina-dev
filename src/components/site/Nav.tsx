@@ -6,6 +6,7 @@ import { LanguageSwitcher } from "./LanguageSwitcher";
 import { LangSuggestionBanner } from "./LangSuggestionBanner";
 import { AnnouncementBar } from "./AnnouncementBar";
 import { CartDrawer } from "./CartDrawer";
+import { SearchAdvisorDialog } from "./SearchAdvisorDialog";
 import { useCustomerAuth } from "@/hooks/use-customer-auth";
 import { useWishlist } from "@/lib/wishlist-store";
 import { usePublicCategories, type PublicCategory } from "@/hooks/use-public-categories";
@@ -20,6 +21,7 @@ export function Nav() {
   const [open, setOpen] = useState(false);
   const [shopOpen, setShopOpen] = useState(false);
   const [mobileShopOpen, setMobileShopOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const { data: categories, isLoading: catsLoading } = usePublicCategories();
   const { user } = useCustomerAuth();
   const { count: wishCount } = useWishlist(user?.id ?? null);
@@ -225,9 +227,15 @@ export function Nav() {
             <User className="h-4 w-4" />
           </Link>}
           <LanguageSwitcher className="hidden md:inline-flex" menuBg={headerBgColor} />
-          {header.showSearch && <button className="hidden h-9 w-9 items-center justify-center rounded-full text-foreground/70 transition hover:bg-muted hover:text-primary md:flex" aria-label={t("nav.search")}>
-            <Search className="h-4 w-4" />
-          </button>}
+          {header.showSearch && (
+            <button
+              className="hidden h-9 w-9 items-center justify-center rounded-full text-foreground/70 transition hover:bg-muted hover:text-primary md:flex"
+              aria-label={t("nav.search")}
+              onClick={() => setSearchOpen(true)}
+            >
+              <Search className="h-4 w-4" />
+            </button>
+          )}
           {header.showFindStore && <Link
             to="/stores"
             className="hidden items-center gap-1.5 rounded-full border border-primary/20 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary transition hover:bg-primary hover:text-primary-foreground md:inline-flex"
@@ -296,6 +304,18 @@ export function Nav() {
             <Link to="/wishlist" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-muted">
               Wishlist{wishCount > 0 ? ` (${wishCount})` : ""}
             </Link>
+            {header.showSearch && (
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  setSearchOpen(true);
+                }}
+                className="rounded-md px-3 py-2 text-left text-sm font-medium text-foreground hover:bg-muted"
+              >
+                {t("nav.search")}
+              </button>
+            )}
             <Link to={user ? "/akun" : "/auth"} onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-muted">
               {user ? "Akun Saya" : "Masuk / Daftar"}
             </Link>
@@ -305,6 +325,7 @@ export function Nav() {
           </nav>
         </div>
       )}
+      <SearchAdvisorDialog open={searchOpen} onOpenChange={setSearchOpen} />
     </header>
   );
 }

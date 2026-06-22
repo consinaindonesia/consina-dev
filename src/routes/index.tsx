@@ -308,7 +308,6 @@ function Hero({ settings }: { settings: HeroSettings }) {
   const lang = useLang();
   const s = settings;
   const heroImg = s.image && s.image.trim() ? s.image : hero;
-  const overlayPct = Math.max(0, Math.min(100, s.overlay ?? 40));
   const heading = pickLocalized(s.heading, lang);
   const eyebrow = pickLocalized(s.eyebrow, lang);
   const subtitle = pickLocalized(s.subtitle, lang);
@@ -326,12 +325,6 @@ function Hero({ settings }: { settings: HeroSettings }) {
           width={1920}
           height={1080}
           className="h-full w-full object-cover"
-        />
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `linear-gradient(to bottom, rgba(26,58,46,${(overlayPct / 100).toFixed(2)}), rgba(26,58,46,${((overlayPct * 0.75) / 100).toFixed(2)}), var(--background))`,
-          }}
         />
       </div>
       <div

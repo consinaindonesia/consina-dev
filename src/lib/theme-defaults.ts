@@ -209,6 +209,16 @@ export function mergeTheme(partial: unknown): ThemeSettings {
   };
 }
 
+// Only inject a CSS var if the value is a recognisable CSS color format.
+// An invalid value (e.g. "fffff") would override the static styles.css fallback
+// and cause any element using var(--background) etc. to render as transparent.
+function isValidColor(v: string): boolean {
+  if (!v?.trim()) return false;
+  const s = v.trim();
+  return /^(oklch|rgb|rgba|hsl|hsla)\(/i.test(s) ||
+    /^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(s);
+}
+
 export function themeToCss(theme: ThemeSettings): string {
   const c = theme.colors;
   const faces = (theme.customFonts ?? [])
@@ -217,7 +227,14 @@ export function themeToCss(theme: ThemeSettings): string {
         `@font-face{font-family:"${escapeCss(f.name)}";src:url("${escapeCssUrl(f.url)}") format("${f.format}");font-display:swap;font-weight:100 900;font-style:normal;}`,
     )
     .join("");
-  return `${faces}:root{--background:${c.background};--foreground:${c.foreground};--primary:${c.primary};--ring:${c.primary};--secondary:${c.secondary};--accent:${c.accent};}
+  const colorVars = [
+    isValidColor(c.background) && `--background:${c.background}`,
+    isValidColor(c.foreground) && `--foreground:${c.foreground}`,
+    isValidColor(c.primary)    && `--primary:${c.primary};--ring:${c.primary}`,
+    isValidColor(c.secondary)  && `--secondary:${c.secondary}`,
+    isValidColor(c.accent)     && `--accent:${c.accent}`,
+  ].filter(Boolean).join(";");
+  return `${faces}:root{${colorVars};}
 body{font-family:"${theme.fonts.body}",ui-sans-serif,system-ui,sans-serif;}
 h1,h2,h3,h4{font-family:"${theme.fonts.heading}","${theme.fonts.body}",ui-sans-serif,system-ui,sans-serif;}`;
 }

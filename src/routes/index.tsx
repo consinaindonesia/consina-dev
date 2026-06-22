@@ -87,6 +87,110 @@ function pickBody(
   return "";
 }
 
+function getCarouselPageIndex(el: HTMLDivElement): number {
+  return Math.round(el.scrollLeft / Math.max(el.clientWidth, 1));
+}
+
+function useAutoSlidingCarousel({
+  scrollerRef,
+  pageCount,
+  enabled,
+  pauseSeconds,
+  scrollDurationMs,
+}: {
+  scrollerRef: React.RefObject<HTMLDivElement | null>;
+  pageCount: number;
+  enabled: boolean;
+  pauseSeconds: number;
+  scrollDurationMs: number;
+}) {
+  const frameRef = useRef<number | null>(null);
+  const timeoutRef = useRef<number | null>(null);
+  const scheduleNextRef = useRef<() => void>(() => undefined);
+
+  const clearPending = useCallback(() => {
+    if (frameRef.current !== null) {
+      window.cancelAnimationFrame(frameRef.current);
+      frameRef.current = null;
+    }
+    if (timeoutRef.current !== null) {
+      window.clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  }, []);
+
+  const animateToPage = useCallback(
+    (index: number, restart = true) => {
+      const el = scrollerRef.current;
+      if (!el) return;
+
+      clearPending();
+
+      const maxIndex = Math.max(pageCount - 1, 0);
+      const safeIndex = Math.min(Math.max(index, 0), maxIndex);
+      const startLeft = el.scrollLeft;
+      const targetLeft = safeIndex * el.clientWidth;
+
+      if (Math.abs(targetLeft - startLeft) < 1 || scrollDurationMs <= 0) {
+        el.scrollLeft = targetLeft;
+        if (restart) scheduleNextRef.current();
+        return;
+      }
+
+      const startTime = performance.now();
+      const duration = Math.max(200, scrollDurationMs);
+
+      const step = (now: number) => {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.scrollLeft = startLeft + (targetLeft - startLeft) * eased;
+        if (progress < 1) {
+          frameRef.current = window.requestAnimationFrame(step);
+          return;
+        }
+        frameRef.current = null;
+        if (restart) scheduleNextRef.current();
+      };
+
+      frameRef.current = window.requestAnimationFrame(step);
+    },
+    [clearPending, pageCount, scrollDurationMs, scrollerRef],
+  );
+
+  const scheduleNext = useCallback(() => {
+    clearPending();
+    if (!enabled || pageCount <= 1) return;
+    timeoutRef.current = window.setTimeout(() => {
+      const el = scrollerRef.current;
+      if (!el) return;
+      const currentIndex = getCarouselPageIndex(el);
+      const nextIndex = currentIndex >= pageCount - 1 ? 0 : currentIndex + 1;
+      animateToPage(nextIndex, true);
+    }, Math.max(1, pauseSeconds) * 1000);
+  }, [animateToPage, clearPending, enabled, pageCount, pauseSeconds, scrollerRef]);
+
+  scheduleNextRef.current = scheduleNext;
+
+  useEffect(() => {
+    scheduleNext();
+    return clearPending;
+  }, [clearPending, scheduleNext]);
+
+  const nudge = useCallback(
+    (dir: 1 | -1) => {
+      const el = scrollerRef.current;
+      if (!el) return;
+      const currentIndex = getCarouselPageIndex(el);
+      const nextIndex = Math.min(Math.max(currentIndex + dir, 0), Math.max(pageCount - 1, 0));
+      animateToPage(nextIndex, true);
+    },
+    [animateToPage, pageCount, scrollerRef],
+  );
+
+  return { animateToPage, nudge };
+}
+
 const faqs = [
   {
     q: "What does Consina sell?",
@@ -714,13 +818,16 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
   const [activeIdx, setActiveIdx] = useState(0);
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(false);
+  const autoScrollEnabled = s.autoScroll ?? true;
+  const pauseSeconds = Math.max(1, Math.min(15, s.pauseSeconds ?? 3));
+  const scrollDurationMs = Math.max(200, Math.min(5000, s.scrollDurationMs ?? 900));
 
   const recompute = useCallback(() => {
     const el = scrollerRef.current;
     if (!el) return;
     const pages = Math.max(1, Math.ceil(el.scrollWidth / el.clientWidth));
     setSnapCount(pages);
-    const idx = Math.round(el.scrollLeft / el.clientWidth);
+    const idx = getCarouselPageIndex(el);
     setActiveIdx(Math.min(pages - 1, Math.max(0, idx)));
     setCanPrev(el.scrollLeft > 4);
     setCanNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
@@ -739,17 +846,13 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
     };
   }, [recompute, items.length]);
 
-  const scrollToPage = (i: number) => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
-  };
-
-  const nudge = (dir: 1 | -1) => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    el.scrollBy({ left: dir * el.clientWidth * 0.9, behavior: "smooth" });
-  };
+  const { animateToPage: scrollToPage, nudge } = useAutoSlidingCarousel({
+    scrollerRef,
+    pageCount: snapCount,
+    enabled: autoScrollEnabled,
+    pauseSeconds,
+    scrollDurationMs,
+  });
 
   return (
     <section
@@ -928,13 +1031,16 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
   const [activeIdx, setActiveIdx] = useState(0);
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(false);
+  const autoScrollEnabled = s.autoScroll ?? true;
+  const pauseSeconds = Math.max(1, Math.min(15, s.pauseSeconds ?? 3));
+  const scrollDurationMs = Math.max(200, Math.min(5000, s.scrollDurationMs ?? 900));
 
   const recompute = useCallback(() => {
     const el = scrollerRef.current;
     if (!el) return;
     const pages = Math.max(1, Math.ceil(el.scrollWidth / el.clientWidth));
     setSnapCount(pages);
-    const idx = Math.round(el.scrollLeft / el.clientWidth);
+    const idx = getCarouselPageIndex(el);
     setActiveIdx(Math.min(pages - 1, Math.max(0, idx)));
     setCanPrev(el.scrollLeft > 4);
     setCanNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
@@ -953,17 +1059,13 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
     };
   }, [recompute, featured.length]);
 
-  const scrollToPage = (i: number) => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
-  };
-
-  const nudge = (dir: 1 | -1) => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    el.scrollBy({ left: dir * el.clientWidth * 0.9, behavior: "smooth" });
-  };
+  const { animateToPage: scrollToPage, nudge } = useAutoSlidingCarousel({
+    scrollerRef,
+    pageCount: snapCount,
+    enabled: autoScrollEnabled,
+    pauseSeconds,
+    scrollDurationMs,
+  });
 
   return (
     <section

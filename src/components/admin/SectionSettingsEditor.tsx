@@ -544,6 +544,7 @@ function FeaturedEditor({
   const { products } = usePublicProducts();
   const source = value.source ?? "featured";
   const selected = value.productIds ?? [];
+  const autoScroll = value.autoScroll ?? true;
   const toggle = (id: string) => {
     const next = selected.includes(id) ? selected.filter((x) => x !== id) : [...selected, id];
     onChange({ ...value, productIds: next });
@@ -573,6 +574,45 @@ function FeaturedEditor({
             value={value.count ?? 8}
             onChange={(e) => onChange({ ...value, count: Number(e.target.value) || 8 })}
           />
+        </div>
+      </div>
+      <div className="rounded border border-input p-3">
+        <Label className="text-xs font-semibold">Auto-scroll carousel</Label>
+        <div className="mt-2 flex items-center justify-between gap-3">
+          <p className="text-[11px] text-muted-foreground">
+            Geser kartu otomatis, berhenti beberapa detik, lalu jalan lagi.
+          </p>
+          <label className="flex items-center gap-2 text-xs font-medium">
+            <input
+              type="checkbox"
+              checked={autoScroll}
+              onChange={(e) => onChange({ ...value, autoScroll: e.target.checked })}
+            />
+            Enable
+          </label>
+        </div>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <div>
+            <Label className="text-xs">Pause duration (seconds)</Label>
+            <Input
+              type="number"
+              min={1}
+              max={15}
+              value={value.pauseSeconds ?? 3}
+              onChange={(e) => onChange({ ...value, pauseSeconds: Number(e.target.value) || 3 })}
+            />
+          </div>
+          <div>
+            <Label className="text-xs">Scroll speed (ms per move)</Label>
+            <Input
+              type="number"
+              min={200}
+              max={5000}
+              step={100}
+              value={value.scrollDurationMs ?? 900}
+              onChange={(e) => onChange({ ...value, scrollDurationMs: Number(e.target.value) || 900 })}
+            />
+          </div>
         </div>
       </div>
       {source === "manual" && (
@@ -614,6 +654,7 @@ function CategoriesEditor({
   const list = cats ?? [];
   const slugs = value.categorySlugs ?? [];
   const orderedSlugs = slugs.length ? slugs : list.map((c) => c.slug);
+  const autoScroll = value.autoScroll ?? true;
 
   const toggle = (slug: string) => {
     const cur = slugs.length ? slugs : list.map((c) => c.slug);
@@ -634,6 +675,45 @@ function CategoriesEditor({
       <LocalizedField label="Eyebrow" value={value.eyebrow} onChange={(v) => onChange({ ...value, eyebrow: v })} />
       <LocalizedField label="Title" value={value.title} onChange={(v) => onChange({ ...value, title: v })} />
       <LocalizedField label="Subtitle" value={value.subtitle} onChange={(v) => onChange({ ...value, subtitle: v })} />
+      <div className="rounded border border-input p-3">
+        <Label className="text-xs font-semibold">Auto-scroll carousel</Label>
+        <div className="mt-2 flex items-center justify-between gap-3">
+          <p className="text-[11px] text-muted-foreground">
+            Geser kartu otomatis, berhenti beberapa detik, lalu jalan lagi.
+          </p>
+          <label className="flex items-center gap-2 text-xs font-medium">
+            <input
+              type="checkbox"
+              checked={autoScroll}
+              onChange={(e) => onChange({ ...value, autoScroll: e.target.checked })}
+            />
+            Enable
+          </label>
+        </div>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <div>
+            <Label className="text-xs">Pause duration (seconds)</Label>
+            <Input
+              type="number"
+              min={1}
+              max={15}
+              value={value.pauseSeconds ?? 3}
+              onChange={(e) => onChange({ ...value, pauseSeconds: Number(e.target.value) || 3 })}
+            />
+          </div>
+          <div>
+            <Label className="text-xs">Scroll speed (ms per move)</Label>
+            <Input
+              type="number"
+              min={200}
+              max={5000}
+              step={100}
+              value={value.scrollDurationMs ?? 900}
+              onChange={(e) => onChange({ ...value, scrollDurationMs: Number(e.target.value) || 900 })}
+            />
+          </div>
+        </div>
+      </div>
       <div>
         <Label className="text-xs">Categories & order</Label>
         <ul className="mt-1 divide-y divide-border rounded border border-input">

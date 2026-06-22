@@ -68,6 +68,9 @@ export type FeaturedProductsSettings = {
   source?: "featured" | "manual";
   productIds?: string[];
   count?: number;
+  autoScroll?: boolean;
+  pauseSeconds?: number;
+  scrollDurationMs?: number;
   viewAllCta?: CTAConfig;
 };
 
@@ -90,6 +93,9 @@ export type CategoriesSettings = {
       descriptionEn?: string;
     }
   >;
+  autoScroll?: boolean;
+  pauseSeconds?: number;
+  scrollDurationMs?: number;
   viewAllCta?: CTAConfig;
 };
 
@@ -388,6 +394,9 @@ export const DEFAULT_FEATURED_PRODUCTS: FeaturedProductsSettings = {
   subtitle: { id: "Terlaris", en: "Bestsellers" },
   source: "featured",
   count: 8,
+  autoScroll: true,
+  pauseSeconds: 3,
+  scrollDurationMs: 900,
   viewAllCta: { labelId: "", labelEn: "", href: "/catalog", style: "outline" },
 };
 
@@ -397,6 +406,9 @@ export const DEFAULT_CATEGORIES: CategoriesSettings = {
   subtitle: { id: "Dibuat untuk setiap petualangan, dibuat di Indonesia", en: "Built for every adventure, made in Indonesia" },
   eyebrow: { id: "Koleksi", en: "Collections" },
   categorySlugs: [],
+  autoScroll: true,
+  pauseSeconds: 3,
+  scrollDurationMs: 900,
   viewAllCta: { labelId: "Lihat semua", labelEn: "View all", href: "/catalog", style: "outline" },
 };
 

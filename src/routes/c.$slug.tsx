@@ -160,9 +160,10 @@ function CategoryPage() {
         .in("category_id", scopedCategoryIds)
         .order("sort_order");
       const defsMap = new Map<string, AttributeDef>();
-      (((catAttrs ?? []) as unknown as Array<{
+      const catAttrRows = (catAttrs ?? []) as unknown as Array<{
         attribute: AttributeDef | null;
-      }>)
+      }>;
+      catAttrRows
         .map((r) => r.attribute)
         .filter((a): a is AttributeDef => !!a)
         .forEach((a) => {

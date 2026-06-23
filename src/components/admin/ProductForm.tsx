@@ -238,7 +238,12 @@ async function syncProductCategories(
 
 type Tab = "basic" | "translations" | "images" | "variants" | "sizes" | "availability" | "seo";
 type ProductFormProps =
-  | { mode: "new"; productId?: undefined; initialTab?: Tab }
+  | {
+      mode: "new";
+      productId?: undefined;
+      initialTab?: Tab;
+      initialPrefill?: { sku?: string; name?: string; source?: string };
+    }
   | { mode: "edit"; productId: string; initialTab?: Tab };
 
 export function ProductForm(props: ProductFormProps) {
@@ -246,8 +251,24 @@ export function ProductForm(props: ProductFormProps) {
   const navigate = useNavigate();
   const { profile } = useAdminAuth();
 
-  const [values, setValues] = useState<ProductFormValues>(EMPTY);
-  const [initialSnapshot, setInitialSnapshot] = useState<string>(JSON.stringify(EMPTY));
+  const prefilledNewValues: ProductFormValues = useMemo(() => {
+    if (mode !== "new") return EMPTY;
+    const sku = props.initialPrefill?.sku?.trim() ?? "";
+    const name = props.initialPrefill?.name?.trim() ?? "";
+    return {
+      ...EMPTY,
+      sku,
+      name_en: name,
+      name_id: name,
+    };
+  }, [mode, props]);
+
+  const [values, setValues] = useState<ProductFormValues>(
+    mode === "new" ? prefilledNewValues : EMPTY,
+  );
+  const [initialSnapshot, setInitialSnapshot] = useState<string>(
+    JSON.stringify(mode === "new" ? prefilledNewValues : EMPTY),
+  );
   const [loading, setLoading] = useState(mode === "edit");
   const [saving, setSaving] = useState(false);
   const [tab, setTab] = useState<Tab>(initialTab ?? "basic");
@@ -297,6 +318,17 @@ export function ProductForm(props: ProductFormProps) {
     JSON.stringify(values) !== initialSnapshot ||
     JSON.stringify([...extraCategoryIds].sort()) !==
       JSON.stringify([...initialExtraCategoryIds].sort());
+
+  useEffect(() => {
+    if (mode !== "new") return;
+    const snapshot = JSON.stringify(prefilledNewValues);
+    setValues((current) =>
+      JSON.stringify(current) === initialSnapshot ? prefilledNewValues : current,
+    );
+    setInitialSnapshot((current) =>
+      current === JSON.stringify(EMPTY) || current === snapshot ? snapshot : current,
+    );
+  }, [mode, prefilledNewValues, initialSnapshot]);
 
   // Load categories
   useEffect(() => {

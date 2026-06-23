@@ -5,7 +5,10 @@ import {
   Boxes,
   CheckCircle2,
   CloudDownload,
+  ExternalLink,
+  FilePlus2,
   Loader2,
+  Pencil,
   RefreshCw,
   Search,
   Siren,
@@ -100,6 +103,14 @@ function statusIcon(status: SyncStatus) {
     default:
       return <Loader2 className="h-4 w-4 text-muted-foreground" />;
   }
+}
+
+function toCreateProductSearch(row: SyncRow) {
+  return {
+    sku: row.odoo_sku ?? undefined,
+    name: row.external_reference ?? row.odoo_sku ?? undefined,
+    source: "odoo_inventory_sync",
+  };
 }
 
 function InventorySyncPage() {
@@ -388,6 +399,7 @@ function InventorySyncPage() {
                     <th className="px-3 py-2">Delta</th>
                     <th className="px-3 py-2">When</th>
                     <th className="px-3 py-2">Issue</th>
+                    <th className="px-3 py-2">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -427,6 +439,36 @@ function InventorySyncPage() {
                           <span className="text-muted-foreground">—</span>
                         )}
                       </td>
+                      <td className="px-3 py-3">
+                        <div className="flex flex-wrap gap-2">
+                          {row.product_id ? (
+                            <Link
+                              to="/admin/products/$id/edit"
+                              params={{ id: row.product_id }}
+                              className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-semibold text-foreground hover:bg-muted"
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                              Edit Product
+                            </Link>
+                          ) : (
+                            <Link
+                              to="/admin/products/new"
+                              search={toCreateProductSearch(row)}
+                              className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-semibold text-foreground hover:bg-muted"
+                            >
+                              <FilePlus2 className="h-3.5 w-3.5" />
+                              Create Product
+                            </Link>
+                          )}
+                          <Link
+                            to="/admin/products"
+                            className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-semibold text-muted-foreground hover:bg-muted"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                            Open Catalog
+                          </Link>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -454,10 +496,60 @@ function InventorySyncPage() {
                     {row.error_message && (
                       <div className="mt-2 text-xs text-red-700">{row.error_message}</div>
                     )}
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {row.product_id ? (
+                        <Link
+                          to="/admin/products/$id/edit"
+                          params={{ id: row.product_id }}
+                          className="inline-flex items-center gap-1 rounded-md border border-red-200 bg-white px-2 py-1 text-xs font-semibold text-foreground hover:bg-red-50"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                          Edit Product
+                        </Link>
+                      ) : (
+                        <Link
+                          to="/admin/products/new"
+                          search={toCreateProductSearch(row)}
+                          className="inline-flex items-center gap-1 rounded-md border border-red-200 bg-white px-2 py-1 text-xs font-semibold text-foreground hover:bg-red-50"
+                        >
+                          <FilePlus2 className="h-3.5 w-3.5" />
+                          Create Product
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
             )}
+          </div>
+
+          <div className="rounded-xl border bg-white p-4 shadow-sm">
+            <h2 className="text-lg font-bold text-primary">Produk Baru dari Odoo</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Saat ini inventory sync hanya sinkron stok, bukan membuat katalog otomatis.
+              Jadi SKU baru dari Odoo akan muncul di halaman ini sebagai <strong>failed</strong> atau <strong>unmapped SKU</strong>.
+            </p>
+            <div className="mt-4 space-y-2 text-sm text-muted-foreground">
+              <p>Tempat melihat SKU baru: tabel <strong>Recent Sync Events</strong> dan panel <strong>Failed SKU Snapshot</strong>.</p>
+              <p>Tempat membuat atau edit produk website: menu <strong>Products</strong>.</p>
+              <p>Langkah kerja admin: klik <strong>Create Product</strong>, isi kategori/foto/harga, simpan, lalu sync stok berikutnya akan mulai bisa masuk ke produk itu.</p>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link
+                to="/admin/products"
+                className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-semibold text-foreground hover:bg-muted"
+              >
+                <ExternalLink className="h-4 w-4" />
+                Open Products
+              </Link>
+              <Link
+                to="/admin/products/new"
+                className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-semibold text-foreground hover:bg-muted"
+              >
+                <FilePlus2 className="h-4 w-4" />
+                New Product
+              </Link>
+            </div>
           </div>
 
           <div className="rounded-xl border bg-white p-4 shadow-sm">

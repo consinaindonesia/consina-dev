@@ -55,6 +55,7 @@ type ProductRow = {
   original_price_idr: number | null;
   sale_price_idr: number | null;
   is_on_sale: boolean;
+  discount_percent: number | null;
   attributes: Record<string, string> | null;
   product_images: Array<{ thumbnail_url: string | null; image_url: string }>;
   images: string[] | null;
@@ -177,7 +178,7 @@ function CategoryPage() {
       const { data: prods } = await supabase
         .from("products")
         .select(
-          "id,sku,slug,name_en,name_id,price_idr,weight_grams,original_price_idr,sale_price_idr,is_on_sale,attributes,images,product_images(thumbnail_url,image_url,is_primary,sort_order),product_variants(color_hex,color_name,price_idr,original_price_idr,sale_price_idr,sort_order),product_size_variants(id)",
+          "id,sku,slug,name_en,name_id,price_idr,weight_grams,original_price_idr,sale_price_idr,is_on_sale,discount_percent,attributes,images,product_images(thumbnail_url,image_url,is_primary,sort_order),product_variants(color_hex,color_name,price_idr,original_price_idr,sale_price_idr,sort_order),product_size_variants(id,price_idr,original_price_idr,stock)",
         )
         .in("category_id", scopedCategoryIds)
         .eq("is_active", true)
@@ -218,11 +219,40 @@ function CategoryPage() {
           original_price_idr: (p as { original_price_idr?: number | null }).original_price_idr ?? null,
           sale_price_idr: (p as { sale_price_idr?: number | null }).sale_price_idr ?? null,
           is_on_sale: !!(p as { is_on_sale?: boolean }).is_on_sale,
+          discount_percent:
+            (p as { discount_percent?: number | string | null }).discount_percent === null ||
+            (p as { discount_percent?: number | string | null }).discount_percent === undefined
+              ? null
+              : Number((p as { discount_percent?: number | string | null }).discount_percent),
           attributes: (p.attributes as Record<string, string> | null) ?? null,
           product_images: merged,
           images: flat,
           variants: variantsRaw,
-          size_variants: [],
+          size_variants: Array.isArray(
+            (
+              p as {
+                product_size_variants?: Array<{
+                  price_idr: number | null;
+                  original_price_idr: number | null;
+                  stock: number | null;
+                }>;
+              }
+            ).product_size_variants,
+          )
+            ? (
+                p as {
+                  product_size_variants: Array<{
+                    price_idr: number | null;
+                    original_price_idr: number | null;
+                    stock: number | null;
+                  }>;
+                }
+              ).product_size_variants.map((v) => ({
+                price_idr: v.price_idr ?? null,
+                original_price_idr: v.original_price_idr ?? null,
+                stock: v.stock ?? null,
+              }))
+            : [],
           has_size_variants:
             Array.isArray((p as { product_size_variants?: unknown[] }).product_size_variants) &&
             ((p as { product_size_variants?: unknown[] }).product_size_variants?.length ?? 0) > 0,

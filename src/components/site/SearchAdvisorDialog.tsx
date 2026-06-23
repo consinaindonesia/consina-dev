@@ -2,10 +2,10 @@ import { Link } from "@tanstack/react-router";
 import { Search, Sparkles, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { formatPrice } from "@/i18n/format";
 import { useLang } from "@/i18n/LangProvider";
 import { usePublicProducts, type PublicProduct } from "@/lib/public-products";
 import { Input } from "@/components/ui/input";
+import { PriceDisplay } from "@/components/site/PriceDisplay";
 
 function normalizeSearchText(value: string | null | undefined) {
   return (value ?? "")
@@ -236,9 +236,7 @@ export function SearchAdvisorDialog({
                             <div className="mt-1 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                               {productCategory(product, lang) || product.sku}
                             </div>
-                            <div className="mt-1 text-sm font-semibold text-foreground">
-                              {formatPrice(product.sale_price_idr ?? product.price_idr, lang)}
-                            </div>
+                            <PriceDisplay product={product} lang={lang} size="sm" className="mt-1" />
                           </div>
                         </Link>
                       );

@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
+  Bot,
   Boxes,
   CheckCircle2,
   CloudDownload,
@@ -22,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import {
+  autoMatchOdooInventorySku,
   getOdooInventoryConfig,
   pullOdooInventorySnapshot,
 } from "@/lib/odoo-inventory.functions";
@@ -66,6 +68,14 @@ type OdooConfig = {
   database: string | null;
   username: string | null;
   missing: string[];
+};
+
+type PullSummary = {
+  fetched: number;
+  total: number;
+  applied: number;
+  failed: number;
+  ignored: number;
 };
 
 function formatDate(value: string | null) {
@@ -121,9 +131,13 @@ function InventorySyncPage() {
   const [status, setStatus] = useState<StatusFilter>("all");
   const [query, setQuery] = useState("");
   const [config, setConfig] = useState<OdooConfig | null>(null);
+  const [pullLimit, setPullLimit] = useState(250);
+  const [matchingSku, setMatchingSku] = useState<string | null>(null);
+  const [lastPullSummary, setLastPullSummary] = useState<PullSummary | null>(null);
 
   const fetchConfig = useServerFn(getOdooInventoryConfig);
   const pullSnapshot = useServerFn(pullOdooInventorySnapshot);
+  const autoMatchSku = useServerFn(autoMatchOdooInventorySku);
 
   async function load(showRefresh = false) {
     if (showRefresh) setRefreshing(true);
@@ -172,12 +186,19 @@ function InventorySyncPage() {
   async function handleManualSync() {
     setSyncing(true);
     try {
-      const result = await pullSnapshot({ data: { limit: 1000 } });
+      const result = await pullSnapshot({ data: { limit: pullLimit } });
       const summary = (result as {
         summary?: { applied: number; failed: number; ignored: number; total: number };
         fetched?: number;
       }).summary;
       const fetched = (result as { fetched?: number }).fetched ?? 0;
+      setLastPullSummary({
+        fetched,
+        total: summary?.total ?? 0,
+        applied: summary?.applied ?? 0,
+        failed: summary?.failed ?? 0,
+        ignored: summary?.ignored ?? 0,
+      });
       toast.success(
         `Manual Odoo sync selesai. Fetched ${fetched}, applied ${summary?.applied ?? 0}, failed ${summary?.failed ?? 0}.`,
       );
@@ -188,6 +209,48 @@ function InventorySyncPage() {
       toast.error(message);
     } finally {
       setSyncing(false);
+    }
+  }
+
+  async function handleAutoMatch(row: SyncRow) {
+    const sku = row.odoo_sku?.trim();
+    if (!sku) {
+      toast.error("SKU Odoo tidak tersedia untuk dicocokkan.");
+      return;
+    }
+
+    setMatchingSku(sku);
+    try {
+      const result = await autoMatchSku({
+        data: {
+          sku,
+          reference: row.external_reference,
+          payload: row.payload ?? undefined,
+        },
+      });
+
+      const response = result as {
+        matched: boolean;
+        mode: "exact" | "heuristic" | "none";
+        target?: { productId: string } | null;
+      };
+
+      if (!response.matched) {
+        toast.error(`Belum ketemu kandidat yang cukup aman untuk SKU ${sku}.`);
+        return;
+      }
+
+      toast.success(
+        response.mode === "heuristic"
+          ? `SKU ${sku} berhasil dihubungkan otomatis ke produk lokal. Jalankan Pull Stock Now lagi untuk apply stok terbaru.`
+          : `SKU ${sku} sudah punya mapping yang valid.`,
+      );
+      await load(true);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Auto-match failed";
+      toast.error(message);
+    } finally {
+      setMatchingSku(null);
     }
   }
 
@@ -273,18 +336,35 @@ function InventorySyncPage() {
             <p className="mt-1 text-sm text-muted-foreground">
               Base URL sudah diarahkan ke instance Odoo. Manual pull memakai JSON-RPC standar Odoo.
             </p>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Pull manual bisa dijalankan berulang. Sistem akan mengambil produk aktif Odoo berdasarkan
+              <code className="mx-1 rounded bg-muted px-1 py-0.5">write_date desc</code>, jadi batch kecil lebih cepat,
+              batch besar dipakai saat ingin menjangkau SKU lama yang belum muncul.
+            </p>
           </div>
-          <Button
-            onClick={() => void handleManualSync()}
-            disabled={syncing || !config?.configured}
-          >
-            {syncing ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <CloudDownload className="mr-2 h-4 w-4" />
-            )}
-            Pull Stock Now
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={String(pullLimit)}
+              onChange={(e) => setPullLimit(Number(e.target.value))}
+              className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+              disabled={syncing}
+            >
+              <option value="250">Pull 250</option>
+              <option value="1000">Pull 1000</option>
+              <option value="5000">Pull 5000</option>
+            </select>
+            <Button
+              onClick={() => void handleManualSync()}
+              disabled={syncing || !config?.configured}
+            >
+              {syncing ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <CloudDownload className="mr-2 h-4 w-4" />
+              )}
+              Pull Stock Now
+            </Button>
+          </div>
         </div>
 
         <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -311,6 +391,21 @@ function InventorySyncPage() {
             )}
           </div>
         </div>
+        {lastPullSummary && (
+          <div className="mt-4 rounded-lg border border-emerald-100 bg-emerald-50/60 p-3 text-sm">
+            <div className="font-semibold text-primary">Last Manual Pull</div>
+            <div className="mt-1 text-muted-foreground">
+              Fetched <strong>{lastPullSummary.fetched}</strong> SKU dari Odoo,
+              diproses <strong>{lastPullSummary.total}</strong> baris:
+              applied <strong>{lastPullSummary.applied}</strong>,
+              failed <strong>{lastPullSummary.failed}</strong>,
+              ignored <strong>{lastPullSummary.ignored}</strong>.
+            </div>
+            <div className="mt-1 text-xs text-muted-foreground">
+              Tabel di bawah tetap hanya menampilkan 250 event terbaru agar halaman admin tetap ringan.
+            </div>
+          </div>
+        )}
       </section>
 
       <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -318,7 +413,7 @@ function InventorySyncPage() {
           icon={<Boxes className="h-5 w-5 text-primary" />}
           label="Total Events"
           value={stats.total}
-          helper="250 event terakhir"
+          helper="yang tampil di dashboard"
         />
         <StatCard
           icon={<CheckCircle2 className="h-5 w-5 text-emerald-600" />}
@@ -467,6 +562,21 @@ function InventorySyncPage() {
                             <ExternalLink className="h-3.5 w-3.5" />
                             Open Catalog
                           </Link>
+                          {row.sync_status === "failed" && row.odoo_sku && (
+                            <button
+                              type="button"
+                              onClick={() => void handleAutoMatch(row)}
+                              disabled={matchingSku === row.odoo_sku}
+                              className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-semibold text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              {matchingSku === row.odoo_sku ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <Bot className="h-3.5 w-3.5" />
+                              )}
+                              Auto-match
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -516,6 +626,19 @@ function InventorySyncPage() {
                           Create Product
                         </Link>
                       )}
+                      <button
+                        type="button"
+                        onClick={() => void handleAutoMatch(row)}
+                        disabled={matchingSku === row.odoo_sku}
+                        className="inline-flex items-center gap-1 rounded-md border border-red-200 bg-white px-2 py-1 text-xs font-semibold text-foreground hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {matchingSku === row.odoo_sku ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Bot className="h-3.5 w-3.5" />
+                        )}
+                        Auto-match
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -532,7 +655,8 @@ function InventorySyncPage() {
             <div className="mt-4 space-y-2 text-sm text-muted-foreground">
               <p>Tempat melihat SKU baru: tabel <strong>Recent Sync Events</strong> dan panel <strong>Failed SKU Snapshot</strong>.</p>
               <p>Tempat membuat atau edit produk website: menu <strong>Products</strong>.</p>
-              <p>Langkah kerja admin: klik <strong>Create Product</strong>, isi kategori/foto/harga, simpan, lalu sync stok berikutnya akan mulai bisa masuk ke produk itu.</p>
+              <p>Langkah kerja admin: klik <strong>Create Product</strong> untuk barang baru, atau <strong>Auto-match</strong> jika produknya sebenarnya sudah ada di katalog lokal seperti slug <strong>/tibet</strong>.</p>
+              <p>Setelah mapping tersimpan, pull berikutnya akan memperbarui stok otomatis tanpa perlu mapping ulang.</p>
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
               <Link

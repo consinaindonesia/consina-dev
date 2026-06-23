@@ -5,6 +5,7 @@ import {
   fetchOdooInventorySnapshot,
   getOdooConfigStatus,
   processOdooInventoryPayload,
+  suggestOdooInventoryMapping,
 } from "@/lib/odoo-inventory";
 
 export const getOdooInventoryConfig = createServerFn({ method: "GET" })
@@ -36,4 +37,24 @@ export const pullOdooInventorySnapshot = createServerFn({ method: "POST" })
       source: "manual_odoo_pull",
       fetched: payload.lines.length,
     };
+  });
+
+export const autoMatchOdooInventorySku = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) =>
+    z.object({
+      sku: z.string().min(1),
+      reference: z.string().optional().nullable(),
+      payload: z.record(z.string(), z.unknown()).optional().nullable(),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("is_admin");
+    if (!isAdmin) throw new Error("Not authorized");
+
+    return suggestOdooInventoryMapping({
+      sku: data.sku,
+      reference: data.reference,
+      payload: data.payload ?? null,
+    });
   });

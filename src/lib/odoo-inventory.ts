@@ -52,6 +52,15 @@ type OdooConfigStatus = {
   missing: string[];
 };
 
+type ProductLookupRow = {
+  id: string;
+  stock: number | null;
+  sku: string | null;
+  slug: string | null;
+  name_id: string | null;
+  name_en: string | null;
+};
+
 function readEnv(name: string): string | undefined {
   return process.env[name] || undefined;
 }
@@ -152,6 +161,69 @@ function normalizeSku(value: unknown): string {
     .trim()
     .replace(/\s+/g, " ")
     .toUpperCase();
+}
+
+function slugifyLoose(input: string): string {
+  return input
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
+
+function normalizeComparable(input: string | null | undefined): string {
+  if (!input) return "";
+  return slugifyLoose(input)
+    .replace(/\bconsina\b/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function escapeIlike(value: string): string {
+  return value.replace(/[%_,]/g, " ");
+}
+
+function uniqueStrings(values: Array<string | null | undefined>): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const value of values) {
+    const trimmed = String(value ?? "").trim();
+    if (!trimmed) continue;
+    if (seen.has(trimmed)) continue;
+    seen.add(trimmed);
+    out.push(trimmed);
+  }
+  return out;
+}
+
+function extractReferenceTerms(line: NormalizedLine): string[] {
+  const rawName =
+    typeof line.raw.name === "string"
+      ? line.raw.name
+      : typeof line.raw.display_name === "string"
+        ? line.raw.display_name
+        : typeof line.raw.default_code === "string"
+          ? line.raw.default_code
+          : "";
+
+  const normalizedSku = normalizeSku(line.sku);
+  const skuFragments = normalizedSku
+    .split(/[^A-Z0-9]+/)
+    .map((part) => part.trim())
+    .filter((part) => part.length >= 4 && !/^\d+$/.test(part));
+
+  const referenceTokens = uniqueStrings([
+    line.reference,
+    rawName,
+    ...skuFragments,
+  ]);
+
+  return referenceTokens
+    .map((term) => term.replace(/\s+/g, " ").trim())
+    .filter((term) => normalizeComparable(term).length >= 4);
 }
 
 function toOptionalNumber(value: unknown): number | undefined {
@@ -315,31 +387,42 @@ type OdooProductRow = {
 
 export async function fetchOdooInventorySnapshot(limit = 1000): Promise<SyncPayload> {
   const session = await authenticateOdoo();
-  const result = await callOdooJsonRpc<OdooProductRow[]>({
-    service: "object",
-    method: "execute_kw",
-    args: [
-      session.database,
-      session.uid,
-      session.apiKey,
-      "product.product",
-      "search_read",
-      [[["active", "=", true], ["default_code", "!=", false]]],
-      {
-        fields: [
-          "id",
-          "name",
-          "default_code",
-          "barcode",
-          "qty_available",
-          "virtual_available",
-          "write_date",
-        ],
-        limit,
-        order: "write_date desc",
-      },
-    ],
-  });
+  const pageSize = Math.min(Math.max(limit, 1), 250);
+  const result: OdooProductRow[] = [];
+  let offset = 0;
+
+  while (result.length < limit) {
+    const batch = await callOdooJsonRpc<OdooProductRow[]>({
+      service: "object",
+      method: "execute_kw",
+      args: [
+        session.database,
+        session.uid,
+        session.apiKey,
+        "product.product",
+        "search_read",
+        [[["active", "=", true], ["default_code", "!=", false]]],
+        {
+          fields: [
+            "id",
+            "name",
+            "default_code",
+            "barcode",
+            "qty_available",
+            "virtual_available",
+            "write_date",
+          ],
+          limit: Math.min(pageSize, limit - result.length),
+          offset,
+          order: "write_date desc",
+        },
+      ],
+    });
+
+    result.push(...(batch ?? []));
+    if (!batch?.length || batch.length < pageSize) break;
+    offset += batch.length;
+  }
 
   const snapshotId = `manual-${Date.now()}`;
   const lines: NormalizedLine[] = (result ?? [])
@@ -378,6 +461,92 @@ export async function fetchOdooInventorySnapshot(limit = 1000): Promise<SyncPayl
       total_records: result?.length ?? 0,
     },
   };
+}
+
+function scoreProductCandidate(candidate: ProductLookupRow, line: NormalizedLine, term: string): number {
+  const comparableTerm = normalizeComparable(term);
+  if (!comparableTerm) return 0;
+
+  const slugComparable = normalizeComparable(candidate.slug);
+  const skuComparable = normalizeComparable(candidate.sku);
+  const nameIdComparable = normalizeComparable(candidate.name_id);
+  const nameEnComparable = normalizeComparable(candidate.name_en);
+  const joinedNames = `${nameIdComparable} ${nameEnComparable}`.trim();
+
+  let score = 0;
+
+  if (slugComparable === comparableTerm) score = Math.max(score, 100);
+  if (skuComparable === comparableTerm) score = Math.max(score, 100);
+  if (nameIdComparable === comparableTerm || nameEnComparable === comparableTerm) score = Math.max(score, 96);
+
+  if (!score && slugComparable.includes(comparableTerm)) score = Math.max(score, 92);
+  if (!score && joinedNames.includes(comparableTerm)) score = Math.max(score, 88);
+
+  const lineReferenceComparable = normalizeComparable(line.reference);
+  if (lineReferenceComparable && slugComparable.includes(lineReferenceComparable)) {
+    score = Math.max(score, 95);
+  }
+  if (lineReferenceComparable && joinedNames.includes(lineReferenceComparable)) {
+    score = Math.max(score, 90);
+  }
+
+  return score;
+}
+
+async function findInventoryTargetByProductId(productId: string): Promise<InventoryTarget | null> {
+  const { data } = await supabaseAdmin
+    .from("products")
+    .select("id, stock, sku")
+    .eq("id", productId)
+    .maybeSingle();
+
+  if (!data) return null;
+  const row = data as { id: string; stock: number | null; sku: string | null };
+  return {
+    kind: "product",
+    productId: row.id,
+    stock: Number(row.stock ?? 0),
+    sku: normalizeSku(row.sku ?? productId),
+  };
+}
+
+async function guessInventoryTarget(line: NormalizedLine): Promise<InventoryTarget | null> {
+  const terms = extractReferenceTerms(line);
+  const candidates = new Map<string, { product: ProductLookupRow; score: number }>();
+
+  for (const term of terms) {
+    const likeTerm = escapeIlike(term);
+    const slugTerm = normalizeComparable(term);
+    if (!slugTerm) continue;
+
+    const { data } = await supabaseAdmin
+      .from("products")
+      .select("id, stock, sku, slug, name_id, name_en")
+      .eq("is_active", true)
+      .or(
+        `slug.ilike.%${likeTerm}%,name_id.ilike.%${likeTerm}%,name_en.ilike.%${likeTerm}%`,
+      )
+      .limit(12);
+
+    for (const row of (data ?? []) as ProductLookupRow[]) {
+      const score = scoreProductCandidate(row, line, term);
+      if (score < 88) continue;
+      const existing = candidates.get(row.id);
+      if (!existing || score > existing.score) {
+        candidates.set(row.id, { product: row, score });
+      }
+    }
+  }
+
+  const ranked = Array.from(candidates.values()).sort((a, b) => b.score - a.score);
+  if (!ranked.length) return null;
+
+  const best = ranked[0];
+  const second = ranked[1];
+  if (best.score < 90) return null;
+  if (second && second.score >= best.score - 3) return null;
+
+  return findInventoryTargetByProductId(best.product.id);
 }
 
 async function resolveInventoryTarget(sku: string): Promise<InventoryTarget | null> {
@@ -481,6 +650,44 @@ async function resolveInventoryTarget(sku: string): Promise<InventoryTarget | nu
   }
 
   return null;
+}
+
+export async function suggestOdooInventoryMapping(args: {
+  sku: string;
+  reference?: string | null;
+  payload?: JsonRecord | null;
+}) {
+  const line: NormalizedLine = {
+    sku: normalizeSku(args.sku),
+    reference: args.reference ?? null,
+    raw: args.payload ?? {},
+  };
+
+  const directTarget = await resolveInventoryTarget(line.sku);
+  if (directTarget) {
+    await ensureMapping(line.sku, directTarget);
+    return {
+      matched: true,
+      mode: "exact" as const,
+      target: directTarget,
+    };
+  }
+
+  const guessedTarget = await guessInventoryTarget(line);
+  if (!guessedTarget) {
+    return {
+      matched: false,
+      mode: "none" as const,
+      target: null,
+    };
+  }
+
+  await ensureMapping(line.sku, guessedTarget);
+  return {
+    matched: true,
+    mode: "heuristic" as const,
+    target: guessedTarget,
+  };
 }
 
 async function ensureMapping(lineSku: string, target: InventoryTarget) {
@@ -620,7 +827,8 @@ async function applyLineUpdate(payload: SyncPayload, line: NormalizedLine) {
   }
 
   const target = await resolveInventoryTarget(line.sku);
-  if (!target) {
+  const resolvedTarget = target ?? (await guessInventoryTarget(line));
+  if (!resolvedTarget) {
     await insertSyncEvent({
       payload,
       line,
@@ -641,7 +849,7 @@ async function applyLineUpdate(payload: SyncPayload, line: NormalizedLine) {
     return { status: "failed" as const, sku: line.sku };
   }
 
-  const currentStock = Number(target.stock ?? 0);
+  const currentStock = Number(resolvedTarget.stock ?? 0);
   const deltaRaw = line.delta ?? line.quantity;
   const nextStock =
     line.stock != null
@@ -649,28 +857,29 @@ async function applyLineUpdate(payload: SyncPayload, line: NormalizedLine) {
       : Math.max(0, currentStock + Math.round(deltaRaw ?? 0));
   const effectiveDelta = nextStock - currentStock;
 
-  await ensureMapping(line.sku, target);
+  await ensureMapping(line.sku, resolvedTarget);
   await logSyncActivity({
     action: "sync_received",
-    entityId: target.productId,
+    entityId: resolvedTarget.productId,
     metadata: {
       source: "odoo",
       sku: line.sku,
       event_id: payload.eventId,
       mode: changeMode,
+      matched_via: target ? "exact" : "heuristic",
     },
   });
 
-  if (target.kind === "size_variant") {
+  if (resolvedTarget.kind === "size_variant") {
     await supabaseAdmin
       .from("product_size_variants" as never)
       .update({ stock: nextStock })
-      .eq("id", target.sizeVariantId);
-  } else if (target.kind === "variant") {
+      .eq("id", resolvedTarget.sizeVariantId);
+  } else if (resolvedTarget.kind === "variant") {
     await supabaseAdmin
       .from("product_variants" as never)
       .update({ stock: nextStock })
-      .eq("id", target.variantId);
+      .eq("id", resolvedTarget.variantId);
   } else {
     await supabaseAdmin
       .from("products")
@@ -678,17 +887,17 @@ async function applyLineUpdate(payload: SyncPayload, line: NormalizedLine) {
         stock: nextStock,
         stock_status: deriveStockStatus(nextStock),
       })
-      .eq("id", target.productId);
+      .eq("id", resolvedTarget.productId);
   }
 
-  if (target.kind !== "product") {
-    await refreshParentProductStock(target.productId);
+  if (resolvedTarget.kind !== "product") {
+    await refreshParentProductStock(resolvedTarget.productId);
   }
 
   await insertSyncEvent({
     payload,
     line,
-    target,
+    target: resolvedTarget,
     status: "applied",
     changeMode,
     stockBefore: currentStock,
@@ -698,13 +907,14 @@ async function applyLineUpdate(payload: SyncPayload, line: NormalizedLine) {
 
   await logSyncActivity({
     action: "sync_applied",
-    entityId: target.productId,
+    entityId: resolvedTarget.productId,
     metadata: {
       source: "odoo",
       sku: line.sku,
       event_id: payload.eventId,
       event_type: payload.eventType,
       mode: changeMode,
+      matched_via: target ? "exact" : "heuristic",
     },
     before: {
       stock: currentStock,
@@ -716,7 +926,12 @@ async function applyLineUpdate(payload: SyncPayload, line: NormalizedLine) {
     },
   });
 
-  return { status: "applied" as const, sku: line.sku, productId: target.productId };
+  return {
+    status: "applied" as const,
+    sku: line.sku,
+    productId: resolvedTarget.productId,
+    matchedVia: target ? "exact" : "heuristic",
+  };
 }
 
 export async function processOdooInventoryPayload(payload: SyncPayload) {

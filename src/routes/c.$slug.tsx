@@ -15,6 +15,10 @@ export const Route = createFileRoute("/c/$slug")({
   component: CategoryPage,
 });
 
+const CATEGORY_SLUG_ALIASES: Record<string, string> = {
+  tents: "activities-camping-tenda",
+};
+
 type Category = {
   id: string;
   slug: string;
@@ -79,20 +83,25 @@ function CategoryPage() {
     let cancelled = false;
     async function load() {
       setLoading(true);
+      const requestedSlug = CATEGORY_SLUG_ALIASES[slug] ?? slug;
 
       // 1. Resolve slug → category, following redirects if needed.
       let { data: cat } = await supabase
         .from("categories")
         .select("id,slug,name_id,name_en,description_id,description_en,image_url")
-        .eq("slug", slug)
+        .eq("slug", requestedSlug)
         .eq("is_active", true)
         .maybeSingle();
+
+      if (requestedSlug !== slug && !cancelled) {
+        window.history.replaceState({}, "", `/c/${requestedSlug}`);
+      }
 
       if (!cat) {
         const { data: redirect } = await supabase
           .from("category_slug_redirects")
           .select("new_slug")
-          .eq("old_slug", slug)
+          .eq("old_slug", requestedSlug)
           .maybeSingle();
         if (redirect?.new_slug) {
           // Client-side redirect to the canonical slug

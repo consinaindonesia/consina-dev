@@ -21,7 +21,8 @@ export const pullOdooInventorySnapshot = createServerFn({ method: "POST" })
   .inputValidator((input) =>
     z
       .object({
-        limit: z.number().int().min(1).max(5000).optional(),
+        limit: z.number().int().min(1).max(250).optional(),
+        offset: z.number().int().min(0).max(20000).optional(),
       })
       .optional()
       .parse(input),
@@ -30,12 +31,13 @@ export const pullOdooInventorySnapshot = createServerFn({ method: "POST" })
     const { data: isAdmin } = await context.supabase.rpc("is_admin");
     if (!isAdmin) throw new Error("Not authorized");
 
-    const payload = await fetchOdooInventorySnapshot(data?.limit ?? 1000);
+    const payload = await fetchOdooInventorySnapshot(data?.limit ?? 250, data?.offset ?? 0);
     const result = await processOdooInventoryPayload(payload);
     return {
       ...result,
       source: "manual_odoo_pull",
       fetched: payload.lines.length,
+      offset: data?.offset ?? 0,
     };
   });
 

@@ -385,44 +385,36 @@ type OdooProductRow = {
   write_date?: string | null;
 };
 
-export async function fetchOdooInventorySnapshot(limit = 1000): Promise<SyncPayload> {
+export async function fetchOdooInventorySnapshot(limit = 1000, offset = 0): Promise<SyncPayload> {
   const session = await authenticateOdoo();
-  const pageSize = Math.min(Math.max(limit, 1), 250);
-  const result: OdooProductRow[] = [];
-  let offset = 0;
-
-  while (result.length < limit) {
-    const batch = await callOdooJsonRpc<OdooProductRow[]>({
-      service: "object",
-      method: "execute_kw",
-      args: [
-        session.database,
-        session.uid,
-        session.apiKey,
-        "product.product",
-        "search_read",
-        [[["active", "=", true], ["default_code", "!=", false]]],
-        {
-          fields: [
-            "id",
-            "name",
-            "default_code",
-            "barcode",
-            "qty_available",
-            "virtual_available",
-            "write_date",
-          ],
-          limit: Math.min(pageSize, limit - result.length),
-          offset,
-          order: "write_date desc",
-        },
-      ],
-    });
-
-    result.push(...(batch ?? []));
-    if (!batch?.length || batch.length < pageSize) break;
-    offset += batch.length;
-  }
+  const safeLimit = Math.min(Math.max(limit, 1), 250);
+  const safeOffset = Math.max(offset, 0);
+  const result = await callOdooJsonRpc<OdooProductRow[]>({
+    service: "object",
+    method: "execute_kw",
+    args: [
+      session.database,
+      session.uid,
+      session.apiKey,
+      "product.product",
+      "search_read",
+      [[["active", "=", true], ["default_code", "!=", false]]],
+      {
+        fields: [
+          "id",
+          "name",
+          "default_code",
+          "barcode",
+          "qty_available",
+          "virtual_available",
+          "write_date",
+        ],
+        limit: safeLimit,
+        offset: safeOffset,
+        order: "write_date desc",
+      },
+    ],
+  });
 
   const snapshotId = `manual-${Date.now()}`;
   const lines: NormalizedLine[] = (result ?? [])
@@ -457,7 +449,8 @@ export async function fetchOdooInventorySnapshot(limit = 1000): Promise<SyncPayl
       database: session.database,
       username: session.username,
       fetched_at: new Date().toISOString(),
-      limit,
+      limit: safeLimit,
+      offset: safeOffset,
       total_records: result?.length ?? 0,
     },
   };

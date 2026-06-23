@@ -186,26 +186,50 @@ function InventorySyncPage() {
   async function handleManualSync() {
     setSyncing(true);
     try {
-      const result = await pullSnapshot({ data: { limit: pullLimit } });
-      const summary = (result as {
-        summary?: { applied: number; failed: number; ignored: number; total: number };
-        fetched?: number;
-      }).summary;
-      const fetched = (result as { fetched?: number }).fetched ?? 0;
+      const totalRequested = pullLimit;
+      const pageSize = 250;
+      let offset = 0;
+      let fetched = 0;
+      let applied = 0;
+      let failed = 0;
+      let ignored = 0;
+
+      while (offset < totalRequested) {
+        const currentLimit = Math.min(pageSize, totalRequested - offset);
+        const result = await pullSnapshot({ data: { limit: currentLimit, offset } });
+        const summary = (result as {
+          summary?: { applied: number; failed: number; ignored: number; total: number };
+          fetched?: number;
+        }).summary;
+        const fetchedBatch = (result as { fetched?: number }).fetched ?? 0;
+
+        fetched += fetchedBatch;
+        applied += summary?.applied ?? 0;
+        failed += summary?.failed ?? 0;
+        ignored += summary?.ignored ?? 0;
+
+        offset += currentLimit;
+        if (fetchedBatch < currentLimit) break;
+      }
+
       setLastPullSummary({
         fetched,
-        total: summary?.total ?? 0,
-        applied: summary?.applied ?? 0,
-        failed: summary?.failed ?? 0,
-        ignored: summary?.ignored ?? 0,
+        total: fetched,
+        applied,
+        failed,
+        ignored,
       });
       toast.success(
-        `Manual Odoo sync selesai. Fetched ${fetched}, applied ${summary?.applied ?? 0}, failed ${summary?.failed ?? 0}.`,
+        `Manual Odoo sync selesai. Fetched ${fetched}, applied ${applied}, failed ${failed}.`,
       );
       await load(true);
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Manual Odoo sync failed";
+        error instanceof Error
+          ? error.message
+          : typeof error === "string"
+            ? error
+            : "Manual Odoo sync failed";
       toast.error(message);
     } finally {
       setSyncing(false);

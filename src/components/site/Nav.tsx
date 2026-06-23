@@ -19,9 +19,11 @@ export function Nav() {
   const { t } = useTranslation();
   const lang = useLang();
   const [open, setOpen] = useState(false);
-  const [shopOpen, setShopOpen] = useState(false);
-  const [mobileShopOpen, setMobileShopOpen] = useState(false);
+  const [catalogOpen, setCatalogOpen] = useState(false);
+  const [mobileCatalogOpen, setMobileCatalogOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [desktopExpandedIds, setDesktopExpandedIds] = useState<string[]>([]);
+  const [mobileExpandedIds, setMobileExpandedIds] = useState<string[]>([]);
   const { data: categories, isLoading: catsLoading } = usePublicCategories();
   const { user } = useCustomerAuth();
   const { count: wishCount } = useWishlist(user?.id ?? null);
@@ -60,45 +62,88 @@ export function Nav() {
   }, []);
 
   // Keep header visible while a menu is open.
-  const isHidden = hidden && !open && !mobileShopOpen;
+  const isHidden = hidden && !open && !mobileCatalogOpen;
 
   const catLabel = (c: PublicCategory) => localizedField(c, "name", lang).value;
 
-  // Recursive child renderer — supports arbitrary nesting depth.
-  const renderDesktopChildren = (children: PublicCategory[], depth: number) => (
-    <div className={depth === 1 ? "ml-2 border-l border-border" : "ml-3 border-l border-border/60"}>
-      {children.map((sub) => (
-        <div key={sub.id}>
-          <Link
-            to={"/c/$slug" as never}
-            params={{ slug: sub.slug } as never}
-            className="block px-4 py-2 text-xs font-medium text-foreground/75 transition-colors hover:bg-muted hover:text-primary"
-          >
-            {catLabel(sub)}
-          </Link>
-          {sub.children.length > 0 && renderDesktopChildren(sub.children, depth + 1)}
-        </div>
-      ))}
+  const toggleExpanded = (
+    id: string,
+    setState: React.Dispatch<React.SetStateAction<string[]>>,
+  ) => {
+    setState((current) => (current.includes(id) ? current.filter((entry) => entry !== id) : [...current, id]));
+  };
+
+  const renderDesktopCategoryTree = (nodes: PublicCategory[], depth = 0) => (
+    <div className={depth > 0 ? "mt-1 border-l border-border/70 pl-3" : "space-y-1"}>
+      {nodes.map((node) => {
+        const isExpanded = desktopExpandedIds.includes(node.id);
+        const hasChildren = node.children.length > 0;
+        return (
+          <div key={node.id} className="space-y-1">
+            <div className="flex items-center gap-2">
+              <Link
+                to={"/c/$slug" as never}
+                params={{ slug: node.slug } as never}
+                className={`min-w-0 flex-1 rounded-lg px-3 py-2 text-left transition-colors hover:bg-muted hover:text-primary ${
+                  depth === 0 ? "text-sm font-semibold text-foreground" : "text-sm text-foreground/80"
+                }`}
+              >
+                {catLabel(node)}
+              </Link>
+              {hasChildren ? (
+                <button
+                  type="button"
+                  aria-label={`Toggle ${catLabel(node)}`}
+                  aria-expanded={isExpanded}
+                  onClick={() => toggleExpanded(node.id, setDesktopExpandedIds)}
+                  className="rounded-md p-2 text-foreground/60 transition-colors hover:bg-muted hover:text-primary"
+                >
+                  <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                </button>
+              ) : null}
+            </div>
+            {hasChildren && isExpanded ? renderDesktopCategoryTree(node.children, depth + 1) : null}
+          </div>
+        );
+      })}
     </div>
   );
 
-  const renderMobileChildren = (children: PublicCategory[], depth: number) => (
-    <>
-      {children.map((sub) => (
-        <div key={sub.id} className="flex flex-col">
-          <Link
-            to={"/c/$slug" as never}
-            params={{ slug: sub.slug } as never}
-            onClick={() => setOpen(false)}
-            className="rounded-md px-3 py-1.5 text-xs font-medium text-foreground/70 hover:bg-muted hover:text-primary"
-            style={{ marginLeft: depth * 12 }}
-          >
-            {catLabel(sub)}
-          </Link>
-          {sub.children.length > 0 && renderMobileChildren(sub.children, depth + 1)}
-        </div>
-      ))}
-    </>
+  const renderMobileCategoryTree = (nodes: PublicCategory[], depth = 0) => (
+    <div className={depth > 0 ? "ml-3 border-l border-border/70 pl-3" : "space-y-1"}>
+      {nodes.map((node) => {
+        const isExpanded = mobileExpandedIds.includes(node.id);
+        const hasChildren = node.children.length > 0;
+        return (
+          <div key={node.id} className="space-y-1">
+            <div className="flex items-center gap-2">
+              <Link
+                to={"/c/$slug" as never}
+                params={{ slug: node.slug } as never}
+                onClick={() => setOpen(false)}
+                className={`min-w-0 flex-1 rounded-md px-3 py-2 transition-colors hover:bg-muted hover:text-primary ${
+                  depth === 0 ? "text-sm font-semibold text-foreground" : "text-sm text-foreground/80"
+                }`}
+              >
+                {catLabel(node)}
+              </Link>
+              {hasChildren ? (
+                <button
+                  type="button"
+                  aria-label={`Toggle ${catLabel(node)}`}
+                  aria-expanded={isExpanded}
+                  onClick={() => toggleExpanded(node.id, setMobileExpandedIds)}
+                  className="rounded-md p-2 text-foreground/60 transition-colors hover:bg-muted hover:text-primary"
+                >
+                  <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                </button>
+              ) : null}
+            </div>
+            {hasChildren && isExpanded ? renderMobileCategoryTree(node.children, depth + 1) : null}
+          </div>
+        );
+      })}
+    </div>
   );
 
   const mainLinks = (header.navLinks && header.navLinks.length > 0
@@ -112,7 +157,9 @@ export function Nav() {
         { key: "stores", to: "/stores", label: t("nav.stores") },
         { key: "story", to: "/", label: t("nav.story") },
       ]
-  ).filter((l) => l.label);
+  )
+    .filter((l) => l.label)
+    .filter((l) => l.to !== "/catalog");
 
   return (
     <header
@@ -145,24 +192,24 @@ export function Nav() {
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-7 lg:flex">
-          {/* Shop dropdown */}
+          {/* Catalog dropdown */}
           <div
             className="relative"
-            onMouseEnter={() => setShopOpen(true)}
-            onMouseLeave={() => setShopOpen(false)}
+            onMouseEnter={() => setCatalogOpen(true)}
+            onMouseLeave={() => setCatalogOpen(false)}
           >
             <button
               className="flex items-center gap-1 text-sm font-medium text-foreground/80 transition-colors hover:text-primary"
-              aria-expanded={shopOpen}
+              aria-expanded={catalogOpen}
               aria-haspopup="true"
               style={linkStyle}
             >
-              {t("nav.shop")}
-              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${shopOpen ? "rotate-180" : ""}`} />
+              {t("nav.catalog")}
+              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${catalogOpen ? "rotate-180" : ""}`} />
             </button>
-            {shopOpen && (
+            {catalogOpen && (
               <div
-                className="absolute -left-4 top-full min-w-[200px] rounded-xl border border-border py-2 shadow-xl"
+                className="absolute -left-4 top-full mt-2 w-[360px] rounded-2xl border border-border p-2 shadow-xl"
                 style={dropdownStyle}
               >
                 {catsLoading ? (
@@ -176,18 +223,17 @@ export function Nav() {
                     {t("nav.no_categories", { defaultValue: "No categories" })}
                   </div>
                 ) : (
-                  categories.map((cat) => (
-                    <div key={cat.id}>
-                      <Link
-                        to={"/c/$slug" as never}
-                        params={{ slug: cat.slug } as never}
-                        className="block px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted hover:text-primary"
-                      >
-                        {catLabel(cat)}
-                      </Link>
-                      {cat.children.length > 0 && renderDesktopChildren(cat.children, 1)}
+                  <div className="space-y-2">
+                    <Link
+                      to="/catalog"
+                      className="block rounded-xl px-3 py-2 text-sm font-semibold text-primary transition-colors hover:bg-muted"
+                    >
+                      {t("nav.catalog")}
+                    </Link>
+                    <div className="max-h-[70vh] overflow-y-auto pr-1">
+                      {renderDesktopCategoryTree(categories)}
                     </div>
-                  ))
+                  </div>
                 )}
               </div>
             )}
@@ -265,29 +311,24 @@ export function Nav() {
               {t("nav.home")}
             </Link>
 
-            {/* Mobile Shop accordion */}
+            {/* Mobile catalog accordion */}
             <button
-              onClick={() => setMobileShopOpen(!mobileShopOpen)}
+              onClick={() => setMobileCatalogOpen(!mobileCatalogOpen)}
               className="flex items-center justify-between rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-muted"
             >
-              <span>{t("nav.shop")}</span>
-              <ChevronDown className={`h-4 w-4 transition-transform ${mobileShopOpen ? "rotate-180" : ""}`} />
+              <span>{t("nav.catalog")}</span>
+              <ChevronDown className={`h-4 w-4 transition-transform ${mobileCatalogOpen ? "rotate-180" : ""}`} />
             </button>
-            {mobileShopOpen && (
-              <div className="ml-4 flex flex-col gap-1 border-l border-border pl-3">
-                {(categories ?? []).map((cat) => (
-                  <div key={cat.id} className="flex flex-col">
-                    <Link
-                      to={"/c/$slug" as never}
-                      params={{ slug: cat.slug } as never}
-                      onClick={() => setOpen(false)}
-                      className="rounded-md px-3 py-2 text-sm font-medium text-foreground/80 hover:bg-muted hover:text-primary"
-                    >
-                      {catLabel(cat)}
-                    </Link>
-                    {cat.children.length > 0 && renderMobileChildren(cat.children, 1)}
-                  </div>
-                ))}
+            {mobileCatalogOpen && (
+              <div className="ml-4 max-h-[60vh] overflow-y-auto border-l border-border pl-3">
+                <Link
+                  to="/catalog"
+                  onClick={() => setOpen(false)}
+                  className="block rounded-md px-3 py-2 text-sm font-semibold text-primary hover:bg-muted"
+                >
+                  {t("nav.catalog")}
+                </Link>
+                {(categories ?? []).length > 0 && renderMobileCategoryTree(categories)}
               </div>
             )}
 

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, notFound, useNavigate } from "@tanstack/react-router";
-import { Loader2, MapPin, Minus, Plus, BellRing } from "lucide-react";
+import { Loader2, MapPin, Minus, Plus, BellRing, ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Nav } from "@/components/site/Nav";
@@ -109,6 +109,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
   const [missing, setMissing] = useState(false);
 
   const [activeImage, setActiveImage] = useState(0);
+  const [zoomOrigin, setZoomOrigin] = useState("50% 50%");
   const [quantity, setQuantity] = useState(1);
   const [selectedAttrs, setSelectedAttrs] = useState<Record<string, string>>({});
   const [notifyEmail, setNotifyEmail] = useState("");
@@ -451,6 +452,59 @@ export function ProductDetailPage({ slug }: { slug: string }) {
   const mainImg = images[activeImage] ?? images[0];
   const selectedVariant = variants.find((v) => v.id === selectedVariantId) ?? null;
   const variantImageUrl = selectedVariant?.image_url ?? null;
+  const galleryImages = useMemo(() => {
+    const seen = new Set<string>();
+    const merged: ProductImage[] = [];
+
+    if (variantImageUrl) {
+      seen.add(variantImageUrl);
+      merged.push({
+        image_url: variantImageUrl,
+        large_url: variantImageUrl,
+        thumbnail_url: variantImageUrl,
+        alt_text_id: selectedVariant?.color_name ?? null,
+        alt_text_en: selectedVariant?.color_name ?? null,
+        is_primary: true,
+        sort_order: -1,
+      });
+    }
+
+    for (const image of images) {
+      const key = image.large_url ?? image.image_url;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      merged.push(image);
+    }
+
+    return merged;
+  }, [images, selectedVariant?.color_name, variantImageUrl]);
+
+  useEffect(() => {
+    setActiveImage(0);
+  }, [selectedVariantId]);
+
+  useEffect(() => {
+    if (activeImage > 0 && activeImage >= galleryImages.length) {
+      setActiveImage(0);
+    }
+  }, [activeImage, galleryImages.length]);
+
+  const activeGalleryImage = galleryImages[activeImage] ?? galleryImages[0] ?? null;
+
+  const cycleImage = (direction: -1 | 1) => {
+    if (galleryImages.length <= 1) return;
+    setActiveImage((current) => {
+      const total = galleryImages.length;
+      return (current + direction + total) % total;
+    });
+  };
+
+  const handleZoomMove = (event: React.MouseEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width) * 100;
+    const y = ((event.clientY - rect.top) / rect.height) * 100;
+    setZoomOrigin(`${Math.max(0, Math.min(100, x))}% ${Math.max(0, Math.min(100, y))}%`);
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -496,28 +550,52 @@ export function ProductDetailPage({ slug }: { slug: string }) {
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
           {/* Gallery */}
           <div>
-            <div className="aspect-square overflow-hidden rounded-2xl border border-border bg-muted">
-              {variantImageUrl ? (
+            <div
+              className="group relative aspect-square overflow-hidden rounded-2xl border border-border bg-muted"
+              onMouseMove={handleZoomMove}
+              onMouseLeave={() => setZoomOrigin("50% 50%")}
+            >
+              {activeGalleryImage ? (
                 <img
-                  src={variantImageUrl}
-                  alt={selectedVariant?.color_name ?? nameField.value}
-                  className="h-full w-full object-cover"
-                />
-              ) : mainImg ? (
-                <img
-                  src={mainImg.large_url ?? mainImg.image_url}
-                  alt={(lang === "id" ? mainImg.alt_text_id : mainImg.alt_text_en) ?? nameField.value}
-                  className="h-full w-full object-cover"
+                  src={activeGalleryImage.large_url ?? activeGalleryImage.image_url}
+                  alt={
+                    (lang === "id" ? activeGalleryImage.alt_text_id : activeGalleryImage.alt_text_en) ??
+                    selectedVariant?.color_name ??
+                    nameField.value
+                  }
+                  className="h-full w-full object-cover transition duration-300 ease-out group-hover:scale-[1.85]"
+                  style={{ transformOrigin: zoomOrigin }}
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-xs uppercase tracking-wider text-muted-foreground">
                   {t("product.no_image")}
                 </div>
               )}
+
+              {galleryImages.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => cycleImage(-1)}
+                    aria-label={lang === "id" ? "Gambar sebelumnya" : "Previous image"}
+                    className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border/80 bg-background/90 text-foreground shadow transition opacity-0 group-hover:opacity-100 hover:bg-background"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => cycleImage(1)}
+                    aria-label={lang === "id" ? "Gambar berikutnya" : "Next image"}
+                    className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border/80 bg-background/90 text-foreground shadow transition opacity-0 group-hover:opacity-100 hover:bg-background"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </>
+              )}
             </div>
-            {images.length > 1 && (
+            {galleryImages.length > 1 && (
               <div className="mt-3 grid grid-cols-5 gap-2">
-                {images.map((img, i) => (
+                {galleryImages.map((img, i) => (
                   <button
                     key={i}
                     onClick={() => setActiveImage(i)}

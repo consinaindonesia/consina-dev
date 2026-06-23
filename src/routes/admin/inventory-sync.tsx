@@ -124,6 +124,7 @@ function toCreateProductSearch(row: SyncRow) {
 }
 
 function InventorySyncPage() {
+  const pullOptions = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
   const [rows, setRows] = useState<SyncRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -131,7 +132,7 @@ function InventorySyncPage() {
   const [status, setStatus] = useState<StatusFilter>("all");
   const [query, setQuery] = useState("");
   const [config, setConfig] = useState<OdooConfig | null>(null);
-  const [pullLimit, setPullLimit] = useState(250);
+  const [pullLimit, setPullLimit] = useState(100);
   const [matchingSku, setMatchingSku] = useState<string | null>(null);
   const [lastPullSummary, setLastPullSummary] = useState<PullSummary | null>(null);
 
@@ -185,9 +186,10 @@ function InventorySyncPage() {
 
   async function handleManualSync() {
     setSyncing(true);
+    let currentOffset = 0;
     try {
       const totalRequested = pullLimit;
-      const pageSize = 250;
+      const pageSize = 100;
       let offset = 0;
       let fetched = 0;
       let applied = 0;
@@ -195,6 +197,7 @@ function InventorySyncPage() {
       let ignored = 0;
 
       while (offset < totalRequested) {
+        currentOffset = offset;
         const currentLimit = Math.min(pageSize, totalRequested - offset);
         const result = await pullSnapshot({ data: { limit: currentLimit, offset } });
         const summary = (result as {
@@ -230,7 +233,8 @@ function InventorySyncPage() {
           : typeof error === "string"
             ? error
             : "Manual Odoo sync failed";
-      toast.error(message);
+      const batchNumber = Math.floor(currentOffset / 100) + 1;
+      toast.error(`Manual Odoo sync failed on batch ${batchNumber}: ${message}`);
     } finally {
       setSyncing(false);
     }
@@ -373,9 +377,11 @@ function InventorySyncPage() {
               className="h-10 rounded-md border border-input bg-background px-3 text-sm"
               disabled={syncing}
             >
-              <option value="250">Pull 250</option>
-              <option value="1000">Pull 1000</option>
-              <option value="5000">Pull 5000</option>
+              {pullOptions.map((value) => (
+                <option key={value} value={value}>
+                  Pull {value}
+                </option>
+              ))}
             </select>
             <Button
               onClick={() => void handleManualSync()}

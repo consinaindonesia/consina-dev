@@ -385,9 +385,9 @@ type OdooProductRow = {
   write_date?: string | null;
 };
 
-export async function fetchOdooInventorySnapshot(limit = 1000, offset = 0): Promise<SyncPayload> {
+export async function fetchOdooInventorySnapshot(limit = 100, offset = 0): Promise<SyncPayload> {
   const session = await authenticateOdoo();
-  const safeLimit = Math.min(Math.max(limit, 1), 250);
+  const safeLimit = Math.min(Math.max(limit, 1), 100);
   const safeOffset = Math.max(offset, 0);
   const result = await callOdooJsonRpc<OdooProductRow[]>({
     service: "object",

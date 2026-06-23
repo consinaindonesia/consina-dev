@@ -141,7 +141,7 @@ function ProductCard({ p, lang }: { p: PublicProduct; lang: "id" | "en" }) {
   return (
     <Link
       to={detailHref as never}
-      className="group block"
+      className="storefront-card-hover group block"
     >
       <div className="relative aspect-square overflow-hidden rounded-none bg-muted">
         {p.image_url ? (
@@ -149,7 +149,7 @@ function ProductCard({ p, lang }: { p: PublicProduct; lang: "id" | "en" }) {
             src={p.thumbnail_url ?? p.image_url}
             alt={name}
             loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+            className="storefront-card-media h-full w-full object-cover"
           />
         ) : (
           <div className="h-full w-full bg-muted" />

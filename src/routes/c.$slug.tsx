@@ -444,7 +444,7 @@ function CategoryPage() {
                       toast.success(lang === "id" ? "Ditambahkan ke keranjang" : "Added to cart");
                     };
                     return (
-                      <li key={p.id} className="group overflow-hidden rounded-xl border border-border bg-card transition hover:shadow-md">
+                      <li key={p.id} className="storefront-card-hover group overflow-hidden rounded-xl border border-border bg-card transition hover:shadow-md">
                         <Link to={detailHref as never} className="block cursor-pointer">
                         <div className="relative aspect-square overflow-hidden bg-muted">
                           {img ? (
@@ -452,7 +452,7 @@ function CategoryPage() {
                               src={img.thumbnail_url ?? img.image_url}
                               alt={p.name_en}
                               loading="lazy"
-                              className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                              className="storefront-card-media h-full w-full object-cover"
                             />
                           ) : (
                             <div className="h-full w-full bg-muted" />

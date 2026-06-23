@@ -1146,7 +1146,7 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
             return (
               <div
                 key={p.id}
-                className="group w-[74%] shrink-0 snap-start sm:w-[44%] md:w-[34%] lg:w-[28%] xl:w-[24%]"
+                className="storefront-card-hover group w-[74%] shrink-0 snap-start sm:w-[44%] md:w-[34%] lg:w-[28%] xl:w-[24%]"
               >
                 <Link
                   to={`/${lang}/${prefix}/${p.slug ?? p.sku}` as never}
@@ -1158,7 +1158,7 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
                       src={p.image_url}
                       alt={name}
                       loading="lazy"
-                      className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                      className="storefront-card-media h-full w-full object-cover object-center"
                     />
                   ) : null}
                   <WishlistButton productId={p.id} className="absolute left-3 bottom-3" />

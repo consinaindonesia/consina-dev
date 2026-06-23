@@ -82,6 +82,24 @@ function basicAuthHeader(): string {
   return "Basic " + Buffer.from(serverKey() + ":").toString("base64");
 }
 
+function sanitizeMidtransText(
+  value: string | null | undefined,
+  fallback: string,
+  maxLength = 50,
+): string {
+  const cleaned = String(value ?? fallback)
+    .replace(/\s+/g, " ")
+    .replace(/[\r\n\t]+/g, " ")
+    .trim();
+  const normalized = cleaned || fallback;
+  return normalized.slice(0, maxLength);
+}
+
+function sanitizeMidtransId(value: string | null | undefined, fallback: string): string {
+  const cleaned = sanitizeMidtransText(value, fallback, 50).replace(/[^a-zA-Z0-9._\-]/g, "-");
+  return cleaned || fallback;
+}
+
 function adminClient() {
   const url = process.env.SUPABASE_URL ?? import.meta.env.VITE_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -108,7 +126,7 @@ export const createMidtransSnap = createServerFn({ method: "POST" })
     const { data: order, error } = await supabase
       .from("orders")
       .select(
-        "id, customer_name, customer_email, customer_phone, total_idr, payment_status, payment_method, order_items(product_name, sku, quantity, unit_price_idr)",
+        "id, customer_name, customer_email, customer_phone, total_idr, subtotal_idr, shipping_idr, voucher_discount_idr, payment_status, payment_method, shipping_method, order_items(product_name, sku, quantity, unit_price_idr, line_total_idr)",
       )
       .eq("id", data.orderId)
       .maybeSingle();
@@ -117,17 +135,55 @@ export const createMidtransSnap = createServerFn({ method: "POST" })
       throw new Error("Order already settled");
     }
 
-    const items = ((order.order_items ?? []) as Array<{
+    const orderItems = ((order.order_items ?? []) as Array<{
       product_name: string | null;
       sku: string | null;
       quantity: number;
       unit_price_idr: number;
-    }>).map((it, idx) => ({
-      id: it.sku || `item-${idx}`,
-      name: (it.product_name || "Item").slice(0, 50),
-      price: it.unit_price_idr,
-      quantity: it.quantity,
+      line_total_idr: number;
+    }>)
+      .filter((it) => Number(it.quantity ?? 0) > 0 && Number(it.unit_price_idr ?? 0) >= 0);
+
+    const items = orderItems.map((it, idx) => ({
+      id: sanitizeMidtransId(it.sku, `item-${idx + 1}`),
+      name: sanitizeMidtransText(it.product_name, `Item ${idx + 1}`),
+      price: Math.max(0, Math.round(Number(it.unit_price_idr ?? 0))),
+      quantity: Math.max(1, Math.round(Number(it.quantity ?? 1))),
     }));
+
+    if ((order.shipping_idr ?? 0) > 0) {
+      items.push({
+        id: "shipping",
+        name: sanitizeMidtransText(
+          order.shipping_method ? `Shipping ${order.shipping_method}` : "Shipping",
+          "Shipping",
+        ),
+        price: Math.round(Number(order.shipping_idr ?? 0)),
+        quantity: 1,
+      });
+    }
+
+    if ((order.voucher_discount_idr ?? 0) > 0) {
+      items.push({
+        id: "discount",
+        name: "Order Discount",
+        price: -Math.round(Number(order.voucher_discount_idr ?? 0)),
+        quantity: 1,
+      });
+    }
+
+    const itemTotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const itemDetails =
+      itemTotal === Math.round(Number(order.total_idr ?? 0))
+        ? items
+        : [
+            {
+              id: sanitizeMidtransId(order.id, "order-payment"),
+              name: "Consina Order Payment",
+              price: Math.round(Number(order.total_idr ?? 0)),
+              quantity: 1,
+            },
+          ];
 
     const [firstName, ...rest] = (order.customer_name || "Customer").split(" ");
 
@@ -136,7 +192,7 @@ export const createMidtransSnap = createServerFn({ method: "POST" })
         order_id: order.id,
         gross_amount: order.total_idr,
       },
-      item_details: items.length ? items : undefined,
+      item_details: itemDetails,
       customer_details: {
         first_name: firstName,
         last_name: rest.join(" ") || undefined,

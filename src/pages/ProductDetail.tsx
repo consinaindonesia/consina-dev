@@ -352,6 +352,44 @@ export function ProductDetailPage({ slug }: { slug: string }) {
   const descField = useMemo(() => localizedField(product, "description", lang), [product, lang]);
 
   const fallbackLang = product && !hasTranslation(product, ["name", "description"], lang);
+  const selectedVariant = variants.find((v) => v.id === selectedVariantId) ?? null;
+  const variantImageUrl = selectedVariant?.image_url ?? null;
+  const galleryImages = useMemo(() => {
+    const seen = new Set<string>();
+    const merged: ProductImage[] = [];
+
+    if (variantImageUrl) {
+      seen.add(variantImageUrl);
+      merged.push({
+        image_url: variantImageUrl,
+        large_url: variantImageUrl,
+        thumbnail_url: variantImageUrl,
+        alt_text_id: selectedVariant?.color_name ?? null,
+        alt_text_en: selectedVariant?.color_name ?? null,
+        is_primary: true,
+        sort_order: -1,
+      });
+    }
+
+    for (const image of images) {
+      const key = image.large_url ?? image.image_url;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      merged.push(image);
+    }
+
+    return merged;
+  }, [images, selectedVariant?.color_name, variantImageUrl]);
+
+  useEffect(() => {
+    setActiveImage(0);
+  }, [selectedVariantId]);
+
+  useEffect(() => {
+    if (activeImage > 0 && activeImage >= galleryImages.length) {
+      setActiveImage(0);
+    }
+  }, [activeImage, galleryImages.length]);
 
   // Inquiry button removed — cart + wishlist + store finder remain
 
@@ -448,46 +486,6 @@ export function ProductDetailPage({ slug }: { slug: string }) {
     setNotifySaved(true);
     toast.success(t("product.notify_saved"));
   }
-
-  const mainImg = images[activeImage] ?? images[0];
-  const selectedVariant = variants.find((v) => v.id === selectedVariantId) ?? null;
-  const variantImageUrl = selectedVariant?.image_url ?? null;
-  const galleryImages = useMemo(() => {
-    const seen = new Set<string>();
-    const merged: ProductImage[] = [];
-
-    if (variantImageUrl) {
-      seen.add(variantImageUrl);
-      merged.push({
-        image_url: variantImageUrl,
-        large_url: variantImageUrl,
-        thumbnail_url: variantImageUrl,
-        alt_text_id: selectedVariant?.color_name ?? null,
-        alt_text_en: selectedVariant?.color_name ?? null,
-        is_primary: true,
-        sort_order: -1,
-      });
-    }
-
-    for (const image of images) {
-      const key = image.large_url ?? image.image_url;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      merged.push(image);
-    }
-
-    return merged;
-  }, [images, selectedVariant?.color_name, variantImageUrl]);
-
-  useEffect(() => {
-    setActiveImage(0);
-  }, [selectedVariantId]);
-
-  useEffect(() => {
-    if (activeImage > 0 && activeImage >= galleryImages.length) {
-      setActiveImage(0);
-    }
-  }, [activeImage, galleryImages.length]);
 
   const activeGalleryImage = galleryImages[activeImage] ?? galleryImages[0] ?? null;
 

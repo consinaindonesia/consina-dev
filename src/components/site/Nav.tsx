@@ -163,7 +163,7 @@ export function Nav() {
 
   return (
     <header
-      className={`sticky top-0 z-50 border-b border-border/60 transition-transform duration-300 ease-out ${
+      className={`relative sticky top-0 z-50 border-b border-border/60 transition-transform duration-300 ease-out ${
         isHidden ? "-translate-y-full" : "translate-y-0"
       }`}
       style={{ backgroundColor: headerBgColor }}
@@ -277,7 +277,8 @@ export function Nav() {
             <button
               className="hidden h-9 w-9 items-center justify-center rounded-full text-foreground/70 transition hover:bg-muted hover:text-primary md:flex"
               aria-label={t("nav.search")}
-              onClick={() => setSearchOpen(true)}
+              onClick={() => setSearchOpen((current) => !current)}
+              data-search-trigger="true"
             >
               <Search className="h-4 w-4" />
             </button>
@@ -352,6 +353,7 @@ export function Nav() {
                   setOpen(false);
                   setSearchOpen(true);
                 }}
+                data-search-trigger="true"
                 className="rounded-md px-3 py-2 text-left text-sm font-medium text-foreground hover:bg-muted"
               >
                 {t("nav.search")}

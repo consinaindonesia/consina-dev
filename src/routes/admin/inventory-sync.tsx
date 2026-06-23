@@ -340,8 +340,8 @@ function InventorySyncPage() {
         />
       </section>
 
-      <section className="mt-6 grid gap-6 xl:grid-cols-[2fr_1fr]">
-        <div className="rounded-xl border bg-white p-4 shadow-sm">
+      <section className="mt-6 grid gap-6 2xl:grid-cols-[minmax(0,2fr)_360px]">
+        <div className="min-w-0 rounded-xl border bg-white p-4 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="text-lg font-bold text-primary">Recent Sync Events</h2>

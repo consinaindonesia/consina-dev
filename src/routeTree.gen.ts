@@ -42,6 +42,7 @@ import { Route as AdminResetPasswordRouteImport } from './routes/admin/reset-pas
 import { Route as AdminOrdersRouteImport } from './routes/admin/orders'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as AdminLanguagesRouteImport } from './routes/admin/languages'
+import { Route as AdminInventorySyncRouteImport } from './routes/admin/inventory-sync'
 import { Route as AdminInquiriesRouteImport } from './routes/admin/inquiries'
 import { Route as AdminGlossaryRouteImport } from './routes/admin/glossary'
 import { Route as AdminForgotPasswordRouteImport } from './routes/admin/forgot-password'
@@ -79,6 +80,7 @@ import { Route as ApiPublicSearchReindexRouteImport } from './routes/api/public/
 import { Route as ApiPublicSearchProductsRouteImport } from './routes/api/public/search/products'
 import { Route as ApiPublicHooksWeeklyInquirySummaryRouteImport } from './routes/api/public/hooks/weekly-inquiry-summary'
 import { Route as ApiPublicHooksStripeRouteImport } from './routes/api/public/hooks/stripe'
+import { Route as ApiPublicHooksOdooStockRouteImport } from './routes/api/public/hooks/odoo-stock'
 import { Route as ApiPublicHooksMidtransRouteImport } from './routes/api/public/hooks/midtrans'
 import { Route as AdminStoresIdStockRouteImport } from './routes/admin/stores.$id.stock'
 import { Route as AdminProductsIdStockRouteImport } from './routes/admin/products.$id.stock'
@@ -249,6 +251,11 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
 const AdminLanguagesRoute = AdminLanguagesRouteImport.update({
   id: '/admin/languages',
   path: '/admin/languages',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminInventorySyncRoute = AdminInventorySyncRouteImport.update({
+  id: '/admin/inventory-sync',
+  path: '/admin/inventory-sync',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminInquiriesRoute = AdminInquiriesRouteImport.update({
@@ -441,6 +448,11 @@ const ApiPublicHooksStripeRoute = ApiPublicHooksStripeRouteImport.update({
   path: '/api/public/hooks/stripe',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksOdooStockRoute = ApiPublicHooksOdooStockRouteImport.update({
+  id: '/api/public/hooks/odoo-stock',
+  path: '/api/public/hooks/odoo-stock',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksMidtransRoute = ApiPublicHooksMidtransRouteImport.update({
   id: '/api/public/hooks/midtrans',
   path: '/api/public/hooks/midtrans',
@@ -503,6 +515,7 @@ export interface FileRoutesByFullPath {
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
   '/admin/glossary': typeof AdminGlossaryRoute
   '/admin/inquiries': typeof AdminInquiriesRouteWithChildren
+  '/admin/inventory-sync': typeof AdminInventorySyncRoute
   '/admin/languages': typeof AdminLanguagesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/orders': typeof AdminOrdersRouteWithChildren
@@ -544,6 +557,7 @@ export interface FileRoutesByFullPath {
   '/admin/products/$id/stock': typeof AdminProductsIdStockRoute
   '/admin/stores/$id/stock': typeof AdminStoresIdStockRoute
   '/api/public/hooks/midtrans': typeof ApiPublicHooksMidtransRoute
+  '/api/public/hooks/odoo-stock': typeof ApiPublicHooksOdooStockRoute
   '/api/public/hooks/stripe': typeof ApiPublicHooksStripeRoute
   '/api/public/hooks/weekly-inquiry-summary': typeof ApiPublicHooksWeeklyInquirySummaryRoute
   '/api/public/search/products': typeof ApiPublicSearchProductsRoute
@@ -577,6 +591,7 @@ export interface FileRoutesByTo {
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
   '/admin/glossary': typeof AdminGlossaryRoute
   '/admin/inquiries': typeof AdminInquiriesRouteWithChildren
+  '/admin/inventory-sync': typeof AdminInventorySyncRoute
   '/admin/languages': typeof AdminLanguagesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/orders': typeof AdminOrdersRouteWithChildren
@@ -618,6 +633,7 @@ export interface FileRoutesByTo {
   '/admin/products/$id/stock': typeof AdminProductsIdStockRoute
   '/admin/stores/$id/stock': typeof AdminStoresIdStockRoute
   '/api/public/hooks/midtrans': typeof ApiPublicHooksMidtransRoute
+  '/api/public/hooks/odoo-stock': typeof ApiPublicHooksOdooStockRoute
   '/api/public/hooks/stripe': typeof ApiPublicHooksStripeRoute
   '/api/public/hooks/weekly-inquiry-summary': typeof ApiPublicHooksWeeklyInquirySummaryRoute
   '/api/public/search/products': typeof ApiPublicSearchProductsRoute
@@ -656,6 +672,7 @@ export interface FileRoutesById {
   '/admin/forgot-password': typeof AdminForgotPasswordRoute
   '/admin/glossary': typeof AdminGlossaryRoute
   '/admin/inquiries': typeof AdminInquiriesRouteWithChildren
+  '/admin/inventory-sync': typeof AdminInventorySyncRoute
   '/admin/languages': typeof AdminLanguagesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/orders': typeof AdminOrdersRouteWithChildren
@@ -697,6 +714,7 @@ export interface FileRoutesById {
   '/admin/products/$id/stock': typeof AdminProductsIdStockRoute
   '/admin/stores/$id/stock': typeof AdminStoresIdStockRoute
   '/api/public/hooks/midtrans': typeof ApiPublicHooksMidtransRoute
+  '/api/public/hooks/odoo-stock': typeof ApiPublicHooksOdooStockRoute
   '/api/public/hooks/stripe': typeof ApiPublicHooksStripeRoute
   '/api/public/hooks/weekly-inquiry-summary': typeof ApiPublicHooksWeeklyInquirySummaryRoute
   '/api/public/search/products': typeof ApiPublicSearchProductsRoute
@@ -736,6 +754,7 @@ export interface FileRouteTypes {
     | '/admin/forgot-password'
     | '/admin/glossary'
     | '/admin/inquiries'
+    | '/admin/inventory-sync'
     | '/admin/languages'
     | '/admin/login'
     | '/admin/orders'
@@ -777,6 +796,7 @@ export interface FileRouteTypes {
     | '/admin/products/$id/stock'
     | '/admin/stores/$id/stock'
     | '/api/public/hooks/midtrans'
+    | '/api/public/hooks/odoo-stock'
     | '/api/public/hooks/stripe'
     | '/api/public/hooks/weekly-inquiry-summary'
     | '/api/public/search/products'
@@ -810,6 +830,7 @@ export interface FileRouteTypes {
     | '/admin/forgot-password'
     | '/admin/glossary'
     | '/admin/inquiries'
+    | '/admin/inventory-sync'
     | '/admin/languages'
     | '/admin/login'
     | '/admin/orders'
@@ -851,6 +872,7 @@ export interface FileRouteTypes {
     | '/admin/products/$id/stock'
     | '/admin/stores/$id/stock'
     | '/api/public/hooks/midtrans'
+    | '/api/public/hooks/odoo-stock'
     | '/api/public/hooks/stripe'
     | '/api/public/hooks/weekly-inquiry-summary'
     | '/api/public/search/products'
@@ -888,6 +910,7 @@ export interface FileRouteTypes {
     | '/admin/forgot-password'
     | '/admin/glossary'
     | '/admin/inquiries'
+    | '/admin/inventory-sync'
     | '/admin/languages'
     | '/admin/login'
     | '/admin/orders'
@@ -929,6 +952,7 @@ export interface FileRouteTypes {
     | '/admin/products/$id/stock'
     | '/admin/stores/$id/stock'
     | '/api/public/hooks/midtrans'
+    | '/api/public/hooks/odoo-stock'
     | '/api/public/hooks/stripe'
     | '/api/public/hooks/weekly-inquiry-summary'
     | '/api/public/search/products'
@@ -962,6 +986,7 @@ export interface RootRouteChildren {
   AdminForgotPasswordRoute: typeof AdminForgotPasswordRoute
   AdminGlossaryRoute: typeof AdminGlossaryRoute
   AdminInquiriesRoute: typeof AdminInquiriesRouteWithChildren
+  AdminInventorySyncRoute: typeof AdminInventorySyncRoute
   AdminLanguagesRoute: typeof AdminLanguagesRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminOrdersRoute: typeof AdminOrdersRouteWithChildren
@@ -985,6 +1010,7 @@ export interface RootRouteChildren {
   AdminProductsIdEditRoute: typeof AdminProductsIdEditRoute
   AdminProductsIdStockRoute: typeof AdminProductsIdStockRoute
   ApiPublicHooksMidtransRoute: typeof ApiPublicHooksMidtransRoute
+  ApiPublicHooksOdooStockRoute: typeof ApiPublicHooksOdooStockRoute
   ApiPublicHooksStripeRoute: typeof ApiPublicHooksStripeRoute
   ApiPublicHooksWeeklyInquirySummaryRoute: typeof ApiPublicHooksWeeklyInquirySummaryRoute
   ApiPublicSearchProductsRoute: typeof ApiPublicSearchProductsRoute
@@ -1225,6 +1251,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/languages'
       fullPath: '/admin/languages'
       preLoaderRoute: typeof AdminLanguagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/inventory-sync': {
+      id: '/admin/inventory-sync'
+      path: '/admin/inventory-sync'
+      fullPath: '/admin/inventory-sync'
+      preLoaderRoute: typeof AdminInventorySyncRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/inquiries': {
@@ -1486,6 +1519,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksStripeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/odoo-stock': {
+      id: '/api/public/hooks/odoo-stock'
+      path: '/api/public/hooks/odoo-stock'
+      fullPath: '/api/public/hooks/odoo-stock'
+      preLoaderRoute: typeof ApiPublicHooksOdooStockRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/midtrans': {
       id: '/api/public/hooks/midtrans'
       path: '/api/public/hooks/midtrans'
@@ -1686,6 +1726,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminForgotPasswordRoute: AdminForgotPasswordRoute,
   AdminGlossaryRoute: AdminGlossaryRoute,
   AdminInquiriesRoute: AdminInquiriesRouteWithChildren,
+  AdminInventorySyncRoute: AdminInventorySyncRoute,
   AdminLanguagesRoute: AdminLanguagesRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminOrdersRoute: AdminOrdersRouteWithChildren,
@@ -1709,6 +1750,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminProductsIdEditRoute: AdminProductsIdEditRoute,
   AdminProductsIdStockRoute: AdminProductsIdStockRoute,
   ApiPublicHooksMidtransRoute: ApiPublicHooksMidtransRoute,
+  ApiPublicHooksOdooStockRoute: ApiPublicHooksOdooStockRoute,
   ApiPublicHooksStripeRoute: ApiPublicHooksStripeRoute,
   ApiPublicHooksWeeklyInquirySummaryRoute:
     ApiPublicHooksWeeklyInquirySummaryRoute,

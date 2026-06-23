@@ -29,6 +29,11 @@ type Category = {
   image_url: string | null;
 };
 
+type CategoryNode = {
+  id: string;
+  parent_category_id: string | null;
+};
+
 type AttributeDef = {
   id: string;
   slug: string;
@@ -124,28 +129,56 @@ function CategoryPage() {
       }
       setCategory(cat as Category);
 
-      // 2. Load attribute schema for this category.
+      // 2. Resolve descendant category ids so parent categories show products from subcategories too.
+      const { data: allCategories } = await supabase
+        .from("categories")
+        .select("id,parent_category_id")
+        .eq("is_active", true);
+      const childMap = new Map<string, string[]>();
+      for (const row of ((allCategories ?? []) as CategoryNode[])) {
+        if (!row.parent_category_id) continue;
+        const siblings = childMap.get(row.parent_category_id) ?? [];
+        siblings.push(row.id);
+        childMap.set(row.parent_category_id, siblings);
+      }
+      const categoryIds = new Set<string>([cat.id]);
+      const queue = [cat.id];
+      while (queue.length > 0) {
+        const current = queue.shift()!;
+        for (const childId of childMap.get(current) ?? []) {
+          if (categoryIds.has(childId)) continue;
+          categoryIds.add(childId);
+          queue.push(childId);
+        }
+      }
+      const scopedCategoryIds = Array.from(categoryIds);
+
+      // 3. Load attribute schema for this category scope.
       const { data: catAttrs } = await supabase
         .from("category_attributes")
         .select("sort_order, attribute:attributes(id, slug, name_id, name_en, type, unit, options)")
-        .eq("category_id", cat.id)
+        .in("category_id", scopedCategoryIds)
         .order("sort_order");
-      const defs: AttributeDef[] = ((catAttrs ?? []) as unknown as Array<{
+      const defsMap = new Map<string, AttributeDef>();
+      (((catAttrs ?? []) as unknown as Array<{
         attribute: AttributeDef | null;
       }>)
         .map((r) => r.attribute)
         .filter((a): a is AttributeDef => !!a)
-        .map((a) => ({ ...a, options: Array.isArray(a.options) ? a.options : [] }));
+        .forEach((a) => {
+          defsMap.set(a.id, { ...a, options: Array.isArray(a.options) ? a.options : [] });
+        });
+      const defs: AttributeDef[] = Array.from(defsMap.values());
       if (cancelled) return;
       setAttrDefs(defs);
 
-      // 3. Load products with primary image.
+      // 4. Load products with primary image across the full category scope.
       const { data: prods } = await supabase
         .from("products")
         .select(
           "id,sku,slug,name_en,name_id,price_idr,weight_grams,original_price_idr,sale_price_idr,is_on_sale,attributes,images,product_images(thumbnail_url,image_url,is_primary,sort_order),product_variants(color_hex,color_name,price_idr,original_price_idr,sale_price_idr,sort_order),product_size_variants(id)",
         )
-        .eq("category_id", cat.id)
+        .in("category_id", scopedCategoryIds)
         .eq("is_active", true)
         .order("name_en");
       if (cancelled) return;

@@ -1,5 +1,17 @@
 import type { Lang } from "@/i18n";
 
+export function normalizeEscapedLineBreaks(
+  value: string | null | undefined,
+  replacement = "\n",
+): string {
+  if (!value) return "";
+  return String(value)
+    .replace(/\r\n/g, "\n")
+    .replace(/\s*\\n\s*/g, replacement)
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 /** Format a price in IDR. Always IDR; only the digit/grouping/prefix differs. */
 export function formatPrice(amount: number, lang: Lang): string {
   if (lang === "id") {
@@ -46,14 +58,14 @@ export function localizedField<T extends Record<string, unknown>>(
     | null
     | undefined;
   if (primary && String(primary).trim()) {
-    return { value: String(primary), langUsed: lang };
+    return { value: normalizeEscapedLineBreaks(String(primary)), langUsed: lang };
   }
   const fallback = (row[`${base}_${other}` as keyof T] as unknown) as
     | string
     | null
     | undefined;
   if (fallback && String(fallback).trim()) {
-    return { value: String(fallback), langUsed: other };
+    return { value: normalizeEscapedLineBreaks(String(fallback)), langUsed: other };
   }
   return { value: "", langUsed: null };
 }

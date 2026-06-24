@@ -52,6 +52,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
+import { normalizeEscapedLineBreaks } from "@/i18n/format";
 import { cn } from "@/lib/utils";
 
 const FOREST = "#1a3a2e";
@@ -440,10 +441,10 @@ export function ProductForm(props: ProductFormProps) {
           category_id: data.category_id ?? "",
           name_en: data.name_en ?? "",
           name_id: data.name_id ?? "",
-          description_en: data.description_en ?? "",
-          description_id: data.description_id ?? "",
-          short_description_en: (data as { short_description_en?: string | null }).short_description_en ?? "",
-          short_description_id: (data as { short_description_id?: string | null }).short_description_id ?? "",
+          description_en: normalizeEscapedLineBreaks(data.description_en ?? ""),
+          description_id: normalizeEscapedLineBreaks(data.description_id ?? ""),
+          short_description_en: normalizeEscapedLineBreaks((data as { short_description_en?: string | null }).short_description_en ?? ""),
+          short_description_id: normalizeEscapedLineBreaks((data as { short_description_id?: string | null }).short_description_id ?? ""),
           price_idr: data.price_idr ?? 0,
           original_price_idr: (data as { original_price_idr?: number | null }).original_price_idr ?? null,
           sale_price_idr: (data as { sale_price_idr?: number | null }).sale_price_idr ?? null,
@@ -691,10 +692,10 @@ export function ProductForm(props: ProductFormProps) {
       category_id: values.category_id || null,
       name_en: values.name_en.trim() || values.name_id.trim(),
       name_id: values.name_id.trim() || values.name_en.trim(),
-      description_en: values.description_en || null,
-      description_id: values.description_id || null,
-      short_description_en: values.short_description_en || null,
-      short_description_id: values.short_description_id || null,
+      description_en: normalizeEscapedLineBreaks(values.description_en) || null,
+      description_id: normalizeEscapedLineBreaks(values.description_id) || null,
+      short_description_en: normalizeEscapedLineBreaks(values.short_description_en) || null,
+      short_description_id: normalizeEscapedLineBreaks(values.short_description_id) || null,
       price_idr: values.price_idr,
       original_price_idr: null,
       sale_price_idr: values.sale_price_idr,

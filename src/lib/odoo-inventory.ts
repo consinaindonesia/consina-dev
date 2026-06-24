@@ -50,6 +50,8 @@ type OdooConfigStatus = {
   database: string | null;
   username: string | null;
   missing: string[];
+  authenticated?: boolean;
+  authError?: string | null;
 };
 
 type ProductLookupRow = {
@@ -144,6 +146,32 @@ export function getOdooConfigStatus(): OdooConfigStatus {
     username,
     missing,
   };
+}
+
+export async function getOdooConfigRuntimeStatus(): Promise<OdooConfigStatus> {
+  const config = getOdooConfigStatus();
+  if (!config.configured) {
+    return {
+      ...config,
+      authenticated: false,
+      authError: `Missing: ${config.missing.join(", ")}`,
+    };
+  }
+
+  try {
+    await authenticateOdoo();
+    return {
+      ...config,
+      authenticated: true,
+      authError: null,
+    };
+  } catch (error) {
+    return {
+      ...config,
+      authenticated: false,
+      authError: error instanceof Error ? error.message : "Odoo authentication failed",
+    };
+  }
 }
 
 export function assertOdooWebhookAuthorized(request: Request) {

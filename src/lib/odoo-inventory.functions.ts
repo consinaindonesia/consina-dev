@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
   fetchOdooInventorySnapshot,
-  getOdooConfigStatus,
+  getOdooConfigRuntimeStatus,
   processOdooInventoryPayload,
   suggestOdooInventoryMapping,
 } from "@/lib/odoo-inventory";
@@ -13,7 +13,7 @@ export const getOdooInventoryConfig = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data: isAdmin } = await context.supabase.rpc("is_admin");
     if (!isAdmin) throw new Error("Not authorized");
-    return getOdooConfigStatus();
+    return getOdooConfigRuntimeStatus();
   });
 
 export const pullOdooInventorySnapshot = createServerFn({ method: "POST" })

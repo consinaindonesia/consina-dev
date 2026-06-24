@@ -68,6 +68,8 @@ type OdooConfig = {
   database: string | null;
   username: string | null;
   missing: string[];
+  authenticated?: boolean;
+  authError?: string | null;
 };
 
 type PullSummary = {
@@ -406,13 +408,25 @@ function InventorySyncPage() {
               Status
             </div>
             <div className="mt-2">
-              <Badge variant={config?.configured ? "default" : "destructive"}>
-                {config?.configured ? "Ready" : "Needs config"}
+              <Badge
+                variant={
+                  !config?.configured || config?.authenticated === false ? "destructive" : "default"
+                }
+              >
+                {!config?.configured
+                  ? "Needs config"
+                  : config?.authenticated === false
+                    ? "Auth failed"
+                    : "Ready"}
               </Badge>
             </div>
             {!config?.configured && config?.missing?.length ? (
               <div className="mt-2 text-xs text-red-600">
                 Missing: {config.missing.join(", ")}
+              </div>
+            ) : config?.authenticated === false ? (
+              <div className="mt-2 text-xs text-red-600">
+                {config.authError ?? "Odoo authentication failed."}
               </div>
             ) : (
               <div className="mt-2 text-xs text-muted-foreground">

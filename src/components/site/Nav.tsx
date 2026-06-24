@@ -345,19 +345,19 @@ export function Nav() {
           </div>
         </div>
 
-        {header.showSearch && (
-          <div className="mt-3">
-            <div className="w-full">
-              {searchBarButton}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Mobile menu */}
       {open && (
         <div className="border-t border-border bg-background lg:hidden">
           <nav className="mx-auto flex max-w-[1280px] flex-col gap-1 px-4 py-4">
+            {header.showSearch && (
+              <div className="mb-2">
+                <div className="w-full">
+                  {searchBarButton}
+                </div>
+              </div>
+            )}
             <Link
               to="/"
               onClick={() => setOpen(false)}

@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Menu, X, Search, MapPin, ChevronDown, Heart, User } from "lucide-react";
+import { Menu, X, Search, MapPin, ChevronDown, Heart, User, MessageCircleMore } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { LangSuggestionBanner } from "./LangSuggestionBanner";
@@ -409,6 +409,15 @@ export function Nav() {
           </nav>
         </div>
       )}
+      <button
+        type="button"
+        onClick={() => setSearchOpen(true)}
+        data-search-trigger="true"
+        aria-label={lang === "id" ? "Buka chatbot Consina" : "Open Consina chatbot"}
+        className="fixed bottom-5 right-5 z-[70] flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_16px_40px_rgba(13,61,41,0.28)] transition hover:scale-105 hover:bg-primary/92"
+      >
+        <MessageCircleMore className="h-6 w-6" />
+      </button>
       <SearchAdvisorDialog open={searchOpen} onOpenChange={setSearchOpen} />
     </header>
   );

@@ -1,11 +1,44 @@
 import { Link } from "@tanstack/react-router";
-import { Search, Sparkles, X } from "lucide-react";
+import { Loader2, Search, Sparkles, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLang } from "@/i18n/LangProvider";
 import { usePublicProducts, type PublicProduct } from "@/lib/public-products";
 import { Input } from "@/components/ui/input";
 import { PriceDisplay } from "@/components/site/PriceDisplay";
+import { Button } from "@/components/ui/button";
+
+type AdvisorTurn = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+type AdvisorProductResult = {
+  id: string;
+  sku: string;
+  slug: string | null;
+  name_en: string;
+  name_id: string;
+  category_name_en: string | null;
+  category_name_id: string | null;
+  price_idr: number;
+  original_price_idr: number | null;
+  sale_price_idr: number | null;
+  is_on_sale: boolean;
+  discount_percent: number | string | null;
+  stock: number;
+  stock_status: string;
+  image_url: string | null;
+};
+
+type AdvisorResponse = {
+  advice: string;
+  products: AdvisorProductResult[];
+  searchQuery: string;
+  engine: "semantic" | "keyword";
+  reranked: boolean;
+  vectorReady: boolean;
+};
 
 function normalizeSearchText(value: string | null | undefined) {
   return (value ?? "")
@@ -82,12 +115,19 @@ export function SearchAdvisorDialog({
   const lang = useLang();
   const { products: storefrontProducts, loading } = usePublicProducts();
   const [query, setQuery] = useState("");
+  const [history, setHistory] = useState<AdvisorTurn[]>([]);
+  const [advisorLoading, setAdvisorLoading] = useState(false);
+  const [advisorError, setAdvisorError] = useState("");
+  const [advisorResult, setAdvisorResult] = useState<AdvisorResponse | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (!open) {
       setQuery("");
+      setAdvisorError("");
+      setAdvisorResult(null);
+      setHistory([]);
       return;
     }
     const frame = window.requestAnimationFrame(() => inputRef.current?.focus());
@@ -146,6 +186,54 @@ export function SearchAdvisorDialog({
       ? "Best Seller"
       : "Best Sellers";
 
+  async function handleAdvisorSearch() {
+    const question = query.trim();
+    if (!question || advisorLoading) return;
+
+    setAdvisorLoading(true);
+    setAdvisorError("");
+
+    try {
+      const response = await fetch("/api/public/search/products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          question,
+          history: history.slice(-6),
+          lang,
+          limit: 5,
+        }),
+      });
+
+      const json = (await response.json()) as AdvisorResponse & { error?: string };
+      if (!response.ok) {
+        throw new Error(json.error || (lang === "id" ? "Pencarian AI gagal." : "AI search failed."));
+      }
+
+      setAdvisorResult(json);
+      setHistory((current) => [
+        ...current.slice(-5),
+        { role: "user", content: question },
+        { role: "assistant", content: json.advice },
+      ]);
+    } catch (error) {
+      setAdvisorError(
+        error instanceof Error
+          ? error.message
+          : lang === "id"
+            ? "Pencarian AI gagal."
+            : "AI search failed.",
+      );
+    } finally {
+      setAdvisorLoading(false);
+    }
+  }
+
+  const resultProducts = advisorResult?.products ?? [];
+  const displayedProducts = advisorResult ? resultProducts : visibleProducts;
+
   if (!open) return null;
 
   return (
@@ -183,14 +271,55 @@ export function SearchAdvisorDialog({
                 ref={inputRef}
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    void handleAdvisorSearch();
+                  }
+                }}
                 placeholder={t("nav.search_placeholder", { defaultValue: "Cari produk..." })}
                 className="h-auto border-0 bg-transparent px-0 py-0 text-sm shadow-none focus-visible:ring-0"
               />
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => void handleAdvisorSearch()}
+                disabled={advisorLoading || !query.trim()}
+                className="rounded-full px-4"
+              >
+                {advisorLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : lang === "id" ? "Tanya AI" : "Ask AI"}
+              </Button>
             </div>
+
+            {advisorResult && (
+              <div className="mt-4 rounded-2xl border border-primary/15 bg-primary/[0.03] px-4 py-4">
+                <div className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-primary/80">
+                  {lang === "id" ? "Jawaban Advisor" : "Advisor Answer"}
+                </div>
+                <p className="whitespace-pre-line text-sm leading-7 text-foreground/90">
+                  {advisorResult.advice}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                  <span>{lang === "id" ? "Query:" : "Query:"} {advisorResult.searchQuery}</span>
+                  <span>· {advisorResult.engine}</span>
+                  {advisorResult.reranked ? <span>· reranked</span> : null}
+                </div>
+              </div>
+            )}
+
+            {advisorError && (
+              <div className="mt-4 rounded-2xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+                {advisorError}
+              </div>
+            )}
 
             <div className="mt-4">
               <div className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                {title}
+                {advisorResult
+                  ? lang === "id"
+                    ? "Produk Rekomendasi"
+                    : "Recommended Products"
+                  : title}
               </div>
 
               {loading ? (
@@ -205,17 +334,21 @@ export function SearchAdvisorDialog({
                     </div>
                   ))}
                 </div>
-              ) : visibleProducts.length === 0 ? (
+              ) : displayedProducts.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-border px-4 py-5 text-sm text-muted-foreground">
-                  {lang === "id"
-                    ? "Produk tidak ditemukan. Coba kata kunci lain seperti nama model atau SKU."
-                    : "No products found. Try another keyword such as the model name or SKU."}
+                  {advisorResult
+                    ? lang === "id"
+                      ? "Advisor belum menemukan produk yang cukup cocok. Coba jelaskan kebutuhan Anda lebih spesifik."
+                      : "The advisor could not find a strong product match yet. Try giving a more specific need."
+                    : lang === "id"
+                      ? "Produk tidak ditemukan. Coba kata kunci lain seperti nama model atau SKU."
+                      : "No products found. Try another keyword such as the model name or SKU."}
                 </div>
               ) : (
                 <div className="max-h-[60vh] overflow-y-auto">
                   <div className="space-y-3 pr-1">
-                    {visibleProducts.map((product) => {
-                      const imageUrl = product.thumbnail_url || product.image_url;
+                    {displayedProducts.map((product) => {
+                      const imageUrl = "thumbnail_url" in product ? product.thumbnail_url || product.image_url : product.image_url;
                       return (
                         <Link
                           key={product.id}
@@ -231,12 +364,14 @@ export function SearchAdvisorDialog({
                           </div>
                           <div className="min-w-0 flex-1">
                             <div className="line-clamp-2 text-sm font-semibold text-primary">
-                              {productLabel(product, lang)}
+                              {"name_en" in product ? productLabel(product as PublicProduct, lang) : productLabel(product as unknown as PublicProduct, lang)}
                             </div>
                             <div className="mt-1 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                              {productCategory(product, lang) || product.sku}
+                              {("category_name_en" in product || "category_name_id" in product)
+                                ? productCategory(product as unknown as PublicProduct, lang) || product.sku
+                                : product.sku}
                             </div>
-                            <PriceDisplay product={product} lang={lang} size="sm" className="mt-1" />
+                            <PriceDisplay product={product as unknown as PublicProduct} lang={lang} size="sm" className="mt-1" />
                           </div>
                         </Link>
                       );

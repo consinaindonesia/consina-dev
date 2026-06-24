@@ -62,15 +62,27 @@ type ProductLookupRow = {
 };
 
 function readEnv(name: string): string | undefined {
-  return process.env[name] || undefined;
+  const raw = process.env[name];
+  if (raw == null) return undefined;
+
+  const trimmed = raw.trim();
+  if (!trimmed) return undefined;
+
+  const unwrapped =
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+      ? trimmed.slice(1, -1).trim()
+      : trimmed;
+
+  return unwrapped || undefined;
 }
 
 function getWebhookSecret(): string | undefined {
   return (
     readEnv("ODOO_WEBHOOK_SECRET") ??
     readEnv("ODOO_API_KEY") ??
-    process.env["api_key_odoo"] ??
-    process.env["API_KEY_ODOO"] ??
+    readEnv("api_key_odoo") ??
+    readEnv("API_KEY_ODOO") ??
     undefined
   );
 }
@@ -79,7 +91,7 @@ function getOdooBaseUrl(): string | undefined {
   return (
     readEnv("ODOO_BASE_URL") ??
     readEnv("VITE_ODOO_BASE_URL") ??
-    process.env["odoo_base_url"] ??
+    readEnv("odoo_base_url") ??
     "https://dev.consina.cloud"
   );
 }
@@ -88,8 +100,8 @@ function getOdooDatabase(): string | undefined {
   return (
     readEnv("ODOO_DATABASE") ??
     readEnv("ODOO_DB") ??
-    process.env["odoo_database"] ??
-    process.env["odoo_db"] ??
+    readEnv("odoo_database") ??
+    readEnv("odoo_db") ??
     "odoo19test"
   );
 }
@@ -98,8 +110,8 @@ function getOdooUsername(): string | undefined {
   return (
     readEnv("ODOO_USERNAME") ??
     readEnv("ODOO_LOGIN") ??
-    process.env["odoo_username"] ??
-    process.env["odoo_login"] ??
+    readEnv("odoo_username") ??
+    readEnv("odoo_login") ??
     "super@consina.co.id"
   );
 }
@@ -107,8 +119,8 @@ function getOdooUsername(): string | undefined {
 function getOdooApiKey(): string | undefined {
   return (
     readEnv("ODOO_API_KEY") ??
-    process.env["api_key_odoo"] ??
-    process.env["API_KEY_ODOO"] ??
+    readEnv("api_key_odoo") ??
+    readEnv("API_KEY_ODOO") ??
     undefined
   );
 }

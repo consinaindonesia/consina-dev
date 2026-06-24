@@ -52,6 +52,7 @@ type OdooConfigStatus = {
   missing: string[];
   authenticated?: boolean;
   authError?: string | null;
+  credentialMode?: "api_key" | "password" | "missing";
 };
 
 type ProductLookupRow = {
@@ -127,16 +128,39 @@ function getOdooApiKey(): string | undefined {
   );
 }
 
+function getOdooPassword(): string | undefined {
+  return (
+    readEnv("ODOO_PASSWORD") ??
+    readEnv("odoo_password") ??
+    readEnv("ODOO_LOGIN_PASSWORD") ??
+    undefined
+  );
+}
+
+function getOdooCredentialCandidates(): Array<{
+  label: "api_key" | "password";
+  value: string;
+}> {
+  const apiKey = getOdooApiKey();
+  const password = getOdooPassword();
+  const candidates: Array<{ label: "api_key" | "password"; value: string }> = [];
+
+  if (apiKey) candidates.push({ label: "api_key", value: apiKey });
+  if (password && password !== apiKey) candidates.push({ label: "password", value: password });
+
+  return candidates;
+}
+
 export function getOdooConfigStatus(): OdooConfigStatus {
   const baseUrl = getOdooBaseUrl()?.trim() || null;
   const database = getOdooDatabase()?.trim() || null;
   const username = getOdooUsername()?.trim() || null;
-  const apiKey = getOdooApiKey()?.trim() || null;
+  const credentialCandidates = getOdooCredentialCandidates();
   const missing = [
     ...(baseUrl ? [] : ["ODOO_BASE_URL"]),
     ...(database ? [] : ["ODOO_DATABASE"]),
     ...(username ? [] : ["ODOO_USERNAME"]),
-    ...(apiKey ? [] : ["ODOO_API_KEY"]),
+    ...(credentialCandidates.length ? [] : ["ODOO_API_KEY or ODOO_PASSWORD"]),
   ];
 
   return {
@@ -145,6 +169,7 @@ export function getOdooConfigStatus(): OdooConfigStatus {
     database,
     username,
     missing,
+    credentialMode: credentialCandidates[0]?.label ?? "missing",
   };
 }
 
@@ -350,8 +375,7 @@ type OdooRpcResponse<T> =
 
 async function callOdooJsonRpc<T>(body: JsonRecord): Promise<T> {
   const config = getOdooConfigStatus();
-  const apiKey = getOdooApiKey();
-  if (!config.configured || !apiKey || !config.baseUrl) {
+  if (!config.configured || !config.baseUrl) {
     throw new Error(
       `Odoo config incomplete: ${config.missing.join(", ") || "unknown configuration issue"}`,
     );
@@ -386,33 +410,45 @@ async function authenticateOdoo(): Promise<{
   baseUrl: string;
   database: string;
   username: string;
-  apiKey: string;
+  secret: string;
+  credentialMode: "api_key" | "password";
 }> {
   const config = getOdooConfigStatus();
-  const apiKey = getOdooApiKey();
-  if (!config.configured || !apiKey || !config.baseUrl || !config.database || !config.username) {
+  const credentialCandidates = getOdooCredentialCandidates();
+  if (
+    !config.configured ||
+    !credentialCandidates.length ||
+    !config.baseUrl ||
+    !config.database ||
+    !config.username
+  ) {
     throw new Error(
       `Odoo config incomplete: ${config.missing.join(", ") || "unknown configuration issue"}`,
     );
   }
 
-  const uid = await callOdooJsonRpc<number>({
-    service: "common",
-    method: "authenticate",
-    args: [config.database, config.username, apiKey, {}],
-  });
+  for (const candidate of credentialCandidates) {
+    const uid = await callOdooJsonRpc<number>({
+      service: "common",
+      method: "authenticate",
+      args: [config.database, config.username, candidate.value, {}],
+    });
 
-  if (!uid) {
-    throw new Error("Odoo authentication failed. Check ODOO_DATABASE, ODOO_USERNAME, and ODOO_API_KEY.");
+    if (!uid) continue;
+
+    return {
+      uid,
+      baseUrl: config.baseUrl,
+      database: config.database,
+      username: config.username,
+      secret: candidate.value,
+      credentialMode: candidate.label,
+    };
   }
 
-  return {
-    uid,
-    baseUrl: config.baseUrl,
-    database: config.database,
-    username: config.username,
-    apiKey,
-  };
+  throw new Error(
+    "Odoo authentication failed. Check ODOO_DATABASE, ODOO_USERNAME, ODOO_API_KEY, or ODOO_PASSWORD.",
+  );
 }
 
 type OdooProductRow = {
@@ -435,7 +471,7 @@ export async function fetchOdooInventorySnapshot(limit = 100, offset = 0): Promi
     args: [
       session.database,
       session.uid,
-      session.apiKey,
+      session.secret,
       "product.product",
       "search_read",
       [[["active", "=", true], ["default_code", "!=", false]]],

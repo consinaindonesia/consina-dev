@@ -168,10 +168,33 @@ export function Nav() {
     .filter((l) => l.label)
     .filter((l) => l.to !== "/catalog");
 
+  const openSearchDialog = (source: "desktop" | "mobile" = "desktop") => {
+    if (source === "mobile") {
+      setMobileCatalogOpen(false);
+      setOpen(false);
+      window.requestAnimationFrame(() => setSearchOpen(true));
+      return;
+    }
+    setSearchOpen(true);
+  };
+
   const searchBarButton = (
     <button
       type="button"
-      onClick={() => setSearchOpen(true)}
+      onClick={() => openSearchDialog()}
+      data-search-trigger="true"
+      className="flex h-11 items-center gap-3 rounded-full border border-border bg-background/90 px-4 text-left text-sm text-muted-foreground shadow-sm transition hover:border-primary/30 hover:text-foreground"
+      aria-label={t("nav.search")}
+    >
+      <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+      <span className="truncate">{t("nav.search_placeholder", { defaultValue: "Cari produk..." })}</span>
+    </button>
+  );
+
+  const mobileSearchBarButton = (
+    <button
+      type="button"
+      onClick={() => openSearchDialog("mobile")}
       data-search-trigger="true"
       className="flex h-11 items-center gap-3 rounded-full border border-border bg-background/90 px-4 text-left text-sm text-muted-foreground shadow-sm transition hover:border-primary/30 hover:text-foreground"
       aria-label={t("nav.search")}
@@ -380,7 +403,7 @@ export function Nav() {
             {header.showSearch && (
               <div className="mb-2">
                 <div className="w-full">
-                  {searchBarButton}
+                  {mobileSearchBarButton}
                 </div>
               </div>
             )}

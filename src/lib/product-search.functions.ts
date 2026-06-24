@@ -56,6 +56,15 @@ function compactText(parts: Array<string | null | undefined>) {
     .join(". ");
 }
 
+function normalizeSearchText(value: string | null | undefined) {
+  return (value ?? "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
 function productDisplayName(product: AdvisorProduct, lang: "id" | "en") {
   return (lang === "id" ? product.name_id : product.name_en) || product.name_en || product.name_id;
 }

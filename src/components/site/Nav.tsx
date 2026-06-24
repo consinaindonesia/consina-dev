@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Menu, X, Search, MapPin, ChevronDown, Heart, User, MessageCircleMore } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "./LanguageSwitcher";
@@ -23,6 +24,7 @@ export function Nav() {
   const [mobileCatalogOpen, setMobileCatalogOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
+  const [portalReady, setPortalReady] = useState(false);
   const [desktopExpandedIds, setDesktopExpandedIds] = useState<string[]>([]);
   const [mobileExpandedIds, setMobileExpandedIds] = useState<string[]>([]);
   const { data: categories, isLoading: catsLoading } = usePublicCategories();
@@ -60,6 +62,10 @@ export function Nav() {
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    setPortalReady(true);
   }, []);
 
   // Keep header visible while a menu is open.
@@ -175,16 +181,35 @@ export function Nav() {
     </button>
   );
 
+  const chatPortal = portalReady
+    ? createPortal(
+        <>
+          <button
+            type="button"
+            onClick={() => setChatOpen(true)}
+            data-chat-trigger="true"
+            aria-label={lang === "id" ? "Buka chatbot Consina" : "Open Consina chatbot"}
+            className="fixed bottom-5 right-5 z-[90] flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_16px_40px_rgba(13,61,41,0.28)] transition hover:scale-105 hover:bg-primary/92"
+          >
+            <MessageCircleMore className="h-6 w-6" />
+          </button>
+          <SearchAdvisorDialog open={chatOpen} onOpenChange={setChatOpen} variant="chat" />
+        </>,
+        document.body,
+      )
+    : null;
+
   return (
-    <header
-      className={`relative sticky top-0 z-50 border-b border-border/60 transition-transform duration-300 ease-out ${
-        isHidden ? "-translate-y-full" : "translate-y-0"
-      }`}
-      style={{ backgroundColor: headerBgColor }}
-    >
-      <AnnouncementBar />
-      <LangSuggestionBanner />
-      <div className="mx-auto hidden max-w-[1280px] items-center justify-between gap-6 px-4 py-3 md:px-8 lg:flex">
+    <>
+      <header
+        className={`relative sticky top-0 z-50 border-b border-border/60 transition-transform duration-300 ease-out ${
+          isHidden ? "-translate-y-full" : "translate-y-0"
+        }`}
+        style={{ backgroundColor: headerBgColor }}
+      >
+        <AnnouncementBar />
+        <LangSuggestionBanner />
+        <div className="mx-auto hidden max-w-[1280px] items-center justify-between gap-6 px-4 py-3 md:px-8 lg:flex">
         <Link to="/" className="flex items-center gap-2">
           {header.logoUrl ? (
             <img
@@ -410,17 +435,9 @@ export function Nav() {
           </nav>
         </div>
       )}
-      <button
-        type="button"
-        onClick={() => setChatOpen(true)}
-        data-chat-trigger="true"
-        aria-label={lang === "id" ? "Buka chatbot Consina" : "Open Consina chatbot"}
-        className="fixed bottom-5 right-5 z-[70] flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_16px_40px_rgba(13,61,41,0.28)] transition hover:scale-105 hover:bg-primary/92"
-      >
-        <MessageCircleMore className="h-6 w-6" />
-      </button>
-      <SearchAdvisorDialog open={searchOpen} onOpenChange={setSearchOpen} variant="dropdown" />
-      <SearchAdvisorDialog open={chatOpen} onOpenChange={setChatOpen} variant="chat" />
-    </header>
+        <SearchAdvisorDialog open={searchOpen} onOpenChange={setSearchOpen} variant="dropdown" />
+      </header>
+      {chatPortal}
+    </>
   );
 }

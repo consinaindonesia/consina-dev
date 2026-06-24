@@ -161,6 +161,19 @@ export function Nav() {
     .filter((l) => l.label)
     .filter((l) => l.to !== "/catalog");
 
+  const searchBarButton = (
+    <button
+      type="button"
+      onClick={() => setSearchOpen(true)}
+      data-search-trigger="true"
+      className="flex h-11 items-center gap-3 rounded-full border border-border bg-background/90 px-4 text-left text-sm text-muted-foreground shadow-sm transition hover:border-primary/30 hover:text-foreground"
+      aria-label={t("nav.search")}
+    >
+      <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+      <span className="truncate">{t("nav.search_placeholder", { defaultValue: "Cari produk..." })}</span>
+    </button>
+  );
+
   return (
     <header
       className={`relative sticky top-0 z-50 border-b border-border/60 transition-transform duration-300 ease-out ${
@@ -170,13 +183,13 @@ export function Nav() {
     >
       <AnnouncementBar />
       <LangSuggestionBanner />
-      <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between px-4 md:px-8">
+      <div className="mx-auto hidden max-w-[1280px] items-center justify-between gap-6 px-4 py-3 md:px-8 lg:flex">
         <Link to="/" className="flex items-center gap-2">
           {header.logoUrl ? (
             <img
               src={header.logoUrl}
               alt={header.logoText || "CONSINA"}
-              className="h-8 w-auto object-contain md:h-9"
+              className="h-9 w-auto object-contain xl:h-10"
             />
           ) : (
             <span className="text-2xl font-black tracking-tight text-primary">
@@ -184,14 +197,13 @@ export function Nav() {
             </span>
           )}
           {header.showSinceTag && (
-            <span className="hidden text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground md:inline">
+            <span className="hidden text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground xl:inline">
               {t("nav.since")}
             </span>
           )}
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden items-center gap-7 lg:flex">
+        <nav className="hidden items-center gap-6 lg:flex">
           {/* Catalog dropdown */}
           <div
             className="relative"
@@ -252,6 +264,13 @@ export function Nav() {
         </nav>
 
         <div className="flex items-center gap-2">
+          {header.showSearch && (
+            <div className="mr-1 hidden lg:block">
+              <div className="w-[220px] xl:w-[280px]">
+                {searchBarButton}
+              </div>
+            </div>
+          )}
           <CartDrawer />
           {header.showWishlist && <Link
             to="/wishlist"
@@ -273,16 +292,6 @@ export function Nav() {
             <User className="h-4 w-4" />
           </Link>}
           <LanguageSwitcher className="hidden md:inline-flex" menuBg={headerBgColor} />
-          {header.showSearch && (
-            <button
-              className="hidden h-9 w-9 items-center justify-center rounded-full text-foreground/70 transition hover:bg-muted hover:text-primary md:flex"
-              aria-label={t("nav.search")}
-              onClick={() => setSearchOpen((current) => !current)}
-              data-search-trigger="true"
-            >
-              <Search className="h-4 w-4" />
-            </button>
-          )}
           {header.showFindStore && <Link
             to="/stores"
             className="hidden items-center gap-1.5 rounded-full border border-primary/20 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary transition hover:bg-primary hover:text-primary-foreground md:inline-flex"
@@ -290,14 +299,59 @@ export function Nav() {
             <MapPin className="h-3.5 w-3.5" />
             {t("nav.find_store")}
           </Link>}
-          <button
-            className="flex h-9 w-9 items-center justify-center rounded-full text-foreground lg:hidden"
-            onClick={() => setOpen(!open)}
-            aria-label={t("nav.menu")}
-          >
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
         </div>
+      </div>
+
+      <div className="mx-auto max-w-[1280px] px-4 py-3 md:px-8 lg:hidden">
+        <div className="flex items-center justify-between gap-3">
+          <Link to="/" className="min-w-0 flex items-center gap-2">
+            {header.logoUrl ? (
+              <img
+                src={header.logoUrl}
+                alt={header.logoText || "CONSINA"}
+                className="h-7 w-auto max-w-[210px] object-contain sm:h-8"
+              />
+            ) : (
+              <span className="text-xl font-black tracking-tight text-primary">
+                {header.logoText || "CONSINA"}
+              </span>
+            )}
+          </Link>
+
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+            <CartDrawer />
+            {header.showWishlist && (
+              <Link
+                to="/wishlist"
+                className="relative flex h-9 w-9 items-center justify-center rounded-full text-foreground/70 transition hover:bg-muted hover:text-primary"
+                aria-label="Wishlist"
+              >
+                <Heart className="h-4 w-4" />
+                {wishCount > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                    {wishCount}
+                  </span>
+                )}
+              </Link>
+            )}
+            <LanguageSwitcher className="inline-flex" menuBg={headerBgColor} />
+            <button
+              className="flex h-9 w-9 items-center justify-center rounded-full text-foreground"
+              onClick={() => setOpen(!open)}
+              aria-label={t("nav.menu")}
+            >
+              {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
+        </div>
+
+        {header.showSearch && (
+          <div className="mt-3">
+            <div className="w-full">
+              {searchBarButton}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Mobile menu */}
@@ -346,19 +400,6 @@ export function Nav() {
             <Link to="/wishlist" onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-muted">
               Wishlist{wishCount > 0 ? ` (${wishCount})` : ""}
             </Link>
-            {header.showSearch && (
-              <button
-                type="button"
-                onClick={() => {
-                  setOpen(false);
-                  setSearchOpen(true);
-                }}
-                data-search-trigger="true"
-                className="rounded-md px-3 py-2 text-left text-sm font-medium text-foreground hover:bg-muted"
-              >
-                {t("nav.search")}
-              </button>
-            )}
             <Link to={user ? "/akun" : "/auth"} onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-muted">
               {user ? "Akun Saya" : "Masuk / Daftar"}
             </Link>

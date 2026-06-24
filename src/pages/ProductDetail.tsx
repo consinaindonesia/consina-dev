@@ -89,6 +89,24 @@ type AttributeDef = {
   options: string[];
 };
 
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+function formatDescriptionHtml(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  if (/<[a-z][\s\S]*>/i.test(trimmed)) return trimmed;
+
+  return trimmed
+    .split(/\n{2,}/)
+    .map((paragraph) => `<p>${escapeHtml(paragraph).replace(/\n/g, "<br />")}</p>`)
+    .join("");
+}
+
 export function ProductDetailPage({ slug }: { slug: string }) {
   const { t } = useTranslation();
   const lang = useLang();
@@ -627,7 +645,9 @@ export function ProductDetailPage({ slug }: { slug: string }) {
             </p>
 
             {shortDescField.value && (
-              <p className="mt-4 text-base text-muted-foreground">{shortDescField.value}</p>
+              <p className="mt-4 text-justify text-base leading-8 text-muted-foreground">
+                {shortDescField.value}
+              </p>
             )}
 
             <div className="mt-5 flex items-center gap-3">
@@ -907,8 +927,8 @@ export function ProductDetailPage({ slug }: { slug: string }) {
             </h2>
             {descField.value ? (
               <div
-                className="prose prose-sm mt-4 max-w-none text-foreground/90"
-                dangerouslySetInnerHTML={{ __html: descField.value }}
+                className="prose prose-sm mt-4 max-w-none text-justify leading-8 text-foreground/90 prose-p:my-0 prose-p:mb-4 prose-li:my-1 prose-ul:my-4 prose-ol:my-4"
+                dangerouslySetInnerHTML={{ __html: formatDescriptionHtml(descField.value) }}
               />
             ) : (
               <p className="mt-4 text-sm text-muted-foreground">{t("product.no_description")}</p>

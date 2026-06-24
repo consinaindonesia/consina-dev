@@ -1,12 +1,12 @@
 import { Link } from "@tanstack/react-router";
-import { Loader2, Search, Sparkles, X } from "lucide-react";
+import { Loader2, MessageCircleMore, Search, Sparkles, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useLang } from "@/i18n/LangProvider";
 import { usePublicProducts, type PublicProduct } from "@/lib/public-products";
-import { Input } from "@/components/ui/input";
 import { PriceDisplay } from "@/components/site/PriceDisplay";
-import { Button } from "@/components/ui/button";
 
 type AdvisorTurn = {
   role: "user" | "assistant";
@@ -69,7 +69,6 @@ function scoreProduct(product: PublicProduct, query: string) {
     .join(" ");
 
   let score = 0;
-
   if (nameId === normalizedQuery || nameEn === normalizedQuery) score += 400;
   if (sku === normalizedQuery) score += 380;
   if (slug === normalizedQuery) score += 360;
@@ -91,11 +90,11 @@ function scoreProduct(product: PublicProduct, query: string) {
   return score;
 }
 
-function productLabel(product: PublicProduct, lang: "id" | "en") {
+function productLabel(product: PublicProduct | AdvisorProductResult, lang: "id" | "en") {
   return (lang === "id" ? product.name_id : product.name_en) || product.name_en || product.name_id;
 }
 
-function productCategory(product: PublicProduct, lang: "id" | "en") {
+function productCategory(product: PublicProduct | AdvisorProductResult, lang: "id" | "en") {
   return (
     (lang === "id" ? product.category_name_id : product.category_name_en) ||
     product.category_name_en ||
@@ -104,15 +103,52 @@ function productCategory(product: PublicProduct, lang: "id" | "en") {
   );
 }
 
+function ProductResultCard({
+  product,
+  lang,
+  onSelect,
+}: {
+  product: PublicProduct | AdvisorProductResult;
+  lang: "id" | "en";
+  onSelect: () => void;
+}) {
+  const imageUrl = "thumbnail_url" in product ? product.thumbnail_url || product.image_url : product.image_url;
+
+  return (
+    <Link
+      to="/$lang/products/$slug"
+      params={{ lang, slug: product.slug || product.sku }}
+      onClick={onSelect}
+      className="flex items-center gap-3 rounded-2xl border border-border bg-white px-3 py-3 transition hover:border-primary/40 hover:bg-muted/30"
+    >
+      <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-muted">
+        {imageUrl ? (
+          <img src={imageUrl} alt={productLabel(product, lang)} className="h-full w-full object-cover" />
+        ) : null}
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="line-clamp-2 text-sm font-semibold text-primary">{productLabel(product, lang)}</div>
+        <div className="mt-1 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+          {productCategory(product, lang) || product.sku}
+        </div>
+        <PriceDisplay product={product as unknown as PublicProduct} lang={lang} size="sm" className="mt-1" />
+      </div>
+    </Link>
+  );
+}
+
 export function SearchAdvisorDialog({
   open,
   onOpenChange,
+  variant = "dropdown",
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  variant?: "dropdown" | "chat";
 }) {
   const { t } = useTranslation();
   const lang = useLang();
+  const isChat = variant === "chat";
   const { products: storefrontProducts, loading } = usePublicProducts();
   const [query, setQuery] = useState("");
   const [history, setHistory] = useState<AdvisorTurn[]>([]);
@@ -139,7 +175,7 @@ export function SearchAdvisorDialog({
 
     const onPointerDown = (event: MouseEvent) => {
       const target = event.target as HTMLElement | null;
-      if (target?.closest("[data-search-trigger='true']")) {
+      if (target?.closest("[data-search-trigger='true']") || target?.closest("[data-chat-trigger='true']")) {
         return;
       }
       if (!containerRef.current) return;
@@ -162,8 +198,8 @@ export function SearchAdvisorDialog({
 
   const featuredProducts = useMemo(() => {
     const featured = storefrontProducts.filter((product) => product.is_featured);
-    return (featured.length > 0 ? featured : storefrontProducts).slice(0, 8);
-  }, [storefrontProducts]);
+    return (featured.length > 0 ? featured : storefrontProducts).slice(0, isChat ? 4 : 8);
+  }, [isChat, storefrontProducts]);
 
   const searchResults = useMemo(() => {
     const trimmed = query.trim();
@@ -173,9 +209,9 @@ export function SearchAdvisorDialog({
       .map((product) => ({ product, score: scoreProduct(product, trimmed) }))
       .filter((entry) => entry.score > 0)
       .sort((a, b) => b.score - a.score)
-      .slice(0, 8)
+      .slice(0, isChat ? 4 : 8)
       .map((entry) => entry.product);
-  }, [query, storefrontProducts]);
+  }, [isChat, query, storefrontProducts]);
 
   const visibleProducts = query.trim() ? searchResults : featuredProducts;
   const title = query.trim()
@@ -186,12 +222,23 @@ export function SearchAdvisorDialog({
       ? "Best Seller"
       : "Best Sellers";
 
-  async function handleAdvisorSearch() {
-    const question = query.trim();
+  const welcomeMessage = isChat
+    ? lang === "id"
+      ? "Halo, saya AI assistant Consina. Tanyakan kebutuhan Anda seperti carrier untuk hiking 3 hari, sepatu trail, atau order corporate yang butuh stok ready."
+      : "Hi, I'm Consina's AI assistant. Ask for needs like a 3-day hiking carrier, trail shoes, or a corporate order with ready stock."
+    : "";
+
+  const quickPrompts = lang === "id"
+    ? ["carrier untuk hiking 3 hari", "sepatu trail ringan", "corporate order 30 pcs kemeja"]
+    : ["3-day hiking carrier", "lightweight trail shoes", "corporate order 30 shirts"];
+
+  async function handleAdvisorSearch(nextQuestion?: string) {
+    const question = (nextQuestion ?? query).trim();
     if (!question || advisorLoading) return;
 
     setAdvisorLoading(true);
     setAdvisorError("");
+    setQuery(question);
 
     try {
       const response = await fetch("/api/public/search/products", {
@@ -203,7 +250,7 @@ export function SearchAdvisorDialog({
           question,
           history: history.slice(-6),
           lang,
-          limit: 5,
+          limit: isChat ? 4 : 5,
         }),
       });
 
@@ -214,10 +261,11 @@ export function SearchAdvisorDialog({
 
       setAdvisorResult(json);
       setHistory((current) => [
-        ...current.slice(-5),
+        ...current.slice(-7),
         { role: "user", content: question },
         { role: "assistant", content: json.advice },
       ]);
+      setQuery("");
     } catch (error) {
       setAdvisorError(
         error instanceof Error
@@ -231,39 +279,145 @@ export function SearchAdvisorDialog({
     }
   }
 
-  const resultProducts = advisorResult?.products ?? [];
-  const displayedProducts = advisorResult ? resultProducts : visibleProducts;
+  const chatShellClass = isChat
+    ? "fixed bottom-24 right-5 z-[80] w-[min(420px,calc(100vw-24px))] rounded-[28px] border border-border bg-white shadow-[0_24px_80px_rgba(13,61,41,0.22)]"
+    : "rounded-2xl border border-border bg-white shadow-sm";
 
-  if (!open) return null;
+  const outerClass = isChat
+    ? ""
+    : "absolute inset-x-0 top-full z-50 border-t border-border/70 bg-white/96 shadow-2xl backdrop-blur-sm";
 
-  return (
-    <div className="absolute inset-x-0 top-full z-50 border-t border-border/70 bg-white/96 shadow-2xl backdrop-blur-sm">
-      <div ref={containerRef} className="mx-auto w-full max-w-[1280px] px-4 py-4 md:px-8">
-        <div className="rounded-2xl border border-border bg-white shadow-sm">
-          <div className="flex items-center gap-3 border-b border-border px-4 py-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <Sparkles className="h-4 w-4" />
+  const body = (
+    <div ref={containerRef} className={isChat ? chatShellClass : "mx-auto w-full max-w-[1280px] px-4 py-4 md:px-8"}>
+      <div className={isChat ? "" : chatShellClass}>
+        <div className={`flex items-center gap-3 border-b border-border ${isChat ? "px-5 py-4" : "px-4 py-3"}`}>
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+            {isChat ? <MessageCircleMore className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-semibold text-foreground">
+              {isChat
+                ? lang === "id"
+                  ? "Chat dengan Consina Assistant"
+                  : "Chat with Consina Assistant"
+                : lang === "id"
+                  ? "Cari Produk Consina"
+                  : "Search Consina Products"}
             </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold text-foreground">
-                {lang === "id" ? "Cari Produk Consina" : "Search Consina Products"}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                {lang === "id"
+            <div className="text-xs text-muted-foreground">
+              {isChat
+                ? lang === "id"
+                  ? "Tanya seperti ke customer service: kebutuhan produk, stok, atau order corporate."
+                  : "Ask like a customer service chat: product needs, stock, or corporate orders."
+                : lang === "id"
                   ? "Ketik nama produk, SKU, atau kategori untuk hasil yang lebih akurat."
                   : "Type a product name, SKU, or category for more accurate results."}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => onOpenChange(false)}
+            className="rounded-full p-2 text-foreground/60 transition hover:bg-muted hover:text-foreground"
+            aria-label={lang === "id" ? "Tutup pencarian" : "Close search"}
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {isChat ? (
+          <>
+            <div className="max-h-[60vh] overflow-y-auto px-4 py-4">
+              <div className="space-y-4">
+                <div className="max-w-[85%] rounded-[22px] rounded-bl-md bg-muted px-4 py-3 text-sm leading-7 text-foreground/90">
+                  {welcomeMessage}
+                </div>
+
+                {history.map((turn, index) => (
+                  <div key={`${turn.role}-${index}`} className={`flex ${turn.role === "user" ? "justify-end" : "justify-start"}`}>
+                    <div
+                      className={`max-w-[85%] rounded-[22px] px-4 py-3 text-sm leading-7 ${
+                        turn.role === "user"
+                          ? "rounded-br-md bg-primary text-primary-foreground"
+                          : "rounded-bl-md bg-muted text-foreground/90"
+                      }`}
+                    >
+                      <p className="whitespace-pre-line">{turn.content}</p>
+                      {turn.role === "assistant" && advisorResult && index === history.length - 1 ? (
+                        <div className="mt-3 space-y-3">
+                          {advisorResult.products.map((product) => (
+                            <ProductResultCard
+                              key={product.id}
+                              product={product}
+                              lang={lang}
+                              onSelect={() => onOpenChange(false)}
+                            />
+                          ))}
+                          <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                            {advisorResult.searchQuery} · {advisorResult.engine}
+                            {advisorResult.reranked ? " · reranked" : ""}
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                ))}
+
+                {!history.length ? (
+                  <div className="space-y-2">
+                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                      {lang === "id" ? "Contoh pertanyaan" : "Suggested prompts"}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {quickPrompts.map((prompt) => (
+                        <button
+                          key={prompt}
+                          type="button"
+                          onClick={() => void handleAdvisorSearch(prompt)}
+                          className="rounded-full border border-border bg-background px-3 py-2 text-sm text-foreground/80 transition hover:border-primary/30 hover:text-primary"
+                        >
+                          {prompt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {advisorError ? (
+                  <div className="rounded-2xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+                    {advisorError}
+                  </div>
+                ) : null}
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => onOpenChange(false)}
-              className="rounded-full p-2 text-foreground/60 transition hover:bg-muted hover:text-foreground"
-              aria-label={lang === "id" ? "Tutup pencarian" : "Close search"}
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-
+            <div className="border-t border-border px-4 py-4">
+              <div className="flex items-center gap-3 rounded-2xl border border-border bg-background px-3 py-3">
+                <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <Input
+                  ref={inputRef}
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      void handleAdvisorSearch();
+                    }
+                  }}
+                  placeholder={lang === "id" ? "Tulis pesan Anda..." : "Write your message..."}
+                  className="h-auto border-0 bg-transparent px-0 py-0 text-sm shadow-none focus-visible:ring-0"
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => void handleAdvisorSearch()}
+                  disabled={advisorLoading || !query.trim()}
+                  className="rounded-full px-4"
+                >
+                  {advisorLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : lang === "id" ? "Kirim" : "Send"}
+                </Button>
+              </div>
+            </div>
+          </>
+        ) : (
           <div className="px-4 py-4">
             <div className="flex items-center gap-3 rounded-2xl border border-border bg-background px-3 py-3">
               <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -291,27 +445,25 @@ export function SearchAdvisorDialog({
               </Button>
             </div>
 
-            {advisorResult && (
+            {advisorResult ? (
               <div className="mt-4 rounded-2xl border border-primary/15 bg-primary/[0.03] px-4 py-4">
                 <div className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-primary/80">
                   {lang === "id" ? "Jawaban Advisor" : "Advisor Answer"}
                 </div>
-                <p className="whitespace-pre-line text-sm leading-7 text-foreground/90">
-                  {advisorResult.advice}
-                </p>
+                <p className="whitespace-pre-line text-sm leading-7 text-foreground/90">{advisorResult.advice}</p>
                 <div className="mt-3 flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                  <span>{lang === "id" ? "Query:" : "Query:"} {advisorResult.searchQuery}</span>
+                  <span>Query: {advisorResult.searchQuery}</span>
                   <span>· {advisorResult.engine}</span>
                   {advisorResult.reranked ? <span>· reranked</span> : null}
                 </div>
               </div>
-            )}
+            ) : null}
 
-            {advisorError && (
+            {advisorError ? (
               <div className="mt-4 rounded-2xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
                 {advisorError}
               </div>
-            )}
+            ) : null}
 
             <div className="mt-4">
               <div className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
@@ -334,55 +486,33 @@ export function SearchAdvisorDialog({
                     </div>
                   ))}
                 </div>
-              ) : displayedProducts.length === 0 ? (
+              ) : visibleProducts.length === 0 && !advisorResult ? (
                 <div className="rounded-2xl border border-dashed border-border px-4 py-5 text-sm text-muted-foreground">
-                  {advisorResult
-                    ? lang === "id"
-                      ? "Advisor belum menemukan produk yang cukup cocok. Coba jelaskan kebutuhan Anda lebih spesifik."
-                      : "The advisor could not find a strong product match yet. Try giving a more specific need."
-                    : lang === "id"
-                      ? "Produk tidak ditemukan. Coba kata kunci lain seperti nama model atau SKU."
-                      : "No products found. Try another keyword such as the model name or SKU."}
+                  {lang === "id"
+                    ? "Produk tidak ditemukan. Coba kata kunci lain seperti nama model atau SKU."
+                    : "No products found. Try another keyword such as the model name or SKU."}
                 </div>
               ) : (
                 <div className="max-h-[60vh] overflow-y-auto">
                   <div className="space-y-3 pr-1">
-                    {displayedProducts.map((product) => {
-                      const imageUrl = "thumbnail_url" in product ? product.thumbnail_url || product.image_url : product.image_url;
-                      return (
-                        <Link
-                          key={product.id}
-                          to="/$lang/products/$slug"
-                          params={{ lang, slug: product.slug || product.sku }}
-                          onClick={() => onOpenChange(false)}
-                          className="flex items-center gap-3 rounded-2xl border border-border bg-white px-3 py-3 transition hover:border-primary/40 hover:bg-muted/30"
-                        >
-                          <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-muted">
-                            {imageUrl ? (
-                              <img src={imageUrl} alt={productLabel(product, lang)} className="h-full w-full object-cover" />
-                            ) : null}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="line-clamp-2 text-sm font-semibold text-primary">
-                              {"name_en" in product ? productLabel(product as PublicProduct, lang) : productLabel(product as unknown as PublicProduct, lang)}
-                            </div>
-                            <div className="mt-1 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                              {("category_name_en" in product || "category_name_id" in product)
-                                ? productCategory(product as unknown as PublicProduct, lang) || product.sku
-                                : product.sku}
-                            </div>
-                            <PriceDisplay product={product as unknown as PublicProduct} lang={lang} size="sm" className="mt-1" />
-                          </div>
-                        </Link>
-                      );
-                    })}
+                    {(advisorResult ? advisorResult.products : visibleProducts).map((product) => (
+                      <ProductResultCard
+                        key={product.id}
+                        product={product}
+                        lang={lang}
+                        onSelect={() => onOpenChange(false)}
+                      />
+                    ))}
                   </div>
                 </div>
               )}
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
+
+  if (!open) return null;
+  return isChat ? body : <div className={outerClass}>{body}</div>;
 }

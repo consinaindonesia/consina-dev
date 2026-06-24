@@ -22,6 +22,7 @@ export function Nav() {
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [mobileCatalogOpen, setMobileCatalogOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const [desktopExpandedIds, setDesktopExpandedIds] = useState<string[]>([]);
   const [mobileExpandedIds, setMobileExpandedIds] = useState<string[]>([]);
   const { data: categories, isLoading: catsLoading } = usePublicCategories();
@@ -411,14 +412,15 @@ export function Nav() {
       )}
       <button
         type="button"
-        onClick={() => setSearchOpen(true)}
-        data-search-trigger="true"
+        onClick={() => setChatOpen(true)}
+        data-chat-trigger="true"
         aria-label={lang === "id" ? "Buka chatbot Consina" : "Open Consina chatbot"}
         className="fixed bottom-5 right-5 z-[70] flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_16px_40px_rgba(13,61,41,0.28)] transition hover:scale-105 hover:bg-primary/92"
       >
         <MessageCircleMore className="h-6 w-6" />
       </button>
-      <SearchAdvisorDialog open={searchOpen} onOpenChange={setSearchOpen} />
+      <SearchAdvisorDialog open={searchOpen} onOpenChange={setSearchOpen} variant="dropdown" />
+      <SearchAdvisorDialog open={chatOpen} onOpenChange={setChatOpen} variant="chat" />
     </header>
   );
 }

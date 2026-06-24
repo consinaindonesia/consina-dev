@@ -43,6 +43,12 @@ const DEFAULT_GROQ_MODEL = process.env.GROQ_CHAT_MODEL || "llama-3.1-8b-instant"
 const DEFAULT_COHERE_EMBED_MODEL = process.env.COHERE_EMBED_MODEL || "embed-v4.0";
 const DEFAULT_COHERE_RERANK_MODEL = process.env.COHERE_RERANK_MODEL || "rerank-v3.5";
 
+type SearchIntent = {
+  categoryTerms: string[];
+  corporate: boolean;
+  stockFocused: boolean;
+};
+
 function compactText(parts: Array<string | null | undefined>) {
   return parts
     .map((part) => (part ?? "").trim())
@@ -83,6 +89,90 @@ function buildProductSearchDocument(product: AdvisorProduct) {
     product.sku,
     JSON.stringify(product.attributes ?? {}),
   ]);
+}
+
+function normalizeLooseText(value: string | null | undefined) {
+  return normalizeSearchText(value).replace(/\s+/g, " ").trim();
+}
+
+function detectSearchIntent(question: string): SearchIntent {
+  const q = normalizeLooseText(question);
+  const hasAny = (...parts: string[]) => parts.some((part) => q.includes(part));
+
+  const categoryTerms: string[] = [];
+  if (hasAny("carrier", "carriers", "tas carrier", "ransel gunung", "backpack carrier")) categoryTerms.push("carriers");
+  if (hasAny("tenda", "tent", "camping tent")) categoryTerms.push("tents");
+  if (hasAny("sepatu", "sandal", "footwear", "trail shoes", "trail shoe")) categoryTerms.push("footwear");
+  if (hasAny("jaket", "kemeja", "celana", "apparel", "shirt", "shirts", "jacket", "pants")) categoryTerms.push("apparel");
+  if (hasAny("lampu", "botol", "trekking pole", "headlamp", "aksesoris", "accessories")) categoryTerms.push("accessories");
+  if (hasAny("tas laptop", "travel bag", "waist bag", "drybag", "duffle", "duffel")) categoryTerms.push("bags");
+
+  return {
+    categoryTerms,
+    corporate: hasAny("corporate", "seragam", "uniform", "kemeja", "pcs", "piece", "pieces", "bulk", "wholesale"),
+    stockFocused: hasAny("stok", "stock", "ready", "available", "availability", "tersedia"),
+  };
+}
+
+function productCategoryPool(product: AdvisorProduct) {
+  return normalizeLooseText(
+    [
+      product.category_slug,
+      product.category_name_en,
+      product.category_name_id,
+      product.name_en,
+      product.name_id,
+      product.short_description_en,
+      product.short_description_id,
+    ]
+      .filter(Boolean)
+      .join(" "),
+  );
+}
+
+function productIntentScore(product: AdvisorProduct, intent: SearchIntent) {
+  const categoryPool = productCategoryPool(product);
+  let score = 0;
+
+  if (intent.categoryTerms.length > 0) {
+    const matchedCategory = intent.categoryTerms.some((term) => categoryPool.includes(term.replace(/-/g, " ")));
+    if (matchedCategory) score += 240;
+    else score -= 180;
+  }
+
+  if (intent.corporate) {
+    const apparelLike =
+      categoryPool.includes("apparel") ||
+      categoryPool.includes("kemeja") ||
+      categoryPool.includes("shirt") ||
+      categoryPool.includes("jaket");
+    if (apparelLike) score += 120;
+    else score -= 80;
+  }
+
+  if (intent.stockFocused || intent.corporate) {
+    score += Math.min(product.stock, 100);
+    if (product.stock <= 0 || product.stock_status !== "in_stock") score -= 120;
+  }
+
+  return score;
+}
+
+function rerankProductsByIntent(products: AdvisorProduct[], question: string) {
+  const intent = detectSearchIntent(question);
+
+  return products
+    .map((product, index) => ({
+      product,
+      index,
+      score:
+        Number(product.similarity ?? 0) * 100 +
+        productIntentScore(product, intent) +
+        (product.is_featured ? 6 : 0),
+    }))
+    .filter((entry) => entry.score > -120)
+    .sort((a, b) => b.score - a.score || a.index - b.index)
+    .map((entry) => entry.product);
 }
 
 function formatProductForPrompt(product: AdvisorProduct, lang: "id" | "en") {
@@ -240,6 +330,7 @@ async function fetchKeywordCandidates(question: string, limit: number) {
     .split(/\s+/)
     .map((token) => token.replace(/[^\p{L}\p{N}-]/gu, ""))
     .filter(Boolean);
+  const intent = detectSearchIntent(question);
 
   const rows = (data ?? []) as Array<Record<string, unknown>>;
   const scored = rows
@@ -282,6 +373,7 @@ async function fetchKeywordCandidates(question: string, limit: number) {
       for (const token of tokens) {
         if (haystack.includes(token)) score += 1;
       }
+      score += productIntentScore(product, intent);
       if (product.is_featured) score += 0.25;
       return { product, score };
     })
@@ -326,6 +418,26 @@ function buildFallbackAdvice(products: AdvisorProduct[], lang: "id" | "en") {
     : "Here are the most relevant product candidates from the Consina catalog:\n") + lines.join("\n");
 }
 
+function buildCorporateAdvice(products: AdvisorProduct[], lang: "id" | "en") {
+  if (products.length === 0) {
+    return lang === "id"
+      ? "Saya belum menemukan produk apparel yang siap untuk order corporate. Coba sebutkan jenisnya lebih spesifik, misalnya kemeja, jaket, atau kaos, lalu saya cek stok yang paling mendekati."
+      : "I couldn't find an apparel product ready for a corporate order yet. Try specifying whether you need shirts, jackets, or tees so I can check the closest available stock.";
+  }
+
+  const lines = products.slice(0, 3).map((product, index) => {
+    const name = productDisplayName(product, lang);
+    const stock = product.stock;
+    return lang === "id"
+      ? `${index + 1}. ${name} — stok ready ${stock} pcs, harga Rp ${product.price_idr.toLocaleString("id-ID")}.`
+      : `${index + 1}. ${name} — ready stock ${stock} pcs, price IDR ${product.price_idr}.`;
+  });
+
+  return lang === "id"
+    ? `Untuk kebutuhan corporate, saya prioritaskan produk dengan stok paling siap saat ini:\n${lines.join("\n")}\nJika target quantity Anda lebih besar dari stok ready, saya sarankan lanjut ke tim sales/corporate untuk split warna atau batch restock.`
+    : `For corporate needs, I'm prioritizing products with the strongest ready stock right now:\n${lines.join("\n")}\nIf your target quantity is larger than the ready stock, the next step is to continue with the sales/corporate team for color splits or restock batches.`;
+}
+
 export async function runProductAdvisorSearch({
   question,
   history,
@@ -339,6 +451,7 @@ export async function runProductAdvisorSearch({
 }): Promise<ProductSearchResult> {
   const cleanQuestion = question.trim();
   const searchQuery = await condenseSearchQuery(history.slice(-6), cleanQuestion);
+  const intent = detectSearchIntent(searchQuery || cleanQuestion);
   const vectorReady = await hasAdvisorEmbeddings();
 
   let engine: "semantic" | "keyword" = "keyword";
@@ -364,7 +477,7 @@ export async function runProductAdvisorSearch({
         }
       }
 
-      products = products.slice(0, limit);
+      products = rerankProductsByIntent(products, cleanQuestion).slice(0, limit);
     } catch {
       engine = "keyword";
       reranked = false;
@@ -374,15 +487,15 @@ export async function runProductAdvisorSearch({
     products = await fetchKeywordCandidates(searchQuery, limit);
   }
 
-  let advice = buildFallbackAdvice(products, lang);
+  let advice = intent.corporate ? buildCorporateAdvice(products, lang) : buildFallbackAdvice(products, lang);
   if (process.env.GROQ_API_KEY && products.length > 0) {
     const groundedContext = products
       .map((product) => formatProductForPrompt(product, lang))
       .join("\n\n");
     const system =
       (lang === "id"
-        ? "Anda adalah product advisor Consina. Rekomendasikan HANYA dari daftar produk di bawah. Jangan pernah mengarang produk, harga, atau spesifikasi. Jika tidak ada yang cocok, katakan dengan jujur dan jelaskan yang kurang. Referensikan produk dengan [#id]. Jawab singkat, praktis, dan fokus membantu pembeli.\n\nPRODUK TERSEDIA:\n"
-        : "You are the Consina product advisor. Recommend ONLY from the products below. Never invent products, prices, or specs. If nothing fits, say so honestly and explain what is missing. Reference products by [#id]. Be concise, practical, and buyer-focused.\n\nAVAILABLE PRODUCTS:\n") +
+        ? "Anda adalah customer service AI Consina. Rekomendasikan HANYA dari daftar produk di bawah. Jangan pernah mengarang produk, harga, kategori, atau spesifikasi. Jika user menyebut kategori tertentu seperti carrier, sepatu, tenda, atau corporate apparel, JANGAN rekomendasikan kategori lain. Jika tidak ada yang cocok, katakan dengan jujur. Untuk pertanyaan corporate atau stok, fokus pada stok siap jual dan arahkan follow-up bila quantity belum cukup. Referensikan produk dengan [#id]. Jawab natural, ringkas, dan seperti customer service yang membantu.\n\nPRODUK TERSEDIA:\n"
+        : "You are Consina's AI customer service assistant. Recommend ONLY from the products below. Never invent products, prices, categories, or specs. If the user asks for a specific category like carrier, footwear, tents, or corporate apparel, DO NOT recommend a different category. If nothing fits, say so honestly. For corporate or stock questions, focus on ready stock and suggest a follow-up when quantity is not enough. Reference products by [#id]. Reply naturally, concisely, and like a helpful customer service agent.\n\nAVAILABLE PRODUCTS:\n") +
       groundedContext;
 
     try {

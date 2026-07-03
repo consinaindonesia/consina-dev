@@ -91,11 +91,29 @@ function getFilterLabel(def: AttributeDef, lang: "id" | "en") {
   return lang === "id" ? def.name_id || def.name_en : def.name_en || def.name_id;
 }
 
+function normalizeFilterValue(value: unknown): string | null {
+  if (value === null || value === undefined) return null;
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  }
+  if (typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+  if (Array.isArray(value)) {
+    const parts = value
+      .map((entry) => normalizeFilterValue(entry))
+      .filter((entry): entry is string => !!entry);
+    return parts.length > 0 ? parts.join(", ") : null;
+  }
+  return null;
+}
+
 function getProductFilterValues(product: ProductRow, slug: string) {
   const values = new Set<string>();
-  const addValue = (value: string | null | undefined) => {
-    const trimmed = value?.trim();
-    if (trimmed) values.add(trimmed);
+  const addValue = (value: unknown) => {
+    const normalized = normalizeFilterValue(value);
+    if (normalized) values.add(normalized);
   };
 
   if (slug === "capacity") {
@@ -328,18 +346,18 @@ function CategoryPage() {
     };
 
     for (const product of products) {
-      if (product.capacity?.trim() || product.attributes?.capacity?.trim()) {
+      if (normalizeFilterValue(product.capacity) || normalizeFilterValue(product.attributes?.capacity)) {
         ensureFallbackDef("capacity");
       }
       if (
-        product.attributes?.color?.trim() ||
-        product.attributes?.warna?.trim() ||
-        product.variants.some((variant) => variant.color_name?.trim())
+        normalizeFilterValue(product.attributes?.color) ||
+        normalizeFilterValue(product.attributes?.warna) ||
+        product.variants.some((variant) => normalizeFilterValue(variant.color_name))
       ) {
         ensureFallbackDef("color");
       }
       for (const [slug, value] of Object.entries(product.attributes ?? {})) {
-        if (value?.trim()) ensureFallbackDef(slug);
+        if (normalizeFilterValue(value)) ensureFallbackDef(slug);
       }
     }
 

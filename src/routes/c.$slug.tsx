@@ -81,6 +81,7 @@ const FILTER_FALLBACK_LABELS: Record<string, { name_en: string; name_id: string;
   warna: { name_en: "Color", name_id: "Warna" },
 };
 const FILTER_PREVIEW_COUNT = 6;
+const PRIVATE_FILTER_SLUGS = new Set(["source", "import_source", "data_source"]);
 
 function humanizeFilterLabel(slug: string) {
   return slug
@@ -330,10 +331,12 @@ function CategoryPage() {
     const defsBySlug = new Map<string, AttributeDef>();
 
     attrDefs.forEach((def) => {
+      if (PRIVATE_FILTER_SLUGS.has(def.slug)) return;
       defsBySlug.set(def.slug, def);
     });
 
     const ensureFallbackDef = (slug: string) => {
+      if (PRIVATE_FILTER_SLUGS.has(slug)) return;
       if (defsBySlug.has(slug)) return;
       const fallback = FILTER_FALLBACK_LABELS[slug];
       defsBySlug.set(slug, {
@@ -359,6 +362,7 @@ function CategoryPage() {
         ensureFallbackDef("color");
       }
       for (const [slug, value] of Object.entries(product.attributes ?? {})) {
+        if (PRIVATE_FILTER_SLUGS.has(slug)) continue;
         if (normalizeFilterValue(value)) ensureFallbackDef(slug);
       }
     }

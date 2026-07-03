@@ -27,6 +27,7 @@ export function Nav() {
   const [portalReady, setPortalReady] = useState(false);
   const [desktopExpandedIds, setDesktopExpandedIds] = useState<string[]>([]);
   const [mobileExpandedIds, setMobileExpandedIds] = useState<string[]>([]);
+  const catalogMenuRef = useRef<HTMLDivElement | null>(null);
   const { data: categories, isLoading: catsLoading } = usePublicCategories();
   const { user } = useCustomerAuth();
   const { count: wishCount } = useWishlist(user?.id ?? null);
@@ -68,6 +69,25 @@ export function Nav() {
     setPortalReady(true);
   }, []);
 
+  useEffect(() => {
+    function handlePointerDown(event: MouseEvent) {
+      if (!catalogMenuRef.current) return;
+      if (catalogMenuRef.current.contains(event.target as Node)) return;
+      setCatalogOpen(false);
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setCatalogOpen(false);
+    }
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
+
   // Keep header visible while a menu is open.
   const isHidden = hidden && !open && !mobileCatalogOpen;
 
@@ -91,6 +111,7 @@ export function Nav() {
               <Link
                 to={"/c/$slug" as never}
                 params={{ slug: node.slug } as never}
+                onClick={() => setCatalogOpen(false)}
                 className={`min-w-0 flex-1 rounded-lg px-3 py-2 text-left transition-colors hover:bg-muted hover:text-primary ${
                   depth === 0 ? "text-sm font-semibold text-foreground" : "text-sm text-foreground/80"
                 }`}
@@ -254,12 +275,10 @@ export function Nav() {
 
         <nav className="hidden items-center gap-6 lg:flex">
           {/* Catalog dropdown */}
-          <div
-            className="relative"
-            onMouseEnter={() => setCatalogOpen(true)}
-            onMouseLeave={() => setCatalogOpen(false)}
-          >
+          <div ref={catalogMenuRef} className="relative">
             <button
+              type="button"
+              onClick={() => setCatalogOpen((current) => !current)}
               className="flex items-center gap-1 text-sm font-medium text-foreground/80 transition-colors hover:text-primary"
               aria-expanded={catalogOpen}
               aria-haspopup="true"
@@ -287,6 +306,7 @@ export function Nav() {
                   <div className="space-y-2">
                     <Link
                       to="/catalog"
+                      onClick={() => setCatalogOpen(false)}
                       className="block rounded-xl px-3 py-2 text-sm font-semibold text-primary transition-colors hover:bg-muted"
                     >
                       {t("nav.catalog")}

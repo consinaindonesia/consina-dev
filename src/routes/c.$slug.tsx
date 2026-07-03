@@ -50,6 +50,7 @@ type ProductRow = {
   sku: string;
   name_en: string;
   name_id: string;
+  capacity: string | null;
   price_idr: number;
   weight_grams: number | null;
   original_price_idr: number | null;
@@ -73,6 +74,43 @@ type ProductRow = {
   }>;
   has_size_variants: boolean;
 };
+
+const FILTER_FALLBACK_LABELS: Record<string, { name_en: string; name_id: string; unit?: string | null }> = {
+  capacity: { name_en: "Capacity", name_id: "Kapasitas", unit: "L" },
+  color: { name_en: "Color", name_id: "Warna" },
+  warna: { name_en: "Color", name_id: "Warna" },
+};
+
+function humanizeFilterLabel(slug: string) {
+  return slug
+    .replace(/[_-]+/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function getFilterLabel(def: AttributeDef, lang: "id" | "en") {
+  return lang === "id" ? def.name_id || def.name_en : def.name_en || def.name_id;
+}
+
+function getProductFilterValues(product: ProductRow, slug: string) {
+  const values = new Set<string>();
+  const addValue = (value: string | null | undefined) => {
+    const trimmed = value?.trim();
+    if (trimmed) values.add(trimmed);
+  };
+
+  if (slug === "capacity") {
+    addValue(product.capacity);
+    addValue(product.attributes?.capacity);
+  } else if (slug === "color") {
+    addValue(product.attributes?.color);
+    addValue(product.attributes?.warna);
+    product.variants.forEach((variant) => addValue(variant.color_name));
+  } else {
+    addValue(product.attributes?.[slug]);
+  }
+
+  return Array.from(values);
+}
 
 
 function CategoryPage() {
@@ -178,7 +216,7 @@ function CategoryPage() {
       const { data: prods } = await supabase
         .from("products")
         .select(
-          "id,sku,slug,name_en,name_id,price_idr,weight_grams,original_price_idr,sale_price_idr,is_on_sale,discount_percent,attributes,images,product_images(thumbnail_url,image_url,is_primary,sort_order),product_variants(color_hex,color_name,price_idr,original_price_idr,sale_price_idr,sort_order),product_size_variants(id,price_idr,original_price_idr,stock)",
+          "id,sku,slug,name_en,name_id,capacity,price_idr,weight_grams,original_price_idr,sale_price_idr,is_on_sale,discount_percent,attributes,images,product_images(thumbnail_url,image_url,is_primary,sort_order),product_variants(color_hex,color_name,price_idr,original_price_idr,sale_price_idr,sort_order),product_size_variants(id,price_idr,original_price_idr,stock)",
         )
         .in("category_id", scopedCategoryIds)
         .eq("is_active", true)
@@ -214,6 +252,7 @@ function CategoryPage() {
           sku: p.sku,
           name_en: p.name_en,
           name_id: p.name_id,
+          capacity: (p as { capacity?: string | null }).capacity ?? null,
           price_idr: p.price_idr,
           weight_grams: (p as { weight_grams?: number | null }).weight_grams ?? null,
           original_price_idr: (p as { original_price_idr?: number | null }).original_price_idr ?? null,
@@ -267,15 +306,55 @@ function CategoryPage() {
     };
   }, [slug]);
 
-  // Build filters: only show attributes that products in this category actually use,
-  // with the actual values found across those products.
+  const filterDefs = useMemo(() => {
+    const defsBySlug = new Map<string, AttributeDef>();
+
+    attrDefs.forEach((def) => {
+      defsBySlug.set(def.slug, def);
+    });
+
+    const ensureFallbackDef = (slug: string) => {
+      if (defsBySlug.has(slug)) return;
+      const fallback = FILTER_FALLBACK_LABELS[slug];
+      defsBySlug.set(slug, {
+        id: `fallback:${slug}`,
+        slug,
+        name_en: fallback?.name_en ?? humanizeFilterLabel(slug),
+        name_id: fallback?.name_id ?? humanizeFilterLabel(slug),
+        type: "select",
+        unit: fallback?.unit ?? null,
+        options: [],
+      });
+    };
+
+    for (const product of products) {
+      if (product.capacity?.trim() || product.attributes?.capacity?.trim()) {
+        ensureFallbackDef("capacity");
+      }
+      if (
+        product.attributes?.color?.trim() ||
+        product.attributes?.warna?.trim() ||
+        product.variants.some((variant) => variant.color_name?.trim())
+      ) {
+        ensureFallbackDef("color");
+      }
+      for (const [slug, value] of Object.entries(product.attributes ?? {})) {
+        if (value?.trim()) ensureFallbackDef(slug);
+      }
+    }
+
+    return Array.from(defsBySlug.values());
+  }, [attrDefs, products]);
+
+  // Build filters from the actual product values present inside this category.
   const dynamicFilters = useMemo(() => {
     const out: Array<{ def: AttributeDef; values: string[] }> = [];
-    for (const def of attrDefs) {
+    for (const def of filterDefs) {
       const seen = new Set<string>();
       for (const p of products) {
-        const v = p.attributes?.[def.slug];
-        if (v && v.trim()) seen.add(v.trim());
+        for (const value of getProductFilterValues(p, def.slug)) {
+          seen.add(value);
+        }
       }
       if (seen.size > 0) {
         out.push({
@@ -290,15 +369,15 @@ function CategoryPage() {
       }
     }
     return out;
-  }, [attrDefs, products]);
+  }, [filterDefs, products]);
 
   const filtered = useMemo(() => {
     const active = Object.entries(filters).filter(([, set]) => set.size > 0);
     if (active.length === 0) return products;
     return products.filter((p) =>
       active.every(([slug, set]) => {
-        const v = p.attributes?.[slug];
-        return v ? set.has(v) : false;
+        const values = getProductFilterValues(p, slug);
+        return values.some((value) => set.has(value));
       }),
     );
   }, [products, filters]);
@@ -368,7 +447,7 @@ function CategoryPage() {
                   {dynamicFilters.map(({ def, values }) => (
                     <div key={def.id}>
                       <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-foreground">
-                        {def.name_en}
+                        {getFilterLabel(def, lang)}
                         {def.unit ? ` (${def.unit})` : ""}
                       </h3>
                       <ul className="space-y-1.5">

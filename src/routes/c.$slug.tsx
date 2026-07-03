@@ -80,6 +80,7 @@ const FILTER_FALLBACK_LABELS: Record<string, { name_en: string; name_id: string;
   color: { name_en: "Color", name_id: "Warna" },
   warna: { name_en: "Color", name_id: "Warna" },
 };
+const FILTER_PREVIEW_COUNT = 6;
 
 function humanizeFilterLabel(slug: string) {
   return slug
@@ -140,6 +141,7 @@ function CategoryPage() {
   const [loading, setLoading] = useState(true);
   const [missing, setMissing] = useState(false);
   const [filters, setFilters] = useState<Record<string, Set<string>>>({});
+  const [expandedFilterGroups, setExpandedFilterGroups] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -415,6 +417,10 @@ function CategoryPage() {
     setFilters({});
   }
 
+  function toggleFilterGroup(slug: string) {
+    setExpandedFilterGroups((prev) => ({ ...prev, [slug]: !prev[slug] }));
+  }
+
   const activeFilterCount = Object.values(filters).reduce((sum, s) => sum + s.size, 0);
 
   if (missing) {
@@ -446,7 +452,8 @@ function CategoryPage() {
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[260px_1fr]">
           {/* Filters */}
           <aside>
-            <div className="sticky top-20">
+            <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-hidden rounded-2xl border border-border bg-card">
+              <div className="max-h-[calc(100vh-6rem)] overflow-y-auto p-5">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-foreground">
                   <Filter className="h-4 w-4" /> Filters
@@ -464,12 +471,29 @@ function CategoryPage() {
                 <div className="space-y-5">
                   {dynamicFilters.map(({ def, values }) => (
                     <div key={def.id}>
-                      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-foreground">
-                        {getFilterLabel(def, lang)}
-                        {def.unit ? ` (${def.unit})` : ""}
-                      </h3>
+                      <div className="mb-2 flex items-start justify-between gap-3">
+                        <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                          {getFilterLabel(def, lang)}
+                          {def.unit ? ` (${def.unit})` : ""}
+                        </h3>
+                        {values.length > FILTER_PREVIEW_COUNT && (
+                          <button
+                            type="button"
+                            onClick={() => toggleFilterGroup(def.slug)}
+                            className="shrink-0 text-[11px] font-medium text-muted-foreground transition hover:text-primary"
+                          >
+                            {expandedFilterGroups[def.slug]
+                              ? lang === "id"
+                                ? "Lebih sedikit"
+                                : "Show less"
+                              : lang === "id"
+                                ? "Lebih banyak"
+                                : "Show more"}
+                          </button>
+                        )}
+                      </div>
                       <ul className="space-y-1.5">
-                        {values.map((v) => {
+                        {(expandedFilterGroups[def.slug] ? values : values.slice(0, FILTER_PREVIEW_COUNT)).map((v) => {
                           const active = filters[def.slug]?.has(v) ?? false;
                           return (
                             <li key={v}>
@@ -490,6 +514,7 @@ function CategoryPage() {
                   ))}
                 </div>
               )}
+              </div>
             </div>
           </aside>
 

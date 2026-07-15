@@ -39,8 +39,8 @@ alter table public.products
   add column if not exists rating_average numeric(2,1) not null default 0,
   add column if not exists rating_count integer not null default 0;
 
--- Seed fictional reviews for every existing product: natural star distribution
--- (skewed positive, like a well-regarded retail brand) and varied Indonesian
+-- Seed fictional reviews for every existing product: premium star distribution
+-- (4-5 only, like a well-regarded retail brand) and varied Indonesian
 -- review copy that reads like real customer comments.
 do $$
 declare
@@ -130,21 +130,12 @@ begin
     v_num_reviews := 2 + floor(random() * 5)::int; -- 2..6 reviews per product
     for v_i in 1..v_num_reviews loop
       v_rand := random();
-      if v_rand < 0.50 then
+      if v_rand < 0.62 then
         v_rating := 5;
         v_comment := a5[1 + floor(random() * array_length(a5, 1))::int];
-      elsif v_rand < 0.78 then
+      else
         v_rating := 4;
         v_comment := a4[1 + floor(random() * array_length(a4, 1))::int];
-      elsif v_rand < 0.92 then
-        v_rating := 3;
-        v_comment := a3[1 + floor(random() * array_length(a3, 1))::int];
-      elsif v_rand < 0.97 then
-        v_rating := 2;
-        v_comment := a2[1 + floor(random() * array_length(a2, 1))::int];
-      else
-        v_rating := 1;
-        v_comment := a1[1 + floor(random() * array_length(a1, 1))::int];
       end if;
 
       v_comment := replace(v_comment, '%s', v_product.name_id);

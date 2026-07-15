@@ -25,6 +25,8 @@ import { FindInStore } from "@/components/site/FindInStore";
 import { PriceDisplay } from "@/components/site/PriceDisplay";
 import { SizeGuideDialog, type SizeGuide } from "@/components/site/SizeGuideDialog";
 import { type CategoryNode } from "@/lib/public-products";
+import { StarRating } from "@/components/site/StarRating";
+import { useProductReviews } from "@/lib/product-reviews";
 
 type Product = {
   id: string;
@@ -48,6 +50,8 @@ type Product = {
   attributes: Record<string, string> | null;
   stock_status: "in_stock" | "low_stock" | "out_of_stock";
   images?: string[] | null;
+  rating_average: number | null;
+  rating_count: number | null;
 };
 
 type ProductImage = {
@@ -125,6 +129,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
   const [related, setRelated] = useState<Array<{ id: string; sku: string; name_id: string; name_en: string; price_idr: number; thumb: string | null }>>([]);
   const [loading, setLoading] = useState(true);
   const [missing, setMissing] = useState(false);
+  const { reviews } = useProductReviews(product?.id ?? null);
 
   const [activeImage, setActiveImage] = useState(0);
   const [zoomOrigin, setZoomOrigin] = useState("50% 50%");
@@ -141,7 +146,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
       setMissing(false);
 
       const selectCols =
-        "id,sku,slug,category_id,name_id,name_en,short_description_id,short_description_en,description_id,description_en,price_idr,original_price_idr,sale_price_idr,is_on_sale,discount_percent,size_guide_id,capacity,weight_grams,attributes,stock_status,images,product_images(image_url,large_url,thumbnail_url,alt_text_id,alt_text_en,is_primary,sort_order)";
+        "id,sku,slug,category_id,name_id,name_en,short_description_id,short_description_en,description_id,description_en,price_idr,original_price_idr,sale_price_idr,is_on_sale,discount_percent,size_guide_id,capacity,weight_grams,attributes,stock_status,images,rating_average,rating_count,product_images(image_url,large_url,thumbnail_url,alt_text_id,alt_text_en,is_primary,sort_order)";
 
       // Prefer slug lookup; fall back to SKU so old URLs keep working.
       let { data: prods } = await supabase
@@ -644,6 +649,12 @@ export function ProductDetailPage({ slug }: { slug: string }) {
               SKU: {product.sku}
             </p>
 
+            {!!product.rating_count && (
+              <div className="mt-2">
+                <StarRating rating={product.rating_average ?? 0} count={product.rating_count ?? 0} size="md" />
+              </div>
+            )}
+
             {shortDescField.value && (
               <p className="mt-4 text-justify text-base leading-8 text-muted-foreground">
                 {shortDescField.value}
@@ -958,6 +969,49 @@ export function ProductDetailPage({ slug }: { slug: string }) {
             </dl>
           </aside>
         </div>
+
+        {/* Reviews */}
+        <section className="mt-16 max-w-[720px]">
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-2xl font-bold text-primary">
+              {lang === "id" ? "Ulasan Pembeli" : "Customer Reviews"}
+            </h2>
+            {!!product.rating_count && (
+              <StarRating rating={product.rating_average ?? 0} count={product.rating_count ?? 0} size="md" />
+            )}
+          </div>
+          {reviews.length === 0 ? (
+            <p className="mt-4 text-sm text-muted-foreground">
+              {lang === "id" ? "Belum ada ulasan untuk produk ini." : "No reviews yet for this product."}
+            </p>
+          ) : (
+            <ul className="mt-6 space-y-6">
+              {reviews.map((r) => (
+                <li key={r.id} className="border-b border-border pb-6 last:border-0">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-semibold text-foreground">{r.author_name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(r.created_at).toLocaleDateString(lang === "id" ? "id-ID" : "en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </p>
+                  </div>
+                  <div className="mt-1.5 flex items-center gap-2">
+                    <StarRating rating={r.rating} showCount={false} size="sm" />
+                    {r.is_verified_purchase && (
+                      <span className="text-[11px] font-medium uppercase tracking-wider text-secondary">
+                        {lang === "id" ? "Pembelian Terverifikasi" : "Verified Purchase"}
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-2 text-sm leading-relaxed text-foreground/90">{r.comment}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
 
         {/* Find in store */}
         <FindInStore productId={product.id} lang={lang} />

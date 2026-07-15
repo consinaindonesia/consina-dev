@@ -11,6 +11,7 @@ import { localizedField } from "@/i18n/format";
 import { PriceDisplay } from "@/components/site/PriceDisplay";
 import { addToCart } from "@/lib/cart-store";
 import { WishlistButton } from "@/components/site/WishlistButton";
+import { StarRating } from "@/components/site/StarRating";
 
 export const Route = createFileRoute("/catalog")({
   head: () => ({
@@ -172,6 +173,9 @@ function ProductCard({ p, lang }: { p: PublicProduct; lang: "id" | "en" }) {
         <h3 className="line-clamp-2 text-sm font-bold leading-snug text-primary">
           {name}
         </h3>
+        {p.rating_count > 0 && (
+          <StarRating rating={p.rating_average} count={p.rating_count} className="mt-1" />
+        )}
         {p.variants.length > 0 && (
           <div className="mt-2 flex items-center gap-1">
             {p.variants.slice(0, 5).map((v, i) => (

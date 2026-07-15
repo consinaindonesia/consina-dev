@@ -12,6 +12,7 @@ import { usePublicCategories, type PublicCategory } from "@/hooks/use-public-cat
 import { useLang } from "@/i18n/LangProvider";
 import { formatPrice, localizedField } from "@/i18n/format";
 import { PriceDisplay } from "@/components/site/PriceDisplay";
+import { StarRating } from "@/components/site/StarRating";
 import { WishlistButton } from "@/components/site/WishlistButton";
 import {
   DEFAULT_HOME_SECTIONS,
@@ -1165,6 +1166,9 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
                 </Link>
                 <div className="mt-4">
                   <h3 className="text-base font-bold leading-snug text-primary">{name}</h3>
+                  {p.rating_count > 0 && (
+                    <StarRating rating={p.rating_average} count={p.rating_count} className="mt-1" />
+                  )}
                   {desc ? <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{desc}</p> : null}
                   <PriceDisplay product={p} lang={lang} size="sm" className="mt-2" />
                   <Link

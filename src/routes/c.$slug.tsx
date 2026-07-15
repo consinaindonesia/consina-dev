@@ -10,6 +10,7 @@ import { useLang } from "@/i18n/LangProvider";
 import { PriceDisplay } from "@/components/site/PriceDisplay";
 import { addToCart } from "@/lib/cart-store";
 import { WishlistButton } from "@/components/site/WishlistButton";
+import { StarRating } from "@/components/site/StarRating";
 
 export const Route = createFileRoute("/c/$slug")({
   component: CategoryPage,
@@ -57,6 +58,8 @@ type ProductRow = {
   sale_price_idr: number | null;
   is_on_sale: boolean;
   discount_percent: number | null;
+  rating_average: number;
+  rating_count: number;
   attributes: Record<string, string> | null;
   product_images: Array<{ thumbnail_url: string | null; image_url: string }>;
   images: string[] | null;
@@ -237,7 +240,7 @@ function CategoryPage() {
       const { data: prods } = await supabase
         .from("products")
         .select(
-          "id,sku,slug,name_en,name_id,capacity,price_idr,weight_grams,original_price_idr,sale_price_idr,is_on_sale,discount_percent,attributes,images,product_images(thumbnail_url,image_url,is_primary,sort_order),product_variants(color_hex,color_name,price_idr,original_price_idr,sale_price_idr,sort_order),product_size_variants(id,price_idr,original_price_idr,stock)",
+          "id,sku,slug,name_en,name_id,capacity,price_idr,weight_grams,original_price_idr,sale_price_idr,is_on_sale,discount_percent,rating_average,rating_count,attributes,images,product_images(thumbnail_url,image_url,is_primary,sort_order),product_variants(color_hex,color_name,price_idr,original_price_idr,sale_price_idr,sort_order),product_size_variants(id,price_idr,original_price_idr,stock)",
         )
         .in("category_id", scopedCategoryIds)
         .eq("is_active", true)
@@ -284,6 +287,8 @@ function CategoryPage() {
             (p as { discount_percent?: number | string | null }).discount_percent === undefined
               ? null
               : Number((p as { discount_percent?: number | string | null }).discount_percent),
+          rating_average: Number((p as { rating_average?: number | null }).rating_average ?? 0),
+          rating_count: Number((p as { rating_count?: number | null }).rating_count ?? 0),
           attributes: (p.attributes as Record<string, string> | null) ?? null,
           product_images: merged,
           images: flat,
@@ -599,6 +604,9 @@ function CategoryPage() {
                         <div className="p-4">
                           <p className="text-xs uppercase tracking-wider text-muted-foreground">{p.sku}</p>
                           <h3 className="mt-1 font-medium text-foreground">{p.name_en}</h3>
+                          {p.rating_count > 0 && (
+                            <StarRating rating={p.rating_average} count={p.rating_count} className="mt-1" />
+                          )}
                           {p.variants.length > 0 && (
                             <div className="mt-2 flex items-center gap-1">
                               {p.variants.slice(0, 5).map((v, i) => (

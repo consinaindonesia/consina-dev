@@ -745,6 +745,94 @@ export type Database = {
           },
         ]
       }
+      inventory_sync_events: {
+        Row: {
+          change_mode: string
+          created_at: string
+          delta: number | null
+          error_message: string | null
+          event_type: string
+          external_event_id: string | null
+          external_reference: string | null
+          id: string
+          odoo_location_code: string | null
+          odoo_sku: string | null
+          payload: Json
+          processed_at: string | null
+          product_id: string | null
+          size_variant_id: string | null
+          source: string
+          stock_after: number | null
+          stock_before: number | null
+          sync_status: string
+          variant_id: string | null
+        }
+        Insert: {
+          change_mode?: string
+          created_at?: string
+          delta?: number | null
+          error_message?: string | null
+          event_type?: string
+          external_event_id?: string | null
+          external_reference?: string | null
+          id?: string
+          odoo_location_code?: string | null
+          odoo_sku?: string | null
+          payload?: Json
+          processed_at?: string | null
+          product_id?: string | null
+          size_variant_id?: string | null
+          source?: string
+          stock_after?: number | null
+          stock_before?: number | null
+          sync_status?: string
+          variant_id?: string | null
+        }
+        Update: {
+          change_mode?: string
+          created_at?: string
+          delta?: number | null
+          error_message?: string | null
+          event_type?: string
+          external_event_id?: string | null
+          external_reference?: string | null
+          id?: string
+          odoo_location_code?: string | null
+          odoo_sku?: string | null
+          payload?: Json
+          processed_at?: string | null
+          product_id?: string | null
+          size_variant_id?: string | null
+          source?: string
+          stock_after?: number | null
+          stock_before?: number | null
+          sync_status?: string
+          variant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_sync_events_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_sync_events_size_variant_id_fkey"
+            columns: ["size_variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_size_variants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_sync_events_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       newsletter_subscribers: {
         Row: {
           created_at: string
@@ -792,6 +880,73 @@ export type Database = {
           product_id?: string
         }
         Relationships: []
+      }
+      odoo_product_map: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          metadata: Json
+          odoo_product_id: string | null
+          odoo_sku: string
+          odoo_variant_id: string | null
+          product_id: string | null
+          size_variant_id: string | null
+          sync_priority: number
+          updated_at: string
+          variant_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          metadata?: Json
+          odoo_product_id?: string | null
+          odoo_sku: string
+          odoo_variant_id?: string | null
+          product_id?: string | null
+          size_variant_id?: string | null
+          sync_priority?: number
+          updated_at?: string
+          variant_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          metadata?: Json
+          odoo_product_id?: string | null
+          odoo_sku?: string
+          odoo_variant_id?: string | null
+          product_id?: string | null
+          size_variant_id?: string | null
+          sync_priority?: number
+          updated_at?: string
+          variant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "odoo_product_map_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "odoo_product_map_size_variant_id_fkey"
+            columns: ["size_variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_size_variants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "odoo_product_map_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       order_items: {
         Row: {
@@ -1190,6 +1345,44 @@ export type Database = {
           },
         ]
       }
+      product_reviews: {
+        Row: {
+          author_name: string
+          comment: string
+          created_at: string
+          id: string
+          is_verified_purchase: boolean
+          product_id: string
+          rating: number
+        }
+        Insert: {
+          author_name: string
+          comment: string
+          created_at?: string
+          id?: string
+          is_verified_purchase?: boolean
+          product_id: string
+          rating: number
+        }
+        Update: {
+          author_name?: string
+          comment?: string
+          created_at?: string
+          id?: string
+          is_verified_purchase?: boolean
+          product_id?: string
+          rating?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_size_variants: {
         Row: {
           created_at: string
@@ -1234,6 +1427,32 @@ export type Database = {
           {
             foreignKeyName: "product_size_variants_product_id_fkey"
             columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_slug_redirects: {
+        Row: {
+          old_slug: string
+          target_product_id: string
+          target_slug: string | null
+        }
+        Insert: {
+          old_slug: string
+          target_product_id: string
+          target_slug?: string | null
+        }
+        Update: {
+          old_slug?: string
+          target_product_id?: string
+          target_slug?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_slug_redirects_target_product_id_fkey"
+            columns: ["target_product_id"]
             isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
@@ -1295,6 +1514,7 @@ export type Database = {
       }
       products: {
         Row: {
+          advisor_embedding: string | null
           ai_translated_fields: string[]
           attributes: Json
           capacity: string | null
@@ -1312,6 +1532,8 @@ export type Database = {
           name_id: string
           original_price_idr: number | null
           price_idr: number
+          rating_average: number
+          rating_count: number
           sale_price_idr: number | null
           seo_description: string | null
           seo_title: string | null
@@ -1326,6 +1548,7 @@ export type Database = {
           weight_grams: number | null
         }
         Insert: {
+          advisor_embedding?: string | null
           ai_translated_fields?: string[]
           attributes?: Json
           capacity?: string | null
@@ -1343,6 +1566,8 @@ export type Database = {
           name_id: string
           original_price_idr?: number | null
           price_idr?: number
+          rating_average?: number
+          rating_count?: number
           sale_price_idr?: number | null
           seo_description?: string | null
           seo_title?: string | null
@@ -1357,6 +1582,7 @@ export type Database = {
           weight_grams?: number | null
         }
         Update: {
+          advisor_embedding?: string | null
           ai_translated_fields?: string[]
           attributes?: Json
           capacity?: string | null
@@ -1374,6 +1600,8 @@ export type Database = {
           name_id?: string
           original_price_idr?: number | null
           price_idr?: number
+          rating_average?: number
+          rating_count?: number
           sale_price_idr?: number | null
           seo_description?: string | null
           seo_title?: string | null
@@ -1752,6 +1980,37 @@ export type Database = {
       }
       is_admin: { Args: never; Returns: boolean }
       is_admin_or_editor: { Args: never; Returns: boolean }
+      match_products_for_advisor: {
+        Args: {
+          match_count?: number
+          match_threshold?: number
+          query_embedding: string
+        }
+        Returns: {
+          attributes: Json
+          category_name_en: string
+          category_name_id: string
+          category_slug: string
+          description_en: string
+          description_id: string
+          id: string
+          image_url: string
+          is_featured: boolean
+          is_on_sale: boolean
+          name_en: string
+          name_id: string
+          original_price_idr: number
+          price_idr: number
+          sale_price_idr: number
+          short_description_en: string
+          short_description_id: string
+          similarity: number
+          sku: string
+          slug: string
+          stock: number
+          stock_status: string
+        }[]
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string

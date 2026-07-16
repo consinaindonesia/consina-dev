@@ -13,6 +13,7 @@ import { useWishlist } from "@/lib/wishlist-store";
 import { usePublicCategories, type PublicCategory } from "@/hooks/use-public-categories";
 import { useLang } from "@/i18n/LangProvider";
 import { localizedField } from "@/i18n/format";
+import { normalizeUiLabel } from "@/i18n/label-fallbacks";
 import { useSiteSettings } from "@/hooks/use-site-settings";
 import { isValidColor } from "@/lib/theme-defaults";
 
@@ -178,7 +179,7 @@ export function Nav() {
     ? header.navLinks.map((l, i) => ({
         key: `${l.href}-${i}`,
         to: l.href || "/",
-        label: (lang === "en" ? l.labelEn : l.labelId) || l.labelEn || l.labelId || "",
+        label: normalizeUiLabel((lang === "en" ? l.labelEn : l.labelId) || l.labelEn || l.labelId || "", lang),
       }))
     : [
         { key: "catalog", to: "/catalog", label: t("nav.catalog") },
@@ -208,7 +209,7 @@ export function Nav() {
       aria-label={t("nav.search")}
     >
       <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-      <span className="truncate">{t("nav.search_placeholder", { defaultValue: "Cari produk..." })}</span>
+      <span className="truncate">{t("nav.search_placeholder")}</span>
     </button>
   );
 
@@ -221,7 +222,7 @@ export function Nav() {
       aria-label={t("nav.search")}
     >
       <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-      <span className="truncate">{t("nav.search_placeholder", { defaultValue: "Cari produk..." })}</span>
+      <span className="truncate">{t("nav.search_placeholder")}</span>
     </button>
   );
 
@@ -470,7 +471,7 @@ export function Nav() {
               Wishlist{wishCount > 0 ? ` (${wishCount})` : ""}
             </Link>
             <Link to={user ? "/akun" : "/auth"} onClick={() => setOpen(false)} className="rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-muted">
-              {user ? "Akun Saya" : "Masuk / Daftar"}
+              {user ? t("nav.account") : t("nav.sign_in")}
             </Link>
             <div className="mt-2 px-3">
               <LanguageSwitcher />

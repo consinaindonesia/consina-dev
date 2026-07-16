@@ -431,7 +431,7 @@ export function SearchAdvisorDialog({
                     void handleAdvisorSearch();
                   }
                 }}
-                placeholder={t("nav.search_placeholder", { defaultValue: "Cari produk..." })}
+                placeholder={t("nav.search_placeholder")}
                 className="h-auto border-0 bg-transparent px-0 py-0 text-sm shadow-none focus-visible:ring-0"
               />
               <Button

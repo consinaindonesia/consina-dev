@@ -10,7 +10,10 @@
     "find_store": "Find a store",
     "since": "Since 1999",
     "menu": "Menu",
-    "search": "Search"
+    "search": "Search",
+    "search_placeholder": "Search products...",
+    "account": "My Account",
+    "sign_in": "Sign in / Register"
   },
   "categories": {
     "carriers": "Carriers",

@@ -3,6 +3,8 @@
 // these defaults so the live site keeps rendering identically when DB rows
 // have empty settings.
 
+import { normalizeUiLabel } from "@/i18n/label-fallbacks";
+
 export type SectionTypeId =
   | "hero"
   | "brand_story"
@@ -644,9 +646,9 @@ export function pickLocalized(
   // set" (no settings row → defaults seeded upstream) and "field cleared"
   // (settings row exists with "" → render empty).
   const primary = lang === "en" ? loc.en : loc.id;
-  if (typeof primary === "string") return primary;
+  if (typeof primary === "string") return normalizeUiLabel(primary, lang);
   const other = lang === "en" ? loc.id : loc.en;
-  if (typeof other === "string") return other;
+  if (typeof other === "string") return normalizeUiLabel(other, lang);
   return fallback;
 }
 

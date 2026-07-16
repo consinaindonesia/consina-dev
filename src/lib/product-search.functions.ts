@@ -43,6 +43,10 @@ const DEFAULT_GROQ_MODEL = process.env.GROQ_CHAT_MODEL || "llama-3.1-8b-instant"
 const DEFAULT_COHERE_EMBED_MODEL = process.env.COHERE_EMBED_MODEL || "embed-v4.0";
 const DEFAULT_COHERE_RERANK_MODEL = process.env.COHERE_RERANK_MODEL || "rerank-v3.5";
 
+function getCohereApiKey() {
+  return process.env.COHERE_API_KEY || process.env.cohere_api_key;
+}
+
 type SearchIntent = {
   categoryTerms: string[];
   corporate: boolean;
@@ -199,7 +203,7 @@ function formatProductForPrompt(product: AdvisorProduct, lang: "id" | "en") {
 }
 
 async function cohereEmbed(text: string, inputType: "search_document" | "search_query") {
-  const key = process.env.COHERE_API_KEY;
+  const key = getCohereApiKey();
   if (!key) throw new Error("COHERE_API_KEY is not configured");
 
   const res = await fetch("https://api.cohere.com/v2/embed", {
@@ -230,7 +234,7 @@ async function cohereEmbed(text: string, inputType: "search_document" | "search_
 }
 
 async function cohereRerank(query: string, documents: string[], topN: number) {
-  const key = process.env.COHERE_API_KEY;
+  const key = getCohereApiKey();
   if (!key) return null;
 
   const res = await fetch("https://api.cohere.com/v2/rerank", {
@@ -467,7 +471,7 @@ export async function runProductAdvisorSearch({
   let reranked = false;
   let products: AdvisorProduct[] = [];
 
-  if (vectorReady && process.env.COHERE_API_KEY) {
+  if (vectorReady && getCohereApiKey()) {
     try {
       engine = "semantic";
       products = await fetchSemanticCandidates(searchQuery, Math.max(limit * 4, 12), 0.15);

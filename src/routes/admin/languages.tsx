@@ -67,6 +67,16 @@ function has(v: string | null | undefined) {
   return !!(v && v.trim());
 }
 
+function sameFilledText(a: string | null | undefined, b: string | null | undefined) {
+  const left = (a ?? "").trim();
+  const right = (b ?? "").trim();
+  return left !== "" && left === right;
+}
+
+function translated(source: string | null | undefined, target: string | null | undefined) {
+  return has(source) && has(target) && !sameFilledText(source, target);
+}
+
 function fmtDate(iso: string) {
   const d = Date.now() - new Date(iso).getTime();
   const m = Math.floor(d / 60000);
@@ -79,12 +89,15 @@ function fmtDate(iso: string) {
 }
 
 function LangCell({ row, lang }: { row: Row; lang: "id" | "en" }) {
+  const isId = lang === "id";
   const filled = {
-    name: has(lang === "id" ? row.name_id : row.name_en),
-    short_description: has(
-      lang === "id" ? row.short_description_id : row.short_description_en,
-    ),
-    description: has(lang === "id" ? row.description_id : row.description_en),
+    name: isId ? has(row.name_id) : translated(row.name_id, row.name_en),
+    short_description: isId
+      ? has(row.short_description_id)
+      : translated(row.short_description_id, row.short_description_en),
+    description: isId
+      ? has(row.description_id)
+      : translated(row.description_id, row.description_en),
   };
   return (
     <div className="flex items-center gap-2 text-xs">
@@ -201,7 +214,9 @@ function DashboardTab() {
     let enOnly = 0;
     for (const r of rows) {
       const id = has(r.name_id) && has(r.description_id);
-      const en = has(r.name_en) && has(r.description_en);
+      const en =
+        translated(r.name_id, r.name_en) &&
+        translated(r.description_id, r.description_en);
       if (id && en) full += 1;
       else if (id) idOnly += 1;
       else if (en) enOnly += 1;
@@ -219,7 +234,8 @@ function DashboardTab() {
       if (categoryId !== "all" && r.category_id !== categoryId) return false;
       if (status !== "all") {
         const complete =
-          has(r.name_id) && has(r.name_en) && has(r.description_id) && has(r.description_en);
+          translated(r.name_id, r.name_en) &&
+          translated(r.description_id, r.description_en);
         if (status === "complete" && !complete) return false;
         if (status === "missing" && complete) return false;
       }

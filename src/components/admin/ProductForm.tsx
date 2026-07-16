@@ -134,6 +134,26 @@ function deriveStockStatus(stock: number): ProductFormValues["stock_status"] {
   return "in_stock";
 }
 
+function sameFilledText(a: string | null | undefined, b: string | null | undefined) {
+  const left = (a ?? "").trim();
+  const right = (b ?? "").trim();
+  return left !== "" && left === right;
+}
+
+function shouldAutoTranslate({
+  source,
+  target,
+  translateSame,
+}: {
+  source: string;
+  target: string;
+  translateSame: boolean;
+}) {
+  if (!source.trim()) return false;
+  if (!target.trim()) return true;
+  return translateSame && sameFilledText(source, target);
+}
+
 function StockStatusBadge({ status }: { status: ProductFormValues["stock_status"] }) {
   const map = {
     in_stock: { label: "In Stock", cls: "bg-emerald-100 text-emerald-800 border-emerald-200" },
@@ -681,38 +701,91 @@ export function ProductForm(props: ProductFormProps) {
     }
     setSaving(true);
     try {
+    const nextValues: ProductFormValues = { ...values };
+    const autoFlags: Record<string, boolean> = {};
+    const autoTranslateFields = [
+      {
+        contentType: "name" as const,
+        sourceKey: "name_id" as const,
+        targetKey: "name_en" as const,
+        translateSame: false,
+      },
+      {
+        contentType: "short_description" as const,
+        sourceKey: "short_description_id" as const,
+        targetKey: "short_description_en" as const,
+        translateSame: true,
+      },
+      {
+        contentType: "description" as const,
+        sourceKey: "description_id" as const,
+        targetKey: "description_en" as const,
+        translateSame: true,
+      },
+    ];
+
+    let autoTranslatedCount = 0;
+    for (const field of autoTranslateFields) {
+      const source = nextValues[field.sourceKey];
+      const target = nextValues[field.targetKey];
+      if (!shouldAutoTranslate({ source, target, translateSame: field.translateSame })) continue;
+      try {
+        const out = await callTranslate({
+          data: {
+            sourceText: source,
+            sourceLang: "id",
+            targetLang: "en",
+            contentType: field.contentType,
+            productId: mode === "edit" ? productId : null,
+          },
+        });
+        if (out.translation?.trim()) {
+          nextValues[field.targetKey] = out.translation as ProductFormValues[typeof field.targetKey];
+          autoFlags[field.targetKey] = true;
+          autoTranslatedCount += 1;
+        }
+      } catch (err) {
+        console.warn("[ProductForm.save] auto translate failed", field.targetKey, err);
+      }
+    }
+
+    if (autoTranslatedCount > 0) {
+      setValues(nextValues);
+      setAiFlags((p) => ({ ...p, ...autoFlags }));
+      toast.success(`Auto-translated ${autoTranslatedCount} English field${autoTranslatedCount === 1 ? "" : "s"}`);
+    }
 
     const attrsObj: Record<string, string> = {};
-    values.attributes.forEach((a) => {
+    nextValues.attributes.forEach((a) => {
       if (a.key.trim()) attrsObj[a.key.trim()] = a.value;
     });
 
     const payload = {
-      sku: values.sku.trim(),
-      category_id: values.category_id || null,
-      name_en: values.name_en.trim() || values.name_id.trim(),
-      name_id: values.name_id.trim() || values.name_en.trim(),
-      description_en: normalizeEscapedLineBreaks(values.description_en) || null,
-      description_id: normalizeEscapedLineBreaks(values.description_id) || null,
-      short_description_en: normalizeEscapedLineBreaks(values.short_description_en) || null,
-      short_description_id: normalizeEscapedLineBreaks(values.short_description_id) || null,
-      price_idr: values.price_idr,
+      sku: nextValues.sku.trim(),
+      category_id: nextValues.category_id || null,
+      name_en: nextValues.name_en.trim() || nextValues.name_id.trim(),
+      name_id: nextValues.name_id.trim() || nextValues.name_en.trim(),
+      description_en: normalizeEscapedLineBreaks(nextValues.description_en) || null,
+      description_id: normalizeEscapedLineBreaks(nextValues.description_id) || null,
+      short_description_en: normalizeEscapedLineBreaks(nextValues.short_description_en) || null,
+      short_description_id: normalizeEscapedLineBreaks(nextValues.short_description_id) || null,
+      price_idr: nextValues.price_idr,
       original_price_idr: null,
-      sale_price_idr: values.sale_price_idr,
-      is_on_sale: values.is_on_sale,
-      discount_percent: values.discount_percent,
-      size_guide_id: values.size_guide_id,
-      capacity: values.capacity || null,
-      weight_grams: values.weight_grams,
+      sale_price_idr: nextValues.sale_price_idr,
+      is_on_sale: nextValues.is_on_sale,
+      discount_percent: nextValues.discount_percent,
+      size_guide_id: nextValues.size_guide_id,
+      capacity: nextValues.capacity || null,
+      weight_grams: nextValues.weight_grams,
       attributes: attrsObj,
-      stock: values.stock,
-      stock_status: deriveStockStatus(values.stock),
-      images: values.images,
-      is_featured: values.is_featured,
-      is_active: values.is_active,
-      slug: values.slug.trim() ? values.slug.trim() : slugify(values.name_en || values.name_id) || null,
-      seo_title: values.seo_title.trim() || null,
-      seo_description: values.seo_description.trim() || null,
+      stock: nextValues.stock,
+      stock_status: deriveStockStatus(nextValues.stock),
+      images: nextValues.images,
+      is_featured: nextValues.is_featured,
+      is_active: nextValues.is_active,
+      slug: nextValues.slug.trim() ? nextValues.slug.trim() : slugify(nextValues.name_en || nextValues.name_id) || null,
+      seo_title: nextValues.seo_title.trim() || null,
+      seo_description: nextValues.seo_description.trim() || null,
     };
 
     if (mode === "new") {
@@ -751,9 +824,9 @@ export function ProductForm(props: ProductFormProps) {
         }
       }
       await persistSizeData(data.id, sizeData);
-      await syncProductCategories(data.id, values.category_id || null, extraCategoryIds);
+      await syncProductCategories(data.id, nextValues.category_id || null, extraCategoryIds);
       toast.success("Product created");
-      setInitialSnapshot(JSON.stringify(values));
+      setInitialSnapshot(JSON.stringify(nextValues));
       try { localStorage.removeItem(draftKey); } catch { /* ignore */ }
       if (opts.andNew) {
         setValues(EMPTY);
@@ -785,7 +858,7 @@ export function ProductForm(props: ProductFormProps) {
       toast.success("Product saved");
       if (
         prevStock === "out_of_stock" &&
-        deriveStockStatus(values.stock) !== "out_of_stock"
+        deriveStockStatus(nextValues.stock) !== "out_of_stock"
       ) {
         const { data: pending, error: pendErr } = await supabase
           .from("notify_when_in_stock")
@@ -799,7 +872,7 @@ export function ProductForm(props: ProductFormProps) {
           );
         }
       }
-      setInitialSnapshot(JSON.stringify(values));
+      setInitialSnapshot(JSON.stringify(nextValues));
       try { localStorage.removeItem(draftKey); } catch { /* ignore */ }
       if (opts.andNew) {
         navigate({ to: "/admin/products/new" });

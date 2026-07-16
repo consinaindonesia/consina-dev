@@ -126,7 +126,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
   const [sizeVariants, setSizeVariants] = useState<Array<{ id: string; option_value_ids: string[]; price_idr: number | null; original_price_idr: number | null; stock: number }>>([]);
   const [selectedSizeId, setSelectedSizeId] = useState<string | null>(null);
   const [sizeGuide, setSizeGuide] = useState<SizeGuide | null>(null);
-  const [related, setRelated] = useState<Array<{ id: string; sku: string; name_id: string; name_en: string; price_idr: number; thumb: string | null }>>([]);
+  const [related, setRelated] = useState<Array<{ id: string; sku: string; slug: string | null; name_id: string; name_en: string; price_idr: number; thumb: string | null }>>([]);
   const [loading, setLoading] = useState(true);
   const [missing, setMissing] = useState(false);
   const { reviews } = useProductReviews(product?.id ?? null);
@@ -161,6 +161,15 @@ export function ProductDetailPage({ slug }: { slug: string }) {
           .from("products")
           .select(selectCols)
           .ilike("sku", slug)
+          .eq("is_active", true)
+          .limit(1));
+      }
+
+      if (!prods || prods.length === 0) {
+        ({ data: prods } = await supabase
+          .from("products")
+          .select(selectCols)
+          .ilike("slug", `${slug}-%`)
           .eq("is_active", true)
           .limit(1));
       }
@@ -298,7 +307,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
             .order("sort_order"),
           supabase
             .from("products")
-            .select("id,sku,name_id,name_en,price_idr,images,product_images(thumbnail_url,image_url,is_primary,sort_order)")
+            .select("id,sku,slug,name_id,name_en,price_idr,images,product_images(thumbnail_url,image_url,is_primary,sort_order)")
             .eq("category_id", prod.category_id)
             .eq("is_active", true)
             .neq("id", prod.id)
@@ -346,6 +355,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
             return {
               id: r.id,
               sku: r.sku,
+              slug: (r as { slug?: string | null }).slug ?? null,
               name_id: r.name_id,
               name_en: r.name_en,
               price_idr: r.price_idr,
@@ -1029,7 +1039,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
                 return (
                   <li key={r.id}>
                     <Link
-                      to={`/${lang}/${prefix}/${r.sku}` as never}
+                      to={`/${lang}/${prefix}/${r.slug ?? r.sku}` as never}
                       className="group block overflow-hidden rounded-xl border border-border bg-card"
                     >
                       <div className="aspect-square overflow-hidden bg-muted">

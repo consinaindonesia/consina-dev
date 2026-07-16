@@ -55,8 +55,10 @@ import { Route as AdminAccountRouteImport } from './routes/admin/account'
 import { Route as LangStoresRouteImport } from './routes/$lang.stores'
 import { Route as LangPrivacyRouteImport } from './routes/$lang.privacy'
 import { Route as LangPermintaanRouteImport } from './routes/$lang.permintaan'
+import { Route as LangKatalogRouteImport } from './routes/$lang.katalog'
 import { Route as LangInquiryRouteImport } from './routes/$lang.inquiry'
 import { Route as LangCheckoutRouteImport } from './routes/$lang.checkout'
+import { Route as LangCatalogRouteImport } from './routes/$lang.catalog'
 import { Route as AdminProductsIndexRouteImport } from './routes/admin/products.index'
 import { Route as LangPermintaanIndexRouteImport } from './routes/$lang.permintaan.index'
 import { Route as LangInquiryIndexRouteImport } from './routes/$lang.inquiry.index'
@@ -72,7 +74,9 @@ import { Route as LangProdukSlugRouteImport } from './routes/$lang.produk.$slug'
 import { Route as LangProductsSlugRouteImport } from './routes/$lang.products.$slug'
 import { Route as LangPermintaanTerkirimRouteImport } from './routes/$lang.permintaan.terkirim'
 import { Route as LangOrderIdRouteImport } from './routes/$lang.order.$id'
+import { Route as LangKategoriSlugRouteImport } from './routes/$lang.kategori.$slug'
 import { Route as LangInquirySentRouteImport } from './routes/$lang.inquiry.sent'
+import { Route as LangCategoriesSlugRouteImport } from './routes/$lang.categories.$slug'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
@@ -318,6 +322,11 @@ const LangPermintaanRoute = LangPermintaanRouteImport.update({
   path: '/permintaan',
   getParentRoute: () => LangRoute,
 } as any)
+const LangKatalogRoute = LangKatalogRouteImport.update({
+  id: '/katalog',
+  path: '/katalog',
+  getParentRoute: () => LangRoute,
+} as any)
 const LangInquiryRoute = LangInquiryRouteImport.update({
   id: '/inquiry',
   path: '/inquiry',
@@ -326,6 +335,11 @@ const LangInquiryRoute = LangInquiryRouteImport.update({
 const LangCheckoutRoute = LangCheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
+  getParentRoute: () => LangRoute,
+} as any)
+const LangCatalogRoute = LangCatalogRouteImport.update({
+  id: '/catalog',
+  path: '/catalog',
   getParentRoute: () => LangRoute,
 } as any)
 const AdminProductsIndexRoute = AdminProductsIndexRouteImport.update({
@@ -404,10 +418,20 @@ const LangOrderIdRoute = LangOrderIdRouteImport.update({
   path: '/order/$id',
   getParentRoute: () => LangRoute,
 } as any)
+const LangKategoriSlugRoute = LangKategoriSlugRouteImport.update({
+  id: '/kategori/$slug',
+  path: '/kategori/$slug',
+  getParentRoute: () => LangRoute,
+} as any)
 const LangInquirySentRoute = LangInquirySentRouteImport.update({
   id: '/sent',
   path: '/sent',
   getParentRoute: () => LangInquiryRoute,
+} as any)
+const LangCategoriesSlugRoute = LangCategoriesSlugRouteImport.update({
+  id: '/categories/$slug',
+  path: '/categories/$slug',
+  getParentRoute: () => LangRoute,
 } as any)
 const LovableEmailTransactionalSendRoute =
   LovableEmailTransactionalSendRouteImport.update({
@@ -501,8 +525,10 @@ export interface FileRoutesByFullPath {
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
   '/wishlist': typeof WishlistRoute
+  '/$lang/catalog': typeof LangCatalogRoute
   '/$lang/checkout': typeof LangCheckoutRoute
   '/$lang/inquiry': typeof LangInquiryRouteWithChildren
+  '/$lang/katalog': typeof LangKatalogRoute
   '/$lang/permintaan': typeof LangPermintaanRouteWithChildren
   '/$lang/privacy': typeof LangPrivacyRoute
   '/$lang/stores': typeof LangStoresRoute
@@ -535,7 +561,9 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/akun/': typeof AkunIndexRoute
   '/en/': typeof EnIndexRoute
+  '/$lang/categories/$slug': typeof LangCategoriesSlugRoute
   '/$lang/inquiry/sent': typeof LangInquirySentRoute
+  '/$lang/kategori/$slug': typeof LangKategoriSlugRoute
   '/$lang/order/$id': typeof LangOrderIdRoute
   '/$lang/permintaan/terkirim': typeof LangPermintaanTerkirimRoute
   '/$lang/products/$slug': typeof LangProductsSlugRoute
@@ -579,7 +607,9 @@ export interface FileRoutesByTo {
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
   '/wishlist': typeof WishlistRoute
+  '/$lang/catalog': typeof LangCatalogRoute
   '/$lang/checkout': typeof LangCheckoutRoute
+  '/$lang/katalog': typeof LangKatalogRoute
   '/$lang/privacy': typeof LangPrivacyRoute
   '/$lang/stores': typeof LangStoresRoute
   '/admin/account': typeof AdminAccountRoute
@@ -611,7 +641,9 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/akun': typeof AkunIndexRoute
   '/en': typeof EnIndexRoute
+  '/$lang/categories/$slug': typeof LangCategoriesSlugRoute
   '/$lang/inquiry/sent': typeof LangInquirySentRoute
+  '/$lang/kategori/$slug': typeof LangKategoriSlugRoute
   '/$lang/order/$id': typeof LangOrderIdRoute
   '/$lang/permintaan/terkirim': typeof LangPermintaanTerkirimRoute
   '/$lang/products/$slug': typeof LangProductsSlugRoute
@@ -658,8 +690,10 @@ export interface FileRoutesById {
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
   '/wishlist': typeof WishlistRoute
+  '/$lang/catalog': typeof LangCatalogRoute
   '/$lang/checkout': typeof LangCheckoutRoute
   '/$lang/inquiry': typeof LangInquiryRouteWithChildren
+  '/$lang/katalog': typeof LangKatalogRoute
   '/$lang/permintaan': typeof LangPermintaanRouteWithChildren
   '/$lang/privacy': typeof LangPrivacyRoute
   '/$lang/stores': typeof LangStoresRoute
@@ -692,7 +726,9 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/akun/': typeof AkunIndexRoute
   '/en/': typeof EnIndexRoute
+  '/$lang/categories/$slug': typeof LangCategoriesSlugRoute
   '/$lang/inquiry/sent': typeof LangInquirySentRoute
+  '/$lang/kategori/$slug': typeof LangKategoriSlugRoute
   '/$lang/order/$id': typeof LangOrderIdRoute
   '/$lang/permintaan/terkirim': typeof LangPermintaanTerkirimRoute
   '/$lang/products/$slug': typeof LangProductsSlugRoute
@@ -740,8 +776,10 @@ export interface FileRouteTypes {
     | '/stores'
     | '/tents'
     | '/wishlist'
+    | '/$lang/catalog'
     | '/$lang/checkout'
     | '/$lang/inquiry'
+    | '/$lang/katalog'
     | '/$lang/permintaan'
     | '/$lang/privacy'
     | '/$lang/stores'
@@ -774,7 +812,9 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/akun/'
     | '/en/'
+    | '/$lang/categories/$slug'
     | '/$lang/inquiry/sent'
+    | '/$lang/kategori/$slug'
     | '/$lang/order/$id'
     | '/$lang/permintaan/terkirim'
     | '/$lang/products/$slug'
@@ -818,7 +858,9 @@ export interface FileRouteTypes {
     | '/stores'
     | '/tents'
     | '/wishlist'
+    | '/$lang/catalog'
     | '/$lang/checkout'
+    | '/$lang/katalog'
     | '/$lang/privacy'
     | '/$lang/stores'
     | '/admin/account'
@@ -850,7 +892,9 @@ export interface FileRouteTypes {
     | '/admin'
     | '/akun'
     | '/en'
+    | '/$lang/categories/$slug'
     | '/$lang/inquiry/sent'
+    | '/$lang/kategori/$slug'
     | '/$lang/order/$id'
     | '/$lang/permintaan/terkirim'
     | '/$lang/products/$slug'
@@ -896,8 +940,10 @@ export interface FileRouteTypes {
     | '/stores'
     | '/tents'
     | '/wishlist'
+    | '/$lang/catalog'
     | '/$lang/checkout'
     | '/$lang/inquiry'
+    | '/$lang/katalog'
     | '/$lang/permintaan'
     | '/$lang/privacy'
     | '/$lang/stores'
@@ -930,7 +976,9 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/akun/'
     | '/en/'
+    | '/$lang/categories/$slug'
     | '/$lang/inquiry/sent'
+    | '/$lang/kategori/$slug'
     | '/$lang/order/$id'
     | '/$lang/permintaan/terkirim'
     | '/$lang/products/$slug'
@@ -1344,6 +1392,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangPermintaanRouteImport
       parentRoute: typeof LangRoute
     }
+    '/$lang/katalog': {
+      id: '/$lang/katalog'
+      path: '/katalog'
+      fullPath: '/$lang/katalog'
+      preLoaderRoute: typeof LangKatalogRouteImport
+      parentRoute: typeof LangRoute
+    }
     '/$lang/inquiry': {
       id: '/$lang/inquiry'
       path: '/inquiry'
@@ -1356,6 +1411,13 @@ declare module '@tanstack/react-router' {
       path: '/checkout'
       fullPath: '/$lang/checkout'
       preLoaderRoute: typeof LangCheckoutRouteImport
+      parentRoute: typeof LangRoute
+    }
+    '/$lang/catalog': {
+      id: '/$lang/catalog'
+      path: '/catalog'
+      fullPath: '/$lang/catalog'
+      preLoaderRoute: typeof LangCatalogRouteImport
       parentRoute: typeof LangRoute
     }
     '/admin/products/': {
@@ -1463,12 +1525,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangOrderIdRouteImport
       parentRoute: typeof LangRoute
     }
+    '/$lang/kategori/$slug': {
+      id: '/$lang/kategori/$slug'
+      path: '/kategori/$slug'
+      fullPath: '/$lang/kategori/$slug'
+      preLoaderRoute: typeof LangKategoriSlugRouteImport
+      parentRoute: typeof LangRoute
+    }
     '/$lang/inquiry/sent': {
       id: '/$lang/inquiry/sent'
       path: '/sent'
       fullPath: '/$lang/inquiry/sent'
       preLoaderRoute: typeof LangInquirySentRouteImport
       parentRoute: typeof LangInquiryRoute
+    }
+    '/$lang/categories/$slug': {
+      id: '/$lang/categories/$slug'
+      path: '/categories/$slug'
+      fullPath: '/$lang/categories/$slug'
+      preLoaderRoute: typeof LangCategoriesSlugRouteImport
+      parentRoute: typeof LangRoute
     }
     '/lovable/email/transactional/send': {
       id: '/lovable/email/transactional/send'
@@ -1600,24 +1676,32 @@ const LangPermintaanRouteWithChildren = LangPermintaanRoute._addFileChildren(
 )
 
 interface LangRouteChildren {
+  LangCatalogRoute: typeof LangCatalogRoute
   LangCheckoutRoute: typeof LangCheckoutRoute
   LangInquiryRoute: typeof LangInquiryRouteWithChildren
+  LangKatalogRoute: typeof LangKatalogRoute
   LangPermintaanRoute: typeof LangPermintaanRouteWithChildren
   LangPrivacyRoute: typeof LangPrivacyRoute
   LangStoresRoute: typeof LangStoresRoute
   LangIndexRoute: typeof LangIndexRoute
+  LangCategoriesSlugRoute: typeof LangCategoriesSlugRoute
+  LangKategoriSlugRoute: typeof LangKategoriSlugRoute
   LangOrderIdRoute: typeof LangOrderIdRoute
   LangProductsSlugRoute: typeof LangProductsSlugRoute
   LangProdukSlugRoute: typeof LangProdukSlugRoute
 }
 
 const LangRouteChildren: LangRouteChildren = {
+  LangCatalogRoute: LangCatalogRoute,
   LangCheckoutRoute: LangCheckoutRoute,
   LangInquiryRoute: LangInquiryRouteWithChildren,
+  LangKatalogRoute: LangKatalogRoute,
   LangPermintaanRoute: LangPermintaanRouteWithChildren,
   LangPrivacyRoute: LangPrivacyRoute,
   LangStoresRoute: LangStoresRoute,
   LangIndexRoute: LangIndexRoute,
+  LangCategoriesSlugRoute: LangCategoriesSlugRoute,
+  LangKategoriSlugRoute: LangKategoriSlugRoute,
   LangOrderIdRoute: LangOrderIdRoute,
   LangProductsSlugRoute: LangProductsSlugRoute,
   LangProdukSlugRoute: LangProdukSlugRoute,

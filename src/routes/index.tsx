@@ -107,8 +107,31 @@ function useAutoSlidingCarousel({
 }) {
   const frameRef = useRef<number | null>(null);
   const timeoutRef = useRef<number | null>(null);
+  const pageScrollPauseRef = useRef<number | null>(null);
+  const restoreScrollStylesRef = useRef<(() => void) | null>(null);
   const scheduleNextRef = useRef<() => void>(() => undefined);
   const interactionUntilRef = useRef(0);
+
+  const restoreScrollStyles = useCallback(() => {
+    if (!restoreScrollStylesRef.current) return;
+    restoreScrollStylesRef.current();
+    restoreScrollStylesRef.current = null;
+  }, []);
+
+  const disableSnapDuringAnimation = useCallback(
+    (el: HTMLDivElement) => {
+      restoreScrollStyles();
+      const previousSnap = el.style.scrollSnapType;
+      const previousBehavior = el.style.scrollBehavior;
+      el.style.scrollSnapType = "none";
+      el.style.scrollBehavior = "auto";
+      restoreScrollStylesRef.current = () => {
+        el.style.scrollSnapType = previousSnap;
+        el.style.scrollBehavior = previousBehavior;
+      };
+    },
+    [restoreScrollStyles],
+  );
 
   const clearPending = useCallback(() => {
     if (frameRef.current !== null) {
@@ -119,7 +142,8 @@ function useAutoSlidingCarousel({
       window.clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
-  }, []);
+    restoreScrollStyles();
+  }, [restoreScrollStyles]);
 
   const animateToPage = useCallback(
     (index: number, restart = true) => {
@@ -141,6 +165,7 @@ function useAutoSlidingCarousel({
 
       const startTime = performance.now();
       const duration = Math.max(200, scrollDurationMs);
+      disableSnapDuringAnimation(el);
 
       const step = (now: number) => {
         const elapsed = now - startTime;
@@ -152,12 +177,14 @@ function useAutoSlidingCarousel({
           return;
         }
         frameRef.current = null;
+        el.scrollLeft = targetLeft;
+        restoreScrollStyles();
         if (restart) scheduleNextRef.current();
       };
 
       frameRef.current = window.requestAnimationFrame(step);
     },
-    [clearPending, pageCount, scrollDurationMs, scrollerRef],
+    [clearPending, disableSnapDuringAnimation, pageCount, restoreScrollStyles, scrollDurationMs, scrollerRef],
   );
 
   const scheduleNext = useCallback(() => {
@@ -201,13 +228,32 @@ function useAutoSlidingCarousel({
     el.addEventListener("mouseenter", onInteract, { passive: true });
     el.addEventListener("touchstart", onInteract, { passive: true });
 
+    const onPageScroll = () => {
+      interactionUntilRef.current = Date.now() + Math.max(1, pauseSeconds) * 1000;
+      clearPending();
+      if (pageScrollPauseRef.current !== null) {
+        window.clearTimeout(pageScrollPauseRef.current);
+      }
+      pageScrollPauseRef.current = window.setTimeout(() => {
+        pageScrollPauseRef.current = null;
+        scheduleNextRef.current();
+      }, 350);
+    };
+
+    window.addEventListener("scroll", onPageScroll, { passive: true });
+
     return () => {
       observer.disconnect();
       el.removeEventListener("pointerdown", onInteract);
       el.removeEventListener("mouseenter", onInteract);
       el.removeEventListener("touchstart", onInteract);
+      window.removeEventListener("scroll", onPageScroll);
+      if (pageScrollPauseRef.current !== null) {
+        window.clearTimeout(pageScrollPauseRef.current);
+        pageScrollPauseRef.current = null;
+      }
     };
-  }, [pauseSeconds, scrollerRef]);
+  }, [clearPending, pauseSeconds, scrollerRef]);
 
   const nudge = useCallback(
     (dir: 1 | -1) => {

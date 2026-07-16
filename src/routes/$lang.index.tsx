@@ -6,8 +6,8 @@ const COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
 function languageCookies(lang: Lang) {
   return [
-    `lang=${lang}; Path=/; Max-Age=${COOKIE_MAX_AGE}; SameSite=Lax`,
     `preferred_language=${lang}; Path=/; Max-Age=${COOKIE_MAX_AGE}; SameSite=Lax`,
+    `lang=${lang}; Path=/; Max-Age=${COOKIE_MAX_AGE}; SameSite=Lax`,
   ];
 }
 

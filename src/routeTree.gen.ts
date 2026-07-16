@@ -13,6 +13,8 @@ import { Route as WishlistRouteImport } from './routes/wishlist'
 import { Route as TentsRouteImport } from './routes/tents'
 import { Route as StoresRouteImport } from './routes/stores'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as ProdukRouteImport } from './routes/produk'
+import { Route as ProductsRouteImport } from './routes/products'
 import { Route as FootwearRouteImport } from './routes/footwear'
 import { Route as CatalogRouteImport } from './routes/catalog'
 import { Route as CartRouteImport } from './routes/cart'
@@ -53,6 +55,8 @@ import { Route as AdminAttributesRouteImport } from './routes/admin/attributes'
 import { Route as AdminActivityRouteImport } from './routes/admin/activity'
 import { Route as AdminAccountRouteImport } from './routes/admin/account'
 import { Route as LangStoresRouteImport } from './routes/$lang.stores'
+import { Route as LangProdukRouteImport } from './routes/$lang.produk'
+import { Route as LangProductsRouteImport } from './routes/$lang.products'
 import { Route as LangPrivacyRouteImport } from './routes/$lang.privacy'
 import { Route as LangPermintaanRouteImport } from './routes/$lang.permintaan'
 import { Route as LangKatalogRouteImport } from './routes/$lang.katalog'
@@ -60,6 +64,8 @@ import { Route as LangInquiryRouteImport } from './routes/$lang.inquiry'
 import { Route as LangCheckoutRouteImport } from './routes/$lang.checkout'
 import { Route as LangCatalogRouteImport } from './routes/$lang.catalog'
 import { Route as AdminProductsIndexRouteImport } from './routes/admin/products.index'
+import { Route as LangProdukIndexRouteImport } from './routes/$lang.produk.index'
+import { Route as LangProductsIndexRouteImport } from './routes/$lang.products.index'
 import { Route as LangPermintaanIndexRouteImport } from './routes/$lang.permintaan.index'
 import { Route as LangInquiryIndexRouteImport } from './routes/$lang.inquiry.index'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
@@ -110,6 +116,16 @@ const StoresRoute = StoresRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProdukRoute = ProdukRouteImport.update({
+  id: '/produk',
+  path: '/produk',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProductsRoute = ProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FootwearRoute = FootwearRouteImport.update({
@@ -312,6 +328,16 @@ const LangStoresRoute = LangStoresRouteImport.update({
   path: '/stores',
   getParentRoute: () => LangRoute,
 } as any)
+const LangProdukRoute = LangProdukRouteImport.update({
+  id: '/produk',
+  path: '/produk',
+  getParentRoute: () => LangRoute,
+} as any)
+const LangProductsRoute = LangProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
+  getParentRoute: () => LangRoute,
+} as any)
 const LangPrivacyRoute = LangPrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
@@ -346,6 +372,16 @@ const AdminProductsIndexRoute = AdminProductsIndexRouteImport.update({
   id: '/admin/products/',
   path: '/admin/products/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const LangProdukIndexRoute = LangProdukIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => LangProdukRoute,
+} as any)
+const LangProductsIndexRoute = LangProductsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => LangProductsRoute,
 } as any)
 const LangPermintaanIndexRoute = LangPermintaanIndexRouteImport.update({
   id: '/',
@@ -399,14 +435,14 @@ const AdminCustomersEmailRoute = AdminCustomersEmailRouteImport.update({
   getParentRoute: () => AdminCustomersRoute,
 } as any)
 const LangProdukSlugRoute = LangProdukSlugRouteImport.update({
-  id: '/produk/$slug',
-  path: '/produk/$slug',
-  getParentRoute: () => LangRoute,
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => LangProdukRoute,
 } as any)
 const LangProductsSlugRoute = LangProductsSlugRouteImport.update({
-  id: '/products/$slug',
-  path: '/products/$slug',
-  getParentRoute: () => LangRoute,
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => LangProductsRoute,
 } as any)
 const LangPermintaanTerkirimRoute = LangPermintaanTerkirimRouteImport.update({
   id: '/terkirim',
@@ -521,6 +557,8 @@ export interface FileRoutesByFullPath {
   '/cart': typeof CartRoute
   '/catalog': typeof CatalogRoute
   '/footwear': typeof FootwearRoute
+  '/products': typeof ProductsRoute
+  '/produk': typeof ProdukRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
@@ -531,6 +569,8 @@ export interface FileRoutesByFullPath {
   '/$lang/katalog': typeof LangKatalogRoute
   '/$lang/permintaan': typeof LangPermintaanRouteWithChildren
   '/$lang/privacy': typeof LangPrivacyRoute
+  '/$lang/products': typeof LangProductsRouteWithChildren
+  '/$lang/produk': typeof LangProdukRouteWithChildren
   '/$lang/stores': typeof LangStoresRoute
   '/admin/account': typeof AdminAccountRoute
   '/admin/activity': typeof AdminActivityRoute
@@ -578,6 +618,8 @@ export interface FileRoutesByFullPath {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/$lang/inquiry/': typeof LangInquiryIndexRoute
   '/$lang/permintaan/': typeof LangPermintaanIndexRoute
+  '/$lang/products/': typeof LangProductsIndexRoute
+  '/$lang/produk/': typeof LangProdukIndexRoute
   '/admin/products/': typeof AdminProductsIndexRoute
   '/admin/customers/$email/delete': typeof AdminCustomersEmailDeleteRoute
   '/admin/customers/$email/export': typeof AdminCustomersEmailExportRoute
@@ -603,6 +645,8 @@ export interface FileRoutesByTo {
   '/cart': typeof CartRoute
   '/catalog': typeof CatalogRoute
   '/footwear': typeof FootwearRoute
+  '/products': typeof ProductsRoute
+  '/produk': typeof ProdukRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
@@ -658,6 +702,8 @@ export interface FileRoutesByTo {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/$lang/inquiry': typeof LangInquiryIndexRoute
   '/$lang/permintaan': typeof LangPermintaanIndexRoute
+  '/$lang/products': typeof LangProductsIndexRoute
+  '/$lang/produk': typeof LangProdukIndexRoute
   '/admin/products': typeof AdminProductsIndexRoute
   '/admin/customers/$email/delete': typeof AdminCustomersEmailDeleteRoute
   '/admin/customers/$email/export': typeof AdminCustomersEmailExportRoute
@@ -686,6 +732,8 @@ export interface FileRoutesById {
   '/cart': typeof CartRoute
   '/catalog': typeof CatalogRoute
   '/footwear': typeof FootwearRoute
+  '/products': typeof ProductsRoute
+  '/produk': typeof ProdukRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
@@ -696,6 +744,8 @@ export interface FileRoutesById {
   '/$lang/katalog': typeof LangKatalogRoute
   '/$lang/permintaan': typeof LangPermintaanRouteWithChildren
   '/$lang/privacy': typeof LangPrivacyRoute
+  '/$lang/products': typeof LangProductsRouteWithChildren
+  '/$lang/produk': typeof LangProdukRouteWithChildren
   '/$lang/stores': typeof LangStoresRoute
   '/admin/account': typeof AdminAccountRoute
   '/admin/activity': typeof AdminActivityRoute
@@ -743,6 +793,8 @@ export interface FileRoutesById {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/$lang/inquiry/': typeof LangInquiryIndexRoute
   '/$lang/permintaan/': typeof LangPermintaanIndexRoute
+  '/$lang/products/': typeof LangProductsIndexRoute
+  '/$lang/produk/': typeof LangProdukIndexRoute
   '/admin/products/': typeof AdminProductsIndexRoute
   '/admin/customers/$email/delete': typeof AdminCustomersEmailDeleteRoute
   '/admin/customers/$email/export': typeof AdminCustomersEmailExportRoute
@@ -772,6 +824,8 @@ export interface FileRouteTypes {
     | '/cart'
     | '/catalog'
     | '/footwear'
+    | '/products'
+    | '/produk'
     | '/sitemap.xml'
     | '/stores'
     | '/tents'
@@ -782,6 +836,8 @@ export interface FileRouteTypes {
     | '/$lang/katalog'
     | '/$lang/permintaan'
     | '/$lang/privacy'
+    | '/$lang/products'
+    | '/$lang/produk'
     | '/$lang/stores'
     | '/admin/account'
     | '/admin/activity'
@@ -829,6 +885,8 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/$lang/inquiry/'
     | '/$lang/permintaan/'
+    | '/$lang/products/'
+    | '/$lang/produk/'
     | '/admin/products/'
     | '/admin/customers/$email/delete'
     | '/admin/customers/$email/export'
@@ -854,6 +912,8 @@ export interface FileRouteTypes {
     | '/cart'
     | '/catalog'
     | '/footwear'
+    | '/products'
+    | '/produk'
     | '/sitemap.xml'
     | '/stores'
     | '/tents'
@@ -909,6 +969,8 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/$lang/inquiry'
     | '/$lang/permintaan'
+    | '/$lang/products'
+    | '/$lang/produk'
     | '/admin/products'
     | '/admin/customers/$email/delete'
     | '/admin/customers/$email/export'
@@ -936,6 +998,8 @@ export interface FileRouteTypes {
     | '/cart'
     | '/catalog'
     | '/footwear'
+    | '/products'
+    | '/produk'
     | '/sitemap.xml'
     | '/stores'
     | '/tents'
@@ -946,6 +1010,8 @@ export interface FileRouteTypes {
     | '/$lang/katalog'
     | '/$lang/permintaan'
     | '/$lang/privacy'
+    | '/$lang/products'
+    | '/$lang/produk'
     | '/$lang/stores'
     | '/admin/account'
     | '/admin/activity'
@@ -993,6 +1059,8 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/$lang/inquiry/'
     | '/$lang/permintaan/'
+    | '/$lang/products/'
+    | '/$lang/produk/'
     | '/admin/products/'
     | '/admin/customers/$email/delete'
     | '/admin/customers/$email/export'
@@ -1021,6 +1089,8 @@ export interface RootRouteChildren {
   CartRoute: typeof CartRoute
   CatalogRoute: typeof CatalogRoute
   FootwearRoute: typeof FootwearRoute
+  ProductsRoute: typeof ProductsRoute
+  ProdukRoute: typeof ProdukRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StoresRoute: typeof StoresRoute
   TentsRoute: typeof TentsRoute
@@ -1096,6 +1166,20 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/produk': {
+      id: '/produk'
+      path: '/produk'
+      fullPath: '/produk'
+      preLoaderRoute: typeof ProdukRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/products': {
+      id: '/products'
+      path: '/products'
+      fullPath: '/products'
+      preLoaderRoute: typeof ProductsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/footwear': {
@@ -1378,6 +1462,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangStoresRouteImport
       parentRoute: typeof LangRoute
     }
+    '/$lang/produk': {
+      id: '/$lang/produk'
+      path: '/produk'
+      fullPath: '/$lang/produk'
+      preLoaderRoute: typeof LangProdukRouteImport
+      parentRoute: typeof LangRoute
+    }
+    '/$lang/products': {
+      id: '/$lang/products'
+      path: '/products'
+      fullPath: '/$lang/products'
+      preLoaderRoute: typeof LangProductsRouteImport
+      parentRoute: typeof LangRoute
+    }
     '/$lang/privacy': {
       id: '/$lang/privacy'
       path: '/privacy'
@@ -1426,6 +1524,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/products/'
       preLoaderRoute: typeof AdminProductsIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/$lang/produk/': {
+      id: '/$lang/produk/'
+      path: '/'
+      fullPath: '/$lang/produk/'
+      preLoaderRoute: typeof LangProdukIndexRouteImport
+      parentRoute: typeof LangProdukRoute
+    }
+    '/$lang/products/': {
+      id: '/$lang/products/'
+      path: '/'
+      fullPath: '/$lang/products/'
+      preLoaderRoute: typeof LangProductsIndexRouteImport
+      parentRoute: typeof LangProductsRoute
     }
     '/$lang/permintaan/': {
       id: '/$lang/permintaan/'
@@ -1499,17 +1611,17 @@ declare module '@tanstack/react-router' {
     }
     '/$lang/produk/$slug': {
       id: '/$lang/produk/$slug'
-      path: '/produk/$slug'
+      path: '/$slug'
       fullPath: '/$lang/produk/$slug'
       preLoaderRoute: typeof LangProdukSlugRouteImport
-      parentRoute: typeof LangRoute
+      parentRoute: typeof LangProdukRoute
     }
     '/$lang/products/$slug': {
       id: '/$lang/products/$slug'
-      path: '/products/$slug'
+      path: '/$slug'
       fullPath: '/$lang/products/$slug'
       preLoaderRoute: typeof LangProductsSlugRouteImport
-      parentRoute: typeof LangRoute
+      parentRoute: typeof LangProductsRoute
     }
     '/$lang/permintaan/terkirim': {
       id: '/$lang/permintaan/terkirim'
@@ -1675,6 +1787,34 @@ const LangPermintaanRouteWithChildren = LangPermintaanRoute._addFileChildren(
   LangPermintaanRouteChildren,
 )
 
+interface LangProductsRouteChildren {
+  LangProductsSlugRoute: typeof LangProductsSlugRoute
+  LangProductsIndexRoute: typeof LangProductsIndexRoute
+}
+
+const LangProductsRouteChildren: LangProductsRouteChildren = {
+  LangProductsSlugRoute: LangProductsSlugRoute,
+  LangProductsIndexRoute: LangProductsIndexRoute,
+}
+
+const LangProductsRouteWithChildren = LangProductsRoute._addFileChildren(
+  LangProductsRouteChildren,
+)
+
+interface LangProdukRouteChildren {
+  LangProdukSlugRoute: typeof LangProdukSlugRoute
+  LangProdukIndexRoute: typeof LangProdukIndexRoute
+}
+
+const LangProdukRouteChildren: LangProdukRouteChildren = {
+  LangProdukSlugRoute: LangProdukSlugRoute,
+  LangProdukIndexRoute: LangProdukIndexRoute,
+}
+
+const LangProdukRouteWithChildren = LangProdukRoute._addFileChildren(
+  LangProdukRouteChildren,
+)
+
 interface LangRouteChildren {
   LangCatalogRoute: typeof LangCatalogRoute
   LangCheckoutRoute: typeof LangCheckoutRoute
@@ -1682,13 +1822,13 @@ interface LangRouteChildren {
   LangKatalogRoute: typeof LangKatalogRoute
   LangPermintaanRoute: typeof LangPermintaanRouteWithChildren
   LangPrivacyRoute: typeof LangPrivacyRoute
+  LangProductsRoute: typeof LangProductsRouteWithChildren
+  LangProdukRoute: typeof LangProdukRouteWithChildren
   LangStoresRoute: typeof LangStoresRoute
   LangIndexRoute: typeof LangIndexRoute
   LangCategoriesSlugRoute: typeof LangCategoriesSlugRoute
   LangKategoriSlugRoute: typeof LangKategoriSlugRoute
   LangOrderIdRoute: typeof LangOrderIdRoute
-  LangProductsSlugRoute: typeof LangProductsSlugRoute
-  LangProdukSlugRoute: typeof LangProdukSlugRoute
 }
 
 const LangRouteChildren: LangRouteChildren = {
@@ -1698,13 +1838,13 @@ const LangRouteChildren: LangRouteChildren = {
   LangKatalogRoute: LangKatalogRoute,
   LangPermintaanRoute: LangPermintaanRouteWithChildren,
   LangPrivacyRoute: LangPrivacyRoute,
+  LangProductsRoute: LangProductsRouteWithChildren,
+  LangProdukRoute: LangProdukRouteWithChildren,
   LangStoresRoute: LangStoresRoute,
   LangIndexRoute: LangIndexRoute,
   LangCategoriesSlugRoute: LangCategoriesSlugRoute,
   LangKategoriSlugRoute: LangKategoriSlugRoute,
   LangOrderIdRoute: LangOrderIdRoute,
-  LangProductsSlugRoute: LangProductsSlugRoute,
-  LangProdukSlugRoute: LangProdukSlugRoute,
 }
 
 const LangRouteWithChildren = LangRoute._addFileChildren(LangRouteChildren)
@@ -1797,6 +1937,8 @@ const rootRouteChildren: RootRouteChildren = {
   CartRoute: CartRoute,
   CatalogRoute: CatalogRoute,
   FootwearRoute: FootwearRoute,
+  ProductsRoute: ProductsRoute,
+  ProdukRoute: ProdukRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StoresRoute: StoresRoute,
   TentsRoute: TentsRoute,

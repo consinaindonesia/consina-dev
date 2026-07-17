@@ -25,6 +25,8 @@ import { Route as AkunRouteImport } from './routes/akun'
 import { Route as AccessoriesRouteImport } from './routes/accessories'
 import { Route as LangRouteImport } from './routes/$lang'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProdukIndexRouteImport } from './routes/produk.index'
+import { Route as ProductsIndexRouteImport } from './routes/products.index'
 import { Route as EnIndexRouteImport } from './routes/en/index'
 import { Route as AkunIndexRouteImport } from './routes/akun.index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
@@ -179,6 +181,16 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ProdukIndexRoute = ProdukIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ProdukRoute,
+} as any)
+const ProductsIndexRoute = ProductsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ProductsRoute,
 } as any)
 const EnIndexRoute = EnIndexRouteImport.update({
   id: '/en/',
@@ -615,6 +627,8 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/akun/': typeof AkunIndexRoute
   '/en/': typeof EnIndexRoute
+  '/products/': typeof ProductsIndexRoute
+  '/produk/': typeof ProdukIndexRoute
   '/$lang/categories/$slug': typeof LangCategoriesSlugRoute
   '/$lang/inquiry/sent': typeof LangInquirySentRoute
   '/$lang/kategori/$slug': typeof LangKategoriSlugRoute
@@ -659,8 +673,6 @@ export interface FileRoutesByTo {
   '/cart': typeof CartRoute
   '/catalog': typeof CatalogRoute
   '/footwear': typeof FootwearRoute
-  '/products': typeof ProductsRouteWithChildren
-  '/produk': typeof ProdukRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
@@ -701,6 +713,8 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/akun': typeof AkunIndexRoute
   '/en': typeof EnIndexRoute
+  '/products': typeof ProductsIndexRoute
+  '/produk': typeof ProdukIndexRoute
   '/$lang/categories/$slug': typeof LangCategoriesSlugRoute
   '/$lang/inquiry/sent': typeof LangInquirySentRoute
   '/$lang/kategori/$slug': typeof LangKategoriSlugRoute
@@ -794,6 +808,8 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/akun/': typeof AkunIndexRoute
   '/en/': typeof EnIndexRoute
+  '/products/': typeof ProductsIndexRoute
+  '/produk/': typeof ProdukIndexRoute
   '/$lang/categories/$slug': typeof LangCategoriesSlugRoute
   '/$lang/inquiry/sent': typeof LangInquirySentRoute
   '/$lang/kategori/$slug': typeof LangKategoriSlugRoute
@@ -888,6 +904,8 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/akun/'
     | '/en/'
+    | '/products/'
+    | '/produk/'
     | '/$lang/categories/$slug'
     | '/$lang/inquiry/sent'
     | '/$lang/kategori/$slug'
@@ -932,8 +950,6 @@ export interface FileRouteTypes {
     | '/cart'
     | '/catalog'
     | '/footwear'
-    | '/products'
-    | '/produk'
     | '/sitemap.xml'
     | '/stores'
     | '/tents'
@@ -974,6 +990,8 @@ export interface FileRouteTypes {
     | '/admin'
     | '/akun'
     | '/en'
+    | '/products'
+    | '/produk'
     | '/$lang/categories/$slug'
     | '/$lang/inquiry/sent'
     | '/$lang/kategori/$slug'
@@ -1066,6 +1084,8 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/akun/'
     | '/en/'
+    | '/products/'
+    | '/produk/'
     | '/$lang/categories/$slug'
     | '/$lang/inquiry/sent'
     | '/$lang/kategori/$slug'
@@ -1275,6 +1295,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/produk/': {
+      id: '/produk/'
+      path: '/'
+      fullPath: '/produk/'
+      preLoaderRoute: typeof ProdukIndexRouteImport
+      parentRoute: typeof ProdukRoute
+    }
+    '/products/': {
+      id: '/products/'
+      path: '/'
+      fullPath: '/products/'
+      preLoaderRoute: typeof ProductsIndexRouteImport
+      parentRoute: typeof ProductsRoute
     }
     '/en/': {
       id: '/en/'
@@ -1905,10 +1939,12 @@ const AkunRouteWithChildren = AkunRoute._addFileChildren(AkunRouteChildren)
 
 interface ProductsRouteChildren {
   ProductsSlugRoute: typeof ProductsSlugRoute
+  ProductsIndexRoute: typeof ProductsIndexRoute
 }
 
 const ProductsRouteChildren: ProductsRouteChildren = {
   ProductsSlugRoute: ProductsSlugRoute,
+  ProductsIndexRoute: ProductsIndexRoute,
 }
 
 const ProductsRouteWithChildren = ProductsRoute._addFileChildren(
@@ -1917,10 +1953,12 @@ const ProductsRouteWithChildren = ProductsRoute._addFileChildren(
 
 interface ProdukRouteChildren {
   ProdukSlugRoute: typeof ProdukSlugRoute
+  ProdukIndexRoute: typeof ProdukIndexRoute
 }
 
 const ProdukRouteChildren: ProdukRouteChildren = {
   ProdukSlugRoute: ProdukSlugRoute,
+  ProdukIndexRoute: ProdukIndexRoute,
 }
 
 const ProdukRouteWithChildren =

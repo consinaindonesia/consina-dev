@@ -1,14 +1,5 @@
-import { useEffect } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/products")({
-  component: ProductIndexRedirect,
+  component: Outlet,
 });
-
-function ProductIndexRedirect() {
-  const navigate = useNavigate();
-  useEffect(() => {
-    void navigate({ to: "/catalog", replace: true });
-  }, [navigate]);
-  return null;
-}

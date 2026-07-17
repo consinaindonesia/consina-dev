@@ -9,6 +9,8 @@ export type SectionTypeId =
   | "hero"
   | "brand_story"
   | "categories"
+  | "activities"
+  | "zero_waste"
   | "featured_products"
   | "community"
   | "store_locator"
@@ -100,6 +102,32 @@ export type CategoriesSettings = {
   scrollDurationMs?: number;
   cardCta?: CTAConfig;
   viewAllCta?: CTAConfig;
+};
+
+export type ActivityItem = {
+  enabled?: boolean;
+  title?: Localized;
+  image?: string;
+  href?: string;
+};
+
+export type ActivitiesSettings = {
+  style?: SectionStyle;
+  eyebrow?: Localized;
+  title?: Localized;
+  subtitle?: Localized;
+  items?: ActivityItem[];
+};
+
+export type ZeroWasteSettings = {
+  style?: SectionStyle;
+  backgroundImage?: string;
+  logoImage?: string;
+  overlay?: number;
+  badge?: Localized;
+  title?: Localized;
+  body?: Localized;
+  cta?: CTAConfig;
 };
 
 export type BrandStorySettings = {
@@ -297,6 +325,8 @@ export type SectionSettingsMap = {
   hero: HeroSettings;
   brand_story: BrandStorySettings;
   categories: CategoriesSettings;
+  activities: ActivitiesSettings;
+  zero_waste: ZeroWasteSettings;
   featured_products: FeaturedProductsSettings;
   community: CommunitySettings;
   store_locator: StoreLocatorSettings;
@@ -326,6 +356,8 @@ export const SECTION_REGISTRY: Record<SectionTypeId, SectionDefinition> = {
   hero: { id: "hero", label: "Hero", description: "Full-bleed hero with headline and call to action." },
   brand_story: { id: "brand_story", label: "Brand Story", description: "Cerita Kami — origin story and brand pillars." },
   categories: { id: "categories", label: "Shop by Category", description: "Horizontal carousel of product categories." },
+  activities: { id: "activities", label: "Activities", description: "Compact activity shortcuts such as hiking, bike, climbing, and camping." },
+  zero_waste: { id: "zero_waste", label: "Zero Waste Banner", description: "Sustainable outdoor campaign banner with claim CTA." },
   featured_products: { id: "featured_products", label: "Bestsellers", description: "Featured products carousel." },
   community: { id: "community", label: "Community", description: "Image + text block." },
   store_locator: { id: "store_locator", label: "Stores (Toko)", description: "Find a Consina store across Indonesia." },
@@ -348,7 +380,9 @@ export const DEFAULT_HOME_SECTIONS: SectionTypeId[] = [
   "hero",
   "brand_story",
   "categories",
+  "activities",
   "featured_products",
+  "zero_waste",
   "community",
   "store_locator",
   "faq",
@@ -413,6 +447,43 @@ export const DEFAULT_CATEGORIES: CategoriesSettings = {
   scrollDurationMs: 900,
   cardCta: { labelId: "Belanja sekarang", labelEn: "Shop now", style: "primary" },
   viewAllCta: { labelId: "Lihat semua", labelEn: "View all", href: "/catalog", style: "outline" },
+};
+
+export const DEFAULT_ACTIVITIES: ActivitiesSettings = {
+  style: { padding: "M" },
+  eyebrow: { id: "Aktivitas", en: "Activities" },
+  title: { id: "Kategori Populer", en: "Popular Activities" },
+  subtitle: {
+    id: "Pilih perlengkapan berdasarkan aktivitas outdoor favoritmu.",
+    en: "Choose gear by your favorite outdoor activity.",
+  },
+  items: [
+    { enabled: true, title: { id: "Sepeda", en: "Bike" }, href: "/catalog?activity=bike" },
+    { enabled: true, title: { id: "Panjat Tebing", en: "Climbing" }, href: "/catalog?activity=climbing" },
+    { enabled: true, title: { id: "Trekking & Hiking", en: "Trekking & Hiking" }, href: "/catalog?activity=trekking-and-hiking" },
+    { enabled: true, title: { id: "Hiking", en: "Hiking" }, href: "/catalog?activity=hiking" },
+    { enabled: true, title: { id: "Lari", en: "Running" }, href: "/catalog?activity=running" },
+    { enabled: true, title: { id: "Urban", en: "Urban" }, href: "/catalog?activity=urban" },
+    { enabled: true, title: { id: "Camping", en: "Camping" }, href: "/catalog?activity=camping" },
+    { enabled: true, title: { id: "Travelling", en: "Travelling" }, href: "/catalog?activity=travelling" },
+  ],
+};
+
+export const DEFAULT_ZERO_WASTE: ZeroWasteSettings = {
+  style: { padding: "M" },
+  backgroundImage: "",
+  logoImage: "",
+  overlay: 68,
+  badge: { id: "Sustainable Outdoor | I'm Zero Waste", en: "Sustainable Outdoor | I'm Zero Waste" },
+  title: {
+    id: "Kurangi sampah di jalur, klaim apresiasi Consina.",
+    en: "Less waste on the trail. Claim Consina rewards.",
+  },
+  body: {
+    id: "Unggah bukti kamu membawa turun sampah atau membersihkan gunung untuk mendapatkan diskon atau baju gratis dari Consina.",
+    en: "Upload proof that you carried trash back or cleaned a mountain trail to receive a Consina discount or free shirt.",
+  },
+  cta: { labelId: "Klaim", labelEn: "Claim", href: "/zero-waste", style: "secondary" },
 };
 
 export const DEFAULT_BRAND_STORY: BrandStorySettings = {
@@ -539,6 +610,8 @@ export const DEFAULT_SECTION_SETTINGS: { [K in SectionTypeId]: SectionSettingsMa
   hero: DEFAULT_HERO,
   brand_story: DEFAULT_BRAND_STORY,
   categories: DEFAULT_CATEGORIES,
+  activities: DEFAULT_ACTIVITIES,
+  zero_waste: DEFAULT_ZERO_WASTE,
   featured_products: DEFAULT_FEATURED_PRODUCTS,
   community: DEFAULT_COMMUNITY,
   store_locator: {

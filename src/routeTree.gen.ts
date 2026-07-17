@@ -56,6 +56,7 @@ import { Route as AdminCategoriesRouteImport } from './routes/admin/categories'
 import { Route as AdminAttributesRouteImport } from './routes/admin/attributes'
 import { Route as AdminActivityRouteImport } from './routes/admin/activity'
 import { Route as AdminAccountRouteImport } from './routes/admin/account'
+import { Route as LangZeroWasteRouteImport } from './routes/$lang.zero-waste'
 import { Route as LangStoresRouteImport } from './routes/$lang.stores'
 import { Route as LangProdukRouteImport } from './routes/$lang.produk'
 import { Route as LangProductsRouteImport } from './routes/$lang.products'
@@ -335,6 +336,11 @@ const AdminAccountRoute = AdminAccountRouteImport.update({
   path: '/admin/account',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LangZeroWasteRoute = LangZeroWasteRouteImport.update({
+  id: '/zero-waste',
+  path: '/zero-waste',
+  getParentRoute: () => LangRoute,
+} as any)
 const LangStoresRoute = LangStoresRouteImport.update({
   id: '/stores',
   path: '/stores',
@@ -584,6 +590,7 @@ export interface FileRoutesByFullPath {
   '/$lang/products': typeof LangProductsRouteWithChildren
   '/$lang/produk': typeof LangProdukRouteWithChildren
   '/$lang/stores': typeof LangStoresRoute
+  '/$lang/zero-waste': typeof LangZeroWasteRoute
   '/admin/account': typeof AdminAccountRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/attributes': typeof AdminAttributesRoute
@@ -668,6 +675,7 @@ export interface FileRoutesByTo {
   '/$lang/katalog': typeof LangKatalogRoute
   '/$lang/privacy': typeof LangPrivacyRoute
   '/$lang/stores': typeof LangStoresRoute
+  '/$lang/zero-waste': typeof LangZeroWasteRoute
   '/admin/account': typeof AdminAccountRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/attributes': typeof AdminAttributesRoute
@@ -761,6 +769,7 @@ export interface FileRoutesById {
   '/$lang/products': typeof LangProductsRouteWithChildren
   '/$lang/produk': typeof LangProdukRouteWithChildren
   '/$lang/stores': typeof LangStoresRoute
+  '/$lang/zero-waste': typeof LangZeroWasteRoute
   '/admin/account': typeof AdminAccountRoute
   '/admin/activity': typeof AdminActivityRoute
   '/admin/attributes': typeof AdminAttributesRoute
@@ -855,6 +864,7 @@ export interface FileRouteTypes {
     | '/$lang/products'
     | '/$lang/produk'
     | '/$lang/stores'
+    | '/$lang/zero-waste'
     | '/admin/account'
     | '/admin/activity'
     | '/admin/attributes'
@@ -939,6 +949,7 @@ export interface FileRouteTypes {
     | '/$lang/katalog'
     | '/$lang/privacy'
     | '/$lang/stores'
+    | '/$lang/zero-waste'
     | '/admin/account'
     | '/admin/activity'
     | '/admin/attributes'
@@ -1031,6 +1042,7 @@ export interface FileRouteTypes {
     | '/$lang/products'
     | '/$lang/produk'
     | '/$lang/stores'
+    | '/$lang/zero-waste'
     | '/admin/account'
     | '/admin/activity'
     | '/admin/attributes'
@@ -1487,6 +1499,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAccountRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$lang/zero-waste': {
+      id: '/$lang/zero-waste'
+      path: '/zero-waste'
+      fullPath: '/$lang/zero-waste'
+      preLoaderRoute: typeof LangZeroWasteRouteImport
+      parentRoute: typeof LangRoute
+    }
     '/$lang/stores': {
       id: '/$lang/stores'
       path: '/stores'
@@ -1857,6 +1876,7 @@ interface LangRouteChildren {
   LangProductsRoute: typeof LangProductsRouteWithChildren
   LangProdukRoute: typeof LangProdukRouteWithChildren
   LangStoresRoute: typeof LangStoresRoute
+  LangZeroWasteRoute: typeof LangZeroWasteRoute
   LangIndexRoute: typeof LangIndexRoute
   LangCategoriesSlugRoute: typeof LangCategoriesSlugRoute
   LangKategoriSlugRoute: typeof LangKategoriSlugRoute
@@ -1873,6 +1893,7 @@ const LangRouteChildren: LangRouteChildren = {
   LangProductsRoute: LangProductsRouteWithChildren,
   LangProdukRoute: LangProdukRouteWithChildren,
   LangStoresRoute: LangStoresRoute,
+  LangZeroWasteRoute: LangZeroWasteRoute,
   LangIndexRoute: LangIndexRoute,
   LangCategoriesSlugRoute: LangCategoriesSlugRoute,
   LangKategoriSlugRoute: LangKategoriSlugRoute,

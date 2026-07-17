@@ -21,6 +21,7 @@ import {
   pickLocalized,
   styleToProps,
   type AnySectionSettings,
+  type ActivitiesSettings,
   type BrandStorySettings,
   type CategoriesSettings,
   type CommunitySettings,
@@ -40,6 +41,7 @@ import {
   type StoreLocatorSettings,
   type FaqSettings,
   type ContactSettings,
+  type ZeroWasteSettings,
   type CustomSectionSettings,
   type VideoYoutubeSettings,
   type SectionStyle,
@@ -398,7 +400,9 @@ const SECTION_COMPONENTS: Record<SectionTypeId, SectionCmp> = {
   hero: Hero as SectionCmp,
   brand_story: BrandStory as SectionCmp,
   categories: Categories as SectionCmp,
+  activities: ActivitiesSection as SectionCmp,
   featured_products: FeaturedProducts as SectionCmp,
+  zero_waste: ZeroWasteSection as SectionCmp,
   community: Community as SectionCmp,
   store_locator: StoreLocator as SectionCmp,
   faq: FAQSection as SectionCmp,
@@ -461,20 +465,30 @@ function ComposedSections() {
     };
   }, []);
 
-  // While loading, render defaults so first paint matches existing site.
-  const order: { key: string; type: SectionTypeId; settings: unknown }[] =
-    rows.length === 0
-      ? DEFAULT_HOME_SECTIONS.map((t) => ({ key: t, type: t, settings: {} }))
-      : rows
-          .filter((r): r is PageSectionRow & { section_type: SectionTypeId } =>
-            (r.section_type as SectionTypeId) in SECTION_REGISTRY,
-          )
-          .filter((r) => r.section_type !== "announcement_bar")
-          .map((r) => ({
-            key: r.id,
-            type: r.section_type as SectionTypeId,
-            settings: r.settings ?? {},
-          }));
+  // While loading, render defaults. When DB sections already exist, append new
+  // default sections until the admin explicitly adds/reorders them.
+  const order = useMemo<{ key: string; type: SectionTypeId; settings: unknown }[]>(() => {
+    if (rows.length === 0) {
+      return DEFAULT_HOME_SECTIONS.map((t) => ({ key: t, type: t, settings: {} }));
+    }
+    const dbOrder = rows
+      .filter((r): r is PageSectionRow & { section_type: SectionTypeId } =>
+        (r.section_type as SectionTypeId) in SECTION_REGISTRY,
+      )
+      .filter((r) => r.section_type !== "announcement_bar")
+      .map((r) => ({
+        key: r.id,
+        type: r.section_type as SectionTypeId,
+        settings: r.settings ?? {},
+      }));
+    const defaultAppend: SectionTypeId[] = ["activities", "zero_waste"];
+    return [
+      ...dbOrder,
+      ...defaultAppend
+        .filter((type) => !dbOrder.some((row) => row.type === type))
+        .map((type) => ({ key: `default-${type}`, type, settings: {} })),
+    ];
+  }, [rows]);
 
   return (
     <>
@@ -621,7 +635,7 @@ function VideoYoutubeSection({ settings }: { settings: VideoYoutubeSettings }) {
                 <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>{pickLocalized(s.eyebrow, lang)}</p>
               )}
               {pickLocalized(s.heading, lang) && (
-                <h2 className="text-2xl font-black leading-tight tracking-tight text-primary md:text-4xl" style={tc(s.style, "headingColor")}>
+                <h2 className="text-xl font-black leading-tight tracking-tight text-primary md:text-2xl lg:text-3xl" style={tc(s.style, "headingColor")}>
                   {pickLocalized(s.heading, lang)}
                 </h2>
               )}
@@ -737,7 +751,7 @@ function BrandStory({ settings }: { settings: BrandStorySettings }) {
               {pickLocalized(s.eyebrow, lang)}
             </p>
           )}
-          <h2 className="mt-3 text-3xl font-black leading-[1.05] tracking-tight text-primary md:text-4xl" style={tc(s.style, "headingColor")}>
+          <h2 className="mt-3 text-2xl font-black leading-[1.05] tracking-tight text-primary md:text-3xl" style={tc(s.style, "headingColor")}>
             {pickLocalized(s.heading, lang)}
           </h2>
 
@@ -823,6 +837,40 @@ const CATEGORY_IMAGE_MAP: Record<string, string> = {
   accessories: catAccessories,
   aksesori: catAccessories,
   daypack: catCarriers,
+};
+
+function slugifyText(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function localizeHomeHref(href: string | undefined, lang: string): string {
+  if (!href) return `/${lang}`;
+  if (/^https?:\/\//i.test(href)) return href;
+  const clean = href.startsWith("/") ? href : `/${href}`;
+  if (clean === `/${lang}` || clean.startsWith(`/${lang}/`)) return clean;
+  const [path, query] = clean.split("?");
+  if (path === "/" || path === "/catalog" || path === "/stores" || path === "/zero-waste") {
+    return `/${lang}${path === "/" ? "" : path}${query ? `?${query}` : ""}`;
+  }
+  return clean;
+}
+
+const ACTIVITY_IMAGE_MAP: Record<string, string> = {
+  bike: catFootwear,
+  sepeda: catFootwear,
+  climbing: storyHiker,
+  "panjat-tebing": storyHiker,
+  "trekking-and-hiking": story,
+  hiking: storyHiker,
+  running: catFootwear,
+  lari: catFootwear,
+  urban: catApparel,
+  camping: catTents,
+  travelling: catCarriers,
 };
 
 function Categories({ settings }: { settings: CategoriesSettings }) {
@@ -951,7 +999,7 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>
               {pickLocalized(s.eyebrow, lang, t("home.categories.eyebrow"))}
             </p>
-            <h2 className="mt-2 text-2xl font-black leading-tight tracking-tight text-primary md:text-3xl lg:text-4xl" style={tc(s.style, "headingColor")}>
+            <h2 className="mt-2 text-xl font-black leading-tight tracking-tight text-primary md:text-2xl lg:text-3xl" style={tc(s.style, "headingColor")}>
               {pickLocalized(s.title, lang, t("home.categories.title"))}
             </h2>
             <p className="mt-2 max-w-xl text-sm text-muted-foreground md:text-base" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>
@@ -1083,7 +1131,7 @@ function CategoryCard({
       <div className="absolute inset-0 bg-black/45 transition duration-500 group-hover/card:bg-black/55" />
       <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/25 to-black/55" />
       <div className="relative z-10 flex h-full flex-col items-center justify-center px-5 text-center text-white">
-        <h3 className="text-2xl font-black leading-tight tracking-tight drop-shadow md:text-3xl">
+        <h3 className="text-xl font-black leading-tight tracking-tight drop-shadow md:text-2xl">
           {cat.name}
         </h3>
         {cat.desc && (
@@ -1100,6 +1148,132 @@ function CategoryCard({
         )}
       </div>
     </Link>
+  );
+}
+
+/* ---------- Activities ---------- */
+function ActivitiesSection({ settings }: { settings: ActivitiesSettings }) {
+  const lang = useLang();
+  const s = settings;
+  const styleProps = styleToProps(s.style);
+  const eyebrow = pickLocalized(s.eyebrow, lang, lang === "en" ? "Activities" : "Aktivitas");
+  const title = pickLocalized(s.title, lang, lang === "en" ? "Popular Activities" : "Kategori Populer");
+  const subtitle = pickLocalized(s.subtitle, lang);
+  const items = (s.items ?? []).filter((item) => item.enabled !== false);
+  if (items.length === 0) return <></>;
+
+  return (
+    <section className={styleProps.className} style={styleProps.inlineStyle}>
+      <div className="mx-auto max-w-[1280px] px-4 md:px-8">
+        <div className="mb-4 md:mb-5">
+          {eyebrow && (
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>
+              {eyebrow}
+            </p>
+          )}
+          <h2 className="mt-1 text-xl font-black leading-tight tracking-tight text-primary md:text-2xl lg:text-3xl" style={tc(s.style, "headingColor")}>
+            {title}
+          </h2>
+          {subtitle && (
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground md:text-base" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>
+              {subtitle}
+            </p>
+          )}
+        </div>
+        <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] md:gap-4 [&::-webkit-scrollbar]:hidden">
+          {items.map((item, idx) => {
+            const label = pickLocalized(item.title, lang, `Activity ${idx + 1}`);
+            const slug = slugifyText(label);
+            const image = item.image?.trim() || ACTIVITY_IMAGE_MAP[slug] || catAccessories;
+            const href = localizeHomeHref(item.href || `/catalog?activity=${slug}`, lang);
+            return (
+              <a
+                key={`${label}-${idx}`}
+                href={href}
+                className="group w-[132px] shrink-0 md:w-[154px] lg:w-[170px]"
+              >
+                <div className="aspect-square overflow-hidden rounded-sm bg-muted shadow-sm">
+                  <img
+                    src={image}
+                    alt={label}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                  />
+                </div>
+                <p className="mt-2 text-center text-sm font-black leading-tight text-primary transition group-hover:text-secondary md:text-base">
+                  {label}
+                </p>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- Zero Waste ---------- */
+function ZeroWasteSection({ settings }: { settings: ZeroWasteSettings }) {
+  const lang = useLang();
+  const s = settings;
+  const styleProps = styleToProps(s.style);
+  const bg = s.backgroundImage?.trim() || communityCleanup;
+  const overlay = Math.max(0, Math.min(90, s.overlay ?? 68));
+  const badge = pickLocalized(s.badge, lang, "Sustainable Outdoor | I'm Zero Waste");
+  const title = pickLocalized(
+    s.title,
+    lang,
+    lang === "en"
+      ? "Less waste on the trail. Claim Consina rewards."
+      : "Kurangi sampah di jalur, klaim apresiasi Consina.",
+  );
+  const body = pickLocalized(s.body, lang);
+  const ctaLabel = pickLocalized(
+    { id: s.cta?.labelId, en: s.cta?.labelEn },
+    lang,
+    lang === "en" ? "Claim" : "Klaim",
+  );
+  const ctaHref = localizeHomeHref(s.cta?.href || "/zero-waste", lang);
+
+  return (
+    <section className={styleProps.className} style={styleProps.inlineStyle}>
+      <div className="mx-auto max-w-[1280px] px-4 md:px-8">
+        <div className="relative overflow-hidden bg-primary px-6 py-8 text-white shadow-sm md:px-9 md:py-10 lg:px-12">
+          <img
+            src={bg}
+            alt=""
+            loading="lazy"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <div className="absolute inset-0" style={{ backgroundColor: `rgba(8, 58, 39, ${overlay / 100})` }} />
+          <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div className="max-w-2xl">
+              {s.logoImage?.trim() ? (
+                <img src={s.logoImage} alt="Zero Waste" className="h-12 w-auto object-contain" loading="lazy" />
+              ) : (
+                <div className="inline-flex border border-white/80 text-xs font-black uppercase tracking-widest">
+                  <span className="border-r border-white/80 px-3 py-2">CONSINA</span>
+                  <span className="px-3 py-2">ZERO WASTE</span>
+                </div>
+              )}
+              {badge && <p className="mt-5 text-xs font-black uppercase tracking-[0.24em] text-white/85">{badge}</p>}
+              <h2 className="mt-2 text-xl font-black leading-tight tracking-tight text-white md:text-2xl lg:text-3xl">
+                {title}
+              </h2>
+              {body && <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/85 md:text-base">{body}</p>}
+            </div>
+            {ctaLabel && (
+              <a
+                href={ctaHref}
+                className="inline-flex shrink-0 items-center justify-center rounded-md bg-white px-8 py-4 text-sm font-black uppercase tracking-wider text-primary shadow transition hover:bg-[#d8bd8d]"
+              >
+                {ctaLabel}
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -1173,7 +1347,7 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>
           {pickLocalized(s.subtitle, lang, t("home.featured.eyebrow"))}
         </p>
-        <h2 className="mt-2 text-2xl font-black leading-tight tracking-tight text-primary md:text-3xl lg:text-4xl" style={tc(s.style, "headingColor")}>
+        <h2 className="mt-2 text-xl font-black leading-tight tracking-tight text-primary md:text-2xl lg:text-3xl" style={tc(s.style, "headingColor")}>
           {pickLocalized(s.title, lang, t("home.featured.title"))}
         </h2>
       </div>
@@ -1313,7 +1487,7 @@ function Community({ settings }: { settings: CommunitySettings }) {
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#d4b896]" style={tc(s.style, "eyebrowColor")}>
             {pickLocalized(s.eyebrow, lang)}
           </p>
-          <h2 className="mt-3 text-3xl font-black leading-tight tracking-tight md:text-4xl" style={tc(s.style, "headingColor")}>
+          <h2 className="mt-3 text-2xl font-black leading-tight tracking-tight md:text-3xl" style={tc(s.style, "headingColor")}>
             {pickLocalized(s.heading, lang)}
           </h2>
           <div className="mt-8 space-y-5 text-base leading-relaxed opacity-90 md:text-lg" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>
@@ -1394,7 +1568,7 @@ function StoreLocator({ settings }: { settings: StoreLocatorSettings }) {
       <div className="grid gap-12 lg:grid-cols-12">
         <div className="lg:col-span-5">
           {eyebrow && <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>}
-          <h2 className="mt-2 text-2xl font-black leading-tight tracking-tight text-primary md:text-3xl lg:text-4xl" style={tc(s.style, "headingColor")}>
+          <h2 className="mt-2 text-xl font-black leading-tight tracking-tight text-primary md:text-2xl lg:text-3xl" style={tc(s.style, "headingColor")}>
             {heading}
           </h2>
           {subtitle && (
@@ -1462,7 +1636,7 @@ function FAQSection({ settings }: { settings: FaqSettings }) {
           {eyebrow && <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>}
           <h2
             id="faq-heading"
-            className="mt-2 text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl"
+            className="mt-2 text-2xl font-black leading-tight tracking-tight text-primary md:text-3xl"
             style={tc(s.style, "headingColor")}
           >
             {heading}
@@ -1607,7 +1781,7 @@ function ContactSectionInner({ settings }: { settings: ContactSettings }) {
           {eyebrow && (
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>
           )}
-          <h2 className="mt-2 text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl" style={tc(s.style, "headingColor")}>
+          <h2 className="mt-2 text-2xl font-black leading-tight tracking-tight text-primary md:text-3xl" style={tc(s.style, "headingColor")}>
             {heading ? heading : (<>{t("home.contact.title_1")}<br />{t("home.contact.title_2")}</>)}
           </h2>
           {subtitle && (
@@ -1751,7 +1925,7 @@ function FaqCustomSection({ settings }: { settings: FaqCustomSettings }) {
           {pickLocalized(s.eyebrow, lang) && (
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>{pickLocalized(s.eyebrow, lang)}</p>
           )}
-          <h2 className="mt-2 text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl" style={tc(s.style, "headingColor")}>
+          <h2 className="mt-2 text-2xl font-black leading-tight tracking-tight text-primary md:text-3xl" style={tc(s.style, "headingColor")}>
             {pickLocalized(s.title, lang)}
           </h2>
           {pickLocalized(s.subtitle, lang) && (
@@ -1894,7 +2068,7 @@ function ImageBannerSection({ settings }: { settings: ImageBannerSettings }) {
                 <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>{pickLocalized(s.eyebrow, lang)}</p>
               )}
               {pickLocalized(s.heading, lang) && (
-                <h2 className="text-2xl font-black leading-tight tracking-tight text-primary md:text-4xl" style={tc(s.style, "headingColor")}>
+                <h2 className="text-xl font-black leading-tight tracking-tight text-primary md:text-2xl lg:text-3xl" style={tc(s.style, "headingColor")}>
                   {pickLocalized(s.heading, lang)}
                 </h2>
               )}
@@ -2237,7 +2411,7 @@ function CustomSection({ settings }: { settings: CustomSectionSettings }) {
         </p>
       )}
       {heading && (
-        <h2 className="mt-3 text-2xl font-black leading-tight tracking-tight text-primary md:text-3xl lg:text-4xl" style={tc(s.style, "headingColor")}>
+        <h2 className="mt-3 text-xl font-black leading-tight tracking-tight text-primary md:text-2xl lg:text-3xl" style={tc(s.style, "headingColor")}>
           {heading}
         </h2>
       )}

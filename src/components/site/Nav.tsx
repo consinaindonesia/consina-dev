@@ -93,7 +93,7 @@ export function Nav() {
   const isHidden = hidden && !open && !mobileCatalogOpen;
 
   const catLabel = (c: PublicCategory) => localizedCategoryName(c, lang);
-  const allCatalogLabel = lang === "en" ? "All catalog" : "All kategori";
+  const allCatalogLabel = lang === "en" ? "All catalog" : "Semua kategori";
 
   const toggleExpanded = (
     id: string,

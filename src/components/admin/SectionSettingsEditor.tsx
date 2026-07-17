@@ -18,6 +18,9 @@ import type {
   HeroSettings,
   FeaturedProductsSettings,
   CategoriesSettings,
+  ActivitiesSettings,
+  ActivityItem,
+  ZeroWasteSettings,
   BrandStorySettings,
   CommunitySettings,
   StatsSettings,
@@ -72,6 +75,18 @@ export function SectionSettingsEditor({
         <CategoriesEditor
           value={value as CategoriesSettings}
           onChange={onChange as (v: CategoriesSettings) => void}
+        />
+      )}
+      {type === "activities" && (
+        <ActivitiesEditor
+          value={value as ActivitiesSettings}
+          onChange={onChange as (v: ActivitiesSettings) => void}
+        />
+      )}
+      {type === "zero_waste" && (
+        <ZeroWasteEditor
+          value={value as ZeroWasteSettings}
+          onChange={onChange as (v: ZeroWasteSettings) => void}
         />
       )}
       {type === "brand_story" && (
@@ -833,6 +848,123 @@ function CategoriesEditor({
         value={value.viewAllCta}
         onChange={(v) => onChange({ ...value, viewAllCta: v })}
       />
+    </div>
+  );
+}
+
+function ActivitiesEditor({
+  value,
+  onChange,
+}: {
+  value: ActivitiesSettings;
+  onChange: (v: ActivitiesSettings) => void;
+}) {
+  const items = value.items ?? [];
+  const updateItem = (idx: number, next: ActivityItem) => {
+    onChange({ ...value, items: items.map((item, i) => (i === idx ? next : item)) });
+  };
+
+  return (
+    <div className="space-y-4">
+      <LocalizedField label="Eyebrow" value={value.eyebrow} onChange={(v) => onChange({ ...value, eyebrow: v })} />
+      <LocalizedField label="Title" value={value.title} onChange={(v) => onChange({ ...value, title: v })} />
+      <LocalizedField
+        label="Subtitle"
+        value={value.subtitle}
+        onChange={(v) => onChange({ ...value, subtitle: v })}
+        multiline
+      />
+      <div className="rounded border border-dashed border-border p-3">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <div>
+            <Label className="text-sm font-semibold">Activity cards</Label>
+            <p className="text-xs text-muted-foreground">Small Decathlon-style shortcuts for Bike, Climbing, Hiking, Camping, etc.</p>
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            onClick={() =>
+              onChange({
+                ...value,
+                items: [...items, { enabled: true, title: { id: "Aktivitas baru", en: "New activity" }, href: "/catalog" }],
+              })
+            }
+          >
+            <Plus className="mr-1 h-4 w-4" /> Add
+          </Button>
+        </div>
+        <div className="space-y-3">
+          {items.map((item, idx) => (
+            <div key={idx} className="rounded border border-border bg-background p-3">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <label className="flex items-center gap-2 text-xs font-semibold">
+                  <input
+                    type="checkbox"
+                    checked={item.enabled !== false}
+                    onChange={(e) => updateItem(idx, { ...item, enabled: e.target.checked })}
+                  />
+                  Card #{idx + 1}
+                </label>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => onChange({ ...value, items: items.filter((_, i) => i !== idx) })}
+                  aria-label="Remove activity"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+              <LocalizedField
+                label="Title"
+                value={item.title}
+                onChange={(v) => updateItem(idx, { ...item, title: v })}
+              />
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <ImagePicker label="Image" value={item.image} onChange={(v) => updateItem(idx, { ...item, image: v })} />
+                <div>
+                  <Label className="text-xs">Link</Label>
+                  <Input
+                    value={item.href ?? ""}
+                    onChange={(e) => updateItem(idx, { ...item, href: e.target.value })}
+                    placeholder="/catalog?activity=hiking"
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ZeroWasteEditor({
+  value,
+  onChange,
+}: {
+  value: ZeroWasteSettings;
+  onChange: (v: ZeroWasteSettings) => void;
+}) {
+  return (
+    <div className="space-y-4">
+      <ImagePicker label="Background image" value={value.backgroundImage} onChange={(v) => onChange({ ...value, backgroundImage: v })} />
+      <ImagePicker label="Logo / badge image (optional)" value={value.logoImage} onChange={(v) => onChange({ ...value, logoImage: v })} />
+      <div>
+        <Label className="text-xs">Overlay darkness ({value.overlay ?? 68}%)</Label>
+        <Slider
+          value={[value.overlay ?? 68]}
+          min={0}
+          max={90}
+          step={1}
+          onValueChange={([overlay]) => onChange({ ...value, overlay })}
+          className="mt-3"
+        />
+      </div>
+      <LocalizedField label="Badge / tagline" value={value.badge} onChange={(v) => onChange({ ...value, badge: v })} />
+      <LocalizedField label="Title" value={value.title} onChange={(v) => onChange({ ...value, title: v })} multiline />
+      <LocalizedField label="Body" value={value.body} onChange={(v) => onChange({ ...value, body: v })} multiline />
+      <CTAEditor label="Claim CTA" value={value.cta} onChange={(v) => onChange({ ...value, cta: v })} />
     </div>
   );
 }

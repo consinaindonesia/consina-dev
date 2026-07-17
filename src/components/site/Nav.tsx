@@ -93,6 +93,7 @@ export function Nav() {
   const isHidden = hidden && !open && !mobileCatalogOpen;
 
   const catLabel = (c: PublicCategory) => localizedCategoryName(c, lang);
+  const allCatalogLabel = lang === "en" ? "All catalog" : "All kategori";
 
   const toggleExpanded = (
     id: string,
@@ -316,7 +317,7 @@ export function Nav() {
                       onClick={() => setCatalogOpen(false)}
                       className="block rounded-xl px-3 py-2 text-sm font-semibold text-primary transition-colors hover:bg-muted"
                     >
-                      {t("nav.catalog")}
+                      {allCatalogLabel}
                     </Link>
                     <div className="max-h-[70vh] overflow-y-auto pr-1">
                       {renderDesktopCategoryTree(categories)}
@@ -457,7 +458,7 @@ export function Nav() {
                   onClick={() => setOpen(false)}
                   className="block rounded-md px-3 py-2 text-sm font-semibold text-primary hover:bg-muted"
                 >
-                  {t("nav.catalog")}
+                  {allCatalogLabel}
                 </Link>
                 {(categories ?? []).length > 0 && renderMobileCategoryTree(categories)}
               </div>

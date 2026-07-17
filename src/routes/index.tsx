@@ -621,7 +621,7 @@ function VideoYoutubeSection({ settings }: { settings: VideoYoutubeSettings }) {
                 <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>{pickLocalized(s.eyebrow, lang)}</p>
               )}
               {pickLocalized(s.heading, lang) && (
-                <h2 className="text-3xl font-black leading-tight tracking-tight text-primary md:text-5xl" style={tc(s.style, "headingColor")}>
+                <h2 className="text-2xl font-black leading-tight tracking-tight text-primary md:text-4xl" style={tc(s.style, "headingColor")}>
                   {pickLocalized(s.heading, lang)}
                 </h2>
               )}
@@ -737,7 +737,7 @@ function BrandStory({ settings }: { settings: BrandStorySettings }) {
               {pickLocalized(s.eyebrow, lang)}
             </p>
           )}
-          <h2 className="mt-4 text-4xl font-black leading-[1.05] tracking-tight text-primary md:text-5xl" style={tc(s.style, "headingColor")}>
+          <h2 className="mt-3 text-3xl font-black leading-[1.05] tracking-tight text-primary md:text-4xl" style={tc(s.style, "headingColor")}>
             {pickLocalized(s.heading, lang)}
           </h2>
 
@@ -951,7 +951,7 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>
               {pickLocalized(s.eyebrow, lang, t("home.categories.eyebrow"))}
             </p>
-            <h2 className="mt-2 text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl" style={tc(s.style, "headingColor")}>
+            <h2 className="mt-2 text-2xl font-black leading-tight tracking-tight text-primary md:text-3xl lg:text-4xl" style={tc(s.style, "headingColor")}>
               {pickLocalized(s.title, lang, t("home.categories.title"))}
             </h2>
             <p className="mt-2 max-w-xl text-sm text-muted-foreground md:text-base" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>
@@ -1083,7 +1083,7 @@ function CategoryCard({
       <div className="absolute inset-0 bg-black/45 transition duration-500 group-hover/card:bg-black/55" />
       <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/25 to-black/55" />
       <div className="relative z-10 flex h-full flex-col items-center justify-center px-5 text-center text-white">
-        <h3 className="text-3xl font-black leading-tight tracking-tight drop-shadow md:text-4xl">
+        <h3 className="text-2xl font-black leading-tight tracking-tight drop-shadow md:text-3xl">
           {cat.name}
         </h3>
         {cat.desc && (
@@ -1173,7 +1173,7 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>
           {pickLocalized(s.subtitle, lang, t("home.featured.eyebrow"))}
         </p>
-        <h2 className="mt-2 text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl" style={tc(s.style, "headingColor")}>
+        <h2 className="mt-2 text-2xl font-black leading-tight tracking-tight text-primary md:text-3xl lg:text-4xl" style={tc(s.style, "headingColor")}>
           {pickLocalized(s.title, lang, t("home.featured.title"))}
         </h2>
       </div>
@@ -1313,7 +1313,7 @@ function Community({ settings }: { settings: CommunitySettings }) {
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#d4b896]" style={tc(s.style, "eyebrowColor")}>
             {pickLocalized(s.eyebrow, lang)}
           </p>
-          <h2 className="mt-4 text-4xl font-black leading-tight tracking-tight md:text-5xl" style={tc(s.style, "headingColor")}>
+          <h2 className="mt-3 text-3xl font-black leading-tight tracking-tight md:text-4xl" style={tc(s.style, "headingColor")}>
             {pickLocalized(s.heading, lang)}
           </h2>
           <div className="mt-8 space-y-5 text-base leading-relaxed opacity-90 md:text-lg" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>
@@ -1394,7 +1394,7 @@ function StoreLocator({ settings }: { settings: StoreLocatorSettings }) {
       <div className="grid gap-12 lg:grid-cols-12">
         <div className="lg:col-span-5">
           {eyebrow && <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>}
-          <h2 className="mt-2 text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl" style={tc(s.style, "headingColor")}>
+          <h2 className="mt-2 text-2xl font-black leading-tight tracking-tight text-primary md:text-3xl lg:text-4xl" style={tc(s.style, "headingColor")}>
             {heading}
           </h2>
           {subtitle && (
@@ -1414,7 +1414,7 @@ function StoreLocator({ settings }: { settings: StoreLocatorSettings }) {
           <ul className="divide-y divide-border border-y border-border">
             {items.map((st, i) => (
                <li key={`${st.city}-${i}`} className="group grid grid-cols-[auto_1fr_auto] items-center gap-6 py-5">
-                 <span className="text-2xl font-black tracking-tight text-primary md:text-3xl" style={tc(s.style, "headingColor")}>
+                 <span className="text-xl font-black tracking-tight text-primary md:text-2xl" style={tc(s.style, "headingColor")}>
                    {st.city}
                  </span>
                  <div>
@@ -1462,7 +1462,7 @@ function FAQSection({ settings }: { settings: FaqSettings }) {
           {eyebrow && <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>}
           <h2
             id="faq-heading"
-            className="mt-2 text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl"
+            className="mt-2 text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl"
             style={tc(s.style, "headingColor")}
           >
             {heading}
@@ -1607,7 +1607,7 @@ function ContactSectionInner({ settings }: { settings: ContactSettings }) {
           {eyebrow && (
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>
           )}
-          <h2 className="mt-2 text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl" style={tc(s.style, "headingColor")}>
+          <h2 className="mt-2 text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl" style={tc(s.style, "headingColor")}>
             {heading ? heading : (<>{t("home.contact.title_1")}<br />{t("home.contact.title_2")}</>)}
           </h2>
           {subtitle && (
@@ -1751,7 +1751,7 @@ function FaqCustomSection({ settings }: { settings: FaqCustomSettings }) {
           {pickLocalized(s.eyebrow, lang) && (
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>{pickLocalized(s.eyebrow, lang)}</p>
           )}
-          <h2 className="mt-2 text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl" style={tc(s.style, "headingColor")}>
+          <h2 className="mt-2 text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl" style={tc(s.style, "headingColor")}>
             {pickLocalized(s.title, lang)}
           </h2>
           {pickLocalized(s.subtitle, lang) && (
@@ -1823,7 +1823,7 @@ function NewsletterSection({ settings }: { settings: NewsletterSettings }) {
         {pickLocalized(s.eyebrow, lang) && (
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>{pickLocalized(s.eyebrow, lang)}</p>
         )}
-        <h2 className="mt-2 text-3xl font-black tracking-tight text-primary md:text-4xl" style={tc(s.style, "headingColor")}>
+        <h2 className="mt-2 text-2xl font-black tracking-tight text-primary md:text-3xl" style={tc(s.style, "headingColor")}>
           {pickLocalized(s.heading, lang)}
         </h2>
         {pickLocalized(s.body, lang) && (
@@ -1894,7 +1894,7 @@ function ImageBannerSection({ settings }: { settings: ImageBannerSettings }) {
                 <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>{pickLocalized(s.eyebrow, lang)}</p>
               )}
               {pickLocalized(s.heading, lang) && (
-                <h2 className="text-3xl font-black leading-tight tracking-tight text-primary md:text-5xl" style={tc(s.style, "headingColor")}>
+                <h2 className="text-2xl font-black leading-tight tracking-tight text-primary md:text-4xl" style={tc(s.style, "headingColor")}>
                   {pickLocalized(s.heading, lang)}
                 </h2>
               )}
@@ -2069,7 +2069,7 @@ function GallerySection({ settings }: { settings: GallerySettings }) {
     <section className={styleProps.className} style={styleProps.inlineStyle}>
       <div className="mx-auto max-w-[1280px] px-4 md:px-8">
         {pickLocalized(s.title, lang) && (
-          <h2 className="text-3xl font-black tracking-tight text-primary md:text-4xl" style={tc(s.style, "headingColor")}>
+          <h2 className="text-2xl font-black tracking-tight text-primary md:text-3xl" style={tc(s.style, "headingColor")}>
             {pickLocalized(s.title, lang)}
           </h2>
         )}
@@ -2114,7 +2114,7 @@ function TestimonialsSection({ settings }: { settings: TestimonialsSettings }) {
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>{pickLocalized(s.eyebrow, lang)}</p>
           )}
           {pickLocalized(s.title, lang) && (
-            <h2 className="mt-2 text-3xl font-black tracking-tight text-primary md:text-4xl" style={tc(s.style, "headingColor")}>
+            <h2 className="mt-2 text-2xl font-black tracking-tight text-primary md:text-3xl" style={tc(s.style, "headingColor")}>
               {pickLocalized(s.title, lang)}
             </h2>
           )}
@@ -2237,7 +2237,7 @@ function CustomSection({ settings }: { settings: CustomSectionSettings }) {
         </p>
       )}
       {heading && (
-        <h2 className="mt-3 text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl" style={tc(s.style, "headingColor")}>
+        <h2 className="mt-3 text-2xl font-black leading-tight tracking-tight text-primary md:text-3xl lg:text-4xl" style={tc(s.style, "headingColor")}>
           {heading}
         </h2>
       )}

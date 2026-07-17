@@ -144,6 +144,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
   const [notifyEmail, setNotifyEmail] = useState("");
   const [notifySubmitting, setNotifySubmitting] = useState(false);
   const [notifySaved, setNotifySaved] = useState(false);
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -425,6 +426,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
 
   useEffect(() => {
     setActiveImage(0);
+    setDescriptionExpanded(false);
   }, [selectedVariantId]);
 
   useEffect(() => {
@@ -956,10 +958,27 @@ export function ProductDetailPage({ slug }: { slug: string }) {
               {t("product.description")}
             </h2>
             {descField.value ? (
-              <div
-                className="prose prose-sm mt-4 max-w-none text-justify leading-8 text-foreground/90 prose-p:my-0 prose-p:mb-4 prose-li:my-1 prose-ul:my-4 prose-ol:my-4"
-                dangerouslySetInnerHTML={{ __html: formatDescriptionHtml(descField.value) }}
-              />
+              <>
+                <div
+                  className={`prose prose-sm mt-4 max-w-none text-justify leading-8 text-foreground/90 prose-p:my-0 prose-p:mb-4 prose-li:my-1 prose-ul:my-4 prose-ol:my-4 ${
+                    descriptionExpanded ? "" : "max-md:line-clamp-3"
+                  }`}
+                  dangerouslySetInnerHTML={{ __html: formatDescriptionHtml(descField.value) }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setDescriptionExpanded((current) => !current)}
+                  className="mt-3 inline-flex rounded-full border border-primary/25 px-4 py-2 text-sm font-semibold text-primary transition hover:bg-primary hover:text-primary-foreground md:hidden"
+                >
+                  {descriptionExpanded
+                    ? lang === "en"
+                      ? "Show less"
+                      : "Tutup deskripsi"
+                    : lang === "en"
+                      ? "View description"
+                      : "Lihat deskripsi"}
+                </button>
+              </>
             ) : (
               <p className="mt-4 text-sm text-muted-foreground">{t("product.no_description")}</p>
             )}

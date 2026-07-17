@@ -1012,7 +1012,7 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
 
         {/* Dots */}
         {snapCount > 1 && (
-          <div className="mt-4 flex items-center justify-center gap-2">
+          <div className="mt-3 flex items-center justify-center gap-2">
             {Array.from({ length: snapCount }).map((_, i) => {
               const active = i === activeIdx;
               return (
@@ -1162,7 +1162,7 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
       </div>
 
       {/* Carousel */}
-      <div className="group relative mt-8 md:mt-10">
+      <div className="group relative mt-5 md:mt-6">
         {/* Arrows (desktop) */}
         <button
           type="button"
@@ -1232,7 +1232,7 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
 
       {/* Dots */}
       {snapCount > 1 && (
-        <div className="mt-4 flex items-center justify-center gap-2">
+        <div className="mt-3 flex items-center justify-center gap-2">
           {Array.from({ length: snapCount }).map((_, i) => {
             const active = i === activeIdx;
             return (
@@ -1261,7 +1261,7 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
         if (!label) return null;
         const href = s.viewAllCta?.href || "/catalog";
         return (
-          <div className="mt-8 flex justify-center">
+          <div className="mt-5 flex justify-center">
             <a
               href={href}
               className="inline-flex items-center gap-2 rounded-full border border-primary/30 px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary transition hover:bg-primary hover:text-primary-foreground"

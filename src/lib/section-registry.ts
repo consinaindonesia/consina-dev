@@ -659,10 +659,10 @@ export function styleToProps(style: SectionStyle | undefined): {
   const padding = style?.padding ?? "M";
   const padClass =
     padding === "S"
-      ? "py-4 md:py-6 lg:py-10"
+      ? "py-2 md:py-3 lg:py-5"
       : padding === "L"
-        ? "py-12 md:py-20 lg:py-28"
-        : "py-8 md:py-12 lg:py-20";
+        ? "py-6 md:py-8 lg:py-10"
+        : "py-4 md:py-5 lg:py-8";
   const inlineStyle: Record<string, string> = {};
   if (style?.bgColor) inlineStyle.backgroundColor = style.bgColor;
   if (style?.textColor) inlineStyle.color = style.textColor;

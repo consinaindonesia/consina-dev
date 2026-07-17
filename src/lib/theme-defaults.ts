@@ -78,7 +78,6 @@ export const DEFAULT_HEADER: HeaderSettings = {
   navLinks: [
     { labelId: "Katalog", labelEn: "Catalog", href: "/catalog" },
     { labelId: "Toko", labelEn: "Stores", href: "/stores" },
-    { labelId: "Cerita", labelEn: "Story", href: "/" },
   ],
 };
 

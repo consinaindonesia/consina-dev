@@ -175,6 +175,12 @@ export function Nav() {
     </div>
   );
 
+  const isHiddenHeaderLink = (link: { label: string; to: string }) => {
+    const label = link.label.trim().toLowerCase();
+    const to = link.to.trim().toLowerCase();
+    return label === "cerita" || label === "story" || to === "/cerita" || to === "/story";
+  };
+
   const mainLinks = (header.navLinks && header.navLinks.length > 0
     ? header.navLinks.map((l, i) => ({
         key: `${l.href}-${i}`,
@@ -184,11 +190,11 @@ export function Nav() {
     : [
         { key: "catalog", to: "/catalog", label: t("nav.catalog") },
         { key: "stores", to: "/stores", label: t("nav.stores") },
-        { key: "story", to: "/", label: t("nav.story") },
       ]
   )
     .filter((l) => l.label)
-    .filter((l) => l.to !== "/catalog");
+    .filter((l) => l.to !== "/catalog")
+    .filter((l) => !isHiddenHeaderLink(l));
 
   const openSearchDialog = (source: "desktop" | "mobile" = "desktop") => {
     if (source === "mobile") {

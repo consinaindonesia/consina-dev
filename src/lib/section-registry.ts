@@ -98,6 +98,7 @@ export type CategoriesSettings = {
   autoScroll?: boolean;
   pauseSeconds?: number;
   scrollDurationMs?: number;
+  cardCta?: CTAConfig;
   viewAllCta?: CTAConfig;
 };
 
@@ -410,6 +411,7 @@ export const DEFAULT_CATEGORIES: CategoriesSettings = {
   autoScroll: true,
   pauseSeconds: 3,
   scrollDurationMs: 900,
+  cardCta: { labelId: "Belanja sekarang", labelEn: "Shop now", style: "primary" },
   viewAllCta: { labelId: "Lihat semua", labelEn: "View all", href: "/catalog", style: "outline" },
 };
 

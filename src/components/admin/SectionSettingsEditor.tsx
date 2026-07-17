@@ -681,6 +681,11 @@ function CategoriesEditor({
       <LocalizedField label="Eyebrow" value={value.eyebrow} onChange={(v) => onChange({ ...value, eyebrow: v })} />
       <LocalizedField label="Title" value={value.title} onChange={(v) => onChange({ ...value, title: v })} />
       <LocalizedField label="Subtitle" value={value.subtitle} onChange={(v) => onChange({ ...value, subtitle: v })} />
+      <CTAEditor
+        label="Card CTA button"
+        value={value.cardCta}
+        onChange={(v) => onChange({ ...value, cardCta: v })}
+      />
       <div className="rounded border border-input p-3">
         <Label className="text-xs font-semibold">Auto-scroll carousel</Label>
         <div className="mt-2 flex items-center justify-between gap-3">

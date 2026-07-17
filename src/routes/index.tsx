@@ -900,6 +900,12 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
   const autoScrollEnabled = s.autoScroll ?? true;
   const pauseSeconds = Math.max(1, Math.min(15, s.pauseSeconds ?? 3));
   const scrollDurationMs = Math.max(200, Math.min(5000, s.scrollDurationMs ?? 900));
+  const cardCtaLabel = pickLocalized(
+    { id: s.cardCta?.labelId, en: s.cardCta?.labelEn },
+    lang,
+    lang === "en" ? "Shop now" : "Belanja sekarang",
+  );
+  const cardCtaStyle = s.cardCta?.style ?? "primary";
 
   const recompute = useCallback(() => {
     const el = scrollerRef.current;
@@ -1002,9 +1008,9 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
             {items.map((cat) => (
               <div
                 key={cat.slug}
-                className="w-[74%] shrink-0 snap-start sm:w-[44%] md:w-[34%] lg:w-[28%] xl:w-[24%]"
+                className="w-[84%] shrink-0 snap-start sm:w-[62%] md:w-[46%] lg:w-[32%] xl:w-[31.5%]"
               >
-                <CategoryCard cat={cat} />
+                <CategoryCard cat={cat} ctaLabel={cardCtaLabel} ctaStyle={cardCtaStyle} />
               </div>
             ))}
           </div>
@@ -1046,41 +1052,52 @@ type CategoryItem = {
   count: number;
 };
 
-function CategoryCard({ cat }: { cat: CategoryItem }) {
-  const { t } = useTranslation();
+function CategoryCard({
+  cat,
+  ctaLabel,
+  ctaStyle,
+}: {
+  cat: CategoryItem;
+  ctaLabel: string;
+  ctaStyle: "primary" | "secondary" | "outline";
+}) {
+  const buttonClass =
+    ctaStyle === "outline"
+      ? "border border-white/80 bg-white/10 text-white backdrop-blur-sm hover:bg-white hover:text-primary"
+      : ctaStyle === "secondary"
+        ? "bg-primary text-primary-foreground hover:bg-white hover:text-primary"
+        : "bg-[#d8bd8d] text-[#151515] hover:bg-white";
+
   return (
     <Link
       to={"/c/$slug" as never}
       params={{ slug: cat.slug } as never}
-      className="group/card flex h-full flex-col overflow-hidden rounded-xl border border-[#d4b896] bg-background transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+      className="group/card relative block h-[230px] overflow-hidden rounded-xl border border-white/10 bg-primary shadow-sm transition duration-500 hover:-translate-y-1 hover:shadow-2xl md:h-[280px]"
     >
-      <div className="relative aspect-[4/3] overflow-hidden">
-        <img
-          src={cat.img}
-          alt={cat.name}
-          loading="lazy"
-          className="h-full w-full object-cover transition-transform duration-700 group-hover/card:scale-105"
-        />
-      </div>
-      <div className="flex flex-1 flex-col justify-between p-4">
-        <div>
-          <h3 className="text-base font-bold tracking-tight text-primary md:text-lg">
-            {cat.name}
-          </h3>
-          {cat.desc && (
-            <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
-              {cat.desc}
-            </p>
-          )}
-          {cat.count > 0 && (
-            <p className="mt-1 text-[11px] uppercase tracking-wider text-muted-foreground">
-              {cat.count} {t("labels.items", { defaultValue: "produk" })}
-            </p>
-          )}
-        </div>
-        <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-[#1a3a2e] transition group-hover/card:gap-2">
-          {t("cta.explore")} <ArrowRight className="h-3.5 w-3.5" />
-        </span>
+      <img
+        src={cat.img}
+        alt={cat.name}
+        loading="lazy"
+        className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover/card:scale-105"
+      />
+      <div className="absolute inset-0 bg-black/45 transition duration-500 group-hover/card:bg-black/55" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/25 to-black/55" />
+      <div className="relative z-10 flex h-full flex-col items-center justify-center px-5 text-center text-white">
+        <h3 className="text-3xl font-black leading-tight tracking-tight drop-shadow md:text-4xl">
+          {cat.name}
+        </h3>
+        {cat.desc && (
+          <p className="mt-2 line-clamp-2 max-w-[28rem] text-sm font-medium leading-relaxed text-white/85 drop-shadow md:text-base">
+            {cat.desc}
+          </p>
+        )}
+        {ctaLabel && (
+          <span
+            className={`mt-5 inline-flex items-center justify-center rounded-full px-6 py-3 text-xs font-black uppercase tracking-wider shadow-lg transition duration-300 group-hover/card:scale-105 ${buttonClass}`}
+          >
+            {ctaLabel}
+          </span>
+        )}
       </div>
     </Link>
   );

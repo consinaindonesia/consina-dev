@@ -11,6 +11,7 @@ import { PriceDisplay } from "@/components/site/PriceDisplay";
 import { addToCart } from "@/lib/cart-store";
 import { WishlistButton } from "@/components/site/WishlistButton";
 import { StarRating } from "@/components/site/StarRating";
+import { localizedCategoryName, localizedProductName } from "@/i18n/format";
 
 export const Route = createFileRoute("/c/$slug")({
   component: CategoryPage,
@@ -93,7 +94,8 @@ function humanizeFilterLabel(slug: string) {
 }
 
 function getFilterLabel(def: AttributeDef, lang: "id" | "en") {
-  return lang === "id" ? def.name_id || def.name_en : def.name_en || def.name_id;
+  if (lang === "id") return def.name_id || def.name_en;
+  return FILTER_FALLBACK_LABELS[def.slug]?.name_en || def.name_en || def.name_id;
 }
 
 function normalizeFilterValue(value: unknown): string | null {
@@ -445,7 +447,7 @@ function CategoryPage() {
             <>
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">Category</p>
               <h1 className="mt-3 text-4xl font-black tracking-tight text-primary md:text-5xl">
-                {category.name_en}
+                {localizedCategoryName(category, lang)}
               </h1>
               {category.description_en && (
                 <p className="mt-3 max-w-2xl text-base text-muted-foreground">{category.description_en}</p>
@@ -556,6 +558,7 @@ function CategoryPage() {
                     const img = p.product_images[0];
                     const prefix = lang === "id" ? "produk" : "products";
                     const detailHref = `/${lang}/${prefix}/${p.slug ?? p.sku}`;
+                    const name = localizedProductName(p, lang);
                     const requiresChoice = p.variants.length > 0 || p.has_size_variants;
                     const handleAdd = (e: React.MouseEvent) => {
                       e.preventDefault();
@@ -581,7 +584,7 @@ function CategoryPage() {
                           {img ? (
                             <img
                               src={img.thumbnail_url ?? img.image_url}
-                              alt={p.name_en}
+                              alt={name}
                               loading="lazy"
                               className="storefront-card-media h-full w-full object-cover"
                             />
@@ -603,7 +606,7 @@ function CategoryPage() {
                         </div>
                         <div className="p-4">
                           <p className="text-xs uppercase tracking-wider text-muted-foreground">{p.sku}</p>
-                          <h3 className="mt-1 font-medium text-foreground">{p.name_en}</h3>
+                          <h3 className="mt-1 font-medium text-foreground">{name}</h3>
                           {p.rating_count > 0 && (
                             <StarRating rating={p.rating_average} count={p.rating_count} className="mt-1" />
                           )}

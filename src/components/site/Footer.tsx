@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { usePublicCategories } from "@/hooks/use-public-categories";
 import { useLang } from "@/i18n/LangProvider";
-import { localizedField } from "@/i18n/format";
+import { localizedCategoryName } from "@/i18n/format";
 import { useSiteSettings } from "@/hooks/use-site-settings";
 
 export function Footer() {
@@ -25,7 +25,7 @@ export function Footer() {
   const headingStyle = footer.headingColor ? { color: footer.headingColor } : undefined;
   const linkStyle = footer.linkColor ? { color: footer.linkColor } : undefined;
   const shopLinks = (categories ?? []).map((c) => ({
-    label: localizedField(c, "name", lang).value,
+    label: localizedCategoryName(c, lang),
     slug: c.slug,
   }));
   const pickLabel = (id: string, en: string) =>

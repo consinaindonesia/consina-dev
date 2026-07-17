@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { localizedCategoryName, localizedProductName } from "@/i18n/format";
 
 export type AdvisorTurn = {
   role: "user" | "assistant";
@@ -70,11 +71,18 @@ function normalizeSearchText(value: string | null | undefined) {
 }
 
 function productDisplayName(product: AdvisorProduct, lang: "id" | "en") {
-  return (lang === "id" ? product.name_id : product.name_en) || product.name_en || product.name_id;
+  return localizedProductName(product, lang) || product.name_en || product.name_id;
 }
 
 function productCategoryName(product: AdvisorProduct, lang: "id" | "en") {
-  return (lang === "id" ? product.category_name_id : product.category_name_en) || product.category_name_en || product.category_name_id;
+  return localizedCategoryName(
+    {
+      slug: product.category_slug,
+      name_id: product.category_name_id ?? "",
+      name_en: product.category_name_en ?? product.category_name_id ?? "",
+    },
+    lang,
+  );
 }
 
 function productDescription(product: AdvisorProduct, lang: "id" | "en") {

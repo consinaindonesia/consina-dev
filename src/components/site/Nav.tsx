@@ -12,7 +12,7 @@ import { useCustomerAuth } from "@/hooks/use-customer-auth";
 import { useWishlist } from "@/lib/wishlist-store";
 import { usePublicCategories, type PublicCategory } from "@/hooks/use-public-categories";
 import { useLang } from "@/i18n/LangProvider";
-import { localizedField } from "@/i18n/format";
+import { localizedCategoryName } from "@/i18n/format";
 import { normalizeUiLabel } from "@/i18n/label-fallbacks";
 import { useSiteSettings } from "@/hooks/use-site-settings";
 import { isValidColor } from "@/lib/theme-defaults";
@@ -92,7 +92,7 @@ export function Nav() {
   // Keep header visible while a menu is open.
   const isHidden = hidden && !open && !mobileCatalogOpen;
 
-  const catLabel = (c: PublicCategory) => localizedField(c, "name", lang).value;
+  const catLabel = (c: PublicCategory) => localizedCategoryName(c, lang);
 
   const toggleExpanded = (
     id: string,

@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useCart, removeFromCart, updateCartQuantity } from "@/lib/cart-store";
 import { useLang } from "@/i18n/LangProvider";
-import { formatPrice } from "@/i18n/format";
+import { formatPrice, localizedProductName } from "@/i18n/format";
 
 export function CartDrawer() {
   const [open, setOpen] = useState(false);
@@ -38,17 +38,17 @@ export function CartDrawer() {
       </SheetTrigger>
       <SheetContent className="flex w-full flex-col sm:max-w-md">
         <SheetHeader>
-          <SheetTitle>Keranjang ({count})</SheetTitle>
+          <SheetTitle>{lang === "id" ? "Keranjang" : "Cart"} ({count})</SheetTitle>
         </SheetHeader>
         <div className="flex-1 overflow-y-auto py-4">
           {items.length === 0 ? (
             <p className="py-12 text-center text-sm text-muted-foreground">
-              Keranjang kosong.
+              {lang === "id" ? "Keranjang kosong." : "Your cart is empty."}
             </p>
           ) : (
             <ul className="divide-y divide-border">
               {items.map((it) => {
-                const name = lang === "id" ? it.name_id : it.name_en;
+                const name = localizedProductName(it, lang) || it.name_en || it.name_id;
                 return (
                   <li key={it.key} className="flex gap-3 py-3">
                     {it.thumbnail ? (

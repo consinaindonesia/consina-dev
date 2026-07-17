@@ -10,7 +10,7 @@ import { loadHomeSections, type SerializedSectionRow } from "@/lib/page-sections
 import { usePublicProducts, type PublicProduct, getSiteUrl } from "@/lib/public-products";
 import { usePublicCategories, type PublicCategory } from "@/hooks/use-public-categories";
 import { useLang } from "@/i18n/LangProvider";
-import { formatPrice, localizedField } from "@/i18n/format";
+import { formatPrice, localizedCategoryName, localizedField, localizedProductName } from "@/i18n/format";
 import { PriceDisplay } from "@/components/site/PriceDisplay";
 import { StarRating } from "@/components/site/StarRating";
 import { WishlistButton } from "@/components/site/WishlistButton";
@@ -884,7 +884,7 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
         : ((t(`home.categories.${c.slug}_desc` as never, { defaultValue: "" }) as string) || "");
       return {
         slug: c.slug,
-        name: localizedField(c, "name", lang).value,
+        name: localizedCategoryName(c, lang),
         desc,
         img,
         count: counts.get(c.slug) ?? 0,
@@ -1188,7 +1188,7 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
           className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth scroll-pl-4 px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] md:-mx-8 md:px-8 md:scroll-pl-8 md:gap-5 [&::-webkit-scrollbar]:hidden"
         >
           {featured.map((p) => {
-            const name = localizedField(p, "name", lang).value;
+            const name = localizedProductName(p, lang);
             const desc = localizedField(p, "short_description", lang).value;
             return (
               <div

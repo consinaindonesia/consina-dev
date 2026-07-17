@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/i18n/LangProvider";
-import { formatPrice } from "@/i18n/format";
+import { formatPrice, localizedProductName } from "@/i18n/format";
 import {
   fetchShippingOptions,
   pickZone,
@@ -291,7 +291,7 @@ export function CheckoutPage() {
     setBiteshipLoading(true);
     setBiteshipError(null);
     const itemsPayload = cartLineItems.map((it) => ({
-      name: lang === "id" ? it.name_id : it.name_en,
+      name: localizedProductName(it, lang) || it.name_en || it.name_id,
       quantity: it.quantity,
       weight: it.weight_grams || 500,
       value: it.price_idr,
@@ -358,7 +358,7 @@ export function CheckoutPage() {
   async function handleConfirm() {
     if (!isCart && !inquiry) return;
     if (cartLineItems.length === 0) {
-      toast.error("Keranjang kosong");
+      toast.error(lang === "id" ? "Keranjang kosong" : "Cart is empty");
       return;
     }
 
@@ -367,21 +367,21 @@ export function CheckoutPage() {
     const phoneRe = /^[+\d][\d\s\-()]{6,}$/;
 
     if (isCart) {
-      if (!guestName.trim()) newErrors.name = "Nama lengkap wajib diisi";
-      if (!guestEmail.trim()) newErrors.email = "Email wajib diisi";
+      if (!guestName.trim()) newErrors.name = lang === "id" ? "Nama lengkap wajib diisi" : "Full name is required";
+      if (!guestEmail.trim()) newErrors.email = lang === "id" ? "Email wajib diisi" : "Email is required";
       else if (!emailRe.test(guestEmail.trim()))
-        newErrors.email = "Format email tidak valid";
-      if (!guestPhone.trim()) newErrors.phone = "No. telepon wajib diisi";
+        newErrors.email = lang === "id" ? "Format email tidak valid" : "Invalid email format";
+      if (!guestPhone.trim()) newErrors.phone = lang === "id" ? "No. telepon wajib diisi" : "Phone number is required";
       else if (!phoneRe.test(guestPhone.trim()))
-        newErrors.phone = "Format no. telepon tidak valid";
+        newErrors.phone = lang === "id" ? "Format no. telepon tidak valid" : "Invalid phone number format";
     }
     if (shippingMethod === "delivery") {
-      if (!shippingCity.trim()) newErrors.city = "Kota wajib diisi";
-      if (!shippingPostal.trim()) newErrors.postal = "Kode pos wajib diisi";
+      if (!shippingCity.trim()) newErrors.city = lang === "id" ? "Kota wajib diisi" : "City is required";
+      if (!shippingPostal.trim()) newErrors.postal = lang === "id" ? "Kode pos wajib diisi" : "Postal code is required";
       if (!shippingAddress.trim())
-        newErrors.address = "Alamat wajib diisi";
+        newErrors.address = lang === "id" ? "Alamat wajib diisi" : "Address is required";
       else if (shippingAddress.trim().length < 10)
-        newErrors.address = "Alamat terlalu pendek (minimal 10 karakter)";
+        newErrors.address = lang === "id" ? "Alamat terlalu pendek (minimal 10 karakter)" : "Address is too short (minimum 10 characters)";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -395,12 +395,12 @@ export function CheckoutPage() {
           setTimeout(() => (el as HTMLInputElement).focus?.(), 250);
         }
       }
-      toast.error("Lengkapi field yang wajib diisi");
+      toast.error(lang === "id" ? "Lengkapi field yang wajib diisi" : "Please complete all required fields");
       return;
     }
 
     if (shippingMethod === "delivery" && !selectedBiteshipKey && !selectedQuote) {
-      toast.error("Pilih metode pengiriman");
+      toast.error(lang === "id" ? "Pilih metode pengiriman" : "Choose a shipping method");
       return;
     }
     setErrors({});
@@ -460,7 +460,7 @@ export function CheckoutPage() {
       const rows = cartLineItems.map((it) => ({
         order_id: order.id,
         product_id: it.productId,
-        product_name: lang === "id" ? it.name_id : it.name_en,
+        product_name: localizedProductName(it, lang) || it.name_en || it.name_id,
         sku: it.sku,
         quantity: it.quantity,
         unit_price_idr: it.price_idr,
@@ -512,9 +512,9 @@ export function CheckoutPage() {
   if (isCart && cartLineItems.length === 0) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold">Keranjang kosong</h1>
+        <h1 className="text-2xl font-bold">{lang === "id" ? "Keranjang kosong" : "Cart is empty"}</h1>
         <p className="mt-2 text-muted-foreground">
-          Tambahkan produk ke keranjang sebelum checkout.
+          {lang === "id" ? "Tambahkan produk ke keranjang sebelum checkout." : "Add products to your cart before checkout."}
         </p>
       </div>
     );
@@ -537,7 +537,7 @@ export function CheckoutPage() {
             </div>
             <ul className="divide-y divide-border">
               {cartLineItems.map((it) => {
-                const name = lang === "id" ? it.name_id : it.name_en;
+                const name = localizedProductName(it, lang) || it.name_en || it.name_id;
                 return (
                   <li key={it.id} className="flex items-center justify-between p-4">
                     <div>
@@ -887,7 +887,7 @@ export function CheckoutPage() {
               </div>
             </dl>
             <div className="mt-4 border-t border-border pt-4">
-              <Label className="text-xs">Kode voucher</Label>
+              <Label className="text-xs">{lang === "id" ? "Kode voucher" : "Voucher code"}</Label>
               <div className="mt-1 flex gap-2">
                 <Input
                   value={voucherInput}
@@ -905,7 +905,7 @@ export function CheckoutPage() {
                       setVoucherError(null);
                     }}
                   >
-                    Hapus
+                    {lang === "id" ? "Hapus" : "Remove"}
                   </Button>
                 ) : (
                   <Button
@@ -914,7 +914,7 @@ export function CheckoutPage() {
                     onClick={applyVoucherCode}
                     disabled={voucherApplying || !voucherInput.trim()}
                   >
-                    {voucherApplying ? <Loader2 className="h-4 w-4 animate-spin" /> : "Terapkan"}
+                    {voucherApplying ? <Loader2 className="h-4 w-4 animate-spin" /> : lang === "id" ? "Terapkan" : "Apply"}
                   </Button>
                 )}
               </div>

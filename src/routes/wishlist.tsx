@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCustomerAuth } from "@/hooks/use-customer-auth";
 import { useWishlist } from "@/lib/wishlist-store";
 import { useLang } from "@/i18n/LangProvider";
-import { formatPrice, localizedField } from "@/i18n/format";
+import { formatPrice, localizedProductName } from "@/i18n/format";
 import { addToCart } from "@/lib/cart-store";
 import { toast } from "sonner";
 
@@ -79,21 +79,29 @@ function WishlistPage() {
       <div className="mx-auto max-w-5xl px-4 py-10 sm:py-14">
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Wishlist</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          {user ? "Produk yang kamu simpan." : "Disimpan di perangkat ini. Masuk untuk menyimpan di akun."}
+          {lang === "id"
+            ? user
+              ? "Produk yang kamu simpan."
+              : "Disimpan di perangkat ini. Masuk untuk menyimpan di akun."
+            : user
+              ? "Products you saved."
+              : "Saved on this device. Sign in to save them to your account."}
         </p>
 
         {!loading && products.length === 0 ? (
           <div className="mt-16 flex flex-col items-center text-center">
             <Heart className="h-12 w-12 text-muted-foreground" />
-            <p className="mt-4 text-base text-muted-foreground">Wishlist kosong.</p>
+            <p className="mt-4 text-base text-muted-foreground">
+              {lang === "id" ? "Wishlist kosong." : "Your wishlist is empty."}
+            </p>
             <Button asChild className="mt-6">
-              <Link to="/catalog">Cari produk</Link>
+              <Link to="/catalog">{lang === "id" ? "Cari produk" : "Find products"}</Link>
             </Button>
           </div>
         ) : (
           <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {products.map((p) => {
-              const name = localizedField(p as any, "name", lang).value;
+              const name = localizedProductName(p as any, lang);
               const to = lang === "id" ? "/id/produk/$slug" : "/en/products/$slug";
               return (
                 <li key={p.id} className="overflow-hidden rounded-lg border border-border bg-card">
@@ -123,10 +131,10 @@ function WishlistPage() {
                             thumbnail: p.thumb,
                             attributes: {},
                           });
-                          toast.success("Ditambahkan ke keranjang");
+                          toast.success(lang === "id" ? "Ditambahkan ke keranjang" : "Added to cart");
                         }}
                       >
-                        <ShoppingBag className="h-3.5 w-3.5" /> Tambah
+                        <ShoppingBag className="h-3.5 w-3.5" /> {lang === "id" ? "Tambah" : "Add"}
                       </Button>
                       <Button size="sm" variant="outline" onClick={() => toggle(p.id)}>
                         <Trash2 className="h-3.5 w-3.5" />

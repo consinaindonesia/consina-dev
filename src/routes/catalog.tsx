@@ -7,7 +7,7 @@ import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { usePublicProducts, type PublicProduct } from "@/lib/public-products";
 import { useLang } from "@/i18n/LangProvider";
-import { localizedField } from "@/i18n/format";
+import { localizedCategoryName, localizedProductName } from "@/i18n/format";
 import { PriceDisplay } from "@/components/site/PriceDisplay";
 import { addToCart } from "@/lib/cart-store";
 import { WishlistButton } from "@/components/site/WishlistButton";
@@ -35,9 +35,14 @@ function CatalogPage() {
     const map = new Map<string, { slug: string; name: string; items: PublicProduct[] }>();
     for (const p of products) {
       const slug = p.category_slug ?? "uncategorized";
-      const name = lang === "id"
-        ? p.category_name_id ?? p.category_name_en ?? "Uncategorized"
-        : p.category_name_en ?? p.category_name_id ?? "Uncategorized";
+      const name = localizedCategoryName(
+        {
+          slug,
+          name_id: p.category_name_id ?? "Uncategorized",
+          name_en: p.category_name_en ?? p.category_name_id ?? "Uncategorized",
+        },
+        lang,
+      );
       const bucket = map.get(slug) ?? { slug, name, items: [] };
       bucket.items.push(p);
       map.set(slug, bucket);
@@ -140,7 +145,7 @@ function CatalogPage() {
 }
 
 function ProductCard({ p, lang }: { p: PublicProduct; lang: "id" | "en" }) {
-  const name = localizedField(p, "name", lang).value;
+  const name = localizedProductName(p, lang);
   const prefix = lang === "id" ? "produk" : "products";
   const requiresChoice = p.variants.length > 0 || p.size_variants.length > 0;
   const detailHref = `/${lang}/${prefix}/${p.slug ?? p.sku}`;

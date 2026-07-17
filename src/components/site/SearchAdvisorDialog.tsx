@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLang } from "@/i18n/LangProvider";
+import { localizedCategoryName, localizedProductName } from "@/i18n/format";
 import { usePublicProducts, type PublicProduct } from "@/lib/public-products";
 import { PriceDisplay } from "@/components/site/PriceDisplay";
 
@@ -19,6 +20,7 @@ type AdvisorProductResult = {
   slug: string | null;
   name_en: string;
   name_id: string;
+  category_slug?: string | null;
   category_name_en: string | null;
   category_name_id: string | null;
   price_idr: number;
@@ -91,15 +93,17 @@ function scoreProduct(product: PublicProduct, query: string) {
 }
 
 function productLabel(product: PublicProduct | AdvisorProductResult, lang: "id" | "en") {
-  return (lang === "id" ? product.name_id : product.name_en) || product.name_en || product.name_id;
+  return localizedProductName(product, lang) || product.name_en || product.name_id;
 }
 
 function productCategory(product: PublicProduct | AdvisorProductResult, lang: "id" | "en") {
-  return (
-    (lang === "id" ? product.category_name_id : product.category_name_en) ||
-    product.category_name_en ||
-    product.category_name_id ||
-    ""
+  return localizedCategoryName(
+    {
+      slug: "category_slug" in product ? product.category_slug : null,
+      name_id: product.category_name_id ?? "",
+      name_en: product.category_name_en ?? product.category_name_id ?? "",
+    },
+    lang,
   );
 }
 

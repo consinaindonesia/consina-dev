@@ -17,7 +17,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/i18n/LangProvider";
-import { formatPrice, localizedField, hasTranslation } from "@/i18n/format";
+import {
+  formatPrice,
+  hasTranslation,
+  localizedCategoryName,
+  localizedField,
+  localizedProductName,
+} from "@/i18n/format";
 import { MissingTranslationNotice } from "@/components/site/MissingTranslationNotice";
 import { addToCart } from "@/lib/cart-store";
 import { WishlistButton } from "@/components/site/WishlistButton";
@@ -380,7 +386,10 @@ export function ProductDetailPage({ slug }: { slug: string }) {
     };
   }, [slug, lang, navigate]);
 
-  const nameField = useMemo(() => localizedField(product, "name", lang), [product, lang]);
+  const nameField = useMemo(() => {
+    const base = localizedField(product, "name", lang);
+    return { ...base, value: localizedProductName(product, lang) };
+  }, [product, lang]);
   const shortDescField = useMemo(() => localizedField(product, "short_description", lang), [product, lang]);
   const descField = useMemo(() => localizedField(product, "description", lang), [product, lang]);
 
@@ -558,7 +567,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
                 params={{ slug: a.slug } as never}
                 className="hover:text-foreground"
               >
-                {localizedField(a, "name", lang).value}
+                {localizedCategoryName(a, lang)}
               </Link>
             </span>
           ))}
@@ -570,7 +579,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
                 params={{ slug: category.slug } as never}
                 className="hover:text-foreground"
               >
-                {localizedField(category, "name", lang).value}
+                {localizedCategoryName(category, lang)}
               </Link>
               <span>/</span>
             </>
@@ -649,7 +658,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
           <div className="flex flex-col">
             {category && (
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">
-                {localizedField(category, "name", lang).value}
+                {localizedCategoryName(category, lang)}
               </p>
             )}
             <h1 className="mt-2 text-3xl font-black tracking-tight text-primary md:text-4xl">
@@ -1034,7 +1043,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
             </h2>
             <ul className="grid grid-cols-2 gap-4 md:grid-cols-4">
               {related.map((r) => {
-                const rname = (lang === "id" ? r.name_id : r.name_en) || r.name_id || r.name_en;
+                const rname = localizedProductName(r, lang) || r.name_id || r.name_en;
                 const prefix = lang === "id" ? "produk" : "products";
                 return (
                   <li key={r.id}>

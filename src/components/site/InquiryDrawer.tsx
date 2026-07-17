@@ -18,7 +18,7 @@ import {
   type InquiryItem,
 } from "@/lib/inquiry-store";
 import { useLang } from "@/i18n/LangProvider";
-import { formatPrice } from "@/i18n/format";
+import { formatPrice, localizedProductName } from "@/i18n/format";
 
 export function InquiryDrawer({ className = "" }: { className?: string }) {
   const { t } = useTranslation();
@@ -95,7 +95,7 @@ export function InquiryDrawer({ className = "" }: { className?: string }) {
 function InquiryRow({ item }: { item: InquiryItem }) {
   const lang = useLang();
   const { t } = useTranslation();
-  const name = (lang === "id" ? item.name_id : item.name_en) || item.name_id || item.name_en;
+  const name = localizedProductName(item, lang) || item.name_id || item.name_en;
   const attrs = Object.entries(item.attributes);
   return (
     <li className="flex gap-3 p-4">

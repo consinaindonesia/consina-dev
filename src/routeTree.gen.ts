@@ -27,13 +27,11 @@ import { Route as LangRouteImport } from './routes/$lang'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProdukIndexRouteImport } from './routes/produk.index'
 import { Route as ProductsIndexRouteImport } from './routes/products.index'
-import { Route as EnIndexRouteImport } from './routes/en/index'
 import { Route as AkunIndexRouteImport } from './routes/akun.index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as LangIndexRouteImport } from './routes/$lang.index'
 import { Route as ProdukSlugRouteImport } from './routes/produk.$slug'
 import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
-import { Route as EnSplatRouteImport } from './routes/en/$'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as AkunProfileRouteImport } from './routes/akun.profile'
@@ -192,11 +190,6 @@ const ProductsIndexRoute = ProductsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ProductsRoute,
 } as any)
-const EnIndexRoute = EnIndexRouteImport.update({
-  id: '/en/',
-  path: '/en/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AkunIndexRoute = AkunIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -221,11 +214,6 @@ const ProductsSlugRoute = ProductsSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
   getParentRoute: () => ProductsRoute,
-} as any)
-const EnSplatRoute = EnSplatRouteImport.update({
-  id: '/en/$',
-  path: '/en/$',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   id: '/email/unsubscribe',
@@ -620,13 +608,11 @@ export interface FileRoutesByFullPath {
   '/akun/profile': typeof AkunProfileRoute
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
-  '/en/$': typeof EnSplatRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/produk/$slug': typeof ProdukSlugRoute
   '/$lang/': typeof LangIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/akun/': typeof AkunIndexRoute
-  '/en/': typeof EnIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/produk/': typeof ProdukIndexRoute
   '/$lang/categories/$slug': typeof LangCategoriesSlugRoute
@@ -706,13 +692,11 @@ export interface FileRoutesByTo {
   '/akun/profile': typeof AkunProfileRoute
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
-  '/en/$': typeof EnSplatRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/produk/$slug': typeof ProdukSlugRoute
   '/$lang': typeof LangIndexRoute
   '/admin': typeof AdminIndexRoute
   '/akun': typeof AkunIndexRoute
-  '/en': typeof EnIndexRoute
   '/products': typeof ProductsIndexRoute
   '/produk': typeof ProdukIndexRoute
   '/$lang/categories/$slug': typeof LangCategoriesSlugRoute
@@ -801,13 +785,11 @@ export interface FileRoutesById {
   '/akun/profile': typeof AkunProfileRoute
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
-  '/en/$': typeof EnSplatRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/produk/$slug': typeof ProdukSlugRoute
   '/$lang/': typeof LangIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/akun/': typeof AkunIndexRoute
-  '/en/': typeof EnIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/produk/': typeof ProdukIndexRoute
   '/$lang/categories/$slug': typeof LangCategoriesSlugRoute
@@ -897,13 +879,11 @@ export interface FileRouteTypes {
     | '/akun/profile'
     | '/c/$slug'
     | '/email/unsubscribe'
-    | '/en/$'
     | '/products/$slug'
     | '/produk/$slug'
     | '/$lang/'
     | '/admin/'
     | '/akun/'
-    | '/en/'
     | '/products/'
     | '/produk/'
     | '/$lang/categories/$slug'
@@ -983,13 +963,11 @@ export interface FileRouteTypes {
     | '/akun/profile'
     | '/c/$slug'
     | '/email/unsubscribe'
-    | '/en/$'
     | '/products/$slug'
     | '/produk/$slug'
     | '/$lang'
     | '/admin'
     | '/akun'
-    | '/en'
     | '/products'
     | '/produk'
     | '/$lang/categories/$slug'
@@ -1077,13 +1055,11 @@ export interface FileRouteTypes {
     | '/akun/profile'
     | '/c/$slug'
     | '/email/unsubscribe'
-    | '/en/$'
     | '/products/$slug'
     | '/produk/$slug'
     | '/$lang/'
     | '/admin/'
     | '/akun/'
-    | '/en/'
     | '/products/'
     | '/produk/'
     | '/$lang/categories/$slug'
@@ -1160,9 +1136,7 @@ export interface RootRouteChildren {
   AdminVouchersRoute: typeof AdminVouchersRoute
   CSlugRoute: typeof CSlugRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
-  EnSplatRoute: typeof EnSplatRoute
   AdminIndexRoute: typeof AdminIndexRoute
-  EnIndexRoute: typeof EnIndexRoute
   AdminProductsNewRoute: typeof AdminProductsNewRoute
   AdminReportsRegionalRoute: typeof AdminReportsRegionalRoute
   AdminSettingsNotificationsRoute: typeof AdminSettingsNotificationsRoute
@@ -1310,13 +1284,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsIndexRouteImport
       parentRoute: typeof ProductsRoute
     }
-    '/en/': {
-      id: '/en/'
-      path: '/en'
-      fullPath: '/en/'
-      preLoaderRoute: typeof EnIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/akun/': {
       id: '/akun/'
       path: '/'
@@ -1351,13 +1318,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/products/$slug'
       preLoaderRoute: typeof ProductsSlugRouteImport
       parentRoute: typeof ProductsRoute
-    }
-    '/en/$': {
-      id: '/en/$'
-      path: '/en/$'
-      fullPath: '/en/$'
-      preLoaderRoute: typeof EnSplatRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/email/unsubscribe': {
       id: '/email/unsubscribe'
@@ -2063,9 +2023,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminVouchersRoute: AdminVouchersRoute,
   CSlugRoute: CSlugRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
-  EnSplatRoute: EnSplatRoute,
   AdminIndexRoute: AdminIndexRoute,
-  EnIndexRoute: EnIndexRoute,
   AdminProductsNewRoute: AdminProductsNewRoute,
   AdminReportsRegionalRoute: AdminReportsRegionalRoute,
   AdminSettingsNotificationsRoute: AdminSettingsNotificationsRoute,

@@ -29,6 +29,8 @@ import { Route as EnIndexRouteImport } from './routes/en/index'
 import { Route as AkunIndexRouteImport } from './routes/akun.index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as LangIndexRouteImport } from './routes/$lang.index'
+import { Route as ProdukSlugRouteImport } from './routes/produk.$slug'
+import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
 import { Route as EnSplatRouteImport } from './routes/en/$'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
@@ -197,6 +199,16 @@ const LangIndexRoute = LangIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => LangRoute,
+} as any)
+const ProdukSlugRoute = ProdukSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => ProdukRoute,
+} as any)
+const ProductsSlugRoute = ProductsSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => ProductsRoute,
 } as any)
 const EnSplatRoute = EnSplatRouteImport.update({
   id: '/en/$',
@@ -557,8 +569,8 @@ export interface FileRoutesByFullPath {
   '/cart': typeof CartRoute
   '/catalog': typeof CatalogRoute
   '/footwear': typeof FootwearRoute
-  '/products': typeof ProductsRoute
-  '/produk': typeof ProdukRoute
+  '/products': typeof ProductsRouteWithChildren
+  '/produk': typeof ProdukRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
@@ -597,6 +609,8 @@ export interface FileRoutesByFullPath {
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/en/$': typeof EnSplatRoute
+  '/products/$slug': typeof ProductsSlugRoute
+  '/produk/$slug': typeof ProdukSlugRoute
   '/$lang/': typeof LangIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/akun/': typeof AkunIndexRoute
@@ -645,8 +659,8 @@ export interface FileRoutesByTo {
   '/cart': typeof CartRoute
   '/catalog': typeof CatalogRoute
   '/footwear': typeof FootwearRoute
-  '/products': typeof ProductsRoute
-  '/produk': typeof ProdukRoute
+  '/products': typeof ProductsRouteWithChildren
+  '/produk': typeof ProdukRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
@@ -681,6 +695,8 @@ export interface FileRoutesByTo {
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/en/$': typeof EnSplatRoute
+  '/products/$slug': typeof ProductsSlugRoute
+  '/produk/$slug': typeof ProdukSlugRoute
   '/$lang': typeof LangIndexRoute
   '/admin': typeof AdminIndexRoute
   '/akun': typeof AkunIndexRoute
@@ -732,8 +748,8 @@ export interface FileRoutesById {
   '/cart': typeof CartRoute
   '/catalog': typeof CatalogRoute
   '/footwear': typeof FootwearRoute
-  '/products': typeof ProductsRoute
-  '/produk': typeof ProdukRoute
+  '/products': typeof ProductsRouteWithChildren
+  '/produk': typeof ProdukRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/stores': typeof StoresRoute
   '/tents': typeof TentsRoute
@@ -772,6 +788,8 @@ export interface FileRoutesById {
   '/c/$slug': typeof CSlugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/en/$': typeof EnSplatRoute
+  '/products/$slug': typeof ProductsSlugRoute
+  '/produk/$slug': typeof ProdukSlugRoute
   '/$lang/': typeof LangIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/akun/': typeof AkunIndexRoute
@@ -864,6 +882,8 @@ export interface FileRouteTypes {
     | '/c/$slug'
     | '/email/unsubscribe'
     | '/en/$'
+    | '/products/$slug'
+    | '/produk/$slug'
     | '/$lang/'
     | '/admin/'
     | '/akun/'
@@ -948,6 +968,8 @@ export interface FileRouteTypes {
     | '/c/$slug'
     | '/email/unsubscribe'
     | '/en/$'
+    | '/products/$slug'
+    | '/produk/$slug'
     | '/$lang'
     | '/admin'
     | '/akun'
@@ -1038,6 +1060,8 @@ export interface FileRouteTypes {
     | '/c/$slug'
     | '/email/unsubscribe'
     | '/en/$'
+    | '/products/$slug'
+    | '/produk/$slug'
     | '/$lang/'
     | '/admin/'
     | '/akun/'
@@ -1089,8 +1113,8 @@ export interface RootRouteChildren {
   CartRoute: typeof CartRoute
   CatalogRoute: typeof CatalogRoute
   FootwearRoute: typeof FootwearRoute
-  ProductsRoute: typeof ProductsRoute
-  ProdukRoute: typeof ProdukRoute
+  ProductsRoute: typeof ProductsRouteWithChildren
+  ProdukRoute: typeof ProdukRouteWithChildren
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StoresRoute: typeof StoresRoute
   TentsRoute: typeof TentsRoute
@@ -1279,6 +1303,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/$lang/'
       preLoaderRoute: typeof LangIndexRouteImport
       parentRoute: typeof LangRoute
+    }
+    '/produk/$slug': {
+      id: '/produk/$slug'
+      path: '/$slug'
+      fullPath: '/produk/$slug'
+      preLoaderRoute: typeof ProdukSlugRouteImport
+      parentRoute: typeof ProdukRoute
+    }
+    '/products/$slug': {
+      id: '/products/$slug'
+      path: '/$slug'
+      fullPath: '/products/$slug'
+      preLoaderRoute: typeof ProductsSlugRouteImport
+      parentRoute: typeof ProductsRoute
     }
     '/en/$': {
       id: '/en/$'
@@ -1865,6 +1903,29 @@ const AkunRouteChildren: AkunRouteChildren = {
 
 const AkunRouteWithChildren = AkunRoute._addFileChildren(AkunRouteChildren)
 
+interface ProductsRouteChildren {
+  ProductsSlugRoute: typeof ProductsSlugRoute
+}
+
+const ProductsRouteChildren: ProductsRouteChildren = {
+  ProductsSlugRoute: ProductsSlugRoute,
+}
+
+const ProductsRouteWithChildren = ProductsRoute._addFileChildren(
+  ProductsRouteChildren,
+)
+
+interface ProdukRouteChildren {
+  ProdukSlugRoute: typeof ProdukSlugRoute
+}
+
+const ProdukRouteChildren: ProdukRouteChildren = {
+  ProdukSlugRoute: ProdukSlugRoute,
+}
+
+const ProdukRouteWithChildren =
+  ProdukRoute._addFileChildren(ProdukRouteChildren)
+
 interface AdminCustomersEmailRouteChildren {
   AdminCustomersEmailDeleteRoute: typeof AdminCustomersEmailDeleteRoute
   AdminCustomersEmailExportRoute: typeof AdminCustomersEmailExportRoute
@@ -1937,8 +1998,8 @@ const rootRouteChildren: RootRouteChildren = {
   CartRoute: CartRoute,
   CatalogRoute: CatalogRoute,
   FootwearRoute: FootwearRoute,
-  ProductsRoute: ProductsRoute,
-  ProdukRoute: ProdukRoute,
+  ProductsRoute: ProductsRouteWithChildren,
+  ProdukRoute: ProdukRouteWithChildren,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StoresRoute: StoresRoute,
   TentsRoute: TentsRoute,

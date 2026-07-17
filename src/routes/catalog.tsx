@@ -27,6 +27,9 @@ function CatalogPage() {
   const { t } = useTranslation();
   const lang = useLang();
   const { products, loading } = usePublicProducts();
+  const categoryMenuLabel = lang === "id" ? "Kategori" : "Categories";
+  const allProductsLabel = lang === "id" ? "Semua produk" : "All products";
+  const viewAllLabel = lang === "id" ? "Lihat semua" : "View all";
 
   const grouped = useMemo(() => {
     const map = new Map<string, { slug: string; name: string; items: PublicProduct[] }>();
@@ -56,17 +59,6 @@ function CatalogPage() {
             <span className="font-semibold text-primary">{t("catalog.subtitle_currency")}</span>
             {t("catalog.subtitle_suffix")}
           </p>
-          <nav className="mt-8 flex flex-wrap gap-2">
-            {grouped.map((g) => (
-              <a
-                key={g.slug}
-                href={`#${g.slug}`}
-                className="rounded-full border border-border bg-background px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary transition hover:bg-primary hover:text-primary-foreground"
-              >
-                {g.name} <span className="ml-1 text-[10px] text-muted-foreground">({g.items.length})</span>
-              </a>
-            ))}
-          </nav>
         </div>
       </header>
 
@@ -80,36 +72,66 @@ function CatalogPage() {
             No products available yet.
           </div>
         ) : (
-        <div className="space-y-24">
-          {grouped.map(({ slug, name, items }) => {
-            return (
-              <section key={slug} id={slug} className="scroll-mt-24">
-                <div className="flex flex-col gap-3 border-b-2 border-primary pb-5 md:flex-row md:items-end md:justify-between">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">
-                      {t("catalog.items_count", { count: items.length })}
-                    </p>
-                    <h2 className="mt-2 text-3xl font-black tracking-tight text-primary md:text-5xl">
-                      {name}
-                    </h2>
-                  </div>
-                  <Link
-                    to="/c/$slug"
-                    params={{ slug }}
-                    className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-secondary hover:text-primary"
+          <div className="grid gap-10 lg:grid-cols-[280px_minmax(0,1fr)] lg:items-start">
+            <aside className="rounded-3xl border border-border bg-card p-4 shadow-sm lg:sticky lg:top-28 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto">
+              <div className="flex items-center justify-between border-b border-border pb-3">
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-secondary">
+                    {categoryMenuLabel}
+                  </p>
+                  <h2 className="mt-1 text-lg font-black text-primary">{allProductsLabel}</h2>
+                </div>
+                <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-bold text-muted-foreground">
+                  {products.length}
+                </span>
+              </div>
+              <nav className="mt-4 max-h-[320px] space-y-1 overflow-y-auto pr-1 lg:max-h-none lg:overflow-visible lg:pr-0">
+                {grouped.map((g) => (
+                  <a
+                    key={g.slug}
+                    href={`#${g.slug}`}
+                    className="flex items-center justify-between gap-3 rounded-2xl px-3 py-2 text-sm font-semibold text-primary transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
-                    View all <ArrowUpRight className="h-3.5 w-3.5" />
-                  </Link>
-                </div>
-                <div className="mt-10 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
-                  {items.map((p) => (
-                    <ProductCard key={p.id} p={p} lang={lang} />
-                  ))}
-                </div>
-              </section>
-            );
-          })}
-        </div>
+                    <span className="truncate">{g.name}</span>
+                    <span className="shrink-0 rounded-full border border-border bg-background px-2 py-0.5 text-[11px] font-bold text-muted-foreground">
+                      {g.items.length}
+                    </span>
+                  </a>
+                ))}
+              </nav>
+            </aside>
+
+            <div className="min-w-0 space-y-24">
+              {grouped.map(({ slug, name, items }) => {
+                return (
+                  <section key={slug} id={slug} className="scroll-mt-24">
+                    <div className="flex flex-col gap-3 border-b-2 border-primary pb-5 md:flex-row md:items-end md:justify-between">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">
+                          {t("catalog.items_count", { count: items.length })}
+                        </p>
+                        <h2 className="mt-2 text-3xl font-black tracking-tight text-primary md:text-5xl">
+                          {name}
+                        </h2>
+                      </div>
+                      <Link
+                        to="/c/$slug"
+                        params={{ slug }}
+                        className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-secondary hover:text-primary"
+                      >
+                        {viewAllLabel} <ArrowUpRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </div>
+                    <div className="mt-10 grid gap-x-6 gap-y-12 sm:grid-cols-2 xl:grid-cols-3">
+                      {items.map((p) => (
+                        <ProductCard key={p.id} p={p} lang={lang} />
+                      ))}
+                    </div>
+                  </section>
+                );
+              })}
+            </div>
+          </div>
         )}
       </main>
       <Footer />

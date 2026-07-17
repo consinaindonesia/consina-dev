@@ -4,13 +4,15 @@ import { ArrowRight, ArrowUpRight, MapPin, Mountain, Leaf, Users, Mail, Phone, C
 import { useTranslation } from "react-i18next";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
+import { TypewriterText } from "@/components/site/TypewriterText";
 import { supabase } from "@/integrations/supabase/client";
 import { loadHomeSections, type SerializedSectionRow } from "@/lib/page-sections.functions";
 import { usePublicProducts, type PublicProduct, getSiteUrl } from "@/lib/public-products";
 import { usePublicCategories, type PublicCategory } from "@/hooks/use-public-categories";
 import { useLang } from "@/i18n/LangProvider";
-import { formatPrice, localizedField } from "@/i18n/format";
+import { formatPrice, localizedCategoryName, localizedField, localizedProductName } from "@/i18n/format";
 import { PriceDisplay } from "@/components/site/PriceDisplay";
+import { StarRating } from "@/components/site/StarRating";
 import { WishlistButton } from "@/components/site/WishlistButton";
 import {
   DEFAULT_HOME_SECTIONS,
@@ -19,6 +21,7 @@ import {
   pickLocalized,
   styleToProps,
   type AnySectionSettings,
+  type ActivitiesSettings,
   type BrandStorySettings,
   type CategoriesSettings,
   type CommunitySettings,
@@ -38,6 +41,7 @@ import {
   type StoreLocatorSettings,
   type FaqSettings,
   type ContactSettings,
+  type ZeroWasteSettings,
   type CustomSectionSettings,
   type VideoYoutubeSettings,
   type SectionStyle,
@@ -84,6 +88,188 @@ function pickBody(
   const other = lang === "en" ? bodyId : bodyEn;
   if (typeof other === "string") return other;
   return "";
+}
+
+function getCarouselPageIndex(el: HTMLDivElement): number {
+  return Math.round(el.scrollLeft / Math.max(el.clientWidth, 1));
+}
+
+function useAutoSlidingCarousel({
+  scrollerRef,
+  pageCount,
+  enabled,
+  pauseSeconds,
+  scrollDurationMs,
+}: {
+  scrollerRef: React.RefObject<HTMLDivElement | null>;
+  pageCount: number;
+  enabled: boolean;
+  pauseSeconds: number;
+  scrollDurationMs: number;
+}) {
+  const frameRef = useRef<number | null>(null);
+  const timeoutRef = useRef<number | null>(null);
+  const pageScrollPauseRef = useRef<number | null>(null);
+  const restoreScrollStylesRef = useRef<(() => void) | null>(null);
+  const scheduleNextRef = useRef<() => void>(() => undefined);
+  const interactionUntilRef = useRef(0);
+
+  const restoreScrollStyles = useCallback(() => {
+    if (!restoreScrollStylesRef.current) return;
+    restoreScrollStylesRef.current();
+    restoreScrollStylesRef.current = null;
+  }, []);
+
+  const disableSnapDuringAnimation = useCallback(
+    (el: HTMLDivElement) => {
+      restoreScrollStyles();
+      const previousSnap = el.style.scrollSnapType;
+      const previousBehavior = el.style.scrollBehavior;
+      el.style.scrollSnapType = "none";
+      el.style.scrollBehavior = "auto";
+      restoreScrollStylesRef.current = () => {
+        el.style.scrollSnapType = previousSnap;
+        el.style.scrollBehavior = previousBehavior;
+      };
+    },
+    [restoreScrollStyles],
+  );
+
+  const clearPending = useCallback(() => {
+    if (frameRef.current !== null) {
+      window.cancelAnimationFrame(frameRef.current);
+      frameRef.current = null;
+    }
+    if (timeoutRef.current !== null) {
+      window.clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    restoreScrollStyles();
+  }, [restoreScrollStyles]);
+
+  const animateToPage = useCallback(
+    (index: number, restart = true) => {
+      const el = scrollerRef.current;
+      if (!el) return;
+
+      clearPending();
+
+      const maxIndex = Math.max(pageCount - 1, 0);
+      const safeIndex = Math.min(Math.max(index, 0), maxIndex);
+      const startLeft = el.scrollLeft;
+      const targetLeft = safeIndex * el.clientWidth;
+
+      if (Math.abs(targetLeft - startLeft) < 1 || scrollDurationMs <= 0) {
+        el.scrollLeft = targetLeft;
+        if (restart) scheduleNextRef.current();
+        return;
+      }
+
+      const startTime = performance.now();
+      const duration = Math.max(200, scrollDurationMs);
+      disableSnapDuringAnimation(el);
+
+      const step = (now: number) => {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.scrollLeft = startLeft + (targetLeft - startLeft) * eased;
+        if (progress < 1) {
+          frameRef.current = window.requestAnimationFrame(step);
+          return;
+        }
+        frameRef.current = null;
+        el.scrollLeft = targetLeft;
+        restoreScrollStyles();
+        if (restart) scheduleNextRef.current();
+      };
+
+      frameRef.current = window.requestAnimationFrame(step);
+    },
+    [clearPending, disableSnapDuringAnimation, pageCount, restoreScrollStyles, scrollDurationMs, scrollerRef],
+  );
+
+  const scheduleNext = useCallback(() => {
+    clearPending();
+    if (!enabled || pageCount <= 1) return;
+    timeoutRef.current = window.setTimeout(() => {
+      if (Date.now() < interactionUntilRef.current) {
+        scheduleNextRef.current();
+        return;
+      }
+      const el = scrollerRef.current;
+      if (!el) return;
+      const currentIndex = getCarouselPageIndex(el);
+      const nextIndex = currentIndex >= pageCount - 1 ? 0 : currentIndex + 1;
+      animateToPage(nextIndex, true);
+    }, Math.max(1, pauseSeconds) * 1000);
+  }, [animateToPage, clearPending, enabled, pageCount, pauseSeconds, scrollerRef]);
+
+  scheduleNextRef.current = scheduleNext;
+
+  useEffect(() => {
+    scheduleNext();
+    return clearPending;
+  }, [clearPending, scheduleNext]);
+
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+
+    const onInteract = () => {
+      interactionUntilRef.current = Date.now() + Math.max(1, pauseSeconds) * 1000;
+      scheduleNextRef.current();
+    };
+
+    const observer = new ResizeObserver(() => {
+      scheduleNextRef.current();
+    });
+
+    observer.observe(el);
+    el.addEventListener("pointerdown", onInteract, { passive: true });
+    el.addEventListener("mouseenter", onInteract, { passive: true });
+    el.addEventListener("touchstart", onInteract, { passive: true });
+
+    const onPageScroll = () => {
+      interactionUntilRef.current = Date.now() + Math.max(1, pauseSeconds) * 1000;
+      clearPending();
+      if (pageScrollPauseRef.current !== null) {
+        window.clearTimeout(pageScrollPauseRef.current);
+      }
+      pageScrollPauseRef.current = window.setTimeout(() => {
+        pageScrollPauseRef.current = null;
+        scheduleNextRef.current();
+      }, 350);
+    };
+
+    window.addEventListener("scroll", onPageScroll, { passive: true });
+
+    return () => {
+      observer.disconnect();
+      el.removeEventListener("pointerdown", onInteract);
+      el.removeEventListener("mouseenter", onInteract);
+      el.removeEventListener("touchstart", onInteract);
+      window.removeEventListener("scroll", onPageScroll);
+      if (pageScrollPauseRef.current !== null) {
+        window.clearTimeout(pageScrollPauseRef.current);
+        pageScrollPauseRef.current = null;
+      }
+    };
+  }, [clearPending, pauseSeconds, scrollerRef]);
+
+  const nudge = useCallback(
+    (dir: 1 | -1) => {
+      const el = scrollerRef.current;
+      if (!el) return;
+      interactionUntilRef.current = Date.now() + Math.max(1, pauseSeconds) * 1000;
+      const currentIndex = getCarouselPageIndex(el);
+      const nextIndex = Math.min(Math.max(currentIndex + dir, 0), Math.max(pageCount - 1, 0));
+      animateToPage(nextIndex, true);
+    },
+    [animateToPage, pageCount, pauseSeconds, scrollerRef],
+  );
+
+  return { animateToPage, nudge };
 }
 
 const faqs = [
@@ -214,7 +400,9 @@ const SECTION_COMPONENTS: Record<SectionTypeId, SectionCmp> = {
   hero: Hero as SectionCmp,
   brand_story: BrandStory as SectionCmp,
   categories: Categories as SectionCmp,
+  activities: ActivitiesSection as SectionCmp,
   featured_products: FeaturedProducts as SectionCmp,
+  zero_waste: ZeroWasteSection as SectionCmp,
   community: Community as SectionCmp,
   store_locator: StoreLocator as SectionCmp,
   faq: FAQSection as SectionCmp,
@@ -277,19 +465,30 @@ function ComposedSections() {
     };
   }, []);
 
-  // While loading, render defaults so first paint matches existing site.
-  const order: { key: string; type: SectionTypeId; settings: unknown }[] =
-    rows.length === 0
-      ? DEFAULT_HOME_SECTIONS.map((t) => ({ key: t, type: t, settings: {} }))
-      : rows
-          .filter((r): r is PageSectionRow & { section_type: SectionTypeId } =>
-            (r.section_type as SectionTypeId) in SECTION_REGISTRY,
-          )
-          .map((r) => ({
-            key: r.id,
-            type: r.section_type as SectionTypeId,
-            settings: r.settings ?? {},
-          }));
+  // While loading, render defaults. When DB sections already exist, append new
+  // default sections until the admin explicitly adds/reorders them.
+  const order = useMemo<{ key: string; type: SectionTypeId; settings: unknown }[]>(() => {
+    if (rows.length === 0) {
+      return DEFAULT_HOME_SECTIONS.map((t) => ({ key: t, type: t, settings: {} }));
+    }
+    const dbOrder = rows
+      .filter((r): r is PageSectionRow & { section_type: SectionTypeId } =>
+        (r.section_type as SectionTypeId) in SECTION_REGISTRY,
+      )
+      .filter((r) => r.section_type !== "announcement_bar")
+      .map((r) => ({
+        key: r.id,
+        type: r.section_type as SectionTypeId,
+        settings: r.settings ?? {},
+      }));
+    const defaultAppend: SectionTypeId[] = ["activities", "zero_waste"];
+    return [
+      ...dbOrder,
+      ...defaultAppend
+        .filter((type) => !dbOrder.some((row) => row.type === type))
+        .map((type) => ({ key: `default-${type}`, type, settings: {} })),
+    ];
+  }, [rows]);
 
   return (
     <>
@@ -308,7 +507,6 @@ function Hero({ settings }: { settings: HeroSettings }) {
   const lang = useLang();
   const s = settings;
   const heroImg = s.image && s.image.trim() ? s.image : hero;
-  const overlayPct = Math.max(0, Math.min(100, s.overlay ?? 40));
   const heading = pickLocalized(s.heading, lang);
   const eyebrow = pickLocalized(s.eyebrow, lang);
   const subtitle = pickLocalized(s.subtitle, lang);
@@ -326,12 +524,6 @@ function Hero({ settings }: { settings: HeroSettings }) {
           width={1920}
           height={1080}
           className="h-full w-full object-cover"
-        />
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `linear-gradient(to bottom, rgba(26,58,46,${(overlayPct / 100).toFixed(2)}), rgba(26,58,46,${((overlayPct * 0.75) / 100).toFixed(2)}), var(--background))`,
-          }}
         />
       </div>
       <div
@@ -392,6 +584,9 @@ function VideoYoutubeSection({ settings }: { settings: VideoYoutubeSettings }) {
       : align === "right"
         ? "items-end text-right"
         : "items-center text-center";
+  const textAlignStyle: React.CSSProperties = {
+    textAlign: align,
+  };
   const aspect = s.aspectRatio ?? "16:9";
   const aspectClass =
     aspect === "1:1" ? "aspect-square" : aspect === "4:3" ? "aspect-[4/3]" : "aspect-[16/9]";
@@ -435,12 +630,12 @@ function VideoYoutubeSection({ settings }: { settings: VideoYoutubeSettings }) {
       <div className="mx-auto max-w-[1280px] px-4 md:px-8">
         <div className={`flex flex-col gap-6 ${alignClass}`}>
           {hasText && (
-            <div className={`flex w-full flex-col gap-3 ${alignClass}`}>
+            <div className="flex w-full flex-col gap-3" style={textAlignStyle}>
               {pickLocalized(s.eyebrow, lang) && (
                 <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>{pickLocalized(s.eyebrow, lang)}</p>
               )}
               {pickLocalized(s.heading, lang) && (
-                <h2 className="text-3xl font-black leading-tight tracking-tight text-primary md:text-5xl" style={tc(s.style, "headingColor")}>
+                <h2 className="text-xl font-black leading-tight tracking-tight text-primary md:text-2xl lg:text-3xl" style={tc(s.style, "headingColor")}>
                   {pickLocalized(s.heading, lang)}
                 </h2>
               )}
@@ -556,7 +751,7 @@ function BrandStory({ settings }: { settings: BrandStorySettings }) {
               {pickLocalized(s.eyebrow, lang)}
             </p>
           )}
-          <h2 className="mt-4 text-4xl font-black leading-[1.05] tracking-tight text-primary md:text-5xl" style={tc(s.style, "headingColor")}>
+          <h2 className="mt-3 text-2xl font-black leading-[1.05] tracking-tight text-primary md:text-3xl" style={tc(s.style, "headingColor")}>
             {pickLocalized(s.heading, lang)}
           </h2>
 
@@ -644,6 +839,40 @@ const CATEGORY_IMAGE_MAP: Record<string, string> = {
   daypack: catCarriers,
 };
 
+function slugifyText(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function localizeHomeHref(href: string | undefined, lang: string): string {
+  if (!href) return `/${lang}`;
+  if (/^https?:\/\//i.test(href)) return href;
+  const clean = href.startsWith("/") ? href : `/${href}`;
+  if (clean === `/${lang}` || clean.startsWith(`/${lang}/`)) return clean;
+  const [path, query] = clean.split("?");
+  if (path === "/" || path === "/catalog" || path === "/stores" || path === "/zero-waste") {
+    return `/${lang}${path === "/" ? "" : path}${query ? `?${query}` : ""}`;
+  }
+  return clean;
+}
+
+const ACTIVITY_IMAGE_MAP: Record<string, string> = {
+  bike: catFootwear,
+  sepeda: catFootwear,
+  climbing: storyHiker,
+  "panjat-tebing": storyHiker,
+  "trekking-and-hiking": story,
+  hiking: storyHiker,
+  running: catFootwear,
+  lari: catFootwear,
+  urban: catApparel,
+  camping: catTents,
+  travelling: catCarriers,
+};
+
 function Categories({ settings }: { settings: CategoriesSettings }) {
   const { t } = useTranslation();
   const lang = useLang();
@@ -679,7 +908,7 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
   const items = useMemo(() => {
     const list = cats ?? [];
     let ordered = list;
-    if (s.categorySlugs && s.categorySlugs.length > 0) {
+    if (Array.isArray(s.categorySlugs)) {
       const bySlug = new Map(list.map((c) => [c.slug, c]));
       ordered = s.categorySlugs
         .map((slug) => bySlug.get(slug))
@@ -703,7 +932,7 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
         : ((t(`home.categories.${c.slug}_desc` as never, { defaultValue: "" }) as string) || "");
       return {
         slug: c.slug,
-        name: localizedField(c, "name", lang).value,
+        name: localizedCategoryName(c, lang),
         desc,
         img,
         count: counts.get(c.slug) ?? 0,
@@ -716,13 +945,22 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
   const [activeIdx, setActiveIdx] = useState(0);
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(false);
+  const autoScrollEnabled = s.autoScroll ?? true;
+  const pauseSeconds = Math.max(1, Math.min(15, s.pauseSeconds ?? 3));
+  const scrollDurationMs = Math.max(200, Math.min(5000, s.scrollDurationMs ?? 900));
+  const cardCtaLabel = pickLocalized(
+    { id: s.cardCta?.labelId, en: s.cardCta?.labelEn },
+    lang,
+    lang === "en" ? "Shop now" : "Belanja sekarang",
+  );
+  const cardCtaStyle = s.cardCta?.style ?? "primary";
 
   const recompute = useCallback(() => {
     const el = scrollerRef.current;
     if (!el) return;
     const pages = Math.max(1, Math.ceil(el.scrollWidth / el.clientWidth));
     setSnapCount(pages);
-    const idx = Math.round(el.scrollLeft / el.clientWidth);
+    const idx = getCarouselPageIndex(el);
     setActiveIdx(Math.min(pages - 1, Math.max(0, idx)));
     setCanPrev(el.scrollLeft > 4);
     setCanNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
@@ -741,17 +979,13 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
     };
   }, [recompute, items.length]);
 
-  const scrollToPage = (i: number) => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
-  };
-
-  const nudge = (dir: 1 | -1) => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    el.scrollBy({ left: dir * el.clientWidth * 0.9, behavior: "smooth" });
-  };
+  const { animateToPage: scrollToPage, nudge } = useAutoSlidingCarousel({
+    scrollerRef,
+    pageCount: snapCount,
+    enabled: autoScrollEnabled,
+    pauseSeconds,
+    scrollDurationMs,
+  });
 
   return (
     <section
@@ -765,7 +999,7 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>
               {pickLocalized(s.eyebrow, lang, t("home.categories.eyebrow"))}
             </p>
-            <h2 className="mt-2 text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl" style={tc(s.style, "headingColor")}>
+            <h2 className="mt-2 text-xl font-black leading-tight tracking-tight text-primary md:text-2xl lg:text-3xl" style={tc(s.style, "headingColor")}>
               {pickLocalized(s.title, lang, t("home.categories.title"))}
             </h2>
             <p className="mt-2 max-w-xl text-sm text-muted-foreground md:text-base" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>
@@ -822,9 +1056,9 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
             {items.map((cat) => (
               <div
                 key={cat.slug}
-                className="w-[74%] shrink-0 snap-start sm:w-[44%] md:w-[34%] lg:w-[28%] xl:w-[24%]"
+                className="w-[84%] shrink-0 snap-start sm:w-[62%] md:w-[46%] lg:w-[32%] xl:w-[31.5%]"
               >
-                <CategoryCard cat={cat} />
+                <CategoryCard cat={cat} ctaLabel={cardCtaLabel} ctaStyle={cardCtaStyle} />
               </div>
             ))}
           </div>
@@ -832,7 +1066,7 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
 
         {/* Dots */}
         {snapCount > 1 && (
-          <div className="mt-4 flex items-center justify-center gap-2">
+          <div className="mt-3 flex items-center justify-center gap-2">
             {Array.from({ length: snapCount }).map((_, i) => {
               const active = i === activeIdx;
               return (
@@ -866,43 +1100,180 @@ type CategoryItem = {
   count: number;
 };
 
-function CategoryCard({ cat }: { cat: CategoryItem }) {
-  const { t } = useTranslation();
+function CategoryCard({
+  cat,
+  ctaLabel,
+  ctaStyle,
+}: {
+  cat: CategoryItem;
+  ctaLabel: string;
+  ctaStyle: "primary" | "secondary" | "outline";
+}) {
+  const buttonClass =
+    ctaStyle === "outline"
+      ? "border border-white/80 bg-white/10 text-white backdrop-blur-sm hover:bg-white hover:text-primary"
+      : ctaStyle === "secondary"
+        ? "bg-primary text-primary-foreground hover:bg-white hover:text-primary"
+        : "bg-[#d8bd8d] text-[#151515] hover:bg-white";
+
   return (
     <Link
       to={"/c/$slug" as never}
       params={{ slug: cat.slug } as never}
-      className="group/card flex h-full flex-col overflow-hidden rounded-xl border border-[#d4b896] bg-background transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+      className="group/card relative block h-[230px] overflow-hidden rounded-xl border border-white/10 bg-primary shadow-sm transition duration-500 hover:-translate-y-1 hover:shadow-2xl md:h-[280px]"
     >
-      <div className="relative aspect-[4/3] overflow-hidden">
-        <img
-          src={cat.img}
-          alt={cat.name}
-          loading="lazy"
-          className="h-full w-full object-cover transition-transform duration-700 group-hover/card:scale-105"
-        />
+      <img
+        src={cat.img}
+        alt={cat.name}
+        loading="lazy"
+        className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover/card:scale-105"
+      />
+      <div className="absolute inset-0 bg-black/45 transition duration-500 group-hover/card:bg-black/55" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/25 to-black/55" />
+      <div className="relative z-10 flex h-full flex-col items-center justify-center px-5 text-center text-white">
+        <h3 className="text-xl font-black leading-tight tracking-tight drop-shadow md:text-2xl">
+          {cat.name}
+        </h3>
+        {cat.desc && (
+          <p className="mt-2 line-clamp-2 max-w-[28rem] text-sm font-medium leading-relaxed text-white/85 drop-shadow md:text-base">
+            {cat.desc}
+          </p>
+        )}
+        {ctaLabel && (
+          <span
+            className={`mt-5 inline-flex items-center justify-center rounded-full px-6 py-3 text-xs font-black uppercase tracking-wider shadow-lg transition duration-300 group-hover/card:scale-105 ${buttonClass}`}
+          >
+            {ctaLabel}
+          </span>
+        )}
       </div>
-      <div className="flex flex-1 flex-col justify-between p-4">
-        <div>
-          <h3 className="text-base font-bold tracking-tight text-primary md:text-lg">
-            {cat.name}
-          </h3>
-          {cat.desc && (
-            <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
-              {cat.desc}
+    </Link>
+  );
+}
+
+/* ---------- Activities ---------- */
+function ActivitiesSection({ settings }: { settings: ActivitiesSettings }) {
+  const lang = useLang();
+  const s = settings;
+  const styleProps = styleToProps(s.style);
+  const eyebrow = pickLocalized(s.eyebrow, lang, lang === "en" ? "Activities" : "Aktivitas");
+  const title = pickLocalized(s.title, lang, lang === "en" ? "Popular Activities" : "Kategori Populer");
+  const subtitle = pickLocalized(s.subtitle, lang);
+  const items = (s.items ?? []).filter((item) => item.enabled !== false);
+  if (items.length === 0) return <></>;
+
+  return (
+    <section className={styleProps.className} style={styleProps.inlineStyle}>
+      <div className="mx-auto max-w-[1280px] px-4 md:px-8">
+        <div className="mb-4 md:mb-5">
+          {eyebrow && (
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>
+              {eyebrow}
             </p>
           )}
-          {cat.count > 0 && (
-            <p className="mt-1 text-[11px] uppercase tracking-wider text-muted-foreground">
-              {cat.count} {t("labels.items", { defaultValue: "produk" })}
+          <h2 className="mt-1 text-xl font-black leading-tight tracking-tight text-primary md:text-2xl lg:text-3xl" style={tc(s.style, "headingColor")}>
+            {title}
+          </h2>
+          {subtitle && (
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground md:text-base" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>
+              {subtitle}
             </p>
           )}
         </div>
-        <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-[#1a3a2e] transition group-hover/card:gap-2">
-          {t("cta.explore")} <ArrowRight className="h-3.5 w-3.5" />
-        </span>
+        <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] md:gap-4 [&::-webkit-scrollbar]:hidden">
+          {items.map((item, idx) => {
+            const label = pickLocalized(item.title, lang, `Activity ${idx + 1}`);
+            const slug = slugifyText(label);
+            const image = item.image?.trim() || ACTIVITY_IMAGE_MAP[slug] || catAccessories;
+            const href = localizeHomeHref(item.href || `/catalog?activity=${slug}`, lang);
+            return (
+              <a
+                key={`${label}-${idx}`}
+                href={href}
+                className="group w-[132px] shrink-0 md:w-[154px] lg:w-[170px]"
+              >
+                <div className="aspect-square overflow-hidden rounded-sm bg-muted shadow-sm">
+                  <img
+                    src={image}
+                    alt={label}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                  />
+                </div>
+                <p className="mt-2 text-center text-sm font-black leading-tight text-primary transition group-hover:text-secondary md:text-base">
+                  {label}
+                </p>
+              </a>
+            );
+          })}
+        </div>
       </div>
-    </Link>
+    </section>
+  );
+}
+
+/* ---------- Zero Waste ---------- */
+function ZeroWasteSection({ settings }: { settings: ZeroWasteSettings }) {
+  const lang = useLang();
+  const s = settings;
+  const styleProps = styleToProps(s.style);
+  const bg = s.backgroundImage?.trim() || communityCleanup;
+  const overlay = Math.max(0, Math.min(90, s.overlay ?? 68));
+  const badge = pickLocalized(s.badge, lang, "Sustainable Outdoor | I'm Zero Waste");
+  const title = pickLocalized(
+    s.title,
+    lang,
+    lang === "en"
+      ? "Less waste on the trail. Claim Consina rewards."
+      : "Kurangi sampah di jalur, klaim apresiasi Consina.",
+  );
+  const body = pickLocalized(s.body, lang);
+  const ctaLabel = pickLocalized(
+    { id: s.cta?.labelId, en: s.cta?.labelEn },
+    lang,
+    lang === "en" ? "Claim" : "Klaim",
+  );
+  const ctaHref = localizeHomeHref(s.cta?.href || "/zero-waste", lang);
+
+  return (
+    <section className={styleProps.className} style={styleProps.inlineStyle}>
+      <div className="mx-auto max-w-[1280px] px-4 md:px-8">
+        <div className="relative overflow-hidden bg-primary px-6 py-8 text-white shadow-sm md:px-9 md:py-10 lg:px-12">
+          <img
+            src={bg}
+            alt=""
+            loading="lazy"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <div className="absolute inset-0" style={{ backgroundColor: `rgba(8, 58, 39, ${overlay / 100})` }} />
+          <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div className="max-w-2xl">
+              {s.logoImage?.trim() ? (
+                <img src={s.logoImage} alt="Zero Waste" className="h-12 w-auto object-contain" loading="lazy" />
+              ) : (
+                <div className="inline-flex border border-white/80 text-xs font-black uppercase tracking-widest">
+                  <span className="border-r border-white/80 px-3 py-2">CONSINA</span>
+                  <span className="px-3 py-2">ZERO WASTE</span>
+                </div>
+              )}
+              {badge && <p className="mt-5 text-xs font-black uppercase tracking-[0.24em] text-white/85">{badge}</p>}
+              <h2 className="mt-2 text-xl font-black leading-tight tracking-tight text-white md:text-2xl lg:text-3xl">
+                {title}
+              </h2>
+              {body && <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/85 md:text-base">{body}</p>}
+            </div>
+            {ctaLabel && (
+              <a
+                href={ctaHref}
+                className="inline-flex shrink-0 items-center justify-center rounded-md bg-white px-8 py-4 text-sm font-black uppercase tracking-wider text-primary shadow transition hover:bg-[#d8bd8d]"
+              >
+                {ctaLabel}
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -930,13 +1301,16 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
   const [activeIdx, setActiveIdx] = useState(0);
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(false);
+  const autoScrollEnabled = s.autoScroll ?? true;
+  const pauseSeconds = Math.max(1, Math.min(15, s.pauseSeconds ?? 3));
+  const scrollDurationMs = Math.max(200, Math.min(5000, s.scrollDurationMs ?? 900));
 
   const recompute = useCallback(() => {
     const el = scrollerRef.current;
     if (!el) return;
     const pages = Math.max(1, Math.ceil(el.scrollWidth / el.clientWidth));
     setSnapCount(pages);
-    const idx = Math.round(el.scrollLeft / el.clientWidth);
+    const idx = getCarouselPageIndex(el);
     setActiveIdx(Math.min(pages - 1, Math.max(0, idx)));
     setCanPrev(el.scrollLeft > 4);
     setCanNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
@@ -955,17 +1329,13 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
     };
   }, [recompute, featured.length]);
 
-  const scrollToPage = (i: number) => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
-  };
-
-  const nudge = (dir: 1 | -1) => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    el.scrollBy({ left: dir * el.clientWidth * 0.9, behavior: "smooth" });
-  };
+  const { animateToPage: scrollToPage, nudge } = useAutoSlidingCarousel({
+    scrollerRef,
+    pageCount: snapCount,
+    enabled: autoScrollEnabled,
+    pauseSeconds,
+    scrollDurationMs,
+  });
 
   return (
     <section
@@ -977,13 +1347,13 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>
           {pickLocalized(s.subtitle, lang, t("home.featured.eyebrow"))}
         </p>
-        <h2 className="mt-2 text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl" style={tc(s.style, "headingColor")}>
+        <h2 className="mt-2 text-xl font-black leading-tight tracking-tight text-primary md:text-2xl lg:text-3xl" style={tc(s.style, "headingColor")}>
           {pickLocalized(s.title, lang, t("home.featured.title"))}
         </h2>
       </div>
 
       {/* Carousel */}
-      <div className="group relative mt-8 md:mt-10">
+      <div className="group relative mt-5 md:mt-6">
         {/* Arrows (desktop) */}
         <button
           type="button"
@@ -1009,12 +1379,12 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
           className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth scroll-pl-4 px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] md:-mx-8 md:px-8 md:scroll-pl-8 md:gap-5 [&::-webkit-scrollbar]:hidden"
         >
           {featured.map((p) => {
-            const name = localizedField(p, "name", lang).value;
+            const name = localizedProductName(p, lang);
             const desc = localizedField(p, "short_description", lang).value;
             return (
               <div
                 key={p.id}
-                className="group w-[74%] shrink-0 snap-start sm:w-[44%] md:w-[34%] lg:w-[28%] xl:w-[24%]"
+                className="storefront-card-hover group w-[74%] shrink-0 snap-start sm:w-[44%] md:w-[34%] lg:w-[28%] xl:w-[24%]"
               >
                 <Link
                   to={`/${lang}/${prefix}/${p.slug ?? p.sku}` as never}
@@ -1026,13 +1396,16 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
                       src={p.image_url}
                       alt={name}
                       loading="lazy"
-                      className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                      className="storefront-card-media h-full w-full object-cover object-center"
                     />
                   ) : null}
                   <WishlistButton productId={p.id} className="absolute left-3 bottom-3" />
                 </Link>
                 <div className="mt-4">
                   <h3 className="text-base font-bold leading-snug text-primary">{name}</h3>
+                  {p.rating_count > 0 && (
+                    <StarRating rating={p.rating_average} count={p.rating_count} className="mt-1" />
+                  )}
                   {desc ? <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{desc}</p> : null}
                   <PriceDisplay product={p} lang={lang} size="sm" className="mt-2" />
                   <Link
@@ -1050,7 +1423,7 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
 
       {/* Dots */}
       {snapCount > 1 && (
-        <div className="mt-4 flex items-center justify-center gap-2">
+        <div className="mt-3 flex items-center justify-center gap-2">
           {Array.from({ length: snapCount }).map((_, i) => {
             const active = i === activeIdx;
             return (
@@ -1079,7 +1452,7 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
         if (!label) return null;
         const href = s.viewAllCta?.href || "/catalog";
         return (
-          <div className="mt-8 flex justify-center">
+          <div className="mt-5 flex justify-center">
             <a
               href={href}
               className="inline-flex items-center gap-2 rounded-full border border-primary/30 px-6 py-3 text-sm font-semibold uppercase tracking-wider text-primary transition hover:bg-primary hover:text-primary-foreground"
@@ -1114,7 +1487,7 @@ function Community({ settings }: { settings: CommunitySettings }) {
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#d4b896]" style={tc(s.style, "eyebrowColor")}>
             {pickLocalized(s.eyebrow, lang)}
           </p>
-          <h2 className="mt-4 text-4xl font-black leading-tight tracking-tight md:text-5xl" style={tc(s.style, "headingColor")}>
+          <h2 className="mt-3 text-2xl font-black leading-tight tracking-tight md:text-3xl" style={tc(s.style, "headingColor")}>
             {pickLocalized(s.heading, lang)}
           </h2>
           <div className="mt-8 space-y-5 text-base leading-relaxed opacity-90 md:text-lg" style={{ ...tc(s.style, "bodyColor"), ...ta(s.style) }}>
@@ -1195,7 +1568,7 @@ function StoreLocator({ settings }: { settings: StoreLocatorSettings }) {
       <div className="grid gap-12 lg:grid-cols-12">
         <div className="lg:col-span-5">
           {eyebrow && <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>}
-          <h2 className="mt-2 text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl" style={tc(s.style, "headingColor")}>
+          <h2 className="mt-2 text-xl font-black leading-tight tracking-tight text-primary md:text-2xl lg:text-3xl" style={tc(s.style, "headingColor")}>
             {heading}
           </h2>
           {subtitle && (
@@ -1215,7 +1588,7 @@ function StoreLocator({ settings }: { settings: StoreLocatorSettings }) {
           <ul className="divide-y divide-border border-y border-border">
             {items.map((st, i) => (
                <li key={`${st.city}-${i}`} className="group grid grid-cols-[auto_1fr_auto] items-center gap-6 py-5">
-                 <span className="text-2xl font-black tracking-tight text-primary md:text-3xl" style={tc(s.style, "headingColor")}>
+                 <span className="text-xl font-black tracking-tight text-primary md:text-2xl" style={tc(s.style, "headingColor")}>
                    {st.city}
                  </span>
                  <div>
@@ -1263,7 +1636,7 @@ function FAQSection({ settings }: { settings: FaqSettings }) {
           {eyebrow && <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>}
           <h2
             id="faq-heading"
-            className="mt-2 text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl"
+            className="mt-2 text-2xl font-black leading-tight tracking-tight text-primary md:text-3xl"
             style={tc(s.style, "headingColor")}
           >
             {heading}
@@ -1408,7 +1781,7 @@ function ContactSectionInner({ settings }: { settings: ContactSettings }) {
           {eyebrow && (
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>
           )}
-          <h2 className="mt-2 text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl" style={tc(s.style, "headingColor")}>
+          <h2 className="mt-2 text-2xl font-black leading-tight tracking-tight text-primary md:text-3xl" style={tc(s.style, "headingColor")}>
             {heading ? heading : (<>{t("home.contact.title_1")}<br />{t("home.contact.title_2")}</>)}
           </h2>
           {subtitle && (
@@ -1552,7 +1925,7 @@ function FaqCustomSection({ settings }: { settings: FaqCustomSettings }) {
           {pickLocalized(s.eyebrow, lang) && (
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>{pickLocalized(s.eyebrow, lang)}</p>
           )}
-          <h2 className="mt-2 text-4xl font-black leading-tight tracking-tight text-primary md:text-5xl" style={tc(s.style, "headingColor")}>
+          <h2 className="mt-2 text-2xl font-black leading-tight tracking-tight text-primary md:text-3xl" style={tc(s.style, "headingColor")}>
             {pickLocalized(s.title, lang)}
           </h2>
           {pickLocalized(s.subtitle, lang) && (
@@ -1624,7 +1997,7 @@ function NewsletterSection({ settings }: { settings: NewsletterSettings }) {
         {pickLocalized(s.eyebrow, lang) && (
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>{pickLocalized(s.eyebrow, lang)}</p>
         )}
-        <h2 className="mt-2 text-3xl font-black tracking-tight text-primary md:text-4xl" style={tc(s.style, "headingColor")}>
+        <h2 className="mt-2 text-2xl font-black tracking-tight text-primary md:text-3xl" style={tc(s.style, "headingColor")}>
           {pickLocalized(s.heading, lang)}
         </h2>
         {pickLocalized(s.body, lang) && (
@@ -1695,7 +2068,7 @@ function ImageBannerSection({ settings }: { settings: ImageBannerSettings }) {
                 <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>{pickLocalized(s.eyebrow, lang)}</p>
               )}
               {pickLocalized(s.heading, lang) && (
-                <h2 className="text-3xl font-black leading-tight tracking-tight text-primary md:text-5xl" style={tc(s.style, "headingColor")}>
+                <h2 className="text-xl font-black leading-tight tracking-tight text-primary md:text-2xl lg:text-3xl" style={tc(s.style, "headingColor")}>
                   {pickLocalized(s.heading, lang)}
                 </h2>
               )}
@@ -1870,7 +2243,7 @@ function GallerySection({ settings }: { settings: GallerySettings }) {
     <section className={styleProps.className} style={styleProps.inlineStyle}>
       <div className="mx-auto max-w-[1280px] px-4 md:px-8">
         {pickLocalized(s.title, lang) && (
-          <h2 className="text-3xl font-black tracking-tight text-primary md:text-4xl" style={tc(s.style, "headingColor")}>
+          <h2 className="text-2xl font-black tracking-tight text-primary md:text-3xl" style={tc(s.style, "headingColor")}>
             {pickLocalized(s.title, lang)}
           </h2>
         )}
@@ -1915,7 +2288,7 @@ function TestimonialsSection({ settings }: { settings: TestimonialsSettings }) {
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>{pickLocalized(s.eyebrow, lang)}</p>
           )}
           {pickLocalized(s.title, lang) && (
-            <h2 className="mt-2 text-3xl font-black tracking-tight text-primary md:text-4xl" style={tc(s.style, "headingColor")}>
+            <h2 className="mt-2 text-2xl font-black tracking-tight text-primary md:text-3xl" style={tc(s.style, "headingColor")}>
               {pickLocalized(s.title, lang)}
             </h2>
           )}
@@ -1979,81 +2352,13 @@ function AnnouncementBarSection({ settings }: { settings: AnnouncementBarSetting
         color: s.style?.bodyColor ?? s.textColor ?? s.style?.textColor ?? "#ffffff",
       }}
     >
-      <Typewriter text={msg} />
+      <TypewriterText text={msg} />
       {linkLabel && s.href && (
         <a href={s.href} className="ml-2 underline underline-offset-2 hover:opacity-80" style={tc(s.style, "ctaTextColor")}>
           {linkLabel}
         </a>
       )}
     </div>
-  );
-}
-
-function Typewriter({ text }: { text: string }) {
-  const [typed, setTyped] = useState("");
-  const [reduced, setReduced] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => setReduced(mq.matches);
-    update();
-    mq.addEventListener?.("change", update);
-    return () => mq.removeEventListener?.("change", update);
-  }, []);
-
-  useEffect(() => {
-    if (reduced || !text) {
-      setTyped(text);
-      return;
-    }
-    let cancelled = false;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const TYPE_MS = 55;
-    const ERASE_MS = 28;
-    const HOLD_MS = 2600;
-    const GAP_MS = 600;
-
-    const run = async () => {
-      while (!cancelled) {
-        for (let i = 1; i <= text.length; i++) {
-          if (cancelled) return;
-          setTyped(text.slice(0, i));
-          await new Promise<void>((r) => { timer = setTimeout(r, TYPE_MS); });
-        }
-        await new Promise<void>((r) => { timer = setTimeout(r, HOLD_MS); });
-        if (cancelled) return;
-        for (let i = text.length; i >= 0; i--) {
-          if (cancelled) return;
-          setTyped(text.slice(0, i));
-          await new Promise<void>((r) => { timer = setTimeout(r, ERASE_MS); });
-        }
-        await new Promise<void>((r) => { timer = setTimeout(r, GAP_MS); });
-      }
-    };
-    void run();
-    return () => {
-      cancelled = true;
-      if (timer) clearTimeout(timer);
-    };
-  }, [text, reduced]);
-
-  return (
-    <span aria-label={text}>
-      <span aria-hidden={!reduced}>{typed}</span>
-      {!reduced && (
-        <span
-          aria-hidden="true"
-          className="ml-0.5 inline-block w-[1px] align-baseline"
-          style={{
-            height: "1em",
-            background: "currentColor",
-            animation: "tw-cursor 1s steps(1) infinite",
-            verticalAlign: "-0.15em",
-          }}
-        />
-      )}
-      <style>{`@keyframes tw-cursor{0%,49%{opacity:1}50%,100%{opacity:0}}`}</style>
-    </span>
   );
 }
 
@@ -2106,7 +2411,7 @@ function CustomSection({ settings }: { settings: CustomSectionSettings }) {
         </p>
       )}
       {heading && (
-        <h2 className="mt-3 text-3xl font-black leading-tight tracking-tight text-primary md:text-4xl lg:text-5xl" style={tc(s.style, "headingColor")}>
+        <h2 className="mt-3 text-xl font-black leading-tight tracking-tight text-primary md:text-2xl lg:text-3xl" style={tc(s.style, "headingColor")}>
           {heading}
         </h2>
       )}

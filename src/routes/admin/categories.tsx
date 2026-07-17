@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -56,6 +57,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
+import { translateText } from "@/lib/translate.functions";
 
 export const Route = createFileRoute("/admin/categories")({
   head: () => ({ meta: [{ title: "Categories — Admin" }, { name: "robots", content: "noindex" }] }),
@@ -120,6 +122,12 @@ function slugify(input: string) {
     .slice(0, 60);
 }
 
+function sameFilledText(a: string | null | undefined, b: string | null | undefined) {
+  const left = (a ?? "").trim();
+  const right = (b ?? "").trim();
+  return left !== "" && left === right;
+}
+
 function storagePathFromPublicUrl(url: string): string | null {
   const marker = `/object/public/${BUCKET}/`;
   const idx = url.indexOf(marker);
@@ -151,6 +159,7 @@ function buildTree(cats: Category[]) {
 
 function CategoriesPage() {
   const { profile } = useAdminAuth();
+  const callTranslate = useServerFn(translateText);
   const [categories, setCategories] = useState<Category[]>([]);
   const [counts, setCounts] = useState<Counts>({});
   const [loading, setLoading] = useState(true);
@@ -376,11 +385,63 @@ function CategoriesPage() {
 
   // --- Save ---
   async function save() {
-    if (!form.name_en.trim() || !form.name_id.trim()) {
+    const nextForm = { ...form };
+    if (
+      nextForm.name_id.trim() &&
+      (!nextForm.name_en.trim() || sameFilledText(nextForm.name_id, nextForm.name_en))
+    ) {
+      try {
+        const out = await callTranslate({
+          data: {
+            sourceText: nextForm.name_id,
+            sourceLang: "id",
+            targetLang: "en",
+            contentType: "name",
+            productId: null,
+          },
+        });
+        if (out.translation?.trim()) {
+          nextForm.name_en = out.translation.trim();
+        }
+      } catch (err) {
+        console.warn("[Categories.save] name auto translate failed", err);
+      }
+    }
+    if (
+      nextForm.description_id.trim() &&
+      (!nextForm.description_en.trim() ||
+        sameFilledText(nextForm.description_id, nextForm.description_en))
+    ) {
+      try {
+        const out = await callTranslate({
+          data: {
+            sourceText: nextForm.description_id,
+            sourceLang: "id",
+            targetLang: "en",
+            contentType: "description",
+            productId: null,
+          },
+        });
+        if (out.translation?.trim()) {
+          nextForm.description_en = out.translation.trim();
+        }
+      } catch (err) {
+        console.warn("[Categories.save] description auto translate failed", err);
+      }
+    }
+    if (
+      nextForm.name_en !== form.name_en ||
+      nextForm.description_en !== form.description_en
+    ) {
+      setForm(nextForm);
+      toast.success("Auto-translated English category fields");
+    }
+
+    if (!nextForm.name_en.trim() || !nextForm.name_id.trim()) {
       toast.error("Both Indonesian and English names are required.");
       return;
     }
-    const slug = form.slug.trim().toLowerCase();
+    const slug = nextForm.slug.trim().toLowerCase();
     if (!slug) {
       toast.error("Slug is required.");
       return;
@@ -405,8 +466,8 @@ function CategoriesPage() {
     }
 
     // Deactivation guard
-    if (form.id && original.is_active && !form.is_active) {
-      const activeCount = counts[form.id]?.active ?? 0;
+    if (nextForm.id && original.is_active && !nextForm.is_active) {
+      const activeCount = counts[nextForm.id]?.active ?? 0;
       if (activeCount > 0) {
         toast.error(
           `${activeCount} active product${activeCount === 1 ? "" : "s"} use this category. Move them first or deactivate them.`,
@@ -416,8 +477,11 @@ function CategoriesPage() {
     }
 
     // Prevent setting itself or a descendant as parent
-    if (form.parent_category_id && form.id) {
-      if (form.parent_category_id === form.id || isDescendantOf(categories, form.parent_category_id, form.id)) {
+    if (nextForm.parent_category_id && nextForm.id) {
+      if (
+        nextForm.parent_category_id === nextForm.id ||
+        isDescendantOf(categories, nextForm.parent_category_id, nextForm.id)
+      ) {
         toast.error("A category cannot be nested under itself or its descendants.");
         return;
       }
@@ -427,18 +491,18 @@ function CategoriesPage() {
     try {
       const payload = {
         slug,
-        name_id: form.name_id.trim(),
-        name_en: form.name_en.trim(),
-        description_id: form.description_id.trim() || null,
-        description_en: form.description_en.trim() || null,
-        image_url: form.image_url,
-        parent_category_id: form.parent_category_id,
-        sort_order: form.sort_order,
-        is_active: form.is_active,
+        name_id: nextForm.name_id.trim(),
+        name_en: nextForm.name_en.trim(),
+        description_id: nextForm.description_id.trim() || null,
+        description_en: nextForm.description_en.trim() || null,
+        image_url: nextForm.image_url,
+        parent_category_id: nextForm.parent_category_id,
+        sort_order: nextForm.sort_order,
+        is_active: nextForm.is_active,
       };
-      let savedId = form.id;
-      if (form.id) {
-        const { error } = await supabase.from("categories").update(payload).eq("id", form.id);
+      let savedId = nextForm.id;
+      if (nextForm.id) {
+        const { error } = await supabase.from("categories").update(payload).eq("id", nextForm.id);
         if (error) throw error;
       } else {
         const { data, error } = await supabase

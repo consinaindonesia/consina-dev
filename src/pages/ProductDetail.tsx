@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, notFound, useNavigate } from "@tanstack/react-router";
-import { Loader2, MapPin, Minus, Plus, BellRing } from "lucide-react";
+import { Loader2, MapPin, Minus, Plus, BellRing, ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Nav } from "@/components/site/Nav";
@@ -17,7 +17,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useLang } from "@/i18n/LangProvider";
-import { formatPrice, localizedField, hasTranslation } from "@/i18n/format";
+import {
+  formatPrice,
+  hasTranslation,
+  localizedCategoryName,
+  localizedField,
+  localizedProductName,
+} from "@/i18n/format";
 import { MissingTranslationNotice } from "@/components/site/MissingTranslationNotice";
 import { addToCart } from "@/lib/cart-store";
 import { WishlistButton } from "@/components/site/WishlistButton";
@@ -25,10 +31,13 @@ import { FindInStore } from "@/components/site/FindInStore";
 import { PriceDisplay } from "@/components/site/PriceDisplay";
 import { SizeGuideDialog, type SizeGuide } from "@/components/site/SizeGuideDialog";
 import { type CategoryNode } from "@/lib/public-products";
+import { StarRating } from "@/components/site/StarRating";
+import { useProductReviews } from "@/lib/product-reviews";
 
 type Product = {
   id: string;
   sku: string;
+  slug?: string | null;
   category_id: string | null;
   name_id: string;
   name_en: string;
@@ -47,6 +56,8 @@ type Product = {
   attributes: Record<string, string> | null;
   stock_status: "in_stock" | "low_stock" | "out_of_stock";
   images?: string[] | null;
+  rating_average: number | null;
+  rating_count: number | null;
 };
 
 type ProductImage = {
@@ -71,6 +82,9 @@ type ColorVariant = {
   color_name: string;
   color_hex: string;
   image_url: string | null;
+  price_idr: number | null;
+  original_price_idr: number | null;
+  sale_price_idr: number | null;
   stock: number | null;
   sort_order: number;
 };
@@ -84,6 +98,24 @@ type AttributeDef = {
   unit: string | null;
   options: string[];
 };
+
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+function formatDescriptionHtml(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  if (/<[a-z][\s\S]*>/i.test(trimmed)) return trimmed;
+
+  return trimmed
+    .split(/\n{2,}/)
+    .map((paragraph) => `<p>${escapeHtml(paragraph).replace(/\n/g, "<br />")}</p>`)
+    .join("");
+}
 
 export function ProductDetailPage({ slug }: { slug: string }) {
   const { t } = useTranslation();
@@ -100,16 +132,19 @@ export function ProductDetailPage({ slug }: { slug: string }) {
   const [sizeVariants, setSizeVariants] = useState<Array<{ id: string; option_value_ids: string[]; price_idr: number | null; original_price_idr: number | null; stock: number }>>([]);
   const [selectedSizeId, setSelectedSizeId] = useState<string | null>(null);
   const [sizeGuide, setSizeGuide] = useState<SizeGuide | null>(null);
-  const [related, setRelated] = useState<Array<{ id: string; sku: string; name_id: string; name_en: string; price_idr: number; thumb: string | null }>>([]);
+  const [related, setRelated] = useState<Array<{ id: string; sku: string; slug: string | null; name_id: string; name_en: string; price_idr: number; thumb: string | null }>>([]);
   const [loading, setLoading] = useState(true);
   const [missing, setMissing] = useState(false);
+  const { reviews } = useProductReviews(product?.id ?? null);
 
   const [activeImage, setActiveImage] = useState(0);
+  const [zoomOrigin, setZoomOrigin] = useState("50% 50%");
   const [quantity, setQuantity] = useState(1);
   const [selectedAttrs, setSelectedAttrs] = useState<Record<string, string>>({});
   const [notifyEmail, setNotifyEmail] = useState("");
   const [notifySubmitting, setNotifySubmitting] = useState(false);
   const [notifySaved, setNotifySaved] = useState(false);
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -118,7 +153,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
       setMissing(false);
 
       const selectCols =
-        "id,sku,category_id,name_id,name_en,short_description_id,short_description_en,description_id,description_en,price_idr,original_price_idr,sale_price_idr,is_on_sale,discount_percent,size_guide_id,capacity,weight_grams,attributes,stock_status,images,product_images(image_url,large_url,thumbnail_url,alt_text_id,alt_text_en,is_primary,sort_order)";
+        "id,sku,slug,category_id,name_id,name_en,short_description_id,short_description_en,description_id,description_en,price_idr,original_price_idr,sale_price_idr,is_on_sale,discount_percent,size_guide_id,capacity,weight_grams,attributes,stock_status,images,rating_average,rating_count,product_images(image_url,large_url,thumbnail_url,alt_text_id,alt_text_en,is_primary,sort_order)";
 
       // Prefer slug lookup; fall back to SKU so old URLs keep working.
       let { data: prods } = await supabase
@@ -137,9 +172,46 @@ export function ProductDetailPage({ slug }: { slug: string }) {
           .limit(1));
       }
 
+      if (!prods || prods.length === 0) {
+        ({ data: prods } = await supabase
+          .from("products")
+          .select(selectCols)
+          .ilike("slug", `${slug}-%`)
+          .eq("is_active", true)
+          .limit(1));
+      }
+
       const prod = prods?.[0] as (Product & { product_images: ProductImage[] }) | undefined;
       if (cancelled) return;
       if (!prod) {
+        const { data: redirect } = await supabase
+          .from("product_slug_redirects" as never)
+          .select("target_product_id,target_slug")
+          .eq("old_slug", slug)
+          .maybeSingle();
+        if (cancelled) return;
+        const target = redirect as { target_product_id?: string | null; target_slug?: string | null } | null;
+        if (target?.target_product_id) {
+          const { data: targetProd } = await supabase
+            .from("products")
+            .select("slug,sku")
+            .eq("id", target.target_product_id)
+            .eq("is_active", true)
+            .maybeSingle();
+          if (cancelled) return;
+          const resolvedSlug =
+            (targetProd as { slug?: string | null; sku?: string | null } | null)?.slug ??
+            (targetProd as { slug?: string | null; sku?: string | null } | null)?.sku ??
+            target.target_slug;
+          if (resolvedSlug) {
+            void navigate({
+              to: "/$lang/products/$slug" as never,
+              params: { lang, slug: resolvedSlug } as never,
+              replace: true,
+            });
+            return;
+          }
+        }
         setMissing(true);
         setLoading(false);
         return;
@@ -165,7 +237,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
       // Load color variants for this product (separate query keeps types simple).
       const { data: vRows } = await supabase
         .from("product_variants")
-        .select("id,color_name,color_hex,image_url,stock,sort_order")
+        .select("id,color_name,color_hex,image_url,price_idr,original_price_idr,sale_price_idr,stock,sort_order")
         .eq("product_id", prod.id)
         .order("sort_order");
       if (cancelled) return;
@@ -242,7 +314,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
             .order("sort_order"),
           supabase
             .from("products")
-            .select("id,sku,name_id,name_en,price_idr,images,product_images(thumbnail_url,image_url,is_primary,sort_order)")
+            .select("id,sku,slug,name_id,name_en,price_idr,images,product_images(thumbnail_url,image_url,is_primary,sort_order)")
             .eq("category_id", prod.category_id)
             .eq("is_active", true)
             .neq("id", prod.id)
@@ -290,6 +362,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
             return {
               id: r.id,
               sku: r.sku,
+              slug: (r as { slug?: string | null }).slug ?? null,
               name_id: r.name_id,
               name_en: r.name_en,
               price_idr: r.price_idr,
@@ -312,26 +385,76 @@ export function ProductDetailPage({ slug }: { slug: string }) {
     return () => {
       cancelled = true;
     };
-  }, [slug]);
+  }, [slug, lang, navigate]);
 
-  const nameField = useMemo(() => localizedField(product, "name", lang), [product, lang]);
+  const nameField = useMemo(() => {
+    const base = localizedField(product, "name", lang);
+    return { ...base, value: localizedProductName(product, lang) };
+  }, [product, lang]);
   const shortDescField = useMemo(() => localizedField(product, "short_description", lang), [product, lang]);
   const descField = useMemo(() => localizedField(product, "description", lang), [product, lang]);
 
   const fallbackLang = product && !hasTranslation(product, ["name", "description"], lang);
+  const selectedVariant = variants.find((v) => v.id === selectedVariantId) ?? null;
+  const variantImageUrl = selectedVariant?.image_url ?? null;
+  const galleryImages = useMemo(() => {
+    const seen = new Set<string>();
+    const merged: ProductImage[] = [];
+
+    if (variantImageUrl) {
+      seen.add(variantImageUrl);
+      merged.push({
+        image_url: variantImageUrl,
+        large_url: variantImageUrl,
+        thumbnail_url: variantImageUrl,
+        alt_text_id: selectedVariant?.color_name ?? null,
+        alt_text_en: selectedVariant?.color_name ?? null,
+        is_primary: true,
+        sort_order: -1,
+      });
+    }
+
+    for (const image of images) {
+      const key = image.large_url ?? image.image_url;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      merged.push(image);
+    }
+
+    return merged;
+  }, [images, selectedVariant?.color_name, variantImageUrl]);
+
+  useEffect(() => {
+    setActiveImage(0);
+    setDescriptionExpanded(false);
+  }, [selectedVariantId]);
+
+  useEffect(() => {
+    if (activeImage > 0 && activeImage >= galleryImages.length) {
+      setActiveImage(0);
+    }
+  }, [activeImage, galleryImages.length]);
 
   // Inquiry button removed — cart + wishlist + store finder remain
 
   function handleAddToCart() {
     if (!product) return;
     const top = images[0];
+    const selectedSize = sizeVariants.find((v) => v.id === selectedSizeId) ?? null;
+    const selectedVariant = variants.find((v) => v.id === selectedVariantId) ?? null;
+    const effectivePrice =
+      (selectedSize?.price_idr ?? null) ||
+      (selectedVariant?.sale_price_idr && selectedVariant.sale_price_idr > 0
+        ? selectedVariant.sale_price_idr
+        : selectedVariant?.price_idr) ||
+      (product.sale_price_idr && product.sale_price_idr > 0 ? product.sale_price_idr : product.price_idr);
     addToCart({
       productId: product.id,
-      slug: product.sku,
+      slug: product.slug ?? product.sku,
       sku: product.sku,
       name_id: product.name_id,
       name_en: product.name_en,
-      price_idr: product.price_idr,
+      price_idr: effectivePrice,
       weight_grams: product.weight_grams,
       thumbnail: top ? (top.thumbnail_url ?? top.image_url) : null,
       attributes: selectedAttrs,
@@ -364,15 +487,28 @@ export function ProductDetailPage({ slug }: { slug: string }) {
     );
   }
 
-  const stockBadge =
-    product.stock_status === "in_stock"
+  const stockBadge = (() => {
+    const selectedSize = sizeVariants.find((v) => v.id === selectedSizeId) ?? null;
+    if (selectedSize) {
+      if (selectedSize.stock <= 0) return { text: t("labels.out_of_stock"), cls: "bg-destructive/15 text-destructive border-destructive/30" };
+      if (selectedSize.stock <= 3) return { text: t("labels.low_stock"), cls: "bg-amber-500/15 text-amber-700 border-amber-500/30" };
+      return { text: t("labels.in_stock"), cls: "bg-secondary/15 text-secondary border-secondary/30" };
+    }
+    const selectedVariant = variants.find((v) => v.id === selectedVariantId) ?? null;
+    if (selectedVariant && typeof selectedVariant.stock === "number") {
+      if (selectedVariant.stock <= 0) return { text: t("labels.out_of_stock"), cls: "bg-destructive/15 text-destructive border-destructive/30" };
+      if (selectedVariant.stock <= 3) return { text: t("labels.low_stock"), cls: "bg-amber-500/15 text-amber-700 border-amber-500/30" };
+      return { text: t("labels.in_stock"), cls: "bg-secondary/15 text-secondary border-secondary/30" };
+    }
+    return product.stock_status === "in_stock"
       ? { text: t("labels.in_stock"), cls: "bg-secondary/15 text-secondary border-secondary/30" }
       : product.stock_status === "low_stock"
         ? { text: t("labels.low_stock"), cls: "bg-amber-500/15 text-amber-700 border-amber-500/30" }
         : { text: t("labels.out_of_stock"), cls: "bg-destructive/15 text-destructive border-destructive/30" };
+  })();
 
-  const isOut = product.stock_status === "out_of_stock";
-  const isLow = product.stock_status === "low_stock";
+  const isOut = stockBadge.text === t("labels.out_of_stock");
+  const isLow = stockBadge.text === t("labels.low_stock");
 
   async function submitNotify(e: React.FormEvent) {
     e.preventDefault();
@@ -395,9 +531,22 @@ export function ProductDetailPage({ slug }: { slug: string }) {
     toast.success(t("product.notify_saved"));
   }
 
-  const mainImg = images[activeImage] ?? images[0];
-  const selectedVariant = variants.find((v) => v.id === selectedVariantId) ?? null;
-  const variantImageUrl = selectedVariant?.image_url ?? null;
+  const activeGalleryImage = galleryImages[activeImage] ?? galleryImages[0] ?? null;
+
+  const cycleImage = (direction: -1 | 1) => {
+    if (galleryImages.length <= 1) return;
+    setActiveImage((current) => {
+      const total = galleryImages.length;
+      return (current + direction + total) % total;
+    });
+  };
+
+  const handleZoomMove = (event: React.MouseEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width) * 100;
+    const y = ((event.clientY - rect.top) / rect.height) * 100;
+    setZoomOrigin(`${Math.max(0, Math.min(100, x))}% ${Math.max(0, Math.min(100, y))}%`);
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -420,7 +569,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
                 params={{ slug: a.slug } as never}
                 className="hover:text-foreground"
               >
-                {localizedField(a, "name", lang).value}
+                {localizedCategoryName(a, lang)}
               </Link>
             </span>
           ))}
@@ -432,7 +581,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
                 params={{ slug: category.slug } as never}
                 className="hover:text-foreground"
               >
-                {localizedField(category, "name", lang).value}
+                {localizedCategoryName(category, lang)}
               </Link>
               <span>/</span>
             </>
@@ -443,28 +592,52 @@ export function ProductDetailPage({ slug }: { slug: string }) {
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
           {/* Gallery */}
           <div>
-            <div className="aspect-square overflow-hidden rounded-2xl border border-border bg-muted">
-              {variantImageUrl ? (
+            <div
+              className="group relative aspect-square overflow-hidden rounded-2xl border border-border bg-muted"
+              onMouseMove={handleZoomMove}
+              onMouseLeave={() => setZoomOrigin("50% 50%")}
+            >
+              {activeGalleryImage ? (
                 <img
-                  src={variantImageUrl}
-                  alt={selectedVariant?.color_name ?? nameField.value}
-                  className="h-full w-full object-cover"
-                />
-              ) : mainImg ? (
-                <img
-                  src={mainImg.large_url ?? mainImg.image_url}
-                  alt={(lang === "id" ? mainImg.alt_text_id : mainImg.alt_text_en) ?? nameField.value}
-                  className="h-full w-full object-cover"
+                  src={activeGalleryImage.large_url ?? activeGalleryImage.image_url}
+                  alt={
+                    (lang === "id" ? activeGalleryImage.alt_text_id : activeGalleryImage.alt_text_en) ??
+                    selectedVariant?.color_name ??
+                    nameField.value
+                  }
+                  className="h-full w-full object-cover transition duration-300 ease-out group-hover:scale-[1.85]"
+                  style={{ transformOrigin: zoomOrigin }}
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-xs uppercase tracking-wider text-muted-foreground">
                   {t("product.no_image")}
                 </div>
               )}
+
+              {galleryImages.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => cycleImage(-1)}
+                    aria-label={lang === "id" ? "Gambar sebelumnya" : "Previous image"}
+                    className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border/80 bg-background/90 text-foreground shadow transition opacity-0 group-hover:opacity-100 hover:bg-background"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => cycleImage(1)}
+                    aria-label={lang === "id" ? "Gambar berikutnya" : "Next image"}
+                    className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border/80 bg-background/90 text-foreground shadow transition opacity-0 group-hover:opacity-100 hover:bg-background"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </>
+              )}
             </div>
-            {images.length > 1 && (
+            {galleryImages.length > 1 && (
               <div className="mt-3 grid grid-cols-5 gap-2">
-                {images.map((img, i) => (
+                {galleryImages.map((img, i) => (
                   <button
                     key={i}
                     onClick={() => setActiveImage(i)}
@@ -487,7 +660,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
           <div className="flex flex-col">
             {category && (
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">
-                {localizedField(category, "name", lang).value}
+                {localizedCategoryName(category, lang)}
               </p>
             )}
             <h1 className="mt-2 text-3xl font-black tracking-tight text-primary md:text-4xl">
@@ -497,8 +670,16 @@ export function ProductDetailPage({ slug }: { slug: string }) {
               SKU: {product.sku}
             </p>
 
+            {!!product.rating_count && (
+              <div className="mt-2">
+                <StarRating rating={product.rating_average ?? 0} count={product.rating_count ?? 0} size="md" />
+              </div>
+            )}
+
             {shortDescField.value && (
-              <p className="mt-4 text-base text-muted-foreground">{shortDescField.value}</p>
+              <p className="mt-4 text-justify text-base leading-8 text-muted-foreground">
+                {shortDescField.value}
+              </p>
             )}
 
             <div className="mt-5 flex items-center gap-3">
@@ -509,6 +690,19 @@ export function ProductDetailPage({ slug }: { slug: string }) {
                   sale_price_idr: product.sale_price_idr,
                   is_on_sale: product.is_on_sale,
                   discount_percent: product.discount_percent,
+                  color_variants: selectedVariant
+                    ? [{
+                        price_idr: selectedVariant.price_idr,
+                        original_price_idr: selectedVariant.original_price_idr,
+                        sale_price_idr: selectedVariant.sale_price_idr,
+                        stock: selectedVariant.stock,
+                      }]
+                    : variants.map((v) => ({
+                        price_idr: v.price_idr,
+                        original_price_idr: v.original_price_idr,
+                        sale_price_idr: v.sale_price_idr,
+                        stock: v.stock,
+                      })),
                   size_variants: sizeVariants.map((v) => ({
                     price_idr: v.price_idr,
                     original_price_idr: v.original_price_idr,
@@ -764,10 +958,27 @@ export function ProductDetailPage({ slug }: { slug: string }) {
               {t("product.description")}
             </h2>
             {descField.value ? (
-              <div
-                className="prose prose-sm mt-4 max-w-none text-foreground/90"
-                dangerouslySetInnerHTML={{ __html: descField.value }}
-              />
+              <>
+                <div
+                  className={`prose prose-sm mt-4 max-w-none text-justify leading-8 text-foreground/90 prose-p:my-0 prose-p:mb-4 prose-li:my-1 prose-ul:my-4 prose-ol:my-4 ${
+                    descriptionExpanded ? "" : "max-md:line-clamp-3"
+                  }`}
+                  dangerouslySetInnerHTML={{ __html: formatDescriptionHtml(descField.value) }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setDescriptionExpanded((current) => !current)}
+                  className="mt-3 inline-flex rounded-full border border-primary/25 px-4 py-2 text-sm font-semibold text-primary transition hover:bg-primary hover:text-primary-foreground md:hidden"
+                >
+                  {descriptionExpanded
+                    ? lang === "en"
+                      ? "Show less"
+                      : "Tutup deskripsi"
+                    : lang === "en"
+                      ? "View description"
+                      : "Lihat deskripsi"}
+                </button>
+              </>
             ) : (
               <p className="mt-4 text-sm text-muted-foreground">{t("product.no_description")}</p>
             )}
@@ -797,6 +1008,49 @@ export function ProductDetailPage({ slug }: { slug: string }) {
           </aside>
         </div>
 
+        {/* Reviews */}
+        <section className="mt-16 max-w-[720px]">
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-2xl font-bold text-primary">
+              {lang === "id" ? "Ulasan Pembeli" : "Customer Reviews"}
+            </h2>
+            {!!product.rating_count && (
+              <StarRating rating={product.rating_average ?? 0} count={product.rating_count ?? 0} size="md" />
+            )}
+          </div>
+          {reviews.length === 0 ? (
+            <p className="mt-4 text-sm text-muted-foreground">
+              {lang === "id" ? "Belum ada ulasan untuk produk ini." : "No reviews yet for this product."}
+            </p>
+          ) : (
+            <ul className="mt-6 space-y-6">
+              {reviews.map((r) => (
+                <li key={r.id} className="border-b border-border pb-6 last:border-0">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-semibold text-foreground">{r.author_name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(r.created_at).toLocaleDateString(lang === "id" ? "id-ID" : "en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </p>
+                  </div>
+                  <div className="mt-1.5 flex items-center gap-2">
+                    <StarRating rating={r.rating} showCount={false} size="sm" />
+                    {r.is_verified_purchase && (
+                      <span className="text-[11px] font-medium uppercase tracking-wider text-secondary">
+                        {lang === "id" ? "Pembelian Terverifikasi" : "Verified Purchase"}
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-2 text-sm leading-relaxed text-foreground/90">{r.comment}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
         {/* Find in store */}
         <FindInStore productId={product.id} lang={lang} />
 
@@ -808,12 +1062,12 @@ export function ProductDetailPage({ slug }: { slug: string }) {
             </h2>
             <ul className="grid grid-cols-2 gap-4 md:grid-cols-4">
               {related.map((r) => {
-                const rname = (lang === "id" ? r.name_id : r.name_en) || r.name_id || r.name_en;
+                const rname = localizedProductName(r, lang) || r.name_id || r.name_en;
                 const prefix = lang === "id" ? "produk" : "products";
                 return (
                   <li key={r.id}>
                     <Link
-                      to={`/${lang}/${prefix}/${r.sku}` as never}
+                      to={`/${lang}/${prefix}/${r.slug ?? r.sku}` as never}
                       className="group block overflow-hidden rounded-xl border border-border bg-card"
                     >
                       <div className="aspect-square overflow-hidden bg-muted">

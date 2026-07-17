@@ -7,7 +7,7 @@ import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useLang } from "@/i18n/LangProvider";
-import { formatPrice, localizedField } from "@/i18n/format";
+import { formatPrice, localizedCategoryName, localizedField, localizedProductName } from "@/i18n/format";
 import { collectDescendantIds, type CategoryNode } from "@/lib/public-products";
 
 type Category = {
@@ -133,7 +133,7 @@ export function CategoryPage({ slug }: { slug: string }) {
         supabase
           .from("products")
           .select(
-            "id,sku,name_en,name_id,price_idr,attributes,product_images(thumbnail_url,image_url,is_primary,sort_order)",
+            "id,sku,slug,name_en,name_id,price_idr,attributes,product_images(thumbnail_url,image_url,is_primary,sort_order)",
           )
           .in("category_id", descendantIds)
           .eq("is_active", true)
@@ -141,7 +141,7 @@ export function CategoryPage({ slug }: { slug: string }) {
         supabase
           .from("product_categories")
           .select(
-            "product_id, products!inner(id,sku,name_en,name_id,price_idr,attributes,is_active,product_images(thumbnail_url,image_url,is_primary,sort_order))",
+            "product_id, products!inner(id,sku,slug,name_en,name_id,price_idr,attributes,is_active,product_images(thumbnail_url,image_url,is_primary,sort_order))",
           )
           .in("category_id", descendantIds),
       ]);
@@ -149,6 +149,7 @@ export function CategoryPage({ slug }: { slug: string }) {
         products: {
           id: string;
           sku: string;
+          slug: string | null;
           name_en: string;
           name_id: string;
           price_idr: number;
@@ -180,7 +181,7 @@ export function CategoryPage({ slug }: { slug: string }) {
         imgs.sort((a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0) || a.sort_order - b.sort_order);
         return {
           id: p.id,
-          slug: null,
+          slug: (p as { slug?: string | null }).slug ?? null,
           sku: p.sku,
           name_en: p.name_en,
           name_id: p.name_id,
@@ -271,19 +272,19 @@ export function CategoryPage({ slug }: { slug: string }) {
                         params={{ slug: a.slug } as never}
                         className="hover:text-foreground"
                       >
-                        {localizedField(a, "name", lang).value}
+                        {localizedCategoryName(a, lang)}
                       </Link>
                     </span>
                   ))}
                   <span className="mx-1.5">/</span>
-                  <span className="text-foreground">{localizedField(category, "name", lang).value}</span>
+                  <span className="text-foreground">{localizedCategoryName(category, lang)}</span>
                 </nav>
               )}
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">
                 {t("category_detail.eyebrow")}
               </p>
               <h1 className="mt-3 text-4xl font-black tracking-tight text-primary md:text-5xl">
-                {localizedField(category, "name", lang).value}
+                {localizedCategoryName(category, lang)}
               </h1>
               {localizedField(category, "description", lang).value && (
                 <p className="mt-3 max-w-2xl text-base text-muted-foreground">
@@ -375,7 +376,7 @@ export function CategoryPage({ slug }: { slug: string }) {
                 <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   {filtered.map((p) => {
                     const img = p.product_images[0];
-                    const name = localizedField(p, "name", lang).value;
+                    const name = localizedProductName(p, lang);
                     return (
                       <li key={p.id} className="group overflow-hidden rounded-xl border border-border bg-card">
                         <div className="aspect-square overflow-hidden bg-muted">

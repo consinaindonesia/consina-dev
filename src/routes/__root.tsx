@@ -10,10 +10,13 @@ import {
 
 import appCss from "../styles.css?url";
 import "@/i18n";
+import { useTranslation } from "react-i18next";
 import { CookieBanner } from "@/components/CookieBanner";
 import { useRouterState } from "@tanstack/react-router";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeStyle } from "@/components/site/ThemeStyle";
+import { LangProvider } from "@/i18n/LangProvider";
+import { getActiveLang } from "@/i18n";
 import { loadThemeSettings, type ThemeHeadPayload } from "@/lib/theme-load.functions";
 import { googleFontHref, themeToCss, DEFAULT_THEME } from "@/lib/theme-defaults";
 
@@ -166,13 +169,21 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const { theme } = Route.useLoaderData();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { i18n } = useTranslation();
+  const activeLang = getActiveLang(i18n.language);
   const isAdmin = pathname.startsWith("/admin");
 
   return (
     <QueryClientProvider client={queryClient}>
       {!isAdmin && <ThemeStyle initialTheme={theme} />}
-      <Outlet />
-      {!isAdmin && <CookieBanner />}
+      {isAdmin ? (
+        <Outlet />
+      ) : (
+        <LangProvider lang={activeLang}>
+          <Outlet />
+          <CookieBanner />
+        </LangProvider>
+      )}
       <Toaster richColors position="top-right" closeButton />
     </QueryClientProvider>
   );

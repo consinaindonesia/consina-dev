@@ -15,6 +15,9 @@ export type StagedVariant = {
   color_name: string;
   color_hex: string;
   image_url: string | null;
+  price_idr: number | null;
+  original_price_idr: number | null;
+  sale_price_idr: number | null;
   stock: number | null;
   sort_order: number;
 };
@@ -25,6 +28,9 @@ type Variant = {
   color_name: string;
   color_hex: string;
   image_url: string | null;
+  price_idr: number | null;
+  original_price_idr: number | null;
+  sale_price_idr: number | null;
   stock: number | null;
   sort_order: number;
 };
@@ -67,6 +73,9 @@ export function ProductVariantsTab({
             color_name: r.color_name,
             color_hex: r.color_hex,
             image_url: r.image_url,
+            price_idr: r.price_idr,
+            original_price_idr: r.original_price_idr,
+            sale_price_idr: r.sale_price_idr,
             stock: r.stock,
             sort_order: i,
           })),
@@ -115,6 +124,9 @@ export function ProductVariantsTab({
           color_name: "",
           color_hex: "#000000",
           image_url: null,
+          price_idr: null,
+          original_price_idr: null,
+          sale_price_idr: null,
           stock: null,
           sort_order: nextOrder,
         },
@@ -140,6 +152,9 @@ export function ProductVariantsTab({
       color_name: row.color_name.trim(),
       color_hex: row.color_hex.toLowerCase(),
       image_url: row.image_url,
+      price_idr: row.price_idr,
+      original_price_idr: row.original_price_idr,
+      sale_price_idr: row.sale_price_idr,
       stock: row.stock,
       sort_order: row.sort_order,
     };
@@ -321,7 +336,7 @@ function VariantRow({
   const isNew = row.id.startsWith("tmp-");
   return (
     <li className="rounded-lg border border-input bg-white p-4">
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_180px_120px_88px_auto]">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_180px_120px_120px_120px_88px_auto]">
         <div className="space-y-1">
           <Label className="text-xs">Color name</Label>
           <Input
@@ -392,6 +407,48 @@ function VariantRow({
               </button>
             )}
           </div>
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs">Price</Label>
+          <Input
+            type="number"
+            min={0}
+            value={row.price_idr ?? ""}
+            onChange={(e) =>
+              onPatch({
+                price_idr: e.target.value === "" ? null : Math.max(0, parseInt(e.target.value, 10) || 0),
+              })
+            }
+            placeholder="Follow product"
+          />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs">Original</Label>
+          <Input
+            type="number"
+            min={0}
+            value={row.original_price_idr ?? ""}
+            onChange={(e) =>
+              onPatch({
+                original_price_idr: e.target.value === "" ? null : Math.max(0, parseInt(e.target.value, 10) || 0),
+              })
+            }
+            placeholder="Optional"
+          />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs">Sale</Label>
+          <Input
+            type="number"
+            min={0}
+            value={row.sale_price_idr ?? ""}
+            onChange={(e) =>
+              onPatch({
+                sale_price_idr: e.target.value === "" ? null : Math.max(0, parseInt(e.target.value, 10) || 0),
+              })
+            }
+            placeholder="Optional"
+          />
         </div>
         <div className="space-y-1">
           <Label className="text-xs">Stock</Label>

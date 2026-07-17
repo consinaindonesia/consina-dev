@@ -5,7 +5,7 @@ import { Footer } from "@/components/site/Footer";
 import { Button } from "@/components/ui/button";
 import { useCart, removeFromCart, updateCartQuantity } from "@/lib/cart-store";
 import { useLang } from "@/i18n/LangProvider";
-import { formatPrice } from "@/i18n/format";
+import { formatPrice, localizedProductName } from "@/i18n/format";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({
@@ -28,7 +28,7 @@ function CartPage() {
       <Nav />
       <div className="mx-auto max-w-5xl px-4 py-10 sm:py-14">
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-          Keranjang
+          {lang === "id" ? "Keranjang" : "Cart"}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">{count} item</p>
 
@@ -36,17 +36,17 @@ function CartPage() {
           <div className="mt-16 flex flex-col items-center text-center">
             <ShoppingBag className="h-12 w-12 text-muted-foreground" />
             <p className="mt-4 text-base text-muted-foreground">
-              Keranjang kamu kosong.
+              {lang === "id" ? "Keranjang kamu kosong." : "Your cart is empty."}
             </p>
             <Button asChild className="mt-6">
-              <Link to="/catalog">Lanjut belanja</Link>
+              <Link to="/catalog">{lang === "id" ? "Lanjut belanja" : "Continue shopping"}</Link>
             </Button>
           </div>
         ) : (
           <div className="mt-8 grid gap-8 lg:grid-cols-[3fr_2fr]">
             <ul className="divide-y divide-border rounded-lg border border-border">
               {items.map((it) => {
-                const name = lang === "id" ? it.name_id : it.name_en;
+                const name = localizedProductName(it, lang) || it.name_en || it.name_id;
                 return (
                   <li key={it.key} className="flex gap-4 p-4">
                     {it.thumbnail ? (
@@ -94,7 +94,7 @@ function CartPage() {
                           onClick={() => removeFromCart(it.key)}
                           className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive"
                         >
-                          <Trash2 className="h-3.5 w-3.5" /> Hapus
+                          <Trash2 className="h-3.5 w-3.5" /> {lang === "id" ? "Hapus" : "Remove"}
                         </button>
                       </div>
                     </div>
@@ -107,19 +107,21 @@ function CartPage() {
             </ul>
 
             <aside className="h-fit rounded-lg border border-border bg-card p-5">
-              <h2 className="text-sm font-semibold">Ringkasan</h2>
+              <h2 className="text-sm font-semibold">{lang === "id" ? "Ringkasan" : "Summary"}</h2>
               <div className="mt-4 flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Subtotal</span>
                 <span className="font-semibold">{formatPrice(subtotal, lang)}</span>
               </div>
               <p className="mt-2 text-xs text-muted-foreground">
-                Ongkir dan diskon dihitung di langkah berikutnya.
+                {lang === "id"
+                  ? "Ongkir dan diskon dihitung di langkah berikutnya."
+                  : "Shipping and discounts are calculated in the next step."}
               </p>
               <Button
                 className="mt-5 h-11 w-full"
                 onClick={() => navigate({ to: checkoutPath as never })}
               >
-                Lanjut ke checkout
+                {lang === "id" ? "Lanjut ke checkout" : "Proceed to checkout"}
               </Button>
             </aside>
           </div>

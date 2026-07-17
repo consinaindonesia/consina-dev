@@ -10,10 +10,16 @@ import { useLang } from "@/i18n/LangProvider";
 import { PriceDisplay } from "@/components/site/PriceDisplay";
 import { addToCart } from "@/lib/cart-store";
 import { WishlistButton } from "@/components/site/WishlistButton";
+import { StarRating } from "@/components/site/StarRating";
+import { localizedCategoryName, localizedProductName } from "@/i18n/format";
 
 export const Route = createFileRoute("/c/$slug")({
   component: CategoryPage,
 });
+
+const CATEGORY_SLUG_ALIASES: Record<string, string> = {
+  tents: "activities-camping-tenda",
+};
 
 type Category = {
   id: string;
@@ -23,6 +29,11 @@ type Category = {
   description_id: string | null;
   description_en: string | null;
   image_url: string | null;
+};
+
+type CategoryNode = {
+  id: string;
+  parent_category_id: string | null;
 };
 
 type AttributeDef = {
@@ -41,15 +52,25 @@ type ProductRow = {
   sku: string;
   name_en: string;
   name_id: string;
+  capacity: string | null;
   price_idr: number;
   weight_grams: number | null;
   original_price_idr: number | null;
   sale_price_idr: number | null;
   is_on_sale: boolean;
+  discount_percent: number | null;
+  rating_average: number;
+  rating_count: number;
   attributes: Record<string, string> | null;
   product_images: Array<{ thumbnail_url: string | null; image_url: string }>;
   images: string[] | null;
-  variants: Array<{ color_hex: string; color_name: string }>;
+  variants: Array<{
+    color_hex: string;
+    color_name: string;
+    price_idr: number | null;
+    original_price_idr: number | null;
+    sale_price_idr: number | null;
+  }>;
   size_variants: Array<{
     price_idr: number | null;
     original_price_idr: number | null;
@@ -57,6 +78,64 @@ type ProductRow = {
   }>;
   has_size_variants: boolean;
 };
+
+const FILTER_FALLBACK_LABELS: Record<string, { name_en: string; name_id: string; unit?: string | null }> = {
+  capacity: { name_en: "Capacity", name_id: "Kapasitas", unit: "L" },
+  color: { name_en: "Color", name_id: "Warna" },
+  warna: { name_en: "Color", name_id: "Warna" },
+};
+const FILTER_PREVIEW_COUNT = 6;
+const PRIVATE_FILTER_SLUGS = new Set(["source", "import_source", "data_source"]);
+
+function humanizeFilterLabel(slug: string) {
+  return slug
+    .replace(/[_-]+/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function getFilterLabel(def: AttributeDef, lang: "id" | "en") {
+  if (lang === "id") return def.name_id || def.name_en;
+  return FILTER_FALLBACK_LABELS[def.slug]?.name_en || def.name_en || def.name_id;
+}
+
+function normalizeFilterValue(value: unknown): string | null {
+  if (value === null || value === undefined) return null;
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  }
+  if (typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+  if (Array.isArray(value)) {
+    const parts = value
+      .map((entry) => normalizeFilterValue(entry))
+      .filter((entry): entry is string => !!entry);
+    return parts.length > 0 ? parts.join(", ") : null;
+  }
+  return null;
+}
+
+function getProductFilterValues(product: ProductRow, slug: string) {
+  const values = new Set<string>();
+  const addValue = (value: unknown) => {
+    const normalized = normalizeFilterValue(value);
+    if (normalized) values.add(normalized);
+  };
+
+  if (slug === "capacity") {
+    addValue(product.capacity);
+    addValue(product.attributes?.capacity);
+  } else if (slug === "color") {
+    addValue(product.attributes?.color);
+    addValue(product.attributes?.warna);
+    product.variants.forEach((variant) => addValue(variant.color_name));
+  } else {
+    addValue(product.attributes?.[slug]);
+  }
+
+  return Array.from(values);
+}
 
 
 function CategoryPage() {
@@ -68,25 +147,31 @@ function CategoryPage() {
   const [loading, setLoading] = useState(true);
   const [missing, setMissing] = useState(false);
   const [filters, setFilters] = useState<Record<string, Set<string>>>({});
+  const [expandedFilterGroups, setExpandedFilterGroups] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       setLoading(true);
+      const requestedSlug = CATEGORY_SLUG_ALIASES[slug] ?? slug;
 
       // 1. Resolve slug → category, following redirects if needed.
       let { data: cat } = await supabase
         .from("categories")
         .select("id,slug,name_id,name_en,description_id,description_en,image_url")
-        .eq("slug", slug)
+        .eq("slug", requestedSlug)
         .eq("is_active", true)
         .maybeSingle();
+
+      if (requestedSlug !== slug && !cancelled) {
+        window.history.replaceState({}, "", `/c/${requestedSlug}`);
+      }
 
       if (!cat) {
         const { data: redirect } = await supabase
           .from("category_slug_redirects")
           .select("new_slug")
-          .eq("old_slug", slug)
+          .eq("old_slug", requestedSlug)
           .maybeSingle();
         if (redirect?.new_slug) {
           // Client-side redirect to the canonical slug
@@ -109,28 +194,57 @@ function CategoryPage() {
       }
       setCategory(cat as Category);
 
-      // 2. Load attribute schema for this category.
+      // 2. Resolve descendant category ids so parent categories show products from subcategories too.
+      const { data: allCategories } = await supabase
+        .from("categories")
+        .select("id,parent_category_id")
+        .eq("is_active", true);
+      const childMap = new Map<string, string[]>();
+      for (const row of ((allCategories ?? []) as CategoryNode[])) {
+        if (!row.parent_category_id) continue;
+        const siblings = childMap.get(row.parent_category_id) ?? [];
+        siblings.push(row.id);
+        childMap.set(row.parent_category_id, siblings);
+      }
+      const categoryIds = new Set<string>([cat.id]);
+      const queue = [cat.id];
+      while (queue.length > 0) {
+        const current = queue.shift()!;
+        for (const childId of childMap.get(current) ?? []) {
+          if (categoryIds.has(childId)) continue;
+          categoryIds.add(childId);
+          queue.push(childId);
+        }
+      }
+      const scopedCategoryIds = Array.from(categoryIds);
+
+      // 3. Load attribute schema for this category scope.
       const { data: catAttrs } = await supabase
         .from("category_attributes")
         .select("sort_order, attribute:attributes(id, slug, name_id, name_en, type, unit, options)")
-        .eq("category_id", cat.id)
+        .in("category_id", scopedCategoryIds)
         .order("sort_order");
-      const defs: AttributeDef[] = ((catAttrs ?? []) as unknown as Array<{
+      const defsMap = new Map<string, AttributeDef>();
+      const catAttrRows = (catAttrs ?? []) as unknown as Array<{
         attribute: AttributeDef | null;
-      }>)
+      }>;
+      catAttrRows
         .map((r) => r.attribute)
         .filter((a): a is AttributeDef => !!a)
-        .map((a) => ({ ...a, options: Array.isArray(a.options) ? a.options : [] }));
+        .forEach((a) => {
+          defsMap.set(a.id, { ...a, options: Array.isArray(a.options) ? a.options : [] });
+        });
+      const defs: AttributeDef[] = Array.from(defsMap.values());
       if (cancelled) return;
       setAttrDefs(defs);
 
-      // 3. Load products with primary image.
+      // 4. Load products with primary image across the full category scope.
       const { data: prods } = await supabase
         .from("products")
         .select(
-          "id,sku,slug,name_en,name_id,price_idr,weight_grams,original_price_idr,sale_price_idr,is_on_sale,attributes,images,product_images(thumbnail_url,image_url,is_primary,sort_order),product_variants(color_hex,color_name,sort_order),product_size_variants(id)",
+          "id,sku,slug,name_en,name_id,capacity,price_idr,weight_grams,original_price_idr,sale_price_idr,is_on_sale,discount_percent,rating_average,rating_count,attributes,images,product_images(thumbnail_url,image_url,is_primary,sort_order),product_variants(color_hex,color_name,price_idr,original_price_idr,sale_price_idr,sort_order),product_size_variants(id,price_idr,original_price_idr,stock)",
         )
-        .eq("category_id", cat.id)
+        .in("category_id", scopedCategoryIds)
         .eq("is_active", true)
         .order("name_en");
       if (cancelled) return;
@@ -148,26 +262,64 @@ function CategoryPage() {
           : flat.length > 0
             ? [{ thumbnail_url: flat[0], image_url: flat[0] }]
             : [];
-        const variantsRaw = ((p as { product_variants?: Array<{ color_hex: string; color_name: string; sort_order: number }> }).product_variants ?? [])
+        const variantsRaw = ((p as { product_variants?: Array<{ color_hex: string; color_name: string; price_idr: number | null; original_price_idr: number | null; sale_price_idr: number | null; sort_order: number }> }).product_variants ?? [])
           .slice()
           .sort((a, b) => a.sort_order - b.sort_order)
-          .map((v) => ({ color_hex: v.color_hex, color_name: v.color_name }));
+          .map((v) => ({
+            color_hex: v.color_hex,
+            color_name: v.color_name,
+            price_idr: v.price_idr ?? null,
+            original_price_idr: v.original_price_idr ?? null,
+            sale_price_idr: v.sale_price_idr ?? null,
+          }));
         return {
           id: p.id,
           slug: (p as { slug?: string | null }).slug ?? null,
           sku: p.sku,
           name_en: p.name_en,
           name_id: p.name_id,
+          capacity: (p as { capacity?: string | null }).capacity ?? null,
           price_idr: p.price_idr,
           weight_grams: (p as { weight_grams?: number | null }).weight_grams ?? null,
           original_price_idr: (p as { original_price_idr?: number | null }).original_price_idr ?? null,
           sale_price_idr: (p as { sale_price_idr?: number | null }).sale_price_idr ?? null,
           is_on_sale: !!(p as { is_on_sale?: boolean }).is_on_sale,
+          discount_percent:
+            (p as { discount_percent?: number | string | null }).discount_percent === null ||
+            (p as { discount_percent?: number | string | null }).discount_percent === undefined
+              ? null
+              : Number((p as { discount_percent?: number | string | null }).discount_percent),
+          rating_average: Number((p as { rating_average?: number | null }).rating_average ?? 0),
+          rating_count: Number((p as { rating_count?: number | null }).rating_count ?? 0),
           attributes: (p.attributes as Record<string, string> | null) ?? null,
           product_images: merged,
           images: flat,
           variants: variantsRaw,
-          size_variants: [],
+          size_variants: Array.isArray(
+            (
+              p as {
+                product_size_variants?: Array<{
+                  price_idr: number | null;
+                  original_price_idr: number | null;
+                  stock: number | null;
+                }>;
+              }
+            ).product_size_variants,
+          )
+            ? (
+                p as {
+                  product_size_variants: Array<{
+                    price_idr: number | null;
+                    original_price_idr: number | null;
+                    stock: number | null;
+                  }>;
+                }
+              ).product_size_variants.map((v) => ({
+                price_idr: v.price_idr ?? null,
+                original_price_idr: v.original_price_idr ?? null,
+                stock: v.stock ?? null,
+              }))
+            : [],
           has_size_variants:
             Array.isArray((p as { product_size_variants?: unknown[] }).product_size_variants) &&
             ((p as { product_size_variants?: unknown[] }).product_size_variants?.length ?? 0) > 0,
@@ -182,15 +334,58 @@ function CategoryPage() {
     };
   }, [slug]);
 
-  // Build filters: only show attributes that products in this category actually use,
-  // with the actual values found across those products.
+  const filterDefs = useMemo(() => {
+    const defsBySlug = new Map<string, AttributeDef>();
+
+    attrDefs.forEach((def) => {
+      if (PRIVATE_FILTER_SLUGS.has(def.slug)) return;
+      defsBySlug.set(def.slug, def);
+    });
+
+    const ensureFallbackDef = (slug: string) => {
+      if (PRIVATE_FILTER_SLUGS.has(slug)) return;
+      if (defsBySlug.has(slug)) return;
+      const fallback = FILTER_FALLBACK_LABELS[slug];
+      defsBySlug.set(slug, {
+        id: `fallback:${slug}`,
+        slug,
+        name_en: fallback?.name_en ?? humanizeFilterLabel(slug),
+        name_id: fallback?.name_id ?? humanizeFilterLabel(slug),
+        type: "select",
+        unit: fallback?.unit ?? null,
+        options: [],
+      });
+    };
+
+    for (const product of products) {
+      if (normalizeFilterValue(product.capacity) || normalizeFilterValue(product.attributes?.capacity)) {
+        ensureFallbackDef("capacity");
+      }
+      if (
+        normalizeFilterValue(product.attributes?.color) ||
+        normalizeFilterValue(product.attributes?.warna) ||
+        product.variants.some((variant) => normalizeFilterValue(variant.color_name))
+      ) {
+        ensureFallbackDef("color");
+      }
+      for (const [slug, value] of Object.entries(product.attributes ?? {})) {
+        if (PRIVATE_FILTER_SLUGS.has(slug)) continue;
+        if (normalizeFilterValue(value)) ensureFallbackDef(slug);
+      }
+    }
+
+    return Array.from(defsBySlug.values());
+  }, [attrDefs, products]);
+
+  // Build filters from the actual product values present inside this category.
   const dynamicFilters = useMemo(() => {
     const out: Array<{ def: AttributeDef; values: string[] }> = [];
-    for (const def of attrDefs) {
+    for (const def of filterDefs) {
       const seen = new Set<string>();
       for (const p of products) {
-        const v = p.attributes?.[def.slug];
-        if (v && v.trim()) seen.add(v.trim());
+        for (const value of getProductFilterValues(p, def.slug)) {
+          seen.add(value);
+        }
       }
       if (seen.size > 0) {
         out.push({
@@ -205,15 +400,15 @@ function CategoryPage() {
       }
     }
     return out;
-  }, [attrDefs, products]);
+  }, [filterDefs, products]);
 
   const filtered = useMemo(() => {
     const active = Object.entries(filters).filter(([, set]) => set.size > 0);
     if (active.length === 0) return products;
     return products.filter((p) =>
       active.every(([slug, set]) => {
-        const v = p.attributes?.[slug];
-        return v ? set.has(v) : false;
+        const values = getProductFilterValues(p, slug);
+        return values.some((value) => set.has(value));
       }),
     );
   }, [products, filters]);
@@ -233,6 +428,10 @@ function CategoryPage() {
     setFilters({});
   }
 
+  function toggleFilterGroup(slug: string) {
+    setExpandedFilterGroups((prev) => ({ ...prev, [slug]: !prev[slug] }));
+  }
+
   const activeFilterCount = Object.values(filters).reduce((sum, s) => sum + s.size, 0);
 
   if (missing) {
@@ -248,7 +447,7 @@ function CategoryPage() {
             <>
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">Category</p>
               <h1 className="mt-3 text-4xl font-black tracking-tight text-primary md:text-5xl">
-                {category.name_en}
+                {localizedCategoryName(category, lang)}
               </h1>
               {category.description_en && (
                 <p className="mt-3 max-w-2xl text-base text-muted-foreground">{category.description_en}</p>
@@ -264,7 +463,8 @@ function CategoryPage() {
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[260px_1fr]">
           {/* Filters */}
           <aside>
-            <div className="sticky top-20">
+            <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-hidden rounded-2xl border border-border bg-card">
+              <div className="max-h-[calc(100vh-6rem)] overflow-y-auto p-5">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-foreground">
                   <Filter className="h-4 w-4" /> Filters
@@ -282,12 +482,29 @@ function CategoryPage() {
                 <div className="space-y-5">
                   {dynamicFilters.map(({ def, values }) => (
                     <div key={def.id}>
-                      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-foreground">
-                        {def.name_en}
-                        {def.unit ? ` (${def.unit})` : ""}
-                      </h3>
+                      <div className="mb-2 flex items-start justify-between gap-3">
+                        <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                          {getFilterLabel(def, lang)}
+                          {def.unit ? ` (${def.unit})` : ""}
+                        </h3>
+                        {values.length > FILTER_PREVIEW_COUNT && (
+                          <button
+                            type="button"
+                            onClick={() => toggleFilterGroup(def.slug)}
+                            className="shrink-0 text-[11px] font-medium text-muted-foreground transition hover:text-primary"
+                          >
+                            {expandedFilterGroups[def.slug]
+                              ? lang === "id"
+                                ? "Lebih sedikit"
+                                : "Show less"
+                              : lang === "id"
+                                ? "Lebih banyak"
+                                : "Show more"}
+                          </button>
+                        )}
+                      </div>
                       <ul className="space-y-1.5">
-                        {values.map((v) => {
+                        {(expandedFilterGroups[def.slug] ? values : values.slice(0, FILTER_PREVIEW_COUNT)).map((v) => {
                           const active = filters[def.slug]?.has(v) ?? false;
                           return (
                             <li key={v}>
@@ -308,6 +525,7 @@ function CategoryPage() {
                   ))}
                 </div>
               )}
+              </div>
             </div>
           </aside>
 
@@ -340,6 +558,7 @@ function CategoryPage() {
                     const img = p.product_images[0];
                     const prefix = lang === "id" ? "produk" : "products";
                     const detailHref = `/${lang}/${prefix}/${p.slug ?? p.sku}`;
+                    const name = localizedProductName(p, lang);
                     const requiresChoice = p.variants.length > 0 || p.has_size_variants;
                     const handleAdd = (e: React.MouseEvent) => {
                       e.preventDefault();
@@ -359,15 +578,15 @@ function CategoryPage() {
                       toast.success(lang === "id" ? "Ditambahkan ke keranjang" : "Added to cart");
                     };
                     return (
-                      <li key={p.id} className="group overflow-hidden rounded-xl border border-border bg-card transition hover:shadow-md">
+                      <li key={p.id} className="storefront-card-hover group overflow-hidden rounded-xl border border-border bg-card transition hover:shadow-md">
                         <Link to={detailHref as never} className="block cursor-pointer">
                         <div className="relative aspect-square overflow-hidden bg-muted">
                           {img ? (
                             <img
                               src={img.thumbnail_url ?? img.image_url}
-                              alt={p.name_en}
+                              alt={name}
                               loading="lazy"
-                              className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                              className="storefront-card-media h-full w-full object-cover"
                             />
                           ) : (
                             <div className="h-full w-full bg-muted" />
@@ -387,7 +606,10 @@ function CategoryPage() {
                         </div>
                         <div className="p-4">
                           <p className="text-xs uppercase tracking-wider text-muted-foreground">{p.sku}</p>
-                          <h3 className="mt-1 font-medium text-foreground">{p.name_en}</h3>
+                          <h3 className="mt-1 font-medium text-foreground">{name}</h3>
+                          {p.rating_count > 0 && (
+                            <StarRating rating={p.rating_average} count={p.rating_count} className="mt-1" />
+                          )}
                           {p.variants.length > 0 && (
                             <div className="mt-2 flex items-center gap-1">
                               {p.variants.slice(0, 5).map((v, i) => (

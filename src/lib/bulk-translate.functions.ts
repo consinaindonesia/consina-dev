@@ -11,6 +11,11 @@ const BulkInput = z.object({
 });
 
 const LANG_NAME = { id: "Indonesian", en: "English" } as const;
+const DEFAULT_GROQ_MODEL = process.env.GROQ_CHAT_MODEL || "llama-3.1-8b-instant";
+
+function maxTokensFor(text: string) {
+  return Math.min(1800, Math.max(300, Math.ceil(text.length / 2.5)));
+}
 
 function colFor(field: Field, lang: "id" | "en") {
   return `${field}_${lang}` as const;
@@ -40,7 +45,50 @@ function buildGlossaryBlock(rows: GlossaryRow[], target: "id" | "en") {
   return `Brand glossary — apply these rules strictly:\n${lines.join("\n")}`;
 }
 
-async function callClaude(apiKey: string, system: string, user: string) {
+function sameContent(a: string | null | undefined, b: string | null | undefined) {
+  return (a ?? "").trim() !== "" && (a ?? "").trim() === (b ?? "").trim();
+}
+
+function needsTranslation(sourceValue: string, targetValue: string) {
+  if (!sourceValue.trim()) return false;
+  if (!targetValue.trim()) return true;
+  return sameContent(sourceValue, targetValue);
+}
+
+async function callGroq(system: string, user: string) {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) return "";
+
+  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: DEFAULT_GROQ_MODEL,
+      temperature: 0.15,
+      max_tokens: maxTokensFor(user),
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: user },
+      ],
+    }),
+  });
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error(`Groq translate failed (${res.status}): ${t.slice(0, 200)}`);
+  }
+  const json = (await res.json()) as {
+    choices?: Array<{ message?: { content?: string } }>;
+  };
+  return json.choices?.[0]?.message?.content?.trim() ?? "";
+}
+
+async function callClaude(system: string, user: string) {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return "";
+
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -67,12 +115,20 @@ async function callClaude(apiKey: string, system: string, user: string) {
     .trim();
 }
 
+async function translateWithAvailableProvider(system: string, user: string) {
+  if (!process.env.GROQ_API_KEY && !process.env.ANTHROPIC_API_KEY) {
+    throw new Error("GROQ_API_KEY or ANTHROPIC_API_KEY is required for translation");
+  }
+  return (await callGroq(system, user)) || (await callClaude(system, user));
+}
+
 export const bulkTranslateProducts = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => BulkInput.parse(input))
   .handler(async ({ data, context }) => {
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) throw new Error("ANTHROPIC_API_KEY is not configured");
+    if (!process.env.GROQ_API_KEY && !process.env.ANTHROPIC_API_KEY) {
+      throw new Error("GROQ_API_KEY or ANTHROPIC_API_KEY is required for translation");
+    }
 
     const { supabase, claims } = context;
     const email = (claims as { email?: string }).email;
@@ -127,8 +183,7 @@ export const bulkTranslateProducts = createServerFn({ method: "POST" })
         const tgtCol = colFor(field, target);
         const srcVal = (row[srcCol] as string | null) ?? "";
         const tgtVal = (row[tgtCol] as string | null) ?? "";
-        if (!srcVal.trim()) continue;
-        if (tgtVal.trim()) continue;
+        if (!needsTranslation(srcVal, tgtVal)) continue;
 
         try {
           const system = `You translate product content for Consina, an Indonesian outdoor lifestyle brand.
@@ -144,9 +199,11 @@ Rules:
 - Do not translate proper names (Consina, place / mountain names).
 - For names: keep concise and brand-consistent.
 - For descriptions: preserve HTML formatting.
+- If the source contains escaped line breaks such as \\n, convert them into natural readable spacing or paragraphs.
+- Do not add claims, specs, prices, sizes, or stock information that are not in the source.
 
 Provide ONLY the translation, no commentary.`;
-          const out = await callClaude(apiKey, system, `Source text:\n${srcVal}`);
+          const out = await translateWithAvailableProvider(system, `Source text:\n${srcVal}`);
           if (out) {
             updates[tgtCol] = out;
             newFlags.add(tgtCol);

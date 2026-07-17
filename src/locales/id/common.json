@@ -10,7 +10,10 @@
     "find_store": "Cari toko",
     "since": "Sejak 1999",
     "menu": "Menu",
-    "search": "Cari"
+    "search": "Cari",
+    "search_placeholder": "Cari produk...",
+    "account": "Akun Saya",
+    "sign_in": "Masuk / Daftar"
   },
   "categories": {
     "carriers": "Tas Carrier",

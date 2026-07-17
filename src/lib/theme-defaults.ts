@@ -78,7 +78,6 @@ export const DEFAULT_HEADER: HeaderSettings = {
   navLinks: [
     { labelId: "Katalog", labelEn: "Catalog", href: "/catalog" },
     { labelId: "Toko", labelEn: "Stores", href: "/stores" },
-    { labelId: "Cerita", labelEn: "Story", href: "/" },
   ],
 };
 
@@ -129,7 +128,7 @@ export const DEFAULT_FOOTER: FooterSettings = {
 
 export const DEFAULT_THEME: ThemeSettings = {
   colors: {
-    background: "oklch(0.975 0.012 90)",
+    background: "#ffffff",
     foreground: "oklch(0.18 0.005 60)",
     primary: "oklch(0.30 0.045 155)",
     secondary: "oklch(0.42 0.055 155)",
@@ -212,7 +211,7 @@ export function mergeTheme(partial: unknown): ThemeSettings {
 // Only inject a CSS var if the value is a recognisable CSS color format.
 // An invalid value (e.g. "fffff") would override the static styles.css fallback
 // and cause any element using var(--background) etc. to render as transparent.
-function isValidColor(v: string): boolean {
+export function isValidColor(v: string): boolean {
   if (!v?.trim()) return false;
   const s = v.trim();
   return /^(oklch|rgb|rgba|hsl|hsla)\(/i.test(s) ||

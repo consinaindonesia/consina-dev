@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
+import { normalizeEscapedLineBreaks } from "@/i18n/format";
 import { importProductsCsv } from "@/lib/csv-import.functions";
 
 export const CSV_COLUMNS = [
@@ -316,10 +317,10 @@ export function CsvImportWizard({
           category_path: (r.raw.category_path ?? "").trim(),
           name_id: (r.raw.name_id ?? "").trim(),
           name_en: (r.raw.name_en ?? "").trim(),
-          short_description_id: (r.raw.short_description_id ?? "").trim(),
-          short_description_en: (r.raw.short_description_en ?? "").trim(),
-          description_id: (r.raw.description_id ?? "").trim(),
-          description_en: (r.raw.description_en ?? "").trim(),
+          short_description_id: normalizeEscapedLineBreaks((r.raw.short_description_id ?? "").trim()),
+          short_description_en: normalizeEscapedLineBreaks((r.raw.short_description_en ?? "").trim()),
+          description_id: normalizeEscapedLineBreaks((r.raw.description_id ?? "").trim()),
+          description_en: normalizeEscapedLineBreaks((r.raw.description_en ?? "").trim()),
           price_idr: Number(r.raw.price_idr),
           capacity: (r.raw.capacity ?? "").trim(),
           weight_grams: r.raw.weight_grams ? Number(r.raw.weight_grams) : null,

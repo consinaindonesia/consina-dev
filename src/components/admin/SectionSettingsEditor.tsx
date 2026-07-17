@@ -18,6 +18,9 @@ import type {
   HeroSettings,
   FeaturedProductsSettings,
   CategoriesSettings,
+  ActivitiesSettings,
+  ActivityItem,
+  ZeroWasteSettings,
   BrandStorySettings,
   CommunitySettings,
   StatsSettings,
@@ -72,6 +75,18 @@ export function SectionSettingsEditor({
         <CategoriesEditor
           value={value as CategoriesSettings}
           onChange={onChange as (v: CategoriesSettings) => void}
+        />
+      )}
+      {type === "activities" && (
+        <ActivitiesEditor
+          value={value as ActivitiesSettings}
+          onChange={onChange as (v: ActivitiesSettings) => void}
+        />
+      )}
+      {type === "zero_waste" && (
+        <ZeroWasteEditor
+          value={value as ZeroWasteSettings}
+          onChange={onChange as (v: ZeroWasteSettings) => void}
         />
       )}
       {type === "brand_story" && (
@@ -544,6 +559,7 @@ function FeaturedEditor({
   const { products } = usePublicProducts();
   const source = value.source ?? "featured";
   const selected = value.productIds ?? [];
+  const autoScroll = value.autoScroll ?? true;
   const toggle = (id: string) => {
     const next = selected.includes(id) ? selected.filter((x) => x !== id) : [...selected, id];
     onChange({ ...value, productIds: next });
@@ -573,6 +589,45 @@ function FeaturedEditor({
             value={value.count ?? 8}
             onChange={(e) => onChange({ ...value, count: Number(e.target.value) || 8 })}
           />
+        </div>
+      </div>
+      <div className="rounded border border-input p-3">
+        <Label className="text-xs font-semibold">Auto-scroll carousel</Label>
+        <div className="mt-2 flex items-center justify-between gap-3">
+          <p className="text-[11px] text-muted-foreground">
+            Geser kartu otomatis, berhenti beberapa detik, lalu jalan lagi.
+          </p>
+          <label className="flex items-center gap-2 text-xs font-medium">
+            <input
+              type="checkbox"
+              checked={autoScroll}
+              onChange={(e) => onChange({ ...value, autoScroll: e.target.checked })}
+            />
+            Enable
+          </label>
+        </div>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <div>
+            <Label className="text-xs">Pause duration (seconds)</Label>
+            <Input
+              type="number"
+              min={1}
+              max={15}
+              value={value.pauseSeconds ?? 3}
+              onChange={(e) => onChange({ ...value, pauseSeconds: Number(e.target.value) || 3 })}
+            />
+          </div>
+          <div>
+            <Label className="text-xs">Scroll speed (ms per move)</Label>
+            <Input
+              type="number"
+              min={200}
+              max={5000}
+              step={100}
+              value={value.scrollDurationMs ?? 900}
+              onChange={(e) => onChange({ ...value, scrollDurationMs: Number(e.target.value) || 900 })}
+            />
+          </div>
         </div>
       </div>
       {source === "manual" && (
@@ -612,16 +667,23 @@ function CategoriesEditor({
 }) {
   const { data: cats } = usePublicCategories();
   const list = cats ?? [];
-  const slugs = value.categorySlugs ?? [];
-  const orderedSlugs = slugs.length ? slugs : list.map((c) => c.slug);
+  const allSlugs = list.map((c) => c.slug);
+  const hasManualSelection = Array.isArray(value.categorySlugs);
+  const selectedSlugs = hasManualSelection ? value.categorySlugs ?? [] : allSlugs;
+  const hiddenSlugs = allSlugs.filter((slug) => !selectedSlugs.includes(slug));
+  const editorSlugs = [...selectedSlugs, ...hiddenSlugs];
+  const autoScroll = value.autoScroll ?? true;
 
   const toggle = (slug: string) => {
-    const cur = slugs.length ? slugs : list.map((c) => c.slug);
+    const cur = hasManualSelection ? [...selectedSlugs] : [...allSlugs];
     const next = cur.includes(slug) ? cur.filter((x) => x !== slug) : [...cur, slug];
-    onChange({ ...value, categorySlugs: next });
+    onChange({
+      ...value,
+      categorySlugs: next.length === allSlugs.length ? undefined : next,
+    });
   };
   const move = (slug: string, dir: -1 | 1) => {
-    const cur = [...orderedSlugs];
+    const cur = [...selectedSlugs];
     const idx = cur.indexOf(slug);
     const j = idx + dir;
     if (idx < 0 || j < 0 || j >= cur.length) return;
@@ -634,20 +696,76 @@ function CategoriesEditor({
       <LocalizedField label="Eyebrow" value={value.eyebrow} onChange={(v) => onChange({ ...value, eyebrow: v })} />
       <LocalizedField label="Title" value={value.title} onChange={(v) => onChange({ ...value, title: v })} />
       <LocalizedField label="Subtitle" value={value.subtitle} onChange={(v) => onChange({ ...value, subtitle: v })} />
+      <CTAEditor
+        label="Card CTA button"
+        value={value.cardCta}
+        onChange={(v) => onChange({ ...value, cardCta: v })}
+      />
+      <div className="rounded border border-input p-3">
+        <Label className="text-xs font-semibold">Auto-scroll carousel</Label>
+        <div className="mt-2 flex items-center justify-between gap-3">
+          <p className="text-[11px] text-muted-foreground">
+            Geser kartu otomatis, berhenti beberapa detik, lalu jalan lagi.
+          </p>
+          <label className="flex items-center gap-2 text-xs font-medium">
+            <input
+              type="checkbox"
+              checked={autoScroll}
+              onChange={(e) => onChange({ ...value, autoScroll: e.target.checked })}
+            />
+            Enable
+          </label>
+        </div>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <div>
+            <Label className="text-xs">Pause duration (seconds)</Label>
+            <Input
+              type="number"
+              min={1}
+              max={15}
+              value={value.pauseSeconds ?? 3}
+              onChange={(e) => onChange({ ...value, pauseSeconds: Number(e.target.value) || 3 })}
+            />
+          </div>
+          <div>
+            <Label className="text-xs">Scroll speed (ms per move)</Label>
+            <Input
+              type="number"
+              min={200}
+              max={5000}
+              step={100}
+              value={value.scrollDurationMs ?? 900}
+              onChange={(e) => onChange({ ...value, scrollDurationMs: Number(e.target.value) || 900 })}
+            />
+          </div>
+        </div>
+      </div>
       <div>
         <Label className="text-xs">Categories & order</Label>
         <ul className="mt-1 divide-y divide-border rounded border border-input">
-          {orderedSlugs.map((slug) => {
+          {editorSlugs.map((slug) => {
             const c = list.find((x) => x.slug === slug);
-            const included = !slugs.length || slugs.includes(slug);
+            const included = selectedSlugs.includes(slug);
             return (
               <li key={slug} className="flex items-center gap-2 px-2 py-1.5 text-xs">
                 <input type="checkbox" checked={included} onChange={() => toggle(slug)} />
                 <span className="flex-1 truncate">{c?.name_en || slug}</span>
-                <button type="button" onClick={() => move(slug, -1)} className="rounded p-1 hover:bg-muted" aria-label="Move up">
+                <button
+                  type="button"
+                  onClick={() => move(slug, -1)}
+                  disabled={!included}
+                  className="rounded p-1 hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+                  aria-label="Move up"
+                >
                   <ChevronUp className="h-3 w-3" />
                 </button>
-                <button type="button" onClick={() => move(slug, 1)} className="rounded p-1 hover:bg-muted" aria-label="Move down">
+                <button
+                  type="button"
+                  onClick={() => move(slug, 1)}
+                  disabled={!included}
+                  className="rounded p-1 hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+                  aria-label="Move down"
+                >
                   <ChevronDown className="h-3 w-3" />
                 </button>
               </li>
@@ -655,7 +773,7 @@ function CategoriesEditor({
           })}
         </ul>
         <p className="mt-1 text-[10px] text-muted-foreground">
-          Uncheck to hide a category. Use ↑↓ to reorder.
+          Check to show a category, uncheck to hide it. Use ↑↓ to reorder visible cards.
         </p>
       </div>
       <div className="rounded border border-input p-3">
@@ -664,7 +782,7 @@ function CategoriesEditor({
           Auto = newest uploaded product photo from this category. Manual = your chosen image.
         </p>
         <div className="space-y-3">
-          {orderedSlugs.map((slug) => {
+          {selectedSlugs.map((slug) => {
             const c = list.find((x) => x.slug === slug);
             const cur = (value.categoryImages ?? {})[slug] ?? {};
             const mode = cur.mode ?? "auto";
@@ -730,6 +848,123 @@ function CategoriesEditor({
         value={value.viewAllCta}
         onChange={(v) => onChange({ ...value, viewAllCta: v })}
       />
+    </div>
+  );
+}
+
+function ActivitiesEditor({
+  value,
+  onChange,
+}: {
+  value: ActivitiesSettings;
+  onChange: (v: ActivitiesSettings) => void;
+}) {
+  const items = value.items ?? [];
+  const updateItem = (idx: number, next: ActivityItem) => {
+    onChange({ ...value, items: items.map((item, i) => (i === idx ? next : item)) });
+  };
+
+  return (
+    <div className="space-y-4">
+      <LocalizedField label="Eyebrow" value={value.eyebrow} onChange={(v) => onChange({ ...value, eyebrow: v })} />
+      <LocalizedField label="Title" value={value.title} onChange={(v) => onChange({ ...value, title: v })} />
+      <LocalizedField
+        label="Subtitle"
+        value={value.subtitle}
+        onChange={(v) => onChange({ ...value, subtitle: v })}
+        multiline
+      />
+      <div className="rounded border border-dashed border-border p-3">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <div>
+            <Label className="text-sm font-semibold">Activity cards</Label>
+            <p className="text-xs text-muted-foreground">Small Decathlon-style shortcuts for Bike, Climbing, Hiking, Camping, etc.</p>
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            onClick={() =>
+              onChange({
+                ...value,
+                items: [...items, { enabled: true, title: { id: "Aktivitas baru", en: "New activity" }, href: "/catalog" }],
+              })
+            }
+          >
+            <Plus className="mr-1 h-4 w-4" /> Add
+          </Button>
+        </div>
+        <div className="space-y-3">
+          {items.map((item, idx) => (
+            <div key={idx} className="rounded border border-border bg-background p-3">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <label className="flex items-center gap-2 text-xs font-semibold">
+                  <input
+                    type="checkbox"
+                    checked={item.enabled !== false}
+                    onChange={(e) => updateItem(idx, { ...item, enabled: e.target.checked })}
+                  />
+                  Card #{idx + 1}
+                </label>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => onChange({ ...value, items: items.filter((_, i) => i !== idx) })}
+                  aria-label="Remove activity"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+              <LocalizedField
+                label="Title"
+                value={item.title}
+                onChange={(v) => updateItem(idx, { ...item, title: v })}
+              />
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <ImagePicker label="Image" value={item.image} onChange={(v) => updateItem(idx, { ...item, image: v })} />
+                <div>
+                  <Label className="text-xs">Link</Label>
+                  <Input
+                    value={item.href ?? ""}
+                    onChange={(e) => updateItem(idx, { ...item, href: e.target.value })}
+                    placeholder="/catalog?activity=hiking"
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ZeroWasteEditor({
+  value,
+  onChange,
+}: {
+  value: ZeroWasteSettings;
+  onChange: (v: ZeroWasteSettings) => void;
+}) {
+  return (
+    <div className="space-y-4">
+      <ImagePicker label="Background image" value={value.backgroundImage} onChange={(v) => onChange({ ...value, backgroundImage: v })} />
+      <ImagePicker label="Logo / badge image (optional)" value={value.logoImage} onChange={(v) => onChange({ ...value, logoImage: v })} />
+      <div>
+        <Label className="text-xs">Overlay darkness ({value.overlay ?? 68}%)</Label>
+        <Slider
+          value={[value.overlay ?? 68]}
+          min={0}
+          max={90}
+          step={1}
+          onValueChange={([overlay]) => onChange({ ...value, overlay })}
+          className="mt-3"
+        />
+      </div>
+      <LocalizedField label="Badge / tagline" value={value.badge} onChange={(v) => onChange({ ...value, badge: v })} />
+      <LocalizedField label="Title" value={value.title} onChange={(v) => onChange({ ...value, title: v })} multiline />
+      <LocalizedField label="Body" value={value.body} onChange={(v) => onChange({ ...value, body: v })} multiline />
+      <CTAEditor label="Claim CTA" value={value.cta} onChange={(v) => onChange({ ...value, cta: v })} />
     </div>
   );
 }
@@ -1156,7 +1391,9 @@ function AnnouncementBarEditor({ value, onChange }: { value: AnnouncementBarSett
         <ColorField label="Background" value={value.bgColor ?? ""} onChange={(v) => onChange({ ...value, bgColor: v || undefined })} />
         <ColorField label="Text" value={value.textColor ?? ""} onChange={(v) => onChange({ ...value, textColor: v || undefined })} />
       </div>
-      <p className="text-[11px] text-muted-foreground">Tip: place this section at the top of the page list.</p>
+      <p className="text-[11px] text-muted-foreground">
+        Edit it here. The storefront uses the first enabled announcement bar from Homepage Sections and renders it above the header.
+      </p>
     </div>
   );
 }

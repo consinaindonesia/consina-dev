@@ -135,6 +135,17 @@ function DesignEditor() {
       // on legacy installs) so every editable section is reachable.
       const existing = new Set((secs as PageSectionRow[]).map((r) => r.section_type));
       const missing = DEFAULT_HOME_SECTIONS.filter((t) => !existing.has(t));
+      const normalizeRows = async (rows: PageSectionRow[]) => {
+        const next = [...rows]
+          .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+          .map((row, i) => ({ ...row, position: i }));
+        await Promise.all(
+          next.map((row) =>
+            supabase.from("page_sections").update({ position: row.position }).eq("id", row.id),
+          ),
+        );
+        setSections(next);
+      };
       if (missing.length > 0) {
         const maxPos = (secs as PageSectionRow[]).reduce(
           (m, r) => Math.max(m, r.position ?? 0),
@@ -151,12 +162,12 @@ function DesignEditor() {
           .from("page_sections")
           .insert(addRows)
           .select("id,page,section_type,position,enabled,settings");
-        setSections([
+        await normalizeRows([
           ...(secs as PageSectionRow[]),
           ...((inserted ?? []) as PageSectionRow[]),
         ]);
       } else {
-        setSections(secs as PageSectionRow[]);
+        await normalizeRows(secs as PageSectionRow[]);
       }
     }
     setTheme(mergeTheme(th?.settings));

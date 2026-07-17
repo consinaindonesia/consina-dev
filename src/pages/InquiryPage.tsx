@@ -37,7 +37,7 @@ import {
   clearInquiry,
 } from "@/lib/inquiry-store";
 import { useLang } from "@/i18n/LangProvider";
-import { formatPrice } from "@/i18n/format";
+import { formatPrice, localizedProductName } from "@/i18n/format";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 
@@ -265,10 +265,7 @@ export function InquiryPage() {
             <>
               <ul className="divide-y divide-border rounded-lg border border-border">
                 {items.map((item) => {
-                  const name =
-                    (lang === "id" ? item.name_id : item.name_en) ||
-                    item.name_id ||
-                    item.name_en;
+                  const name = localizedProductName(item, lang) || item.name_id || item.name_en;
                   const productPath =
                     lang === "id"
                       ? `/id/produk/${item.slug}`

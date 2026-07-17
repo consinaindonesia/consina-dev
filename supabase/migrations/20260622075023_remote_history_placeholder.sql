@@ -1,0 +1,3 @@
+-- Placeholder migration to align local Supabase migration history
+-- with remote production history. The actual schema change for this
+-- version already exists remotely.

@@ -40,22 +40,27 @@ const ACTION_OPTIONS = [
   "bulk_import", "bulk_delete", "bulk_translate",
   "settings_changed", "user_deactivated",
   "sla_first_contact", "sla_breach_first_contact",
+  "sync_received", "sync_applied", "sync_failed",
 ];
 
 const ENTITY_OPTIONS = [
   "product", "category", "inquiry", "store", "admin_user",
   "attribute", "category_attribute", "auth", "setting", "bulk",
   "order", "shipping_method", "shipping_zone",
+  "inventory_sync",
 ];
 
 const CRITICAL_ACTIONS = new Set([
   "deleted", "role_changed", "login_failed", "user_deactivated", "bulk_delete",
+  "sync_failed",
 ]);
 
 function actionTone(action: string): "neutral" | "good" | "warn" | "critical" {
   if (CRITICAL_ACTIONS.has(action)) return "critical";
   if (action === "login_success" || action === "created") return "good";
+  if (action === "sync_applied") return "good";
   if (action.startsWith("sla_breach") || action === "password_reset_requested") return "warn";
+  if (action === "sync_received") return "warn";
   return "neutral";
 }
 

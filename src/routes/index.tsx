@@ -1051,12 +1051,12 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
 
           <div
             ref={scrollerRef}
-            className="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth scroll-pl-0 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] md:-mx-8 md:gap-5 md:px-8 md:scroll-pl-8 [&::-webkit-scrollbar]:hidden"
+            className="flex snap-x snap-mandatory gap-2 overflow-x-auto scroll-smooth scroll-pl-0 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] md:-mx-8 md:gap-5 md:px-8 md:scroll-pl-8 [&::-webkit-scrollbar]:hidden"
           >
             {items.map((cat) => (
               <div
                 key={cat.slug}
-                className="shrink-0 basis-[calc((100%_-_1.5rem)_/_3)] snap-start md:basis-[calc((100%_-_3.75rem)_/_4)] lg:basis-[calc((100%_-_6.25rem)_/_6)]"
+                className="shrink-0 basis-[28.5%] snap-start sm:basis-[29%] md:basis-[calc((100%_-_3.75rem)_/_4)] lg:basis-[calc((100%_-_6.25rem)_/_6)]"
               >
                 <CategoryCard cat={cat} ctaLabel={cardCtaLabel} ctaStyle={cardCtaStyle} />
               </div>
@@ -1120,7 +1120,7 @@ function CategoryCard({
     <Link
       to={"/c/$slug" as never}
       params={{ slug: cat.slug } as never}
-      className="group/card relative block h-[205px] overflow-hidden rounded-xl border border-white/10 bg-primary shadow-sm transition duration-500 hover:-translate-y-1 hover:shadow-2xl sm:h-[220px] md:h-[280px]"
+      className="group/card relative block h-[178px] overflow-hidden rounded-xl border border-white/10 bg-primary shadow-sm transition duration-500 hover:-translate-y-1 hover:shadow-2xl sm:h-[190px] md:h-[280px]"
     >
       <img
         src={cat.img}
@@ -1130,13 +1130,13 @@ function CategoryCard({
       />
       <div className="absolute inset-0 bg-black/45 transition duration-500 group-hover/card:bg-black/55" />
       <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/25 to-black/55" />
-      <div className="relative z-10 flex h-full flex-col items-center justify-center px-5 text-center text-white">
-        <h3 className="text-base font-black leading-tight tracking-tight drop-shadow sm:text-lg md:text-2xl">
+      <div className="relative z-10 flex h-full flex-col items-center justify-center px-2 text-center text-white sm:px-3 md:px-5">
+        <h3 className="text-[13px] font-black leading-tight tracking-tight drop-shadow sm:text-sm md:text-2xl">
           {cat.name}
         </h3>
         {ctaLabel && (
           <span
-            className={`mt-3 inline-flex items-center justify-center rounded-full px-4 py-2 text-[9px] font-black uppercase tracking-wider shadow-lg transition duration-300 group-hover/card:scale-105 sm:px-5 sm:py-2.5 sm:text-[10px] md:mt-5 md:px-6 md:py-3 md:text-xs ${buttonClass}`}
+            className={`mt-2 inline-flex items-center justify-center rounded-full px-3 py-1.5 text-[8px] font-black uppercase tracking-wide shadow-lg transition duration-300 group-hover/card:scale-105 sm:px-3.5 sm:py-2 sm:text-[8px] md:mt-5 md:px-6 md:py-3 md:text-xs ${buttonClass}`}
           >
             {ctaLabel}
           </span>

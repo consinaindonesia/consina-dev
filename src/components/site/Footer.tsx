@@ -44,7 +44,7 @@ export function Footer() {
 
   return (
     <footer
-      className="mt-24 border-t border-border bg-primary text-primary-foreground"
+      className="mt-6 border-t border-border bg-primary text-primary-foreground md:mt-8"
       style={{
         ...(footer.bgColor ? { backgroundColor: footer.bgColor } : {}),
         ...(footer.textColor ? { color: footer.textColor } : {}),

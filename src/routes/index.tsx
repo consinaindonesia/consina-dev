@@ -1190,7 +1190,7 @@ function ActivitiesSection({ settings }: { settings: ActivitiesSettings }) {
               <a
                 key={`${label}-${idx}`}
                 href={href}
-                className="group w-[132px] shrink-0 md:w-[154px] lg:w-[170px]"
+                className="group shrink-0 basis-[calc((100%-2.25rem)/4)] md:basis-[calc((100%-4rem)/5)] lg:basis-[calc((100%-7rem)/8)]"
               >
                 <div className="aspect-square overflow-hidden rounded-xl bg-muted shadow-sm">
                   <img

@@ -1056,7 +1056,7 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
             {items.map((cat) => (
               <div
                 key={cat.slug}
-                className="w-[84%] shrink-0 snap-start sm:w-[62%] md:w-[46%] lg:w-[32%] xl:w-[31.5%]"
+                className="shrink-0 basis-[calc((100%-2rem)/3)] snap-start md:basis-[calc((100%-3.75rem)/4)] lg:basis-[calc((100%-5rem)/5)]"
               >
                 <CategoryCard cat={cat} ctaLabel={cardCtaLabel} ctaStyle={cardCtaStyle} />
               </div>
@@ -1383,7 +1383,7 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
             return (
               <div
                 key={p.id}
-                className="storefront-card-hover group w-[72%] shrink-0 snap-start sm:w-[42%] md:w-[32%] lg:w-[24%] xl:w-[22.5%]"
+                className="storefront-card-hover group shrink-0 basis-[calc((100%-1.5rem)/3)] snap-start md:basis-[calc((100%-3rem)/4)] lg:basis-[calc((100%-4rem)/5)]"
               >
                 <Link
                   to={`/${lang}/${prefix}/${p.slug ?? p.sku}` as never}

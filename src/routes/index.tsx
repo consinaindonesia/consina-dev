@@ -1056,7 +1056,7 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
             {items.map((cat) => (
               <div
                 key={cat.slug}
-                className="shrink-0 basis-[calc((100%-2rem)/3)] snap-start md:basis-[calc((100%-3.75rem)/4)] lg:basis-[calc((100%-5rem)/5)]"
+                className="shrink-0 basis-[calc((100%-2rem)/3)] snap-start md:basis-[calc((100%-3.75rem)/4)] lg:basis-[calc((100%-6.25rem)/6)]"
               >
                 <CategoryCard cat={cat} ctaLabel={cardCtaLabel} ctaStyle={cardCtaStyle} />
               </div>
@@ -1134,14 +1134,9 @@ function CategoryCard({
         <h3 className="text-xl font-black leading-tight tracking-tight drop-shadow md:text-2xl">
           {cat.name}
         </h3>
-        {cat.desc && (
-          <p className="mt-2 line-clamp-2 max-w-[28rem] text-sm font-medium leading-relaxed text-white/85 drop-shadow md:text-base">
-            {cat.desc}
-          </p>
-        )}
         {ctaLabel && (
           <span
-            className={`mt-5 inline-flex items-center justify-center rounded-full px-6 py-3 text-xs font-black uppercase tracking-wider shadow-lg transition duration-300 group-hover/card:scale-105 ${buttonClass}`}
+            className={`mt-4 inline-flex items-center justify-center rounded-full px-5 py-2.5 text-[10px] font-black uppercase tracking-wider shadow-lg transition duration-300 group-hover/card:scale-105 md:mt-5 md:px-6 md:py-3 md:text-xs ${buttonClass}`}
           >
             {ctaLabel}
           </span>
@@ -1160,6 +1155,40 @@ function ActivitiesSection({ settings }: { settings: ActivitiesSettings }) {
   const title = pickLocalized(s.title, lang, lang === "en" ? "Popular Activities" : "Kategori Populer");
   const subtitle = pickLocalized(s.subtitle, lang);
   const items = (s.items ?? []).filter((item) => item.enabled !== false);
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [snapCount, setSnapCount] = useState(1);
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  const recompute = useCallback(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const pages = Math.max(1, Math.ceil(el.scrollWidth / el.clientWidth));
+    setSnapCount(pages);
+    setActiveIdx(Math.min(pages - 1, Math.max(0, getCarouselPageIndex(el))));
+  }, []);
+
+  useEffect(() => {
+    recompute();
+    const el = scrollerRef.current;
+    if (!el) return;
+    const onScroll = () => recompute();
+    el.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", recompute);
+    return () => {
+      el.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", recompute);
+    };
+  }, [recompute, items.length]);
+
+  const scrollToPage = useCallback((idx: number) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    el.scrollTo({
+      left: idx * el.clientWidth,
+      behavior: "smooth",
+    });
+  }, []);
+
   if (items.length === 0) return <></>;
 
   return (
@@ -1180,7 +1209,10 @@ function ActivitiesSection({ settings }: { settings: ActivitiesSettings }) {
             </p>
           )}
         </div>
-        <div className="flex gap-3 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] md:gap-4 [&::-webkit-scrollbar]:hidden">
+        <div
+          ref={scrollerRef}
+          className="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-2 [-ms-overflow-style:none] [scrollbar-width:none] md:gap-4 [&::-webkit-scrollbar]:hidden"
+        >
           {items.map((item, idx) => {
             const label = pickLocalized(item.title, lang, `Activity ${idx + 1}`);
             const slug = slugifyText(label);
@@ -1190,7 +1222,7 @@ function ActivitiesSection({ settings }: { settings: ActivitiesSettings }) {
               <a
                 key={`${label}-${idx}`}
                 href={href}
-                className="group shrink-0 basis-[calc((100%-2.25rem)/4)] md:basis-[calc((100%-4rem)/5)] lg:basis-[calc((100%-7rem)/8)]"
+                className="group shrink-0 basis-[calc((100%-2.25rem)/4)] snap-start md:basis-[calc((100%-4rem)/5)] lg:basis-[calc((100%-7rem)/8)]"
               >
                 <div className="aspect-square overflow-hidden rounded-xl bg-muted shadow-sm">
                   <img
@@ -1207,6 +1239,28 @@ function ActivitiesSection({ settings }: { settings: ActivitiesSettings }) {
             );
           })}
         </div>
+        {snapCount > 1 && (
+          <div className="mt-3 flex items-center justify-center gap-2">
+            {Array.from({ length: snapCount }).map((_, i) => {
+              const active = i === activeIdx;
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => scrollToPage(i)}
+                  aria-label={`Go to activities slide ${i + 1}`}
+                  aria-current={active ? "true" : undefined}
+                  className={
+                    "rounded-full transition-all " +
+                    (active
+                      ? "h-2 w-5 bg-primary"
+                      : "h-2 w-2 bg-primary/25 hover:bg-primary/50")
+                  }
+                />
+              );
+            })}
+          </div>
+        )}
       </div>
     </section>
   );

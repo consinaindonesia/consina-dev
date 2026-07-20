@@ -1200,7 +1200,7 @@ function ActivitiesSection({ settings }: { settings: ActivitiesSettings }) {
                     className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                   />
                 </div>
-                <p className="mt-2 text-center text-sm font-black leading-tight text-primary transition group-hover:text-secondary md:text-base">
+                <p className="mt-2 text-center text-xs font-extrabold leading-tight text-primary transition group-hover:text-secondary md:text-sm">
                   {label}
                 </p>
               </a>
@@ -1401,14 +1401,16 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
                   <WishlistButton productId={p.id} className="absolute left-3 bottom-3" />
                 </Link>
                 <div className="mt-4">
-                  <h3 className="text-base font-bold leading-snug text-primary">{name}</h3>
+                  <h3 className="line-clamp-3 text-[13px] font-bold leading-snug text-primary md:text-base">
+                    {name}
+                  </h3>
                   {p.rating_count > 0 && (
                     <StarRating rating={p.rating_average} count={p.rating_count} className="mt-1" />
                   )}
                   <PriceDisplay product={p} lang={lang} size="sm" className="mt-2" />
                   <Link
                     to={`/${lang}/${prefix}/${p.slug ?? p.sku}` as never}
-                    className="mt-3 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-[#1a3a2e] transition group-hover:gap-2"
+                    className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-[#1a3a2e] transition group-hover:gap-2 md:text-xs"
                   >
                     {t("cta.view_details")} <ArrowRight className="h-3.5 w-3.5" />
                   </Link>

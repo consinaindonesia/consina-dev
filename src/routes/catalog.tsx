@@ -197,7 +197,7 @@ function ProductCard({ p, lang }: { p: PublicProduct; lang: "id" | "en" }) {
         )}
       </div>
       <div className="mt-4">
-        <h3 className="line-clamp-2 text-sm font-bold leading-snug text-primary">
+        <h3 className="line-clamp-2 text-[13px] font-bold leading-snug text-primary sm:text-sm">
           {name}
         </h3>
         {p.rating_count > 0 && (

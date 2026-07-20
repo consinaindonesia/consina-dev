@@ -551,7 +551,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Nav />
-      <main className="mx-auto max-w-[1280px] px-4 py-8 md:px-8 md:py-12">
+      <main className="mx-auto max-w-[1440px] px-4 py-6 md:px-6 md:py-8 lg:px-8">
         {fallbackLang && (
           <div className="mb-4">
             <MissingTranslationNotice otherLang={lang === "id" ? "en" : "id"} />
@@ -593,7 +593,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
           {/* Gallery */}
           <div>
             <div
-              className="group relative aspect-square overflow-hidden rounded-2xl border border-border bg-muted"
+              className="group relative aspect-square overflow-hidden rounded-xl border border-border bg-muted"
               onMouseMove={handleZoomMove}
               onMouseLeave={() => setZoomOrigin("50% 50%")}
             >
@@ -677,9 +677,28 @@ export function ProductDetailPage({ slug }: { slug: string }) {
             )}
 
             {shortDescField.value && (
-              <p className="mt-4 text-justify text-base leading-8 text-muted-foreground">
-                {shortDescField.value}
-              </p>
+              <div className="mt-4">
+                <p
+                  className={`text-left text-base leading-8 text-muted-foreground md:text-justify ${
+                    descriptionExpanded ? "" : "max-md:line-clamp-3"
+                  }`}
+                >
+                  {shortDescField.value}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setDescriptionExpanded((current) => !current)}
+                  className="mt-2 text-sm font-semibold text-primary underline underline-offset-4 md:hidden"
+                >
+                  {descriptionExpanded
+                    ? lang === "en"
+                      ? "Show less"
+                      : "Tutup deskripsi"
+                    : lang === "en"
+                      ? "View description"
+                      : "Lihat deskripsi"}
+                </button>
+              </div>
             )}
 
             <div className="mt-5 flex items-center gap-3">
@@ -952,7 +971,7 @@ export function ProductDetailPage({ slug }: { slug: string }) {
         </div>
 
         {/* Description + specs */}
-        <div className="mt-16 grid grid-cols-1 gap-10 lg:grid-cols-[1fr_320px]">
+        <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_320px]">
           <article>
             <h2 className="text-2xl font-bold text-primary">
               {t("product.description")}

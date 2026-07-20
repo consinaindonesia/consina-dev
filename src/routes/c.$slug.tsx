@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Filter, X, ShoppingBag } from "lucide-react";
+import { ArrowRight, Loader2, Filter, X, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
@@ -442,7 +442,7 @@ function CategoryPage() {
     <div className="min-h-screen bg-background text-foreground">
       <Nav />
       <header className="border-b border-border bg-muted/40">
-        <div className="mx-auto max-w-[1280px] px-4 py-12 md:px-8 md:py-16">
+        <div className="mx-auto max-w-[1440px] px-4 py-10 md:px-6 md:py-14 lg:px-8">
           {category ? (
             <>
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">Category</p>
@@ -459,11 +459,11 @@ function CategoryPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1280px] px-4 py-10 md:px-8 md:py-12">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[260px_1fr]">
+      <main className="mx-auto max-w-[1440px] px-4 py-8 md:px-6 md:py-10 lg:px-8">
+        <div className="grid grid-cols-1 gap-7 lg:grid-cols-[260px_1fr]">
           {/* Filters */}
           <aside>
-            <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-hidden rounded-2xl border border-border bg-card">
+            <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-hidden rounded-xl border border-border bg-card">
               <div className="max-h-[calc(100vh-6rem)] overflow-y-auto p-5">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-foreground">
@@ -553,7 +553,7 @@ function CategoryPage() {
                 <p className="mb-4 text-sm text-muted-foreground">
                   {filtered.length} product{filtered.length === 1 ? "" : "s"}
                 </p>
-                <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-5 lg:grid-cols-3">
                   {filtered.map((p) => {
                     const img = p.product_images[0];
                     const prefix = lang === "id" ? "produk" : "products";
@@ -605,8 +605,7 @@ function CategoryPage() {
                           )}
                         </div>
                         <div className="p-4">
-                          <p className="text-xs uppercase tracking-wider text-muted-foreground">{p.sku}</p>
-                          <h3 className="mt-1 font-medium text-foreground">{name}</h3>
+                          <h3 className="font-medium text-foreground">{name}</h3>
                           {p.rating_count > 0 && (
                             <StarRating rating={p.rating_average} count={p.rating_count} className="mt-1" />
                           )}
@@ -628,6 +627,9 @@ function CategoryPage() {
                             </div>
                           )}
                           <PriceDisplay product={p} lang={lang} size="sm" className="mt-2" />
+                          <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-primary transition group-hover:gap-2">
+                            {lang === "id" ? "Lihat detail" : "View details"} <ArrowRight className="h-3.5 w-3.5" />
+                          </span>
                         </div>
                         </Link>
                       </li>

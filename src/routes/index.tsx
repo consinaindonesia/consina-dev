@@ -527,7 +527,7 @@ function Hero({ settings }: { settings: HeroSettings }) {
         />
       </div>
       <div
-        className="mx-auto flex min-h-[62vh] max-w-[1280px] flex-col justify-center px-4 py-20 md:min-h-[68vh] md:px-8 md:py-24 lg:min-h-[72vh] lg:py-28"
+        className="mx-auto flex min-h-[62vh] max-w-[1440px] flex-col justify-center px-4 py-20 md:min-h-[68vh] md:px-6 md:py-24 lg:min-h-[72vh] lg:px-8 lg:py-28"
         style={s.style?.textColor ? { color: s.style.textColor } : undefined}
       >
         {eyebrow && (
@@ -627,7 +627,7 @@ function VideoYoutubeSection({ settings }: { settings: VideoYoutubeSettings }) {
 
   return (
     <section className={styleProps.className} style={styleProps.inlineStyle}>
-      <div className="mx-auto max-w-[1280px] px-4 md:px-8">
+      <div className="mx-auto max-w-[1440px] px-4 md:px-6 lg:px-8">
         <div className={`flex flex-col gap-6 ${alignClass}`}>
           {hasText && (
             <div className="flex w-full flex-col gap-3" style={textAlignStyle}>
@@ -644,7 +644,7 @@ function VideoYoutubeSection({ settings }: { settings: VideoYoutubeSettings }) {
               )}
             </div>
           )}
-          <div className={`w-full overflow-hidden rounded-2xl bg-muted ${aspectClass}`}>
+          <div className={`w-full overflow-hidden rounded-xl bg-muted ${aspectClass}`}>
             {embedSrc ? (
               <iframe
                 key={embedSrc}
@@ -726,13 +726,13 @@ function BrandStory({ settings }: { settings: BrandStorySettings }) {
 
   return (
     <section
-      className={`mx-auto max-w-[1280px] px-4 md:px-8 ${styleProps.className}`}
+      className={`mx-auto max-w-[1440px] px-4 md:px-6 lg:px-8 ${styleProps.className}`}
       style={styleProps.inlineStyle}
     >
       <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
         {/* LEFT COLUMN — Image */}
         <div className="order-1">
-          <div className="overflow-hidden rounded-2xl">
+          <div className="overflow-hidden rounded-xl">
             <img
               src={s.image && s.image.trim() ? s.image : storyHiker}
               alt={pickLocalized(s.imageAlt, lang, "Hiker on an Indonesian mountain trail")}
@@ -992,7 +992,7 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
       className={`${styleProps.className}`}
       style={{ backgroundColor: s.style?.bgColor ?? "var(--background)", ...(s.style?.textColor ? { color: s.style.textColor } : {}) }}
     >
-      <div className="mx-auto max-w-[1280px] px-4 md:px-8">
+      <div className="mx-auto max-w-[1440px] px-4 md:px-6 lg:px-8">
         {/* Section heading */}
         <div className="flex items-end justify-between gap-4">
           <div className="text-left">
@@ -1164,7 +1164,7 @@ function ActivitiesSection({ settings }: { settings: ActivitiesSettings }) {
 
   return (
     <section className={styleProps.className} style={styleProps.inlineStyle}>
-      <div className="mx-auto max-w-[1280px] px-4 md:px-8">
+      <div className="mx-auto max-w-[1440px] px-4 md:px-6 lg:px-8">
         <div className="mb-4 md:mb-5">
           {eyebrow && (
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#c9a84c]" style={tc(s.style, "eyebrowColor")}>
@@ -1180,7 +1180,7 @@ function ActivitiesSection({ settings }: { settings: ActivitiesSettings }) {
             </p>
           )}
         </div>
-        <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] md:gap-4 [&::-webkit-scrollbar]:hidden">
+        <div className="flex gap-3 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] md:gap-4 [&::-webkit-scrollbar]:hidden">
           {items.map((item, idx) => {
             const label = pickLocalized(item.title, lang, `Activity ${idx + 1}`);
             const slug = slugifyText(label);
@@ -1192,7 +1192,7 @@ function ActivitiesSection({ settings }: { settings: ActivitiesSettings }) {
                 href={href}
                 className="group w-[132px] shrink-0 md:w-[154px] lg:w-[170px]"
               >
-                <div className="aspect-square overflow-hidden rounded-sm bg-muted shadow-sm">
+                <div className="aspect-square overflow-hidden rounded-xl bg-muted shadow-sm">
                   <img
                     src={image}
                     alt={label}
@@ -1237,8 +1237,8 @@ function ZeroWasteSection({ settings }: { settings: ZeroWasteSettings }) {
 
   return (
     <section className={styleProps.className} style={styleProps.inlineStyle}>
-      <div className="mx-auto max-w-[1280px] px-4 md:px-8">
-        <div className="relative overflow-hidden bg-primary px-6 py-8 text-white shadow-sm md:px-9 md:py-10 lg:px-12">
+      <div className="mx-auto max-w-[1440px] px-4 md:px-6 lg:px-8">
+        <div className="relative overflow-hidden rounded-xl bg-primary px-6 py-8 text-white shadow-sm md:px-9 md:py-10 lg:px-12">
           <img
             src={bg}
             alt=""
@@ -1339,7 +1339,7 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
 
   return (
     <section
-      className={`mx-auto max-w-[1280px] px-4 md:px-8 ${styleProps.className}`}
+      className={`mx-auto max-w-[1440px] px-4 md:px-6 lg:px-8 ${styleProps.className}`}
       style={styleProps.inlineStyle}
     >
       {/* Section heading */}
@@ -1376,15 +1376,14 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
 
         <div
           ref={scrollerRef}
-          className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth scroll-pl-4 px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] md:-mx-8 md:px-8 md:scroll-pl-8 md:gap-5 [&::-webkit-scrollbar]:hidden"
+          className="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth scroll-pl-0 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] md:gap-4 [&::-webkit-scrollbar]:hidden"
         >
           {featured.map((p) => {
             const name = localizedProductName(p, lang);
-            const desc = localizedField(p, "short_description", lang).value;
             return (
               <div
                 key={p.id}
-                className="storefront-card-hover group w-[74%] shrink-0 snap-start sm:w-[44%] md:w-[34%] lg:w-[28%] xl:w-[24%]"
+                className="storefront-card-hover group w-[72%] shrink-0 snap-start sm:w-[42%] md:w-[32%] lg:w-[24%] xl:w-[22.5%]"
               >
                 <Link
                   to={`/${lang}/${prefix}/${p.slug ?? p.sku}` as never}
@@ -1406,7 +1405,6 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
                   {p.rating_count > 0 && (
                     <StarRating rating={p.rating_average} count={p.rating_count} className="mt-1" />
                   )}
-                  {desc ? <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{desc}</p> : null}
                   <PriceDisplay product={p} lang={lang} size="sm" className="mt-2" />
                   <Link
                     to={`/${lang}/${prefix}/${p.slug ?? p.sku}` as never}
@@ -1481,7 +1479,7 @@ function Community({ settings }: { settings: CommunitySettings }) {
       className={styleProps.className}
       style={{ backgroundColor: s.style?.bgColor ?? "#1a3a2e", color: s.style?.textColor ?? "#ffffff" }}
     >
-      <div className="mx-auto grid max-w-[1280px] items-center gap-10 px-4 md:grid-cols-2 md:px-8">
+      <div className="mx-auto grid max-w-[1440px] items-center gap-8 px-4 md:grid-cols-2 md:px-6 lg:px-8">
         {/* Text */}
         <div className={imgRight ? "order-2 md:order-1" : "order-2 md:order-2"}>
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#d4b896]" style={tc(s.style, "eyebrowColor")}>
@@ -1505,7 +1503,7 @@ function Community({ settings }: { settings: CommunitySettings }) {
         </div>
         {/* Image */}
         <div className={imgRight ? "order-1 md:order-2" : "order-1 md:order-1"}>
-          <div className="overflow-hidden rounded-2xl">
+          <div className="overflow-hidden rounded-xl">
             <img
               src={imgSrc}
               alt={pickLocalized(s.imageAlt, lang, "Community")}
@@ -1530,7 +1528,7 @@ function StatsSection({ settings }: { settings: StatsSettings }) {
   if (items.length === 0) return <></>;
   return (
     <section className={styleProps.className} style={styleProps.inlineStyle}>
-      <div className="mx-auto max-w-[1280px] px-4 md:px-8">
+      <div className="mx-auto max-w-[1440px] px-4 md:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
           {items.map((st, i) => (
             <div key={i} className="border-t border-border pt-4">
@@ -1562,10 +1560,10 @@ function StoreLocator({ settings }: { settings: StoreLocatorSettings }) {
     : stores.map((x) => ({ city: x.city, address: x.addr, phone: x.phone }));
   return (
     <section
-      className={`mx-auto max-w-[1280px] px-4 md:px-8 ${styleProps.className}`}
+      className={`mx-auto max-w-[1440px] px-4 md:px-6 lg:px-8 ${styleProps.className}`}
       style={styleProps.inlineStyle}
     >
-      <div className="grid gap-12 lg:grid-cols-12">
+      <div className="grid gap-8 lg:grid-cols-12">
         <div className="lg:col-span-5">
           {eyebrow && <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>}
           <h2 className="mt-2 text-xl font-black leading-tight tracking-tight text-primary md:text-2xl lg:text-3xl" style={tc(s.style, "headingColor")}>
@@ -1776,7 +1774,7 @@ function ContactSectionInner({ settings }: { settings: ContactSettings }) {
       className={`bg-muted/60 ${styleProps.className}`}
       style={styleProps.inlineStyle}
     >
-      <div className="mx-auto grid max-w-[1280px] gap-14 px-4 md:grid-cols-2 md:px-8">
+      <div className="mx-auto grid max-w-[1440px] gap-8 px-4 md:grid-cols-2 md:px-6 lg:px-8">
         <div>
           {eyebrow && (
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary" style={tc(s.style, "eyebrowColor")}>{eyebrow}</p>
@@ -1865,12 +1863,12 @@ function ContactSectionInner({ settings }: { settings: ContactSettings }) {
             />
           </div>
           {status === "success" && (
-            <p className="mt-6 rounded-sm border border-green-600/30 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
+            <p className="mt-6 rounded-md border border-green-600/30 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
               {t("home.contact.success")}
             </p>
           )}
           {status === "error" && errorMsg && (
-            <p className="mt-6 rounded-sm border border-red-600/30 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">
+            <p className="mt-6 rounded-md border border-red-600/30 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">
               {errorMsg}
             </p>
           )}
@@ -2060,7 +2058,7 @@ function ImageBannerSection({ settings }: { settings: ImageBannerSettings }) {
     : 2000;
   return (
     <section className={styleProps.className} style={styleProps.inlineStyle}>
-      <div className="mx-auto max-w-[1280px] px-4 md:px-8">
+      <div className="mx-auto max-w-[1440px] px-4 md:px-6 lg:px-8">
         <div className={`flex flex-col gap-6 ${alignClass}`}>
           {(pickLocalized(s.eyebrow, lang) || pickLocalized(s.heading, lang) || pickLocalized(s.body, lang) || s.cta?.href) && (
             <div className={`flex w-full flex-col gap-3 ${alignClass}`}>
@@ -2129,7 +2127,7 @@ function PromoCarousel({
 
   if (count === 0) {
     return (
-      <div className={`w-full ${aspectClass} rounded-2xl bg-muted flex items-center justify-center text-sm text-muted-foreground`}>
+      <div className={`w-full ${aspectClass} rounded-xl bg-muted flex items-center justify-center text-sm text-muted-foreground`}>
         Add images in the Design editor.
       </div>
     );
@@ -2158,7 +2156,7 @@ function PromoCarousel({
 
   return (
     <div
-      className={`relative w-full overflow-hidden rounded-2xl bg-muted ${aspectClass}`}
+      className={`relative w-full overflow-hidden rounded-xl bg-muted ${aspectClass}`}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onTouchStart={onTouchStart}
@@ -2241,7 +2239,7 @@ function GallerySection({ settings }: { settings: GallerySettings }) {
     cols === 2 ? "sm:grid-cols-2" : cols === 4 ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-2 lg:grid-cols-3";
   return (
     <section className={styleProps.className} style={styleProps.inlineStyle}>
-      <div className="mx-auto max-w-[1280px] px-4 md:px-8">
+      <div className="mx-auto max-w-[1440px] px-4 md:px-6 lg:px-8">
         {pickLocalized(s.title, lang) && (
           <h2 className="text-2xl font-black tracking-tight text-primary md:text-3xl" style={tc(s.style, "headingColor")}>
             {pickLocalized(s.title, lang)}
@@ -2282,7 +2280,7 @@ function TestimonialsSection({ settings }: { settings: TestimonialsSettings }) {
   const items = s.items ?? [];
   return (
     <section className={styleProps.className} style={styleProps.inlineStyle}>
-      <div className="mx-auto max-w-[1280px] px-4 md:px-8">
+      <div className="mx-auto max-w-[1440px] px-4 md:px-6 lg:px-8">
         <div className="text-center">
           {pickLocalized(s.eyebrow, lang) && (
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-accent" style={tc(s.style, "eyebrowColor")}>{pickLocalized(s.eyebrow, lang)}</p>
@@ -2329,7 +2327,7 @@ function SpacerSection({ settings }: { settings: SpacerSettings }) {
       className="w-full"
     >
       {s.showDivider && (
-        <div className="mx-auto h-full max-w-[1280px] px-4 md:px-8">
+        <div className="mx-auto h-full max-w-[1440px] px-4 md:px-6 lg:px-8">
           <div className="h-full border-t border-border" style={{ marginTop: h / 2 }} />
         </div>
       )}
@@ -2392,7 +2390,7 @@ function CustomSection({ settings }: { settings: CustomSectionSettings }) {
     if (slides.length === 1) {
       const sl = slides[0]!;
       const img = (
-        <img src={sl.image} alt={sl.alt ?? heading ?? ""} className={`w-full ${aspectClass} object-cover ${rounded ? "rounded-2xl" : ""}`} />
+        <img src={sl.image} alt={sl.alt ?? heading ?? ""} className={`w-full ${aspectClass} object-cover ${rounded ? "rounded-xl" : ""}`} />
       );
       return sl.href ? (
         <a href={sl.href} className="block h-full w-full">{img}</a>
@@ -2428,8 +2426,8 @@ function CustomSection({ settings }: { settings: CustomSectionSettings }) {
   if (pos === "background") {
     return (
       <section className={styleProps.className} style={styleProps.inlineStyle}>
-        <div className="mx-auto max-w-[1280px] px-4 md:px-8">
-          <div className="relative min-h-[360px] overflow-hidden rounded-2xl">
+        <div className="mx-auto max-w-[1440px] px-4 md:px-6 lg:px-8">
+          <div className="relative min-h-[360px] overflow-hidden rounded-xl">
             {slides.length > 1 ? (
               <div className="absolute inset-0">
                 <PromoCarousel slides={slides} aspectClass="h-full w-full" intervalMs={interval} />
@@ -2445,8 +2443,8 @@ function CustomSection({ settings }: { settings: CustomSectionSettings }) {
     );
   }
   return (
-    <section className={`mx-auto max-w-[1280px] px-4 md:px-8 ${styleProps.className}`} style={styleProps.inlineStyle}>
-      <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+    <section className={`mx-auto max-w-[1440px] px-4 md:px-6 lg:px-8 ${styleProps.className}`} style={styleProps.inlineStyle}>
+      <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-10">
         {ImageEl ? (
           <>
             <div className={pos === "left" ? "order-1" : "order-1 lg:order-2"}>{ImageEl}</div>

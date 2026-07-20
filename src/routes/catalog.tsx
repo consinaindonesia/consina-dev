@@ -54,7 +54,7 @@ function CatalogPage() {
     <div className="min-h-screen bg-background text-foreground">
       <Nav />
       <header className="border-b border-border bg-muted/40">
-        <div className="mx-auto max-w-[1280px] px-4 py-16 md:px-8 md:py-20">
+        <div className="mx-auto max-w-[1440px] px-4 py-12 md:px-6 md:py-16 lg:px-8">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary">{t("catalog.eyebrow")}</p>
           <h1 className="mt-3 text-4xl font-black tracking-tight text-primary md:text-6xl">
             {t("catalog.title")}
@@ -67,7 +67,7 @@ function CatalogPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1280px] px-4 py-16 md:px-8 md:py-24">
+      <main className="mx-auto max-w-[1440px] px-4 py-10 md:px-6 md:py-14 lg:px-8">
         {loading ? (
           <div className="flex items-center justify-center py-20 text-muted-foreground">
             <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t("category_detail.loading", { defaultValue: "Loading..." })}
@@ -77,8 +77,8 @@ function CatalogPage() {
             No products available yet.
           </div>
         ) : (
-          <div className="grid gap-10 lg:grid-cols-[280px_minmax(0,1fr)] lg:items-start">
-            <aside className="rounded-3xl border border-border bg-card p-4 shadow-sm lg:sticky lg:top-28 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto">
+          <div className="grid gap-8 lg:grid-cols-[280px_minmax(0,1fr)] lg:items-start">
+            <aside className="rounded-xl border border-border bg-card p-4 shadow-sm lg:sticky lg:top-28 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto">
               <div className="flex items-center justify-between border-b border-border pb-3">
                 <div>
                   <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-secondary">
@@ -95,7 +95,7 @@ function CatalogPage() {
                   <a
                     key={g.slug}
                     href={`#${g.slug}`}
-                    className="flex items-center justify-between gap-3 rounded-2xl px-3 py-2 text-sm font-semibold text-primary transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-primary transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   >
                     <span className="truncate">{g.name}</span>
                     <span className="shrink-0 rounded-full border border-border bg-background px-2 py-0.5 text-[11px] font-bold text-muted-foreground">
@@ -106,7 +106,7 @@ function CatalogPage() {
               </nav>
             </aside>
 
-            <div className="min-w-0 space-y-24">
+            <div className="min-w-0 space-y-16">
               {grouped.map(({ slug, name, items }) => {
                 return (
                   <section key={slug} id={slug} className="scroll-mt-24">
@@ -127,7 +127,7 @@ function CatalogPage() {
                         {viewAllLabel} <ArrowUpRight className="h-3.5 w-3.5" />
                       </Link>
                     </div>
-                    <div className="mt-10 grid gap-x-6 gap-y-12 sm:grid-cols-2 xl:grid-cols-3">
+                    <div className="mt-8 grid gap-x-4 gap-y-8 sm:grid-cols-2 md:gap-x-5 md:gap-y-10 xl:grid-cols-3">
                       {items.map((p) => (
                         <ProductCard key={p.id} p={p} lang={lang} />
                       ))}
@@ -171,7 +171,7 @@ function ProductCard({ p, lang }: { p: PublicProduct; lang: "id" | "en" }) {
       to={detailHref as never}
       className="storefront-card-hover group block"
     >
-      <div className="relative aspect-square overflow-hidden rounded-none bg-muted">
+      <div className="relative aspect-square overflow-hidden rounded-xl bg-muted">
         {p.image_url ? (
           <img
             src={p.thumbnail_url ?? p.image_url}
@@ -221,6 +221,9 @@ function ProductCard({ p, lang }: { p: PublicProduct; lang: "id" | "en" }) {
           </div>
         )}
         <PriceDisplay product={p} lang={lang} size="sm" className="mt-2" />
+        <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-primary transition group-hover:gap-2">
+          {lang === "id" ? "Lihat detail" : "View details"} <ArrowUpRight className="h-3.5 w-3.5" />
+        </span>
       </div>
     </Link>
   );

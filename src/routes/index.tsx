@@ -1051,12 +1051,12 @@ function Categories({ settings }: { settings: CategoriesSettings }) {
 
           <div
             ref={scrollerRef}
-            className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth scroll-pl-4 px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] md:-mx-8 md:px-8 md:scroll-pl-8 md:gap-5 [&::-webkit-scrollbar]:hidden"
+            className="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth scroll-pl-0 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] md:-mx-8 md:gap-5 md:px-8 md:scroll-pl-8 [&::-webkit-scrollbar]:hidden"
           >
             {items.map((cat) => (
               <div
                 key={cat.slug}
-                className="shrink-0 basis-[calc((100%-2rem)/3)] snap-start md:basis-[calc((100%-3.75rem)/4)] lg:basis-[calc((100%-6.25rem)/6)]"
+                className="shrink-0 basis-[calc((100%_-_1.5rem)_/_3)] snap-start md:basis-[calc((100%_-_3.75rem)_/_4)] lg:basis-[calc((100%_-_6.25rem)_/_6)]"
               >
                 <CategoryCard cat={cat} ctaLabel={cardCtaLabel} ctaStyle={cardCtaStyle} />
               </div>
@@ -1120,7 +1120,7 @@ function CategoryCard({
     <Link
       to={"/c/$slug" as never}
       params={{ slug: cat.slug } as never}
-      className="group/card relative block h-[230px] overflow-hidden rounded-xl border border-white/10 bg-primary shadow-sm transition duration-500 hover:-translate-y-1 hover:shadow-2xl md:h-[280px]"
+      className="group/card relative block h-[205px] overflow-hidden rounded-xl border border-white/10 bg-primary shadow-sm transition duration-500 hover:-translate-y-1 hover:shadow-2xl sm:h-[220px] md:h-[280px]"
     >
       <img
         src={cat.img}
@@ -1131,12 +1131,12 @@ function CategoryCard({
       <div className="absolute inset-0 bg-black/45 transition duration-500 group-hover/card:bg-black/55" />
       <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/25 to-black/55" />
       <div className="relative z-10 flex h-full flex-col items-center justify-center px-5 text-center text-white">
-        <h3 className="text-xl font-black leading-tight tracking-tight drop-shadow md:text-2xl">
+        <h3 className="text-base font-black leading-tight tracking-tight drop-shadow sm:text-lg md:text-2xl">
           {cat.name}
         </h3>
         {ctaLabel && (
           <span
-            className={`mt-4 inline-flex items-center justify-center rounded-full px-5 py-2.5 text-[10px] font-black uppercase tracking-wider shadow-lg transition duration-300 group-hover/card:scale-105 md:mt-5 md:px-6 md:py-3 md:text-xs ${buttonClass}`}
+            className={`mt-3 inline-flex items-center justify-center rounded-full px-4 py-2 text-[9px] font-black uppercase tracking-wider shadow-lg transition duration-300 group-hover/card:scale-105 sm:px-5 sm:py-2.5 sm:text-[10px] md:mt-5 md:px-6 md:py-3 md:text-xs ${buttonClass}`}
           >
             {ctaLabel}
           </span>
@@ -1452,7 +1452,7 @@ function FeaturedProducts({ settings }: { settings: FeaturedProductsSettings }) 
                       className="storefront-card-media h-full w-full object-cover object-center"
                     />
                   ) : null}
-                  <WishlistButton productId={p.id} className="absolute left-3 bottom-3" />
+                  <WishlistButton productId={p.id} size="xs" className="absolute left-2 bottom-2 md:left-3 md:bottom-3" />
                 </Link>
                 <div className="mt-4">
                   <h3 className="line-clamp-3 text-[13px] font-bold leading-snug text-primary md:text-base">

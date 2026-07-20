@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 type Props = {
   productId: string;
   className?: string;
-  size?: "sm" | "md";
+  size?: "xs" | "sm" | "md";
   variant?: "icon" | "button";
   label?: string;
 };
@@ -16,7 +16,8 @@ export function WishlistButton({ productId, className, size = "sm", variant = "i
   const { user } = useCustomerAuth();
   const { has, toggle } = useWishlist(user?.id ?? null);
   const active = has(productId);
-  const iconSize = size === "md" ? "h-5 w-5" : "h-4 w-4";
+  const iconSize = size === "md" ? "h-5 w-5" : size === "xs" ? "h-3.5 w-3.5" : "h-4 w-4";
+  const buttonSize = size === "md" ? "h-10 w-10" : size === "xs" ? "h-7 w-7" : "h-8 w-8";
 
   async function onClick(e: React.MouseEvent) {
     e.preventDefault();
@@ -54,7 +55,8 @@ export function WishlistButton({ productId, className, size = "sm", variant = "i
       aria-pressed={active}
       aria-label={active ? "Hapus dari wishlist" : "Tambahkan ke wishlist"}
       className={cn(
-        "inline-flex h-8 w-8 items-center justify-center rounded-full bg-background/90 text-foreground shadow-sm backdrop-blur transition hover:bg-background",
+        "inline-flex items-center justify-center rounded-full bg-background/90 text-foreground shadow-sm backdrop-blur transition hover:bg-background",
+        buttonSize,
         className,
       )}
     >

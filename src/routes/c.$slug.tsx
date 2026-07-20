@@ -591,7 +591,7 @@ function CategoryPage() {
                           ) : (
                             <div className="h-full w-full bg-muted" />
                           )}
-                          <WishlistButton productId={p.id} className="absolute left-3 bottom-3" />
+                          <WishlistButton productId={p.id} size="xs" className="absolute left-2 bottom-2 md:left-3 md:bottom-3" />
                           {!requiresChoice && (
                             <button
                               type="button"
